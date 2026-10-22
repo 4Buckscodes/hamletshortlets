@@ -19,7 +19,7 @@ const ROLES = [
 ];
 
 export default function PartnerRegister() {
-  const { registerPartner, signIn } = useHamlet();
+  const { registerPartner, signIn, state, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [done, setDone] = useState(false);
@@ -29,27 +29,45 @@ export default function PartnerRegister() {
   });
   const [areas, setAreas] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: k === 'propertiesCount' ? Number(e.target.value) : e.target.value }));
 
   const toggleArea = (a: string) => setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (backendConfigured && (!state.session || state.session.role !== 'guest')) {
+      setErrors({ account: 'Create or sign in to a guest account before submitting a partner application.' });
+      return;
+    }
+    if (backendConfigured && state.session?.email.toLowerCase() !== form.email.trim().toLowerCase()) {
+      setErrors({ account: 'Use the same email address as your signed-in account.' });
+      return;
+    }
     const errs: Record<string, string> = {};
     if (form.name.trim().length < 3) errs.name = 'Enter the full name.';
     if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = 'Enter a valid email.';
     if (form.phone.trim().length < 7) errs.phone = 'Enter a reachable phone number.';
     if (form.company.trim().length < 2) errs.company = 'Enter the company or trading name.';
+    if (form.propertiesCount < 1) errs.propertiesCount = 'Enter at least one property.';
     if (areas.length === 0) errs.areas = 'Select at least one Lagos area.';
     if (form.motivation.trim().length < 30) errs.motivation = 'Tell us a little more (min 30 characters).';
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    registerPartner({ ...form, areas });
-    const res = signIn(form.email, 'demo1234');
-    setDone(true);
-    if (res.ok) toast('Application submitted — you are signed in to your partner workspace.');
+    setSubmitting(true);
+    try {
+      const result = await registerPartner({ ...form, areas });
+      if (!result.ok) { setErrors({ account: result.error ?? 'Could not submit your application.' }); return; }
+      if (!backendConfigured) await signIn(form.email, 'demo1234');
+      setDone(true);
+      toast(backendConfigured ? 'Application submitted for review.' : 'Application submitted — demo partner account signed in.');
+    } catch (error) {
+      setErrors({ account: error instanceof Error ? error.message : 'Could not submit your application.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -87,9 +105,9 @@ export default function PartnerRegister() {
               <CheckCircle2 size={56} className="mx-auto text-jade-400" />
               <h2 className="mt-5 font-display text-3xl font-black text-paper">Application received.</h2>
               <p className="mt-3 text-[13px] font-medium leading-relaxed text-ink-200">Thank you, {form.name.split(' ')[0]}. Your partner application is in the review queue. HAMLET operations manually reviews every application and property — you will hear from us through the workspace.</p>
-              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">You are signed in to your partner workspace. Properties you submit will enter <span className="text-brass-300">submitted</span> status until reviewed.</p>
+              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">{backendConfigured ? 'Your guest account remains active while HAMLET reviews your application. Partner access is granted only after approval.' : <>You are signed in to your demo partner workspace. Properties you submit will enter <span className="text-brass-300">submitted</span> status until reviewed.</>}</p>
               <div className="mt-6 flex justify-center gap-3">
-                <button onClick={() => navigate('/partner')} className="btn-brass">Go to workspace <ArrowRight size={16} /></button>
+                <button onClick={() => navigate(backendConfigured ? '/account' : '/partner')} className="btn-brass">{backendConfigured ? 'Return to account' : 'Go to workspace'} <ArrowRight size={16} /></button>
                 <Link to="/" className="btn-ghost-dark">Back to site</Link>
               </div>
             </motion.div>
@@ -99,6 +117,9 @@ export default function PartnerRegister() {
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">Apply to join</p>
               <h2 className="mt-1.5 font-display text-3xl font-black text-paper">Partner application</h2>
               <p className="mt-1 text-[12px] font-medium text-ink-300">Every application is reviewed manually. Submitting here never grants admin access — roles and permissions are assigned by HAMLET after verification.</p>
+              {backendConfigured && !state.session && <p className="mt-3 rounded-xl border border-brass-500/40 bg-brass-500/10 p-3 text-[11px] font-semibold text-brass-200">Sign in or create a guest account first, then return here to submit your application. <Link to="/signin" className="underline">Continue to sign in</Link></p>}
+              {backendConfigured && state.session?.role === 'guest' && <p className="mt-3 rounded-xl border border-jade-700 bg-jade-900/40 p-3 text-[11px] font-semibold text-jade-100">Signed in as {state.session.email}; enter this same email below.</p>}
+              {errors.account && <p role="alert" className="mt-3 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-[11px] font-semibold text-red-200">{errors.account}</p>}
 
               <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
                 <label className="sm:col-span-2"><span className="label-dark">Full name</span><input className={`input-dark ${errors.name ? '!border-red-500' : ''}`} value={form.name} onChange={set('name')} placeholder="Tunde Adeyemi" />{errors.name && <Err msg={errors.name} />}</label>
@@ -114,7 +135,7 @@ export default function PartnerRegister() {
                     ))}
                   </div>
                 </div>
-                <label><span className="label-dark">Properties to list (count)</span><input type="number" min={0} className="input-dark" value={form.propertiesCount} onChange={set('propertiesCount')} /></label>
+                <label><span className="label-dark">Properties to list (count)</span><input type="number" min={1} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />{errors.propertiesCount && <Err msg={errors.propertiesCount} />}</label>
                 <div className="sm:col-span-1">
                   <span className="label-dark">Areas of operation {errors.areas && <span className="text-red-400 normal-case">— {errors.areas}</span>}</span>
                   <div className="flex flex-wrap gap-1.5 pt-1">
@@ -130,7 +151,7 @@ export default function PartnerRegister() {
 
               <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><CircleAlert size={12} className="mt-0.5 shrink-0" /> By applying you consent to a manual review of your identity, authority and documentation. Providing false information leads to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).</p>
 
-              <button type="submit" className="btn-brass mt-4 w-full !py-4 text-[15px]">Submit application <ArrowRight size={16} /></button>
+              <button type="submit" disabled={submitting} className="btn-brass mt-4 w-full !py-4 text-[15px]">{submitting ? 'Submitting…' : 'Submit application'} <ArrowRight size={16} /></button>
             </motion.form>
           )}
         </AnimatePresence>

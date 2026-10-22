@@ -1,5 +1,28 @@
 # React + TypeScript + Vite
 
+## Supabase setup
+
+The app's Supabase client reads `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` from `.env.local`. Copy `.env.example` to
+`.env.local` and set those values for your project. Never put a service-role or
+secret key in a Vite environment variable or browser code.
+
+The initial database schema and row-level security policies are in
+`supabase/migrations/20261022120000_initial_schema.sql`. The additive partner
+application and booking-integrity migration is
+`supabase/migrations/20261022130000_app_workflows.sql`. Apply the additive
+migration before using partner applications or booking requests. New accounts
+receive a guest profile; an administrator must explicitly grant partner or
+admin roles.
+
+When Supabase is configured, sign-in/session restoration, guest account
+creation, public approved-listing reads, partner applications, guest booking
+requests, and issue reports use Supabase with the database row-level security
+policies. Without Supabase configuration, the app continues to use its local
+demo store. Partner/admin mutations and payment processing still require
+server-side integration; the demo payment flow is not available in Supabase
+mode, and must not be used as proof of payment.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

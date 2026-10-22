@@ -22,7 +22,7 @@ export function WorkspaceShell({
   nav: NavItem[];
   children: ReactNode;
 }) {
-  const { state, signOut, resetDemo } = useHamlet();
+  const { state, signOut, resetDemo, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -60,14 +60,22 @@ export function WorkspaceShell({
       </nav>
       <div className="border-t border-ink-800 p-3">
         <Link to="/" className="flex items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-bold text-ink-300 transition hover:bg-ink-800 hover:text-white"><ExternalLink size={13} /> View public marketplace</Link>
-        <button onClick={() => { resetDemo(); toast('Demo data restored to seed state.', 'info'); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-bold text-ink-300 transition hover:bg-ink-800 hover:text-white"><RotateCcw size={13} /> Reset demo data</button>
+        {!backendConfigured && <button onClick={() => { resetDemo(); toast('Demo data restored to seed state.', 'info'); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-bold text-ink-300 transition hover:bg-ink-800 hover:text-white"><RotateCcw size={13} /> Reset demo data</button>}
         <div className="mt-2 flex items-center gap-2.5 rounded-2xl border border-ink-800 bg-ink-900 p-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brass-500 font-display text-[12px] font-black text-ink-950">{initials}</span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[12px] font-bold text-ink-50">{s?.name}</p>
             <p className="truncate text-[9.5px] font-semibold text-ink-400">{subtitle}</p>
           </div>
-          <button onClick={() => { signOut(); toast('Signed out', 'info'); navigate('/signin'); }} className="rounded-lg p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white" aria-label="Sign out"><LogOut size={16} /></button>
+          <button onClick={async () => {
+            try {
+              await signOut();
+              toast('Signed out', 'info');
+              navigate('/signin');
+            } catch (error) {
+              toast(error instanceof Error ? error.message : 'Could not sign out.', 'error');
+            }
+          }} className="rounded-lg p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white" aria-label="Sign out"><LogOut size={16} /></button>
         </div>
       </div>
     </aside>

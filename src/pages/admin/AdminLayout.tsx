@@ -5,7 +5,7 @@ import { WorkspaceGuard } from '../Account';
 import { useHamlet } from '../../lib/store';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { state } = useHamlet();
+  const { state, backendConfigured } = useHamlet();
 
   const pendingReviews = state.properties.filter(p => p.status === 'submitted' || p.status === 'needs_correction').length;
   const actionBookings = state.bookings.filter(b => ['requested', 'checking'].includes(b.status)).length;
@@ -27,7 +27,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <WorkspaceGuard expected="admin">
       <WorkspaceShell title="Admin Console" subtitle="HAMLET operations · full accountability" accent="border-red-400/40 bg-red-400/10 text-red-300" nav={nav}>
-        {children}
+        {backendConfigured ? (
+          <div role="status" className="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+            <h1 className="font-display text-xl font-black text-ink-900">Admin workflows are not connected yet</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink-700">Supabase authentication and guest workflows are active, but admin review, booking transitions, ledger, assignments, and audit operations are still demo-only. No changes made here would be saved to Supabase.</p>
+          </div>
+        ) : children}
       </WorkspaceShell>
     </WorkspaceGuard>
   );

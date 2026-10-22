@@ -50,7 +50,16 @@ export function GuestNavbar() {
                     </div>
                     <button onClick={() => { setMenu(false); navigate(dashboardPath); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><LayoutDashboard size={15} />{s.role === 'admin' ? 'Admin console' : s.role === 'partner' ? 'Partner workspace' : 'My bookings'}</button>
                     {s.role === 'guest' && <button onClick={() => { setMenu(false); navigate('/account'); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><User size={15} />Account & feedback</button>}
-                    <button onClick={() => { setMenu(false); signOut(); toast('Signed out', 'info'); navigate('/'); }} className="flex w-full items-center gap-2.5 border-t border-ink-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 hover:bg-red-50"><LogOut size={15} />Sign out</button>
+                    <button onClick={async () => {
+                      setMenu(false);
+                      try {
+                        await signOut();
+                        toast('Signed out', 'info');
+                        navigate('/');
+                      } catch (error) {
+                        toast(error instanceof Error ? error.message : 'Could not sign out.', 'error');
+                      }
+                    }} className="flex w-full items-center gap-2.5 border-t border-ink-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 hover:bg-red-50"><LogOut size={15} />Sign out</button>
                   </div>
                 </>
               )}

@@ -12,24 +12,42 @@ const DEMO_ACCOUNTS = [
 ];
 
 export default function SignIn() {
-  const { signIn } = useHamlet();
+  const { signIn, signUpGuest, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('guest@hamlet.ng');
-  const [password, setPassword] = useState('demo1234');
+  const [email, setEmail] = useState(backendConfigured ? '' : 'guest@hamlet.ng');
+  const [password, setPassword] = useState(backendConfigured ? '' : 'demo1234');
+  const [name, setName] = useState('');
+  const [creatingAccount, setCreatingAccount] = useState(false);
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setError('');
-    const res = signIn(email, password);
-    setLoading(false);
-    if (!res.ok) { setError(res.error ?? 'Sign in failed.'); return; }
-    const role = email.trim().toLowerCase() === 'admin@hamlet.ng' ? 'admin' : email.trim().toLowerCase() === 'guest@hamlet.ng' ? 'guest' : 'partner';
-    toast('Welcome back.');
-    navigate(role === 'admin' ? '/admin' : role === 'partner' ? '/partner' : '/account');
+    try {
+      if (creatingAccount) {
+        const res = await signUpGuest({ name, email, password });
+        if (!res.ok) { setError(res.error ?? 'Account creation failed.'); return; }
+        if (res.needsEmailConfirmation) {
+          setError('Account created. Check your email to confirm it, then sign in here.');
+          setCreatingAccount(false);
+          return;
+        }
+        toast('Your guest account is ready.');
+        navigate('/account');
+        return;
+      }
+      const res = await signIn(email, password);
+      if (!res.ok) { setError(res.error ?? 'Sign in failed.'); return; }
+      toast('Welcome back.');
+      navigate(res.role === 'admin' ? '/admin' : res.role === 'partner' ? '/partner' : '/account');
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Could not complete your request.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const quick = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
@@ -65,8 +83,7 @@ export default function SignIn() {
           <h2 className="mt-1 font-display text-3xl font-black text-ink-900">Sign in</h2>
           <p className="mt-1 text-[12.5px] font-medium text-ink-500">One account experience for guests, partners and HAMLET operations — access is role-based.</p>
 
-          {/* Demo account quick pick */}
-          <div className="mt-5">
+          {!backendConfigured && <div className="mt-5">
             <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400"><ChevronDown size={12} /> Demo accounts (password: demo1234)</p>
             <div className="grid grid-cols-3 gap-2">
               {DEMO_ACCOUNTS.map(acc => (
@@ -78,9 +95,13 @@ export default function SignIn() {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           <form onSubmit={submit} className="mt-5 space-y-3">
+            {creatingAccount && <label className="block">
+              <span className="label">Full name</span>
+              <input type="text" required minLength={2} className="input" value={name} onChange={e => setName(e.target.value)} autoComplete="name" placeholder="Your full name" />
+            </label>}
             <label className="block">
               <span className="label">Email</span>
               <input type="email" required className="input" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
@@ -93,11 +114,17 @@ export default function SignIn() {
               </span>
             </label>
             {error && <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[12px] font-semibold text-red-800">{error}</p>}
-            <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">{loading ? 'Signing in…' : <>Sign in <ArrowRight size={16} /></>}</button>
+            <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">{loading ? 'Please wait…' : <>{creatingAccount ? 'Create guest account' : 'Sign in'} <ArrowRight size={16} /></>}</button>
           </form>
 
+          {backendConfigured && <button
+            type="button"
+            onClick={() => { setCreatingAccount(value => !value); setError(''); }}
+            className="mt-4 w-full text-center text-[12.5px] font-bold text-jade-800 hover:underline"
+          >{creatingAccount ? 'Already have an account? Sign in' : 'New to HAMLET? Create a guest account'}</button>}
+
           <p className="mt-6 text-center text-[12.5px] font-medium text-ink-500">
-            Own or manage Lagos shortlets?{' '}
+            Own or manage a property?{' '}
             <Link to="/partner/register" className="font-bold text-jade-800 hover:underline">Apply as a HAMLET partner</Link>
           </p>
         </div>

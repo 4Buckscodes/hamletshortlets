@@ -14,7 +14,7 @@ import { priceStay, nightsBetween, formatNaira } from '../lib/pricing';
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { state, requestBooking } = useHamlet();
+  const { state, requestBooking, backendReady, backendError } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -38,6 +38,12 @@ export default function PropertyDetail() {
     return '';
   }, [checkIn, checkOut, nights]);
 
+  if (!backendReady) {
+    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-500">Loading stay details…</p></div></GuestLayout>;
+  }
+  if (backendError) {
+    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><h1 className="font-display text-2xl font-black text-ink-900">Stay details are unavailable</h1><p role="alert" className="mt-2 text-sm text-red-700">{backendError}</p><Link to="/stays" className="btn-jade mt-6">Browse stays</Link></div></GuestLayout>;
+  }
   if (!property) {
     return (
       <GuestLayout>
@@ -54,19 +60,24 @@ export default function PropertyDetail() {
   const warning = property.status === 'approved' && nights > 0 && guests > property.capacity
     ? `This home sleeps ${property.capacity} — please reduce guests to ${property.capacity} or fewer.` : '';
 
-  const submitRequest = () => {
+  const submitRequest = async () => {
     if (!session) { navigate('/signin'); return; }
     if (session.role !== 'guest') { toast('Partner and admin accounts cannot book stays. Use a guest account.', 'error'); return; }
     setSubmitting(true);
-    const res = requestBooking({
-      property, guestId: session.userId, guestName: session.name, guestEmail: session.email,
-      checkIn, checkOut, guests, specialRequests: note.trim() || undefined,
-    });
-    setSubmitting(false);
-    if (!res.ok) { toast(res.error ?? 'Could not submit request.', 'error'); return; }
-    setShowModal(false);
-    toast(`Booking request ${res.booking!.ref} sent to the host.`);
-    navigate('/account');
+    try {
+      const res = await requestBooking({
+        property, guestId: session.userId, guestName: session.name, guestEmail: session.email,
+        checkIn, checkOut, guests, specialRequests: note.trim() || undefined,
+      });
+      if (!res.ok) { toast(res.error ?? 'Could not submit request.', 'error'); return; }
+      setShowModal(false);
+      toast(`Booking request ${res.booking?.ref ?? ''} sent to the host.`);
+      navigate('/account');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not submit request.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

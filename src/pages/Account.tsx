@@ -117,15 +117,19 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
 
-  const submit = () => {
+  const submit = async () => {
     if (!subject.trim() || !description.trim()) { toast('Please describe the issue.', 'error'); return; }
-    const issue = reportIssue({
-      bookingRef: booking.ref, propertyTitle: booking.propertyTitle,
-      category, severity: 'medium', subject: subject.trim(), description: description.trim(),
-      reporter: 'Adaeze Okafor', reporterType: 'guest',
-    });
-    toast(`Issue ${issue.ref} reported. HAMLET support will respond within the SLA.`);
-    onClose();
+    try {
+      const issue = await reportIssue({
+        bookingRef: booking.ref, propertyTitle: booking.propertyTitle,
+        category, severity: 'medium', subject: subject.trim(), description: description.trim(),
+        reporter: 'Guest', reporterType: 'guest',
+      });
+      toast(`Issue ${issue.ref} reported. HAMLET support will respond within the SLA.`);
+      onClose();
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not report the issue.', 'error');
+    }
   };
 
   return (
@@ -151,7 +155,7 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
 }
 
 export default function Account() {
-  const { state, bookingTransition, addFeedback } = useHamlet();
+  const { state, bookingTransition, addFeedback, backendConfigured, backendReady, backendError } = useHamlet();
   const { toast } = useToast();
   const session = state.session;
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -166,6 +170,12 @@ export default function Account() {
     [state.bookings, session],
   );
 
+  if (!backendReady) {
+    return <GuestLayout><div className="mx-auto max-w-md px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-600">Connecting to your account…</p></div></GuestLayout>;
+  }
+  if (backendError) {
+    return <GuestLayout><div className="mx-auto max-w-md px-4 py-24 text-center"><h1 className="font-display text-2xl font-black text-ink-900">Couldn't load your account</h1><p role="alert" className="mt-2 text-sm text-red-700">{backendError}</p><button onClick={() => window.location.reload()} className="btn-jade mt-6">Try again</button></div></GuestLayout>;
+  }
   if (!session) {
     return (
       <GuestLayout>
@@ -227,8 +237,8 @@ export default function Account() {
 
           {myBookings.map(b => {
             const open = expanded === b.id;
-            const canPay = b.status === 'awaiting_payment';
-            const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
+            const canPay = !backendConfigured && b.status === 'awaiting_payment';
+            const canCancel = !backendConfigured && ['requested', 'checking', 'awaiting_payment'].includes(b.status);
             const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
             const canFeedback = ['completed', 'disputed'].includes(b.status);
             return (
@@ -255,6 +265,9 @@ export default function Account() {
                   </div>
                 </div>
 
+                {backendConfigured && b.status === 'awaiting_payment' && (
+                  <p className="border-t border-amber-200 bg-amber-50 px-5 py-3 text-[12px] font-semibold text-amber-900">Online payment is not enabled yet. Do not send payment outside a verified HAMLET checkout.</p>
+                )}
                 {canPay && (
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
                     <p className="text-[12px] font-bold text-amber-900">Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — after which the booking expires and dates are released.</p>
@@ -280,6 +293,7 @@ export default function Account() {
                           {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}
                           <div className="mt-4 flex flex-wrap gap-2">
                             {canCancel && <button onClick={() => { bookingTransition(b.id, 'cancelled', { reason: 'Cancelled by guest before confirmation' }); toast('Booking cancelled.', 'info'); }} className="btn-outline !px-3.5 !py-2 text-[11px] text-red-700 hover:border-red-300 hover:bg-red-50"><X size={13} />Cancel booking</button>}
+                            {backendConfigured && ['requested', 'checking', 'awaiting_payment'].includes(b.status) && <p className="text-[11px] font-semibold text-ink-500">Booking changes and cancellations are not available online yet. Contact HAMLET support for help.</p>}
                             {canReport && <button onClick={() => setIssueFor(b)} className="btn-outline !px-3.5 !py-2 text-[11px]"><LifeBuoy size={13} />Report issue</button>}
                           </div>
                         </div>
@@ -296,7 +310,7 @@ export default function Account() {
                           </ol>
                         </div>
                       </div>
-                      {canFeedback && (
+                      {canFeedback && !backendConfigured && (
                         <div className="border-t border-ink-100 bg-clay/50 p-5">
                           <h3 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} /> Private pilot feedback — not public</h3>
                           <div className="mt-2 flex items-center gap-1.5">
@@ -324,7 +338,7 @@ export default function Account() {
         </div>
       </div>
 
-      <AnimatePresence>{payFor && <PaymentModal booking={payFor} onClose={() => setPayFor(null)} />}</AnimatePresence>
+      <AnimatePresence>{payFor && !backendConfigured && <PaymentModal booking={payFor} onClose={() => setPayFor(null)} />}</AnimatePresence>
       <AnimatePresence>{issueFor && <IssueModal booking={issueFor} onClose={() => setIssueFor(null)} />}</AnimatePresence>
     </GuestLayout>
   );

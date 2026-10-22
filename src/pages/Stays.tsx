@@ -10,7 +10,7 @@ const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Securi
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
 
 export default function Stays() {
-  const { state } = useHamlet();
+  const { state, backendReady, backendError } = useHamlet();
   const [params, setParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
 
@@ -51,6 +51,8 @@ export default function Stays() {
           <p className="mt-1 text-[12.5px] font-medium text-ink-500">
             {results.length} approved propert{results.length === 1 ? 'y' : 'ies'}{area ? ` in ${area}` : ''} · capacity {guests}+ · only approved listings are shown
           </p>
+          {backendError && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">Could not load stays: {backendError}</p>}
+          {!backendReady && <p role="status" className="mt-2 text-sm font-semibold text-ink-500">Loading verified stays…</p>}
         </div>
       </div>
 

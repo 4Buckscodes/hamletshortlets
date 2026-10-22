@@ -30,7 +30,7 @@ function addDays(value: string, days: number) {
 }
 
 export default function Home() {
-  const { state } = useHamlet();
+  const { state, backendReady, backendError } = useHamlet();
   const navigate = useNavigate();
   const [area, setArea] = useState('');
   const [checkIn, setCheckIn] = useState(() => addDays(dateValue(new Date()), 1));
@@ -171,7 +171,11 @@ export default function Home() {
           </div>
           <Link to="/stays" className="btn-dark !py-2.5 text-[12px]">Explore all stays <ArrowRight size={15} /></Link>
         </div>
-        {featured.length > 0 ? (
+        {backendError ? (
+          <div role="alert" className="mt-7 rounded-2xl border border-red-200 bg-red-50 px-6 py-6 text-sm font-semibold text-red-800">We couldn't load available stays: {backendError}</div>
+        ) : !backendReady ? (
+          <div className="mt-7 rounded-2xl border border-ink-100 bg-white px-6 py-10 text-center text-sm font-semibold text-ink-500">Loading verified stays…</div>
+        ) : featured.length > 0 ? (
           <>
             <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map(property => <PropertyCard key={property.id} p={property} />)}
