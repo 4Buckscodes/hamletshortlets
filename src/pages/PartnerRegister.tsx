@@ -53,7 +53,6 @@ export default function PartnerRegister() {
     if (form.company.trim().length < 2) errs.company = 'Enter the company or trading name.';
     if (form.propertiesCount < 1) errs.propertiesCount = 'Enter at least one property.';
     if (areas.length === 0) errs.areas = 'Select at least one Lagos area.';
-    if (form.motivation.trim().length < 30) errs.motivation = 'Tell us a little more (min 30 characters).';
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setSubmitting(true);
@@ -144,8 +143,8 @@ export default function PartnerRegister() {
                     ))}
                   </div>
                 </div>
-                <label className="sm:col-span-2"><span className="label-dark">Motivation & experience {errors.motivation && <span className="text-red-400 normal-case">— min 30 characters</span>}</span>
-                  <textarea className={`input-dark min-h-[84px] ${errors.motivation ? '!border-red-500' : ''}`} value={form.motivation} onChange={set('motivation')} placeholder="Tell us about your properties, experience and why HAMLET…" />
+                <label className="sm:col-span-2"><span className="label-dark">Motivation & experience <span className="normal-case text-ink-500">(optional)</span></span>
+                  <textarea className="input-dark min-h-[84px]" value={form.motivation} onChange={set('motivation')} placeholder="Share your experience or tell us why you’d like to work with HAMLET…" />
                 </label>
               </div>
 

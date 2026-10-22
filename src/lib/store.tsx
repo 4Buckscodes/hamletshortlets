@@ -1,5 +1,5 @@
 import {
-  createContext, useContext, useEffect, useMemo, useReducer, useState, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode,
 } from 'react';
 import type {
   Account, Session, Property, Booking, LedgerEntry, Issue, IssueStatus,
@@ -63,7 +63,7 @@ type Action =
   | { type: 'SIGN_OUT' }
   | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication }
   | { type: 'ADD_PROPERTY'; property: Property }
-  | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; actor: Session }
+  | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; verification?: Property['verification']; actor: Session }
   | { type: 'ADD_BOOKING'; booking: Booking }
   | { type: 'BOOKING_TRANSITION'; id: string; to: Booking['status']; actor: Session; note?: string; reason?: string }
   | { type: 'VERIFY_PAYMENT'; id: string; actor: Session; providerRef: string; provider: string }
@@ -87,7 +87,13 @@ type RemoteProperty = {
   refundable_deposit: number; bedrooms: number; bathrooms: number; capacity: number;
   bed_setup: string; amenities: string[]; image_urls: string[]; house_rules: string[];
   status: Property['status']; verification: Property['verification']; trust_label: string;
-  created_at: string; updated_at: string;
+  review_note?: string; created_at: string; updated_at: string;
+};
+
+type RemotePropertySubmission = {
+  authority_basis?: string;
+  submitted_role?: string;
+  docs?: Property['docs'];
 };
 
 type RemoteBooking = {
@@ -111,7 +117,16 @@ type RemoteIssue = {
   assignee_id?: string; resolution?: string; evidence: string[]; created_at: string; updated_at: string;
 };
 
-function toRemoteProperty(row: RemoteProperty, userId: string, accesses: { property_id: string; user_id: string }[]): Property {
+type RemoteAuditEntry = {
+  id: string; actor_id: string; actor_role: string; action: string; target: string; detail: string; created_at: string;
+};
+
+function toRemoteProperty(
+  row: RemoteProperty,
+  userId: string,
+  accesses: { property_id: string; user_id: string }[],
+  submission?: RemotePropertySubmission,
+): Property {
   const propertyAccess = accesses.filter(access => access.property_id === row.id);
   return {
     id: row.id,
@@ -136,10 +151,11 @@ function toRemoteProperty(row: RemoteProperty, userId: string, accesses: { prope
     ownerName: 'HAMLET partner',
     ownerId: propertyAccess.find(access => access.user_id === userId)?.user_id ?? '',
     submittedBy: 'HAMLET partner',
-    submittedRole: 'Property partner',
-    authorityBasis: 'Verification details are recorded on this listing.',
-    docs: [],
+    submittedRole: submission?.submitted_role ?? 'Property partner',
+    authorityBasis: submission?.authority_basis ?? 'Verification details are recorded on this listing.',
+    docs: submission?.docs ?? [],
     assignedPartnerIds: propertyAccess.map(access => access.user_id),
+    reviewNote: row.review_note ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -204,15 +220,17 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     company: profile.company ?? undefined,
   };
 
-  const [propertyResult, accessResult, bookingResult, applicationResult, issueResult] = await Promise.all([
+  const [propertyResult, accessResult, privateRecordResult, bookingResult, applicationResult, issueResult, auditResult] = await Promise.all([
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
     supabase.from('property_access').select('property_id,user_id,access_role,scope,commission_rate,commission_note,status,granted_at,revoked_at'),
+    supabase.from('property_private_records').select('property_id,record_type,record_data').eq('record_type', 'partner_submission'),
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
     supabase.from('partner_applications').select('*').order('submitted_at', { ascending: false }),
     supabase.from('booking_issues').select('*').order('created_at', { ascending: false }),
+    supabase.from('admin_audit_log').select('*').order('created_at', { ascending: false }).limit(100),
   ]);
 
-  for (const result of [propertyResult, accessResult, bookingResult, applicationResult, issueResult]) {
+  for (const result of [propertyResult, accessResult, privateRecordResult, bookingResult, applicationResult, issueResult, auditResult]) {
     if (result.error) throw new Error(`Could not load HAMLET data: ${result.error.message}`);
   }
 
@@ -222,7 +240,13 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     commission_rate: number | null; commission_note: string; status: 'active' | 'revoked';
     granted_at: string; revoked_at?: string;
   }>;
-  const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses));
+  const submissions = new Map(
+    (privateRecordResult.data ?? []).map(record => [
+      record.property_id,
+      record.record_data as RemotePropertySubmission,
+    ]),
+  );
+  const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id)));
   const propertyById = new Map(properties.map(property => [property.id, property]));
   const bookings = ((bookingResult.data ?? []) as unknown as RemoteBooking[])
     .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session));
@@ -288,6 +312,15 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     phone: profile.phone ?? undefined,
     createdAt: profile.created_at,
   };
+  const audit: AuditEntry[] = ((auditResult.data ?? []) as unknown as RemoteAuditEntry[]).map(entry => ({
+    id: entry.id,
+    at: entry.created_at,
+    actor: entry.actor_id === user.id ? session.name : entry.actor_role === 'admin' ? 'HAMLET administrator' : 'HAMLET partner',
+    actorRole: entry.actor_role,
+    action: entry.action,
+    target: entry.target,
+    detail: entry.detail,
+  }));
 
   return {
     ...emptyState(),
@@ -297,6 +330,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     issues,
     applications,
     assignments,
+    audit,
     session,
   };
 }
@@ -345,7 +379,13 @@ function reducer(state: DBState, action: Action): DBState {
         approved: 'listing_approved', needs_correction: 'listing_needs_correction',
         rejected: 'listing_rejected', suspended: 'listing_suspended', submitted: 'listing_resubmitted',
       };
-      const updatedProperty = { ...p, status: action.status, reviewNote: action.note ?? p.reviewNote };
+      const updatedProperty = {
+        ...p,
+        status: action.status,
+        reviewNote: action.note ?? p.reviewNote,
+        verification: action.verification ?? p.verification,
+        trustLabel: action.status === 'approved' ? 'HAMLET verified' : action.status === 'suspended' ? 'Suspended' : p.trustLabel,
+      };
       // suspension revokes active assignments
       let assignments = state.assignments;
       if (action.status === 'suspended') {
@@ -500,15 +540,15 @@ interface Store {
   signUpGuest: (input: { name: string; email: string; password: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<{ ok: boolean; error?: string }>;
-  submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Partial<Pick<Property, 'authorityBasis'>>) => Property;
-  reviewProperty: (id: string, status: Property['status'], note?: string) => void;
+  submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
+  reviewProperty: (id: string, status: Property['status'], note?: string, verification?: Property['verification']) => Promise<void>;
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => void;
   verifyPayment: (id: string) => void;
   reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType'] }) => Promise<Issue>;
   updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; resolution?: string }) => void;
-  reviewApplication: (id: string, status: PartnerApplication['status'], note?: string) => void;
-  approvePartner: (applicationId: string) => void;
+  reviewApplication: (id: string, status: PartnerApplication['status'], note?: string) => Promise<void>;
+  approvePartner: (applicationId: string, note?: string) => Promise<void>;
   grantAssignment: (input: Omit<PartnerAssignment, 'id' | 'grantedAt' | 'status'>) => void;
   revokeAssignment: (id: string) => void;
   addFeedback: (item: Omit<FeedbackItem, 'id' | 'at'>) => void;
@@ -567,6 +607,40 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       else localStorage.removeItem(SESSION_KEY);
     } catch { /* storage full — app still works in-memory */ }
   }, [state]);
+
+  const handleApplicationReview = useCallback(async (
+    id: string,
+    status: PartnerApplication['status'],
+    note?: string,
+    createDemoPartner = false,
+  ) => {
+    if (!state.session) return;
+    if (supabase) {
+      if (state.session.role !== 'admin') throw new Error('Only administrators can review partner applications.');
+      if (status === 'pending') throw new Error('Applications cannot be moved back to pending.');
+      const reviewerNote = note?.trim() ?? '';
+      if (reviewerNote.length < 10) throw new Error('A reviewer note of at least 10 characters is required.');
+      const { error } = await supabase.rpc('review_partner_application', {
+        target_application_id: id,
+        next_status: status,
+        reviewer_note: reviewerNote,
+      });
+      if (error) throw new Error(`Could not review partner application: ${error.message}`);
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) throw new Error(`Application decision saved, but refresh failed: ${authError.message}`);
+      try {
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+      } catch (refreshError) {
+        const message = refreshError instanceof Error ? refreshError.message : 'The workspace could not refresh.';
+        setBackendError(message);
+        throw new Error(`Application decision was saved, but the admin queue could not refresh: ${message}`);
+      }
+      return;
+    }
+
+    dispatch({ type: 'REVIEW_APPLICATION', id, status, actor: state.session, note });
+    if (createDemoPartner) dispatch({ type: 'CREATE_PARTNER_FROM_APPLICATION', applicationId: id, actor: state.session });
+  }, [state.session]);
 
   const store = useMemo<Store>(() => ({
     state,
@@ -655,8 +729,50 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'REGISTER_PARTNER', account, application });
       return { ok: true };
     },
-    submitProperty: (input) => {
+    submitProperty: async (input) => {
       const s = state.session;
+      if (supabase) {
+        if (!s || s.role !== 'partner') {
+          return { ok: false, error: 'Only approved partner accounts can submit properties.' };
+        }
+        const { data: propertyId, error } = await supabase.rpc('submit_partner_property', {
+          listing_data: {
+            title: input.title,
+            property_type: input.type,
+            area: input.area,
+            public_address: input.address,
+            nightly_rate: input.nightlyRate,
+            cleaning_fee: input.cleaningFee,
+            mandatory_charges: input.mandatoryCharges,
+            refundable_deposit: input.deposit,
+            bedrooms: input.bedrooms,
+            bathrooms: input.bathrooms,
+            capacity: input.capacity,
+            bed_setup: input.bedSetup,
+            amenities: input.amenities,
+            image_urls: input.images,
+            house_rules: input.houseRules,
+          },
+          submission_data: {
+            authority_basis: input.authorityBasis,
+            submitted_role: input.submittedRole ?? s.partnerRole ?? 'Property partner',
+            docs: input.docs,
+          },
+        });
+        if (error) return { ok: false, error: `Could not submit property: ${error.message}` };
+        try {
+          const { data: authData, error: authError } = await supabase.auth.getUser();
+          if (authError) throw authError;
+          const fresh = await loadSupabaseState(authData.user);
+          dispatch({ type: 'HYDRATE', state: fresh });
+          const property = fresh.properties.find(item => item.id === propertyId);
+          if (!property) throw new Error('The property was submitted but could not be found in your workspace.');
+          return { ok: true, property };
+        } catch (refreshError) {
+          setBackendError(refreshError instanceof Error ? refreshError.message : 'Property submitted, but the workspace could not refresh.');
+          return { ok: false, error: 'The property may have been submitted, but its status could not be refreshed. Check My properties before retrying.' };
+        }
+      }
       const property: Property = {
         ...input,
         id: `p-${uid().slice(0, 8)}`,
@@ -678,11 +794,41 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         createdAt: nowIso(),
       };
       dispatch({ type: 'ADD_PROPERTY', property });
-      return property;
+      return { ok: true, property };
     },
-    reviewProperty: (id, status, note) => {
+    reviewProperty: async (id, status, note, verification) => {
       if (!state.session) return;
-      dispatch({ type: 'PROPERTY_REVIEW', id, status, note, actor: state.session });
+      if (supabase) {
+        const property = state.properties.find(item => item.id === id);
+        if (!property) throw new Error('Property not found. Refresh the review queue and try again.');
+        if (state.session.role === 'partner' && status === 'submitted') {
+          const { error } = await supabase.rpc('resubmit_partner_property', { target_property_id: id });
+          if (error) throw new Error(`Could not resubmit property: ${error.message}`);
+        } else {
+          if (state.session.role !== 'admin') throw new Error('Only administrators can record property review decisions.');
+          if (!verification) throw new Error('Verification outcomes are required for a property review.');
+        const reviewerNote = note?.trim() ?? '';
+        if (reviewerNote.length < 10) throw new Error('A reviewer note of at least 10 characters is required.');
+        const { error } = await supabase.rpc('review_partner_property', {
+          target_property_id: id,
+          next_status: status,
+          reviewer_note: reviewerNote,
+          verification_data: verification,
+        });
+        if (error) throw new Error(`Could not record property review: ${error.message}`);
+        }
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Property status changed, but refresh failed: ${authError.message}`);
+        try {
+          dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        } catch (refreshError) {
+          const message = refreshError instanceof Error ? refreshError.message : 'The workspace could not refresh.';
+          setBackendError(message);
+          throw new Error(`Property decision was saved, but the review queue could not refresh: ${message}`);
+        }
+        return;
+      }
+      dispatch({ type: 'PROPERTY_REVIEW', id, status, note, verification, actor: state.session });
     },
     requestBooking: async ({ property, guestId, guestName, guestEmail, checkIn, checkOut, guests, specialRequests }) => {
       if (supabase) {
@@ -811,14 +957,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (!state.session) return;
       dispatch({ type: 'ISSUE_UPDATE', id, status, actor: state.session, note: opts?.note, assignee: opts?.assignee, resolution: opts?.resolution });
     },
-    reviewApplication: (id, status, note) => {
-      if (!state.session) return;
-      dispatch({ type: 'REVIEW_APPLICATION', id, status, actor: state.session, note });
-    },
-    approvePartner: (applicationId) => {
-      if (!state.session) return;
-      dispatch({ type: 'CREATE_PARTNER_FROM_APPLICATION', applicationId, actor: state.session });
-    },
+    reviewApplication: (id, status, note) => handleApplicationReview(id, status, note),
+    approvePartner: (id, note) => handleApplicationReview(id, 'approved', note ?? 'Partner application approved after manual review.', true),
     grantAssignment: (input) => {
       const actor = state.session;
       dispatch({ type: 'ADD_ASSIGNMENT', assignment: { ...input, id: uid(), grantedAt: nowIso(), status: 'active' }, actorName: actor?.name ?? 'HAMLET operations', actorRole: actor?.role ?? 'admin' });
@@ -829,7 +969,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),
-  }), [state, backendReady, backendError]);
+  }), [state, backendReady, backendError, handleApplicationReview]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }

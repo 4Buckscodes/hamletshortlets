@@ -36,6 +36,7 @@ export default function NewProperty() {
   const [authorityDoc, setAuthorityDoc] = useState(false);
   const [authorityNote, setAuthorityNote] = useState('');
   const [selfDeclaration, setSelfDeclaration] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const toggleAmenity = (a: string) => setAmenities(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
   const addImage = () => {
@@ -53,17 +54,35 @@ export default function NewProperty() {
     true,
   ][step];
 
-  const submit = () => {
-    submitProperty({
-      title: title.trim(), type, area, address: address.trim(),
-      nightlyRate, cleaningFee,
-      mandatoryCharges: cleaningFee > 0 ? [{ label: 'Cleaning & turnover (mandatory)', amount: cleaningFee }] : [],
-      deposit, bedrooms, bathrooms, capacity, bedSetup: bedSetup.trim(),
-      amenities, images, houseRules: houseRules.split('\n').map(s => s.trim()).filter(Boolean),
-      authorityBasis: authorityNote.trim(),
-    });
-    toast('Property submitted. HAMLET will review documentation before it can go live.', 'info');
-    navigate('/partner/properties');
+  const submit = async () => {
+    setSubmitting(true);
+    try {
+      const result = await submitProperty({
+        title: title.trim(), type, area, address: address.trim(),
+        nightlyRate, cleaningFee,
+        mandatoryCharges: cleaningFee > 0 ? [{ label: 'Cleaning & turnover (mandatory)', amount: cleaningFee }] : [],
+        deposit, bedrooms, bathrooms, capacity, bedSetup: bedSetup.trim(),
+        amenities, images, houseRules: houseRules.split('\n').map(s => s.trim()).filter(Boolean),
+        authorityBasis: authorityNote.trim(),
+        submittedRole: role,
+        docs: [
+          { label: 'Certificate of occupancy / title deed', status: ownershipDoc ? 'self_reported' : 'pending_review' },
+          { label: 'Government-issued ID of owner', status: idDoc ? 'self_reported' : 'pending_review' },
+          { label: 'Proof of authority / management mandate', status: authorityDoc ? 'self_reported' : 'pending_review' },
+          { label: 'Property inspection report', status: 'missing' },
+        ],
+      });
+      if (!result.ok) {
+        toast(result.error ?? 'Could not submit property.', 'error');
+        return;
+      }
+      toast('Property submitted. HAMLET will review documentation before it can go live.', 'info');
+      navigate('/partner/properties');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not submit property.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -174,9 +193,9 @@ export default function NewProperty() {
             </label>
             <div className="space-y-2">
               {[
-                { v: ownershipDoc, set: setOwnershipDoc, label: 'I have attached/referenced proof of ownership (title deed, C of O, or purchase evidence)' },
-                { v: idDoc, set: setIdDoc, label: 'I have attached/referenced a government-issued ID matching the account holder' },
-                { v: authorityDoc, set: setAuthorityDoc, label: 'I have attached/referenced authority to list — or explicit owner consent (if listing on behalf of the owner)' },
+                { v: ownershipDoc, set: setOwnershipDoc, label: 'I confirm that I can provide proof of ownership (title deed, C of O, or purchase evidence) for review' },
+                { v: idDoc, set: setIdDoc, label: 'I confirm that I can provide a government-issued ID matching the account holder for review' },
+                { v: authorityDoc, set: setAuthorityDoc, label: 'I confirm that I can provide authority to list or explicit owner consent for review' },
                 { v: selfDeclaration, set: setSelfDeclaration, label: 'I declare the information is accurate and I consent to a HAMLET inspection and document review' },
               ].map(({ v, set, label }) => (
                 <label key={label} className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-800 bg-ink-850 p-3.5 transition hover:border-ink-600">
@@ -207,7 +226,7 @@ export default function NewProperty() {
               ))}
             </div>
             <div className="mt-4 rounded-2xl border border-jade-500/30 bg-jade-500/10 p-4 text-[11.5px] font-medium leading-relaxed text-jade-200">
-              <BadgeCheck size={14} className="mb-1" /> On submission, this listing enters <strong>submitted</strong> status. HAMLET's duplicate check and manual review will move it to <strong>approved</strong>, <strong>needs correction</strong>, <strong>rejected</strong> or leave it pending. It is not public until approved.
+              <BadgeCheck size={14} className="mb-1" />               On submission, this listing enters <strong>submitted</strong> status. HAMLET must manually review the listing and check for duplicates; this form does not perform an automatic duplicate check. The listing is not public until it is approved.
             </div>
           </div>
         )}
@@ -217,9 +236,9 @@ export default function NewProperty() {
       <div className="mt-5 flex items-center justify-between">
         <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} className="btn-ghost-dark !py-3 text-[12px] disabled:opacity-30"><ChevronLeft size={16} /> Back</button>
         {step < STEPS.length - 1 ? (
-          <button onClick={() => setStep(s => s + 1)} disabled={!stepValid} className="btn-brass !py-3 text-[12px]">Continue <ChevronRight size={16} /></button>
+          <button onClick={() => setStep(s => s + 1)} disabled={!stepValid || submitting} className="btn-brass !py-3 text-[12px]">Continue <ChevronRight size={16} /></button>
         ) : (
-          <button onClick={submit} className="btn-brass !py-3 text-[13px]"><ShieldCheck size={16} /> Submit for review</button>
+          <button onClick={submit} disabled={submitting} className="btn-brass !py-3 text-[13px] disabled:opacity-50"><ShieldCheck size={16} /> {submitting ? 'Submitting…' : 'Submit for review'}</button>
         )}
       </div>
     </div>

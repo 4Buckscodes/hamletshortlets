@@ -3,13 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, BadgeCheck, Banknote, BedDouble, Building2, CalendarDays,
-  ChevronRight, ClipboardCheck, FileText, LifeBuoy, MapPin, Search, ShieldCheck, Users,
+  ChevronRight, ClipboardCheck, FileText, LifeBuoy, MapPin, Search, Users,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
 import { useHamlet } from '../lib/store';
 import { HAMLET_TAGLINE } from '../lib/brand';
-import { HAMLET_GUEST_SERVICE_FEE_RATE } from '../lib/pricing';
 
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -219,44 +218,6 @@ export default function Home() {
           <Link to="/account" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-jade-800 hover:text-jade-900">
             View your bookings <ArrowRight size={15} />
           </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
-        <div className="grid items-center gap-8 lg:grid-cols-2">
-          <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Clear pricing</p>
-            <h2 className="mt-2 font-display text-3xl font-black text-ink-900 sm:text-4xl">Know the cost before you commit.</h2>
-            <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-600">
-              Review the stay’s price breakdown and applicable conditions before you send a booking request. The booking flow uses the same pricing calculation as the property details.
-            </p>
-            <Link to="/stays" className="btn-jade mt-6">Explore stays <ArrowRight size={15} /></Link>
-          </div>
-          <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-7">
-            <p className="font-display text-lg font-black text-ink-900">What to look for in the breakdown</p>
-            <dl className="mt-5 space-y-4 text-sm">
-              <div className="flex items-start justify-between gap-5 border-b border-ink-50 pb-4">
-                <dt className="font-semibold text-ink-700">Accommodation</dt>
-                <dd className="text-right text-ink-500">Based on the selected stay and dates</dd>
-              </div>
-              <div className="flex items-start justify-between gap-5 border-b border-ink-50 pb-4">
-                <dt className="font-semibold text-ink-700">HAMLET guest service fee</dt>
-                <dd className="text-right text-ink-500">{(HAMLET_GUEST_SERVICE_FEE_RATE * 100).toFixed(0)}% of accommodation subtotal</dd>
-              </div>
-              <div className="flex items-start justify-between gap-5 border-b border-ink-50 pb-4">
-                <dt className="font-semibold text-ink-700">Mandatory charges</dt>
-                <dd className="text-right text-ink-500">Shown when applicable</dd>
-              </div>
-              <div className="flex items-start justify-between gap-5">
-                <dt className="font-semibold text-ink-700">Refundable caution fee</dt>
-                <dd className="text-right text-ink-500">Property-specific; shown separately</dd>
-              </div>
-            </dl>
-            <p className="mt-5 flex items-start gap-2 rounded-xl bg-jade-50 px-3.5 py-3 text-[12px] font-medium leading-relaxed text-jade-900">
-              <ShieldCheck size={16} className="mt-0.5 shrink-0" />
-              Review the property’s terms for the applicable deposit and refund conditions before requesting to book.
-            </p>
-          </div>
         </div>
       </section>
 

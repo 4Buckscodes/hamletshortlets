@@ -15,11 +15,26 @@ migration before using partner applications or booking requests. New accounts
 receive a guest profile; an administrator must explicitly grant partner or
 admin roles.
 
+Partner property submission uses the atomic RPC in
+`supabase/migrations/20261022140000_partner_property_submission.sql`. Apply
+this migration after the initial schema before enabling property submission.
+
+Admin property review, verification outcomes, partner resubmission, and the
+review audit log are in
+`supabase/migrations/20261022141000_admin_property_review.sql`. Apply it after
+the partner property submission migration before using those workflows.
+
+Admin partner-application decisions and their audit entries are in
+`supabase/migrations/20261022142000_partner_application_review.sql`. Apply it
+after the admin property review migration before reviewing applications.
+
 When Supabase is configured, sign-in/session restoration, guest account
-creation, public approved-listing reads, partner applications, guest booking
-requests, and issue reports use Supabase with the database row-level security
-policies. Without Supabase configuration, the app continues to use its local
-demo store. Partner/admin mutations and payment processing still require
+creation, public approved-listing reads, partner applications, partner
+property submissions, guest booking requests, and issue reports use Supabase
+with database policies. Property evidence declarations are stored as
+self-reported and require manual review; file uploads are not yet implemented.
+Without Supabase configuration, the app continues to use its local demo store.
+Other partner/admin mutations and payment processing still require
 server-side integration; the demo payment flow is not available in Supabase
 mode, and must not be used as proof of payment.
 

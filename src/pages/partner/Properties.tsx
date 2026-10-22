@@ -62,7 +62,14 @@ export default function PartnerProperties() {
                   Documentation ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)
                 </button>
                 {p.status === 'needs_correction' && (
-                  <button onClick={() => { reviewProperty(p.id, 'submitted', 'Resubmitted by partner after corrections'); toast('Resubmitted for review.', 'info'); }} className="btn-brass !px-4 !py-2 text-[11px]">
+                  <button onClick={async () => {
+                    try {
+                      await reviewProperty(p.id, 'submitted', 'Resubmitted by partner after corrections');
+                      toast('Resubmitted for review.', 'info');
+                    } catch (error) {
+                      toast(error instanceof Error ? error.message : 'Could not resubmit property.', 'error');
+                    }
+                  }} className="btn-brass !px-4 !py-2 text-[11px]">
                     <RefreshCcw size={13} /> Resubmit
                   </button>
                 )}

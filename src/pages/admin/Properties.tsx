@@ -6,7 +6,7 @@ import {
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { PropertyStatusPill, DocStatusBadge } from '../../components/Badges';
-import type { PropertyStatus } from '../../lib/types';
+import type { Property, PropertyStatus } from '../../lib/types';
 import { formatNaira, formatDateTime } from '../../lib/pricing';
 
 const TABS: { key: PropertyStatus | 'all'; label: string }[] = [
@@ -26,23 +26,45 @@ export default function AdminProperties() {
   const [open, setOpen] = useState<string | null>(null);
   const [noteFor, setNoteFor] = useState<{ id: string; action: 'approve' | 'needs_correction' | 'reject' | 'suspend' | 'reinstate' } | null>(null);
   const [note, setNote] = useState('');
+  const [verificationDraft, setVerificationDraft] = useState<Property['verification'] | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const q = query.trim().toLowerCase();
+  const selectedProperty = noteFor ? state.properties.find(property => property.id === noteFor.id) : undefined;
+  const openDecision = (id: string, action: NonNullable<typeof noteFor>['action']) => {
+    const property = state.properties.find(item => item.id === id);
+    if (!property) return;
+    setNoteFor({ id, action });
+    setNote('');
+    setVerificationDraft({ ...property.verification });
+  };
   const filtered = state.properties.filter(p =>
     (tab === 'all' || p.status === tab) &&
     (!q || [p.title, p.area, p.ownerName, p.submittedBy, p.address].join(' ').toLowerCase().includes(q)),
   );
 
-  const act = () => {
+  const act = async () => {
     if (!noteFor) return;
-    if (noteFor.action !== 'approve' && noteFor.action !== 'reinstate' && note.trim().length < 10) {
+    if (note.trim().length < 10) {
       toast('Add a reviewer note (min 10 characters) — decisions must be documented.', 'error');
       return;
     }
     const map = { approve: 'approved', needs_correction: 'needs_correction', reject: 'rejected', suspend: 'suspended', reinstate: 'approved' } as const;
-    reviewProperty(noteFor.id, map[noteFor.action], note.trim() || (noteFor.action === 'approve' ? 'Approved after document review.' : 'Reinstated after reinspection.'));
-    toast(noteFor.action === 'approve' ? 'Listing approved — now publicly discoverable.' : 'Decision recorded and audit-logged.', 'info');
-    setNoteFor(null); setNote('');
+    if (!verificationDraft) return;
+    if (map[noteFor.action] === 'approved' && Object.values(verificationDraft).some(value => value !== 'verified')) {
+      toast('To approve, verify ownership, identity, authority to list, and inspection.', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      await reviewProperty(noteFor.id, map[noteFor.action], note.trim(), verificationDraft);
+      toast(noteFor.action === 'approve' ? 'Listing approved — now publicly discoverable.' : 'Decision recorded and audit-logged.', 'info');
+      setNoteFor(null); setNote(''); setVerificationDraft(null);
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not record the property decision.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const actionLabel = { approve: 'Approve', needs_correction: 'Request correction', reject: 'Reject', suspend: 'Suspend', reinstate: 'Reinstate' };
@@ -96,15 +118,15 @@ export default function AdminProperties() {
               <div className="flex shrink-0 flex-col items-stretch justify-center gap-2 lg:w-44">
                 <p className="text-right font-display text-base font-black text-brass-300">{formatNaira(p.nightlyRate)}<span className="text-[10px] text-ink-500">/night</span></p>
                 {p.status === 'approved' && (
-                  <button onClick={() => setNoteFor({ id: p.id, action: 'suspend' })} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><PauseCircle size={14} /> Suspend</button>
+                  <button onClick={() => openDecision(p.id, 'suspend')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><PauseCircle size={14} /> Suspend</button>
                 )}
                 {p.status === 'suspended' && (
-                  <button onClick={() => setNoteFor({ id: p.id, action: 'reinstate' })} className="flex items-center justify-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2.5 text-[11px] font-bold text-jade-300 transition hover:bg-jade-950"><RotateCcw size={14} /> Reinstate</button>
+                  <button onClick={() => openDecision(p.id, 'reinstate')} className="flex items-center justify-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2.5 text-[11px] font-bold text-jade-300 transition hover:bg-jade-950"><RotateCcw size={14} /> Reinstate</button>
                 )}
                 {(p.status === 'submitted' || p.status === 'needs_correction') && (<>
-                  <button onClick={() => setNoteFor({ id: p.id, action: 'approve' })} className="flex items-center justify-center gap-1.5 rounded-xl bg-jade-600 px-3 py-2.5 text-[11px] font-bold text-white transition hover:bg-jade-500"><CheckCircle2 size={14} /> Approve</button>
-                  <button onClick={() => setNoteFor({ id: p.id, action: 'needs_correction' })} className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-600 bg-amber-950/40 px-3 py-2.5 text-[11px] font-bold text-amber-300 transition hover:bg-amber-950"><FileWarning size={14} /> Needs correction</button>
-                  <button onClick={() => setNoteFor({ id: p.id, action: 'reject' })} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><XCircle size={14} /> Reject</button>
+                  <button onClick={() => openDecision(p.id, 'approve')} className="flex items-center justify-center gap-1.5 rounded-xl bg-jade-600 px-3 py-2.5 text-[11px] font-bold text-white transition hover:bg-jade-500"><CheckCircle2 size={14} /> Approve</button>
+                  <button onClick={() => openDecision(p.id, 'needs_correction')} className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-600 bg-amber-950/40 px-3 py-2.5 text-[11px] font-bold text-amber-300 transition hover:bg-amber-950"><FileWarning size={14} /> Needs correction</button>
+                  <button onClick={() => openDecision(p.id, 'reject')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><XCircle size={14} /> Reject</button>
                 </>)}
                 {p.status === 'rejected' && <p className="text-center text-[10px] font-semibold text-ink-500">Applicant may reapply with complete evidence.</p>}
               </div>
@@ -131,16 +153,30 @@ export default function AdminProperties() {
       <AnimatePresence>
         {noteFor && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setNoteFor(null)} />
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { if (!saving) setNoteFor(null); }} />
             <motion.div initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} className="relative w-full max-w-md rounded-2xl border border-ink-800 bg-ink-900 p-6 shadow-2xl">
               <h2 className="flex items-center gap-2 font-display text-lg font-black text-ink-50"><ShieldCheck size={19} className="text-brass-400" />{actionLabel[noteFor.action]} — documented decision</h2>
-              <p className="mt-1 text-[11px] font-medium text-ink-400">This decision is audit-logged with your identity and timestamp. It may be reversed only by another recorded action.</p>
-              <label className="mt-4 block"><span className="label-dark">Reviewer note {noteFor.action === 'approve' || noteFor.action === 'reinstate' ? '(optional)' : '(required, min 10 chars)'}</span>
+              <p className="mt-1 text-[11px] font-medium text-ink-400">For approval, confirm each item was verified from evidence. Declarations alone are not proof. This decision and its verification outcomes are audit-logged.</p>
+              {selectedProperty && verificationDraft && <div className="mt-4 grid grid-cols-2 gap-2">
+                {([
+                  ['ownership', 'Ownership'],
+                  ['identity', 'Identity'],
+                  ['authority', 'Authority to list'],
+                  ['inspection', 'Inspection'],
+                ] as const).map(([key, label]) => (
+                  <label key={key}><span className="label-dark">{label}</span>
+                    <select className="input-dark" value={verificationDraft[key]} onChange={event => setVerificationDraft(current => current ? { ...current, [key]: event.target.value as Property['verification'][typeof key] } : current)}>
+                      {['pending_review', 'verified', 'self_reported', 'missing'].map(value => <option key={value} value={value}>{value.replace('_', ' ')}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>}
+              <label className="mt-4 block"><span className="label-dark">Reviewer note (required, min 10 chars)</span>
                 <textarea autoFocus className="input-dark min-h-[90px]" placeholder={noteFor.action === 'needs_correction' ? 'What must the submitter fix?…' : noteFor.action === 'suspend' ? 'Grounds for suspension…' : 'Reasoning…'} value={note} onChange={e => setNote(e.target.value)} />
               </label>
               <div className="mt-4 flex justify-end gap-2">
-                <button onClick={() => setNoteFor(null)} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
-                <button onClick={act} className={`btn !py-2.5 text-[12px] ${noteFor.action === 'approve' || noteFor.action === 'reinstate' ? 'bg-jade-600 text-white hover:bg-jade-500' : 'bg-red-600 text-white hover:bg-red-500'}`}><Ban size={14} /> Confirm {actionLabel[noteFor.action].toLowerCase()}</button>
+                <button onClick={() => setNoteFor(null)} disabled={saving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
+                <button onClick={() => void act()} disabled={saving} className={`btn !py-2.5 text-[12px] disabled:opacity-50 ${noteFor.action === 'approve' || noteFor.action === 'reinstate' ? 'bg-jade-600 text-white hover:bg-jade-500' : 'bg-red-600 text-white hover:bg-red-500'}`}><Ban size={14} /> {saving ? 'Saving…' : `Confirm ${actionLabel[noteFor.action].toLowerCase()}`}</button>
               </div>
             </motion.div>
           </motion.div>

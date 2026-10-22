@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { LayoutDashboard, Home, CalendarDays, Banknote, KeyRound, UserRound } from 'lucide-react';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import { WorkspaceGuard } from '../Account';
@@ -7,6 +8,7 @@ import { propertyIdsOf, myPartnerProperties } from '../../lib/partnerUtils';
 
 export default function PartnerLayout({ children }: { children: ReactNode }) {
   const { state, backendConfigured } = useHamlet();
+  const { pathname } = useLocation();
   const userId = state.session?.userId;
 
   const myProps = useMemo(() => myPartnerProperties(state, userId), [state, userId]);
@@ -26,10 +28,10 @@ export default function PartnerLayout({ children }: { children: ReactNode }) {
   return (
     <WorkspaceGuard expected="partner">
       <WorkspaceShell title="Partner Workspace" subtitle={state.session?.partnerRole ?? 'Partner'} accent="border-brass-500/40 bg-brass-500/10 text-brass-300" nav={nav}>
-        {backendConfigured ? (
+        {backendConfigured && !['/partner/properties', '/partner/properties/new'].includes(pathname) ? (
           <div role="status" className="rounded-2xl border border-brass-300 bg-brass-50 p-6">
-            <h1 className="font-display text-xl font-black text-ink-900">Partner workspace integration is pending</h1>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">Your Supabase account and application are connected, but partner property, booking, earnings, and assignment operations are not yet available. No changes made in the demo workspace will be saved to Supabase.</p>
+            <h1 className="font-display text-xl font-black text-ink-900">This partner workflow is not connected yet</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink-700">Property intake and listing status are connected. Booking management, earnings, assignments, and profile operations are still pending; changes to those demo screens are not saved to Supabase.</p>
           </div>
         ) : children}
       </WorkspaceShell>

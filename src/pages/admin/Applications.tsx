@@ -9,25 +9,27 @@ export default function AdminApplications() {
   const { state, reviewApplication, approvePartner } = useHamlet();
   const { toast } = useToast();
   const [tab, setTab] = useState<ApplicationStatus | 'all'>('pending');
-  const [noteFor, setNoteFor] = useState<string | null>(null);
+  const [noteFor, setNoteFor] = useState<{ id: string; action: 'approve' | 'needs_correction' | 'reject' } | null>(null);
   const [note, setNote] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const list = state.applications.filter(a => tab === 'all' || a.status === tab);
 
-  const requestCorrection = (id: string) => {
+  const review = async () => {
+    if (!noteFor) return;
     if (note.trim().length < 10) { toast('Describe what is needed (min 10 characters).', 'error'); return; }
-    reviewApplication(id, 'needs_correction', note.trim());
-    toast('Correction requested — applicant notified.', 'info');
-    setNoteFor(null); setNote('');
-  };
-  const reject = (id: string) => {
-    reviewApplication(id, 'rejected', note.trim() || 'Application rejected after review.');
-    toast('Application rejected and logged.', 'info');
-    setNoteFor(null); setNote('');
-  };
-  const approve = (id: string, name: string) => {
-    approvePartner(id);
-    toast(`${name} approved — partner account created (temp password demo1234).`);
+    setSaving(true);
+    try {
+      if (noteFor.action === 'approve') await approvePartner(noteFor.id, note.trim());
+      else await reviewApplication(noteFor.id, noteFor.action === 'needs_correction' ? 'needs_correction' : 'rejected', note.trim());
+      toast(noteFor.action === 'approve' ? 'Application approved — applicant role updated to partner.' : noteFor.action === 'reject' ? 'Application rejected and logged.' : 'Correction requested and logged.', 'info');
+      setNoteFor(null);
+      setNote('');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not save application decision.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const statusCls: Record<ApplicationStatus, string> = {
@@ -41,7 +43,7 @@ export default function AdminApplications() {
     <div className="p-4 sm:p-6 lg:p-8">
       <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner network</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner applications</h1>
-      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Approval creates a partner account with role-based access — never admin. Public registration cannot grant privileged access by design.</p>
+      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Approval changes the applicant’s existing account to the partner role — it does not create a password or grant admin access. Document each decision.</p>
 
       <div className="mt-5 flex flex-wrap gap-1.5">
         {(['pending', 'needs_correction', 'approved', 'rejected', 'all'] as const).map(t => {
@@ -65,7 +67,7 @@ export default function AdminApplications() {
               </div>
               <p className="shrink-0 text-[10px] font-semibold text-ink-500">{timeAgo(a.submittedAt)}</p>
             </div>
-            <p className="mt-3 text-[12px] font-medium leading-relaxed text-ink-200">“{a.motivation}”</p>
+            {a.motivation && <p className="mt-3 text-[12px] font-medium leading-relaxed text-ink-200">“{a.motivation}”</p>}
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] font-semibold text-ink-400">
               <span>Areas: {a.areas.join(', ')}</span>
               <span>Properties: {a.propertiesCount}</span>
@@ -73,16 +75,18 @@ export default function AdminApplications() {
             {a.reviewNote && <p className="mt-3 rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold uppercase text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
             {(a.status === 'pending' || a.status === 'needs_correction') && (
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-4">
-                <button onClick={() => approve(a.id, a.name)} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Approve — create account</button>
-                <button onClick={() => setNoteFor(noteFor === a.id ? null : a.id)} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-4 py-2.5 text-[11.5px] font-bold text-amber-300 hover:bg-amber-950"><FileWarning size={14} /> Request correction</button>
+                <button onClick={() => { setNoteFor({ id: a.id, action: 'approve' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Approve partner</button>
+                <button onClick={() => { setNoteFor(noteFor?.id === a.id ? null : { id: a.id, action: 'needs_correction' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-4 py-2.5 text-[11.5px] font-bold text-amber-300 hover:bg-amber-950"><FileWarning size={14} /> Request correction</button>
+                <button onClick={() => { setNoteFor({ id: a.id, action: 'reject' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-red-800 px-4 py-2.5 text-[11.5px] font-bold text-red-300 hover:bg-red-950"><XCircle size={14} /> Reject</button>
               </div>
             )}
-            {noteFor === a.id && (
+            {noteFor?.id === a.id && (
               <div className="mt-3 rounded-xl border border-amber-800/50 bg-amber-950/10 p-3">
-                <textarea autoFocus className="input-dark min-h-[64px] !text-[12px]" placeholder="What must they provide? (min 10 characters)" value={note} onChange={e => setNote(e.target.value)} />
+                <p className="mb-2 text-[11px] font-semibold text-ink-300">{noteFor.action === 'approve' ? 'Approval note' : noteFor.action === 'reject' ? 'Reason for rejection' : 'What must they provide?'}</p>
+                <textarea autoFocus className="input-dark min-h-[64px] !text-[12px]" placeholder="Document the decision (min 10 characters)" value={note} onChange={e => setNote(e.target.value)} />
                 <div className="mt-2 flex gap-2">
-                  <button onClick={() => requestCorrection(a.id)} className="rounded-xl bg-amber-600 px-3.5 py-2 text-[11px] font-bold text-ink-950 hover:bg-amber-500">Send correction request</button>
-                  <button onClick={() => reject(a.id)} className="flex items-center gap-1.5 rounded-xl border border-red-800 px-3.5 py-2 text-[11px] font-bold text-red-300 hover:bg-red-950"><XCircle size={13} /> Reject instead</button>
+                  <button onClick={() => void review()} disabled={saving} className="rounded-xl bg-amber-600 px-3.5 py-2 text-[11px] font-bold text-ink-950 hover:bg-amber-500 disabled:opacity-50">{saving ? 'Saving…' : `Confirm ${noteFor.action === 'needs_correction' ? 'correction request' : noteFor.action}`}</button>
+                  <button onClick={() => setNoteFor(null)} disabled={saving} className="rounded-xl border border-ink-700 px-3.5 py-2 text-[11px] font-bold text-ink-300">Cancel</button>
                 </div>
               </div>
             )}
@@ -91,7 +95,7 @@ export default function AdminApplications() {
         {list.length === 0 && <p className="col-span-full rounded-2xl border border-dashed border-ink-700 py-14 text-center text-[12.5px] font-semibold text-ink-400">Queue clear — nothing here.</p>}
       </div>
 
-      <p className="mt-6 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><KeyRound size={12} className="mt-0.5 shrink-0" />Approved partners get a partner-role account only. Admin access is provisioned manually in production via the admin provisioning procedure — never through this screen.</p>
+      <p className="mt-6 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><KeyRound size={12} className="mt-0.5 shrink-0" />Approved applicants keep their existing sign-in and receive partner-role access only. Admin access is provisioned separately — never through this screen.</p>
     </div>
   );
 }
