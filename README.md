@@ -28,10 +28,19 @@ Admin partner-application decisions and their audit entries are in
 `supabase/migrations/20261022142000_partner_application_review.sql`. Apply it
 after the admin property review migration before reviewing applications.
 
+Booking decisions, guest cancellation, payment-deadline expiry, and booking
+audit entries are in `supabase/migrations/20261022143000_booking_lifecycle.sql`.
+Apply it after the admin property review migration before enabling partner
+booking decisions. Expired payment requests are swept when authenticated
+clients load or refresh data and periodically while the app is open. A booking
+is never confirmed by this lifecycle migration; verified payment integration
+is still required.
+
 When Supabase is configured, sign-in/session restoration, guest account
 creation, public approved-listing reads, partner applications, partner
-property submissions, guest booking requests, and issue reports use Supabase
-with database policies. Property evidence declarations are stored as
+property submissions, guest booking requests and cancellations, partner
+availability decisions, and issue reports use Supabase with database policies
+and server-side transition checks. Property evidence declarations are stored as
 self-reported and require manual review; file uploads are not yet implemented.
 Without Supabase configuration, the app continues to use its local demo store.
 Other partner/admin mutations and payment processing still require

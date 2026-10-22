@@ -164,6 +164,7 @@ export default function Account() {
   const [fbRating, setFbRating] = useState(5);
   const [fbText, setFbText] = useState('');
   const [fbCategory, setFbCategory] = useState('Stay experience');
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const myBookings = useMemo(
     () => state.bookings.filter(b => b.guestId === session?.userId).sort((a, b) => +new Date(b.requestedAt) - +new Date(a.requestedAt)),
@@ -238,7 +239,7 @@ export default function Account() {
           {myBookings.map(b => {
             const open = expanded === b.id;
             const canPay = !backendConfigured && b.status === 'awaiting_payment';
-            const canCancel = !backendConfigured && ['requested', 'checking', 'awaiting_payment'].includes(b.status);
+            const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
             const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
             const canFeedback = ['completed', 'disputed'].includes(b.status);
             return (
@@ -292,8 +293,21 @@ export default function Account() {
                           {b.cancelReason && <p className="mt-2 text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
                           {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}
                           <div className="mt-4 flex flex-wrap gap-2">
-                            {canCancel && <button onClick={() => { bookingTransition(b.id, 'cancelled', { reason: 'Cancelled by guest before confirmation' }); toast('Booking cancelled.', 'info'); }} className="btn-outline !px-3.5 !py-2 text-[11px] text-red-700 hover:border-red-300 hover:bg-red-50"><X size={13} />Cancel booking</button>}
-                            {backendConfigured && ['requested', 'checking', 'awaiting_payment'].includes(b.status) && <p className="text-[11px] font-semibold text-ink-500">Booking changes and cancellations are not available online yet. Contact HAMLET support for help.</p>}
+                            {canCancel && <button
+                              disabled={cancelingId === b.id}
+                              onClick={async () => {
+                                setCancelingId(b.id);
+                                try {
+                                  await bookingTransition(b.id, 'cancelled', { reason: 'Cancelled by guest before confirmation' });
+                                  toast('Booking cancelled.', 'info');
+                                } catch (error) {
+                                  toast(error instanceof Error ? error.message : 'Could not cancel this booking.', 'error');
+                                } finally {
+                                  setCancelingId(null);
+                                }
+                              }}
+                              className="btn-outline !px-3.5 !py-2 text-[11px] text-red-700 hover:border-red-300 hover:bg-red-50 disabled:opacity-50"
+                            ><X size={13} />{cancelingId === b.id ? 'Cancelling…' : 'Cancel booking'}</button>}
                             {canReport && <button onClick={() => setIssueFor(b)} className="btn-outline !px-3.5 !py-2 text-[11px]"><LifeBuoy size={13} />Report issue</button>}
                           </div>
                         </div>

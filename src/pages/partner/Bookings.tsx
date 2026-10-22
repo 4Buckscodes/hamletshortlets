@@ -15,23 +15,31 @@ export default function PartnerBookings() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [declineFor, setDeclineFor] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const myBookings = state.bookings.filter(b => propIds.has(b.propertyId));
   const actionable = myBookings.filter(b => b.status === 'requested' || b.status === 'checking');
   const rest = myBookings.filter(b => b.status !== 'requested' && b.status !== 'checking');
 
-  const accept = (id: string, ref: string) => {
-    bookingTransition(id, 'awaiting_payment');
-    toast(`${ref} accepted. Guest has a 48h payment deadline.`);
-  };
-  const startChecking = (id: string, ref: string) => {
-    bookingTransition(id, 'checking');
-    toast(`Now checking availability & terms for ${ref}.`, 'info');
-  };
-  const decline = (id: string, ref: string) => {
-    bookingTransition(id, 'declined', { note: declineReason || 'Declined by property owner' });
-    toast(`${ref} declined. The guest has been notified.`, 'info');
-    setDeclineFor(null); setDeclineReason('');
+  const transition = async (id: string, ref: string, status: 'checking' | 'awaiting_payment' | 'declined', note?: string) => {
+    setBusyId(id);
+    try {
+      await bookingTransition(id, status, { note });
+      toast(
+        status === 'awaiting_payment' ? `${ref} accepted. Guest has a 48h payment deadline.` :
+          status === 'checking' ? `Now checking availability & terms for ${ref}.` :
+            `${ref} declined.`,
+        status === 'checking' || status === 'declined' ? 'info' : 'success',
+      );
+      if (status === 'declined') {
+        setDeclineFor(null);
+        setDeclineReason('');
+      }
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not update this booking.', 'error');
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const renderCard = (b: (typeof myBookings)[number]) => {
@@ -61,18 +69,23 @@ export default function PartnerBookings() {
 
         {needsAction && (
           <div className="flex flex-wrap items-center gap-2 border-t border-brass-500/25 bg-brass-500/5 px-5 py-3">
-            {b.status === 'requested' && <button onClick={() => startChecking(b.id, b.ref)} className="btn-ghost-dark !border !border-ink-700 !px-4 !py-2.5 text-[11.5px]">Start availability check</button>}
-            <button onClick={() => accept(b.id, b.ref)} className="btn-brass !px-4 !py-2.5 text-[11.5px]"><CheckCircle2 size={15} /> Accept — set payment deadline</button>
-            <button onClick={() => setDeclineFor(b.id)} className="btn-ghost-dark !px-4 !py-2.5 text-[11.5px] text-red-300 hover:text-red-200"><XCircle size={15} /> Decline</button>
+            {b.status === 'requested' && <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'checking')} className="btn-ghost-dark !border !border-ink-700 !px-4 !py-2.5 text-[11.5px] disabled:opacity-50">Start availability check</button>}
+            <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'awaiting_payment')} className="btn-brass !px-4 !py-2.5 text-[11.5px] disabled:opacity-50"><CheckCircle2 size={15} /> Accept — set payment deadline</button>
+            <button disabled={busyId === b.id} onClick={() => setDeclineFor(b.id)} className="btn-ghost-dark !px-4 !py-2.5 text-[11.5px] text-red-300 hover:text-red-200 disabled:opacity-50"><XCircle size={15} /> Decline</button>
             {b.specialRequests && <p className="w-full text-[11px] font-medium text-ink-300">Guest note: “{b.specialRequests}”</p>}
           </div>
         )}
         {declineFor === b.id && (
           <div className="flex flex-wrap items-center gap-2 border-t border-red-500/25 bg-red-500/5 px-5 py-3">
             <input autoFocus className="input-dark flex-1 !py-2 text-[12px]" placeholder="Reason for declining (shared with guest)…" value={declineReason} onChange={e => setDeclineReason(e.target.value)} />
-            <button onClick={() => decline(b.id, b.ref)} className="rounded-xl bg-red-600 px-4 py-2 text-[11.5px] font-bold text-white hover:bg-red-500">Confirm decline</button>
-            <button onClick={() => setDeclineFor(null)} className="btn-ghost-dark !px-3 !py-2 text-[11px]">Back</button>
+            <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'declined', declineReason.trim() || 'Declined after availability and terms review.')} className="rounded-xl bg-red-600 px-4 py-2 text-[11.5px] font-bold text-white hover:bg-red-500 disabled:opacity-50">Confirm decline</button>
+            <button disabled={busyId === b.id} onClick={() => setDeclineFor(null)} className="btn-ghost-dark !px-3 !py-2 text-[11px]">Back</button>
           </div>
+        )}
+        {b.status === 'awaiting_payment' && (
+          <p className="border-t border-amber-500/20 bg-amber-500/5 px-5 py-3 text-[11px] font-semibold text-amber-200">
+            Awaiting payment{b.paymentDeadline ? ` until ${formatDateTime(b.paymentDeadline)}` : ''}. The booking is not confirmed until a verified payment-provider webhook is implemented.
+          </p>
         )}
         <AnimatePresence>
           {open && (

@@ -28,10 +28,10 @@ export default function PartnerLayout({ children }: { children: ReactNode }) {
   return (
     <WorkspaceGuard expected="partner">
       <WorkspaceShell title="Partner Workspace" subtitle={state.session?.partnerRole ?? 'Partner'} accent="border-brass-500/40 bg-brass-500/10 text-brass-300" nav={nav}>
-        {backendConfigured && !['/partner/properties', '/partner/properties/new'].includes(pathname) ? (
+        {backendConfigured && !['/partner/properties', '/partner/properties/new', '/partner/bookings'].includes(pathname) ? (
           <div role="status" className="rounded-2xl border border-brass-300 bg-brass-50 p-6">
             <h1 className="font-display text-xl font-black text-ink-900">This partner workflow is not connected yet</h1>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">Property intake and listing status are connected. Booking management, earnings, assignments, and profile operations are still pending; changes to those demo screens are not saved to Supabase.</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-700">Property intake, listing status, and booking request decisions are connected. Earnings, assignments, and profile operations are still pending; changes to those demo screens are not saved to Supabase.</p>
           </div>
         ) : children}
       </WorkspaceShell>

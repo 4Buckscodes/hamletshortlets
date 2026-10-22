@@ -102,7 +102,7 @@ type RemoteBooking = {
   mandatory_total: number; hamlet_guest_fee: number; guest_total: number; refundable_deposit: number;
   status: Booking['status']; special_requests?: string; payment_deadline?: string;
   payment_provider?: string; payment_reference?: string; refund_status: Booking['refundStatus'];
-  refund_amount?: number; created_at: string; timeline: TimelineEvent[];
+  refund_amount?: number; cancel_reason?: string; created_at: string; timeline: TimelineEvent[];
 };
 
 type RemoteApplication = {
@@ -186,6 +186,7 @@ function toRemoteBooking(row: RemoteBooking, property: Property | undefined, ses
     paymentProvider: row.payment_provider,
     paymentRef: row.payment_reference,
     specialRequests: row.special_requests,
+    cancelReason: row.cancel_reason,
     refundStatus: row.refund_status,
     refundAmount: row.refund_amount,
     timeline: row.timeline ?? [],
@@ -219,6 +220,9 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     partnerRole: profile.partner_role ?? undefined,
     company: profile.company ?? undefined,
   };
+
+  const { error: expiryError } = await supabase.rpc('expire_overdue_bookings');
+  if (expiryError) throw new Error(`Could not process expired booking deadlines: ${expiryError.message}`);
 
   const [propertyResult, accessResult, privateRecordResult, bookingResult, applicationResult, issueResult, auditResult] = await Promise.all([
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -543,7 +547,7 @@ interface Store {
   submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
   reviewProperty: (id: string, status: Property['status'], note?: string, verification?: Property['verification']) => Promise<void>;
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
-  bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => void;
+  bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   verifyPayment: (id: string) => void;
   reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType'] }) => Promise<Issue>;
   updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; resolution?: string }) => void;
@@ -563,7 +567,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
   const [backendError, setBackendError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!supabase) return;
+    const client = supabase;
+    if (!client) return;
     let active = true;
     const load = async (user: SupabaseUser | null) => {
       try {
@@ -578,7 +583,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    void supabase.auth.getSession().then(({ data, error }) => {
+    void client.auth.getSession().then(({ data, error }) => {
       if (!active) return;
       if (error) {
         setBackendError(`Could not restore your Supabase session: ${error.message}`);
@@ -587,11 +592,30 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       void load(data.session?.user ?? null);
     });
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => { void load(session?.user ?? null); }, 0);
     });
+    const expiryTimer = window.setInterval(() => {
+      void (async () => {
+        const { data, error: sessionError } = await client.auth.getSession();
+        if (!active) return;
+        if (sessionError) {
+          setBackendError(`Could not check booking deadlines: ${sessionError.message}`);
+          return;
+        }
+        if (!data.session) return;
+        const { data: expiredCount, error } = await client.rpc('expire_overdue_bookings');
+        if (!active) return;
+        if (error) {
+          setBackendError(`Could not process expired booking deadlines: ${error.message}`);
+          return;
+        }
+        if (expiredCount > 0) void load(data.session.user);
+      })();
+    }, 60_000);
     return () => {
       active = false;
+      window.clearInterval(expiryTimer);
       authListener.subscription.unsubscribe();
     };
   }, []);
@@ -902,8 +926,26 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'ADD_BOOKING', booking });
       return { ok: true, booking };
     },
-    bookingTransition: (id, to, opts) => {
+    bookingTransition: async (id, to, opts) => {
       if (!state.session) return;
+      if (supabase) {
+        const { error } = await supabase.rpc('transition_booking', {
+          target_booking_id: id,
+          next_status: to,
+          transition_note: opts?.reason ?? opts?.note ?? null,
+        });
+        if (error) throw new Error(`Could not update booking: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Booking updated, but refresh failed: ${authError.message}`);
+        try {
+          dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        } catch (refreshError) {
+          const message = refreshError instanceof Error ? refreshError.message : 'The workspace could not refresh.';
+          setBackendError(message);
+          throw new Error(`Booking updated, but booking details could not refresh: ${message}`);
+        }
+        return;
+      }
       dispatch({ type: 'BOOKING_TRANSITION', id, to, actor: state.session, note: opts?.note, reason: opts?.reason });
     },
     verifyPayment: (id) => {
