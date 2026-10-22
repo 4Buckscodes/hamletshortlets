@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Receipt, AlertTriangle, Info, Landmark, ScrollText } from 'lucide-react';
+import { AlertTriangle, Info, Landmark, ScrollText } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { LedgerStatusPill } from '../../components/Badges';
 import type { LedgerType } from '../../lib/types';

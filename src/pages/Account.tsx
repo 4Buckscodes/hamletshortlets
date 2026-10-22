@@ -153,7 +153,6 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
 export default function Account() {
   const { state, bookingTransition, addFeedback } = useHamlet();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const session = state.session;
   const [expanded, setExpanded] = useState<string | null>(null);
   const [payFor, setPayFor] = useState<Booking | null>(null);
@@ -334,6 +333,7 @@ export default function Account() {
 export function WorkspaceGuard({ expected, children }: { expected: 'partner' | 'admin'; children: React.ReactNode }) {
   const { state } = useHamlet();
   const navigate = useNavigate();
+
   const s = state.session;
   if (!s || s.role !== expected) {
     return (

@@ -1,4 +1,4 @@
-import { useParams, Link, NavLink } from 'react-router-dom';
+import { useParams, NavLink } from 'react-router-dom';
 import { GuestLayout } from '../components/Navbar';
 import { ShieldCheck, ScrollText, Banknote, FileCheck } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, SearchX, ShieldCheck } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
@@ -34,16 +34,14 @@ export default function Stays() {
   };
 
   // Only approved, non-suspended listings are ever discoverable.
-  const results = useMemo(() => {
-    return state.properties
-      .filter(p => p.status === 'approved')
-      .filter(p => !area || p.area === area)
-      .filter(p => p.capacity >= guests)
-      .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
-      .filter(p => type === 'All types' || p.type === type)
-      .filter(p => amenities.every(a => p.amenities.includes(a)))
-      .sort((a, b) => a.nightlyRate - b.nightlyRate);
-  }, [state.properties, area, guests, maxPrice, type, amenities]);
+  const results = state.properties
+    .filter(p => p.status === 'approved')
+    .filter(p => !area || p.area === area)
+    .filter(p => p.capacity >= guests)
+    .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
+    .filter(p => type === 'All types' || p.type === type)
+    .filter(p => amenities.every(a => p.amenities.includes(a)))
+    .sort((a, b) => a.nightlyRate - b.nightlyRate);
 
   return (
     <GuestLayout>
@@ -142,7 +140,7 @@ export default function Stays() {
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {results.map(p => <PropertyCard key={p.id} p={p} />)}
+              {results.map(p => <PropertyCard key={p.id} p={p} searchQuery={params.toString()} />)}
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Menu, X, LogOut, RotateCcw, ExternalLink } from 'lucide-react';
 import { HamletMark } from './Logo';
 import { useHamlet } from '../lib/store';
@@ -28,8 +28,6 @@ export function WorkspaceShell({
   const [open, setOpen] = useState(false);
   const s = state.session;
 
-  useEffect(() => { setOpen(false); }, [nav.length]);
-
   const initials = (s?.name ?? '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   const sidebar = (
@@ -47,6 +45,7 @@ export function WorkspaceShell({
             key={item.to}
             to={item.to}
             end={item.end}
+            onClick={() => setOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition ${isActive ? 'bg-brass-500 text-ink-950' : 'text-ink-200 hover:bg-ink-800 hover:text-white'}`
             }

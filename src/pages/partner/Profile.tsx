@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Building2, Mail, Phone, BadgeCheck, Clock3, AlertCircle, XCircle } from 'lucide-react';
+import { ShieldCheck, Building2, Mail, BadgeCheck, Clock3, AlertCircle, XCircle } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { formatDateTime } from '../../lib/pricing';
 

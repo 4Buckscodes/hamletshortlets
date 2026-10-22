@@ -1,5 +1,4 @@
 export function HamletMark({ size = 34, light = false }: { size?: number; light?: boolean }) {
-  const fg = light ? '#F2F5F1' : '#101D16';
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
       {/* Stylised gabled shortlet residence under the Lagos sun */}

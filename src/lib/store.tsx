@@ -137,7 +137,7 @@ function reducer(state: DBState, action: Action): DBState {
       if (!b) return state;
       const at = nowIso();
       const ev = (label: string, detail?: string) => ({ at, label, actor: `${action.actor.name} (${action.actor.role})`, detail });
-      let updated: Booking = { ...b, status: action.to, cancelReason: action.reason ?? b.cancelReason };
+      const updated: Booking = { ...b, status: action.to, cancelReason: action.reason ?? b.cancelReason };
       switch (action.to) {
         case 'checking': updated.timeline = [...b.timeline, ev('Availability & terms being checked', action.note)]; break;
         case 'awaiting_payment': {
@@ -421,18 +421,19 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [state]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- Keep context hooks beside the provider they consume.
 export function useHamlet() {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error('useHamlet must be used within HamletProvider');
   return ctx;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- Keep context hooks beside the provider they consume.
 export function useRequireRole(role: AccountRole): Session | null {
   const { state } = useHamlet();
   return state.session?.role === role ? state.session : null;

@@ -19,8 +19,6 @@ export default function AdminOverview() {
   const critical = openIssues.filter(i => i.severity === 'critical' || i.status === 'escalated');
   const varianceTotal = state.ledger.reduce((s, l) => s + Math.abs(l.variance), 0);
   const confirmedCompleted = state.bookings.filter(b => ['confirmed', 'completed'].includes(b.status)).length;
-  const occupancyRate = Math.min(100, Math.round((confirmedCompleted / 50) * 100));
-
   const kpis = [
     { label: 'Approved properties', value: `${approved.length}/50`, sub: inReview.length > 0 ? `${inReview.length} in review pipeline` : 'Supply target met or in pipeline', Icon: Home, tone: approved.length >= 50 ? 'text-jade-400' : 'text-brass-400' },
     { label: 'Confirmed + completed stays', value: String(confirmedCompleted), sub: 'Pilot success = completed bookings', Icon: BadgeCheck, tone: 'text-jade-400' },

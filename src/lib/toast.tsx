@@ -46,6 +46,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- Keep the context hook beside its provider.
 export function useToast() {
   return useContext(Ctx);
 }

@@ -3,7 +3,7 @@
 
 @theme {
   --font-display: "Fraunces", Georgia, serif;
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Public Sans", "Segoe UI", Arial, ui-sans-serif, system-ui, sans-serif;
 
   /* Deep botanical ink (partner/admin surfaces) */
   --color-ink-950: #0B1410;

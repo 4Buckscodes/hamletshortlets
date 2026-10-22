@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, UserPlus, AlertOctagon, SearchCheck, CheckCheck, FileText, Paperclip, LifeBuoy } from 'lucide-react';
+import { X, UserPlus, AlertOctagon, SearchCheck, CheckCheck, FileText, Paperclip } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { IssueStatusPill, SeverityDot } from '../../components/Badges';
 import type { IssueStatus, Issue } from '../../lib/types';
 import { formatDateTime } from '../../lib/pricing';
-
-const STATUS_FLOW: IssueStatus[] = ['open', 'assigned', 'investigating', 'escalated', 'resolved', 'closed'];
 
 export default function AdminIssues() {
   const { state, updateIssue } = useHamlet();

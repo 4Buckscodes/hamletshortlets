@@ -3,11 +3,11 @@ import { Users, BedDouble, Bath, ShieldCheck, Wifi } from 'lucide-react';
 import type { Property } from '../lib/types';
 import { estimateAllInclusiveNightly, formatNaira } from '../lib/pricing';
 
-export function PropertyCard({ p }: { p: Property }) {
+export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: string }) {
   const est = estimateAllInclusiveNightly(p);
   const verified = p.verification.inspection === 'verified';
   return (
-    <Link to={`/stays/${p.id}`} className="group block overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-16px_rgba(16,29,22,0.35)]">
+    <Link to={`/stays/${p.id}${searchQuery ? `?${searchQuery}` : ''}`} className="group block overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-16px_rgba(16,29,22,0.35)]">
       <div className="relative h-52 overflow-hidden">
         <img src={p.images[0]} alt={p.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />

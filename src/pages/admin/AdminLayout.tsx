@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { LayoutDashboard, Home, CalendarDays, Receipt, LifeBuoy, UsersRound, KeyRound, ScrollText } from 'lucide-react';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import { WorkspaceGuard } from '../Account';

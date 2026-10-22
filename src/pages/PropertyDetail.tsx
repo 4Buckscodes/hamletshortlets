@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BedDouble, Bath, Users, MapPin, ShieldCheck, X, Check, ChevronLeft, ChevronRight,
-  AlertTriangle, BadgeCheck, Info, ListChecks, Banknote, ArrowRight,
+  AlertTriangle, Info, ListChecks, Banknote, ArrowRight,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
@@ -19,15 +19,14 @@ export default function PropertyDetail() {
   const navigate = useNavigate();
 
   const property = state.properties.find(p => p.id === id);
-  const [imgIndex, setImgIndex] = useState(0);
+  const [gallery, setGallery] = useState({ propertyId: id, imageIndex: 0 });
+  const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
   const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') ?? '2026-11-13');
   const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') ?? '2026-11-16');
   const [guests, setGuests] = useState(Number(searchParams.get('guests') ?? '2'));
   const [showModal, setShowModal] = useState(false);
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => { setImgIndex(0); }, [id]);
 
   const nights = nightsBetween(checkIn, checkOut);
   const pricing = property ? priceStay(property, checkIn, checkOut) : null;
@@ -89,15 +88,15 @@ export default function PropertyDetail() {
         <div className="mt-5 grid gap-2 lg:grid-cols-12">
           <div className="relative overflow-hidden rounded-2xl lg:col-span-8">
             <img src={property.images[imgIndex]} alt={`${property.title} — photo ${imgIndex + 1}`} className="h-72 w-full object-cover sm:h-96 lg:h-[440px]" />
-            <button onClick={() => setImgIndex(i => (i - 1 + property.images.length) % property.images.length)} aria-label="Previous photo"
+            <button onClick={() => setGallery({ propertyId: id, imageIndex: (imgIndex - 1 + property.images.length) % property.images.length })} aria-label="Previous photo"
               className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-ink-950/60 p-2 text-white backdrop-blur transition hover:bg-ink-950/80"><ChevronLeft size={18} /></button>
-            <button onClick={() => setImgIndex(i => (i + 1) % property.images.length)} aria-label="Next photo"
+            <button onClick={() => setGallery({ propertyId: id, imageIndex: (imgIndex + 1) % property.images.length })} aria-label="Next photo"
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-ink-950/60 p-2 text-white backdrop-blur transition hover:bg-ink-950/80"><ChevronRight size={18} /></button>
             <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/70 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">{imgIndex + 1} / {property.images.length}</span>
           </div>
           <div className="grid grid-cols-4 gap-2 lg:col-span-4 lg:grid-cols-2">
             {property.images.slice(0, 4).map((src, i) => (
-              <button key={i} onClick={() => setImgIndex(i)} className={`overflow-hidden rounded-2xl border-2 transition ${i === imgIndex ? 'border-brass-500' : 'border-transparent opacity-80 hover:opacity-100'}`}>
+              <button key={i} onClick={() => setGallery({ propertyId: id, imageIndex: i })} className={`overflow-hidden rounded-2xl border-2 transition ${i === imgIndex ? 'border-brass-500' : 'border-transparent opacity-80 hover:opacity-100'}`}>
                 <img src={src} alt="" className="h-24 w-full object-cover sm:h-44 lg:h-[212px]" loading="lazy" />
               </button>
             ))}

@@ -1,5 +1,5 @@
 import type { BookingStatus, PropertyStatus, IssueStatus, LedgerStatus, DocStatus } from '../lib/types';
-import { ShieldCheck, Clock, FileWarning, PauseCircle, BadgeCheck, Circle, Loader2, CalendarClock, CreditCard, CheckCircle2, XCircle, Ban, RefreshCcw, AlertCircle, UserX } from 'lucide-react';
+import { ShieldCheck, Clock, FileWarning, PauseCircle, BadgeCheck, Circle, Loader2, CalendarClock, CheckCircle2, XCircle, Ban, RefreshCcw, AlertCircle, UserX } from 'lucide-react';
 
 const pill = 'chip border';
 

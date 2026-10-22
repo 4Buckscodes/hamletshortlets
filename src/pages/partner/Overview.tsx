@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Home, CalendarDays, Banknote, PlusCircle, Clock3, ArrowRight, Inbox, CheckCircle2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useHamlet } from '../../lib/store';
@@ -11,8 +11,6 @@ export default function PartnerOverview() {
   const userId = state.session!.userId;
   const myProps = useMemo(() => myPartnerProperties(state, userId), [state, userId]);
   const propIds = useMemo(() => new Set(propertyIdsOf(state, userId)), [state, userId]);
-  const propMap = new Map(state.properties.map(p => [p.id, p]));
-
   const myBookings = state.bookings.filter(b => propIds.has(b.propertyId));
   const pending = myBookings.filter(b => ['requested', 'checking'].includes(b.status));
   const confirmed = myBookings.filter(b => b.status === 'confirmed');
