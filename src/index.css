@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,SOFT,WONK@9..144,0..100,0..1;9..144,0..100,0..1&family=Public+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Deep botanical ink (partner/admin surfaces) */
+  --color-ink-950: #0B1410;
+  --color-ink-900: #101D16;
+  --color-ink-850: #15241C;
+  --color-ink-800: #1C2F24;
+  --color-ink-700: #274133;
+  --color-ink-600: #38544A;
+  --color-ink-500: #4E6B5E;
+  --color-ink-400: #6F8B7D;
+  --color-ink-300: #97AC9F;
+  --color-ink-200: #C2D0C7;
+  --color-ink-100: #DFE7E1;
+  --color-ink-50:  #F2F5F1;
+
+  /* Brass accent */
+  --color-brass-200: #F1E3B2;
+  --color-brass-300: #E7D08A;
+  --color-brass-400: #D9B651;
+  --color-brass-500: #C9A227;
+  --color-brass-600: #A8811F;
+  --color-brass-700: #856617;
+
+  /* Jade — guest-facing primary */
+  --color-jade-50:  #EFF7F1;
+  --color-jade-100: #DCEFE3;
+  --color-jade-200: #B9DFC9;
+  --color-jade-300: #8FCDAB;
+  --color-jade-400: #5FB884;
+  --color-jade-500: #3D9E63;
+  --color-jade-600: #2F7F4E;
+  --color-jade-700: #27643F;
+  --color-jade-800: #1F4F33;
+  --color-jade-900: #173A27;
+
+  /* Warm paper — guest surfaces */
+  --color-paper: #FAF8F3;
+  --color-clay: #F3EFE6;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--color-paper); }
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-ink-400 outline-none transition focus:border-jade-500 focus:ring-2 focus:ring-jade-200;
+  }
+  .input-dark {
+    @apply w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-2.5 text-sm text-ink-100 placeholder-ink-400 outline-none transition focus:border-brass-500 focus:ring-2 focus:ring-brass-500/20;
+  }
+  .label {
+    @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-ink-500;
+  }
+  .label-dark {
+    @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-ink-300;
+  }
+  .card { @apply rounded-2xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(16,29,22,0.06),0_8px_24px_-12px_rgba(16,29,22,0.18)]; }
+  .btn { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-jade { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-jade-500 disabled:cursor-not-allowed disabled:opacity-50 bg-jade-700 text-white hover:bg-jade-800 px-5 py-3; }
+  .btn-brass { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brass-400 disabled:cursor-not-allowed disabled:opacity-50 bg-brass-500 text-ink-950 hover:bg-brass-400 px-5 py-3; }
+  .btn-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-700 disabled:cursor-not-allowed disabled:opacity-50 bg-ink-900 text-ink-50 hover:bg-ink-800 px-5 py-3; }
+  .btn-outline { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-300 disabled:cursor-not-allowed disabled:opacity-50 border border-ink-200 bg-white px-5 py-3 text-ink-800 hover:border-ink-400 hover:bg-ink-50; }
+  .btn-ghost-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 px-4 py-2.5 text-ink-200 hover:bg-ink-800 hover:text-white; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold; }
+  .th { @apply px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-ink-400; }
+  .td { @apply px-4 py-3 align-middle text-sm text-ink-800; }
+}
+
+::selection { background: var(--color-brass-300); color: var(--color-ink-950); }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(16,29,22,0.25); border-radius: 99px; }
+.dark-scroll::-webkit-scrollbar-thumb { background: rgba(242,245,241,0.2); }
+
+@keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+.live-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
