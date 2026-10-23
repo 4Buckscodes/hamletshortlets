@@ -46,6 +46,7 @@ export default function App() {
             <Route path="/stays/:id" element={<PropertyDetail />} />
             <Route path="/account" element={<Account />} />
             <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<Navigate to="/signin?mode=signup" replace />} />
             <Route path="/partner/register" element={<PartnerRegister />} />
             <Route path="/legal/:page" element={<Legal />} />
 

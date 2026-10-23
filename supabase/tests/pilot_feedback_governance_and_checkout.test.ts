@@ -650,5 +650,31 @@ describe('HAMLET Release 1 — partner suspension, property corrections, private
         callbackUrl: 'https://hamlet.ng/#/account?payment=returned',
       });
     });
+
+    it('provisions a guest profile with full_name, optional phone, role=guest, and account_status=active on signup', async () => {
+      const signupUserId = '99999999-9999-4999-8999-999999999999';
+      await db.query(
+        `insert into auth.users (id, email, raw_user_meta_data)
+         values ($1::uuid, 'newguest@hamlet.test', $2::jsonb)`,
+        [signupUserId, JSON.stringify({ full_name: '  Adaeze Okafor  ', phone: '  +234 803 123 4567  ' })],
+      );
+
+      const profileRes = await db.query<{
+        full_name: string;
+        phone: string | null;
+        role: string;
+        account_status: string;
+      }>(
+        `select full_name, phone, role, account_status from public.profiles where id = $1::uuid`,
+        [signupUserId],
+      );
+
+      expect(profileRes.rows[0]).toEqual({
+        full_name: 'Adaeze Okafor',
+        phone: '+234 803 123 4567',
+        role: 'guest',
+        account_status: 'active',
+      });
+    });
   });
 });

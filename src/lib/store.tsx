@@ -61,6 +61,7 @@ type Action =
   | { type: 'HYDRATE'; state: DBState }
   | { type: 'SIGN_IN'; session: Session }
   | { type: 'SIGN_OUT' }
+  | { type: 'REGISTER_GUEST'; account: Account; session: Session }
   | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication }
   | { type: 'ADD_PROPERTY'; property: Property }
   | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string }
@@ -478,6 +479,17 @@ function reducer(state: DBState, action: Action): DBState {
     case 'SIGN_OUT':
       localStorage.removeItem(SESSION_KEY);
       return { ...state, session: null };
+    case 'REGISTER_GUEST':
+      localStorage.setItem(SESSION_KEY, JSON.stringify(action.session));
+      return {
+        ...state,
+        accounts: [...state.accounts, action.account],
+        session: action.session,
+        audit: [
+          auditEntry(action.account.name, 'guest', 'guest_registered', action.account.email, 'Guest account created'),
+          ...state.audit,
+        ],
+      };
     case 'REGISTER_PARTNER':
       return {
         ...state,
@@ -800,7 +812,7 @@ interface Store {
   backendReady: boolean;
   backendError: string | null;
   signIn: (email: string, password: string) => Promise<{ ok: boolean; role?: AccountRole; error?: string }>;
-  signUpGuest: (input: { name: string; email: string; password: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
+  signUpGuest: (input: { name: string; email: string; password: string; phone?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<{ ok: boolean; error?: string }>;
   submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
@@ -955,26 +967,63 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       const account = state.accounts.find(a => a.email.toLowerCase() === email.trim().toLowerCase());
       if (!account) return { ok: false, error: 'No account found for that email.' };
+      if (account.accountStatus === 'suspended') return { ok: false, error: 'This account has been suspended by HAMLET operations.' };
       if (account.password !== password) return { ok: false, error: 'Incorrect password. Try demo1234 for demo accounts.' };
-      dispatch({ type: 'SIGN_IN', session: { userId: account.id, role: account.role, name: account.name, email: account.email, partnerRole: account.partnerRole, company: account.company } });
+      dispatch({ type: 'SIGN_IN', session: { userId: account.id, role: account.role, name: account.name, email: account.email, partnerRole: account.partnerRole, company: account.company, accountStatus: account.accountStatus ?? 'active', suspensionReason: account.suspensionReason } });
       return { ok: true, role: account.role };
     },
-    signUpGuest: async ({ name, email, password }) => {
-      if (!supabase) return { ok: false, error: 'Account creation is only available when Supabase is configured.' };
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: { data: { full_name: name.trim() } },
-      });
-      if (error) return { ok: false, error: error.message };
-      if (!data.session) return { ok: true, needsEmailConfirmation: true };
-      try {
-        const remote = await loadSupabaseState(data.user);
-        dispatch({ type: 'HYDRATE', state: remote });
-        return { ok: true };
-      } catch (loadError) {
-        return { ok: false, error: loadError instanceof Error ? loadError.message : 'Account was created but its profile could not be loaded.' };
+    signUpGuest: async ({ name, email, password, phone }) => {
+      const trimmedName = name.trim();
+      const normalizedEmail = email.trim().toLowerCase();
+      const trimmedPhone = phone?.trim() ?? '';
+      if (trimmedName.length < 2) return { ok: false, error: 'Enter your full name (at least 2 characters).' };
+      if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return { ok: false, error: 'Enter a valid email address.' };
+      if (password.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+
+      if (supabase) {
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            data: {
+              full_name: trimmedName,
+              ...(trimmedPhone ? { phone: trimmedPhone } : {}),
+            },
+          },
+        });
+        if (error) return { ok: false, error: error.message };
+        if (!data.session) return { ok: true, needsEmailConfirmation: true };
+        try {
+          const remote = await loadSupabaseState(data.user);
+          dispatch({ type: 'HYDRATE', state: remote });
+          return { ok: true };
+        } catch (loadError) {
+          return { ok: false, error: loadError instanceof Error ? loadError.message : 'Account was created but its profile could not be loaded.' };
+        }
       }
+
+      if (state.accounts.some(a => a.email.toLowerCase() === normalizedEmail)) {
+        return { ok: false, error: 'An account with that email already exists. Sign in instead.' };
+      }
+      const account: Account = {
+        id: uid(),
+        name: trimmedName,
+        email: normalizedEmail,
+        password,
+        role: 'guest',
+        phone: trimmedPhone || undefined,
+        accountStatus: 'active',
+        createdAt: nowIso(),
+      };
+      const session: Session = {
+        userId: account.id,
+        role: 'guest',
+        name: account.name,
+        email: account.email,
+        accountStatus: 'active',
+      };
+      dispatch({ type: 'REGISTER_GUEST', account, session });
+      return { ok: true };
     },
     signOut: async () => {
       if (supabase) {

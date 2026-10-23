@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff, UserPlus, LogIn,
+} from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
@@ -15,32 +17,76 @@ export default function SignIn() {
   const { signIn, signUpGuest, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(backendConfigured ? '' : 'guest@hamlet.ng');
-  const [password, setPassword] = useState(backendConfigured ? '' : 'demo1234');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const creatingAccount = searchParams.get('mode') === 'signup';
+
+  const [email, setEmail] = useState(() => (backendConfigured || creatingAccount ? '' : 'guest@hamlet.ng'));
+  const [password, setPassword] = useState(() => (backendConfigured || creatingAccount ? '' : 'demo1234'));
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [phone, setPhone] = useState('');
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const switchMode = (signup: boolean) => {
+    setError('');
+    setInfoMessage('');
+    if (signup) {
+      if (DEMO_ACCOUNTS.some(acc => acc.email === email)) {
+        setEmail('');
+        setPassword('');
+      }
+      setConfirmPassword('');
+      setSearchParams({ mode: 'signup' }, { replace: true });
+    } else {
+      setConfirmPassword('');
+      setSearchParams({}, { replace: true });
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError('');
+    setError('');
+    setInfoMessage('');
+
+    if (creatingAccount) {
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+    }
+
+    setLoading(true);
     try {
       if (creatingAccount) {
-        const res = await signUpGuest({ name, email, password });
-        if (!res.ok) { setError(res.error ?? 'Account creation failed.'); return; }
-        if (res.needsEmailConfirmation) {
-          setError('Account created. Check your email to confirm it, then sign in here.');
-          setCreatingAccount(false);
+        const res = await signUpGuest({ name, email, password, phone });
+        if (!res.ok) {
+          setError(res.error ?? 'Account creation failed.');
           return;
         }
-        toast('Your guest account is ready.');
+        if (res.needsEmailConfirmation) {
+          setSearchParams({}, { replace: true });
+          setPassword('');
+          setConfirmPassword('');
+          setInfoMessage('Guest account created. Check your email to confirm your address, then sign in below.');
+          return;
+        }
+        toast('Welcome to HAMLET — your guest account is ready.');
         navigate('/account');
         return;
       }
+
       const res = await signIn(email, password);
-      if (!res.ok) { setError(res.error ?? 'Sign in failed.'); return; }
+      if (!res.ok) {
+        setError(res.error ?? 'Sign in failed.');
+        return;
+      }
       toast('Welcome back.');
       navigate(res.role === 'admin' ? '/admin' : res.role === 'partner' ? '/partner' : '/account');
     } catch (submitError) {
@@ -51,7 +97,11 @@ export default function SignIn() {
   };
 
   const quick = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
-    setEmail(acc.email); setPassword('demo1234'); setError('');
+    if (creatingAccount) setSearchParams({}, { replace: true });
+    setEmail(acc.email);
+    setPassword('demo1234');
+    setError('');
+    setInfoMessage('');
   };
 
   return (
@@ -61,7 +111,7 @@ export default function SignIn() {
         <img src="/images/lagos-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-br from-ink-950/80 via-ink-950/55 to-ink-950/90" />
         <div className="relative flex h-full flex-col justify-between p-12">
-          <Link to="/"><div className="flex items-center gap-3"><HamletMark size={40} /><span className="font-display text-3xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></div></Link>
+          <Link to="/"><div className="flex items-center gap-3"><HamletMark size={40} light /><span className="font-display text-3xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></div></Link>
           <div>
             <h1 className="font-display text-5xl font-black leading-[1.05] text-paper">Verified homes.<br /><span className="italic text-brass-400">Real accountability.</span></h1>
             <p className="mt-5 max-w-md text-[14px] font-medium leading-relaxed text-ink-100">From listing review through booking, stay, issue resolution and settlement — every actor is named, every naira is ledgered.</p>
@@ -79,49 +129,191 @@ export default function SignIn() {
       <div className="flex items-center justify-center bg-paper px-4 py-12 sm:px-8">
         <div className="w-full max-w-md">
           <Link to="/" className="mb-8 inline-flex items-center gap-2 lg:hidden"><HamletMark size={32} /><span className="font-display text-2xl font-black text-ink-900">HAMLET<span className="text-brass-500">.</span></span></Link>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Welcome back</p>
-          <h2 className="mt-1 font-display text-3xl font-black text-ink-900">Sign in</h2>
-          <p className="mt-1 text-[12.5px] font-medium text-ink-500">One account experience for guests, partners and HAMLET operations — access is role-based.</p>
 
-          {!backendConfigured && <div className="mt-5">
-            <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400"><ChevronDown size={12} /> Demo accounts (password: demo1234)</p>
-            <div className="grid grid-cols-3 gap-2">
-              {DEMO_ACCOUNTS.map(acc => (
-                <button key={acc.email} onClick={() => quick(acc)} title={acc.desc}
-                  className={`rounded-2xl border p-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-md ${acc.color} ${email === acc.email ? 'ring-2 ring-ink-900' : ''}`}>
-                  <acc.Icon size={18} />
-                  <p className="mt-1.5 text-[11px] font-black text-ink-900">{acc.role}</p>
-                  <p className="truncate text-[10.5px] font-semibold text-ink-600">{acc.email}</p>
-                </button>
-              ))}
+          {/* Prominent Sign in / Guest sign up mode switcher */}
+          <div role="tablist" aria-label="Account mode" className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl border border-ink-200 bg-white p-1.5 shadow-xs">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!creatingAccount}
+              onClick={() => switchMode(false)}
+              className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-bold transition ${
+                !creatingAccount
+                  ? 'bg-ink-900 text-ink-50 shadow-xs'
+                  : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900'
+              }`}
+            >
+              <LogIn size={15} /> Sign in
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={creatingAccount}
+              onClick={() => switchMode(true)}
+              className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-bold transition ${
+                creatingAccount
+                  ? 'bg-jade-700 text-white shadow-xs'
+                  : 'text-jade-800 hover:bg-jade-50'
+              }`}
+            >
+              <UserPlus size={15} /> Guest sign up
+            </button>
+          </div>
+
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
+            {creatingAccount ? 'New guest account' : 'Welcome back'}
+          </p>
+          <h2 className="mt-1 font-display text-3xl font-black text-ink-900">
+            {creatingAccount ? 'Create guest account' : 'Sign in'}
+          </h2>
+          <p className="mt-1 text-[12.5px] font-medium text-ink-500">
+            {creatingAccount
+              ? 'Create a guest account to request verified Lagos stays, track booking status, complete payment and contact support.'
+              : 'One account experience for guests, partners and HAMLET operations — access is role-based.'}
+          </p>
+
+          {!creatingAccount && !backendConfigured && (
+            <div className="mt-5">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
+                <ChevronDown size={12} /> Demo accounts (password: demo1234)
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {DEMO_ACCOUNTS.map(acc => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => quick(acc)}
+                    title={acc.desc}
+                    className={`rounded-2xl border p-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-md ${acc.color} ${email === acc.email ? 'ring-2 ring-ink-900' : ''}`}
+                  >
+                    <acc.Icon size={18} />
+                    <p className="mt-1.5 text-[11px] font-black text-ink-900">{acc.role}</p>
+                    <p className="truncate text-[10.5px] font-semibold text-ink-600">{acc.email}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>}
+          )}
+
+          {infoMessage && (
+            <p role="status" className="mt-4 rounded-xl border border-jade-200 bg-jade-50 px-3 py-2.5 text-[12px] font-semibold text-jade-900">
+              {infoMessage}
+            </p>
+          )}
 
           <form onSubmit={submit} className="mt-5 space-y-3">
-            {creatingAccount && <label className="block">
-              <span className="label">Full name</span>
-              <input type="text" required minLength={2} className="input" value={name} onChange={e => setName(e.target.value)} autoComplete="name" placeholder="Your full name" />
-            </label>}
+            {creatingAccount && (
+              <label className="block">
+                <span className="label">Full name</span>
+                <input
+                  type="text"
+                  required
+                  minLength={2}
+                  className="input"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  autoComplete="name"
+                  placeholder="Adaeze Okafor"
+                />
+              </label>
+            )}
             <label className="block">
               <span className="label">Email</span>
-              <input type="email" required className="input" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com" />
+              <input
+                type="email"
+                required
+                className="input"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
             </label>
+            {creatingAccount && (
+              <label className="block">
+                <span className="label">Phone number (optional)</span>
+                <input
+                  type="tel"
+                  className="input"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  autoComplete="tel"
+                  placeholder="+234 800 000 0000"
+                />
+              </label>
+            )}
             <label className="block">
               <span className="label">Password</span>
               <span className="relative block">
-                <input type={show ? 'text' : 'password'} required className="input pr-11" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" placeholder="••••••••" />
-                <button type="button" onClick={() => setShow(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700" aria-label={show ? 'Hide password' : 'Show password'}>{show ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+                <input
+                  type={show ? 'text' : 'password'}
+                  required
+                  minLength={creatingAccount ? 6 : undefined}
+                  className="input pr-11"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  autoComplete={creatingAccount ? 'new-password' : 'current-password'}
+                  placeholder={creatingAccount ? 'At least 6 characters' : '••••••••'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
+                  aria-label={show ? 'Hide password' : 'Show password'}
+                >
+                  {show ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
               </span>
             </label>
-            {error && <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[12px] font-semibold text-red-800">{error}</p>}
-            <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">{loading ? 'Please wait…' : <>{creatingAccount ? 'Create guest account' : 'Sign in'} <ArrowRight size={16} /></>}</button>
+            {creatingAccount && (
+              <label className="block">
+                <span className="label">Confirm password</span>
+                <input
+                  type={show ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  className="input"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder="Re-enter your password"
+                />
+              </label>
+            )}
+            {error && (
+              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-[12px] font-semibold text-red-800">
+                {error}
+              </p>
+            )}
+            <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">
+              {loading ? 'Please wait…' : (
+                <>
+                  {creatingAccount ? 'Create guest account' : 'Sign in'} <ArrowRight size={16} />
+                </>
+              )}
+            </button>
           </form>
 
-          {backendConfigured && <button
-            type="button"
-            onClick={() => { setCreatingAccount(value => !value); setError(''); }}
-            className="mt-4 w-full text-center text-[12.5px] font-bold text-jade-800 hover:underline"
-          >{creatingAccount ? 'Already have an account? Sign in' : 'New to HAMLET? Create a guest account'}</button>}
+          {/* Secondary button so Guest Sign Up / Sign In is always one click away */}
+          <div className="mt-4">
+            {creatingAccount ? (
+              <button
+                type="button"
+                onClick={() => switchMode(false)}
+                className="btn-outline w-full !py-3 text-[13px]"
+              >
+                <LogIn size={15} /> Already have an account? Sign in
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => switchMode(true)}
+                className="btn-outline w-full !py-3 text-[13px]"
+              >
+                <UserPlus size={15} /> New to HAMLET? Create guest account
+              </button>
+            )}
+          </div>
 
           <p className="mt-6 text-center text-[12.5px] font-medium text-ink-500">
             Own or manage a property?{' '}
