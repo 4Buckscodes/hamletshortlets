@@ -90,6 +90,13 @@ describe('HAMLET Website Copy & Lagos-only scope', () => {
     for (const route of ['/lagos', '/about', '/how-it-works', '/safety', '/faqs']) {
       expect(appSrc).toContain(`path="${route}"`);
     }
+
+    const homeSrc = readFileSync(join(ROOT, 'src/pages/Home.tsx'), 'utf8');
+    const aboutSrc = readFileSync(join(ROOT, 'src/pages/About.tsx'), 'utf8');
+    expect(homeSrc).not.toMatch(/Four pillars of a better stay/i);
+    expect(homeSrc).not.toContain('A good stay is about more than beautiful pictures.');
+    expect(aboutSrc).toMatch(/Four pillars of a better stay/i);
+    expect(aboutSrc).toContain('A good stay is about more than beautiful pictures.');
   });
 
   it('excludes unavailable cities (Abuja and Ibadan) from all frontend pages and HTML', () => {
