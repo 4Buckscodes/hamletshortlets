@@ -3,6 +3,7 @@ import type {
   PartnerAssignment, AuditEntry,
 } from './types';
 import { calculateGuestPricing } from './pricing';
+import { LAGOS_AREAS } from './areas';
 
 // ─── Seed accounts (demo credentials shown on sign-in) ───────────────────────
 export const seedAccounts: Account[] = [
@@ -13,10 +14,7 @@ export const seedAccounts: Account[] = [
 ];
 
 const IMG = (n: string) => `/images/prop/${n}.jpg`;
-const LAGOS_AREAS = [
-  'Victoria Island', 'Ikoyi', 'Lekki Phase 1', 'Oniru', 'Ikeja GRA', 'Banana Island',
-  'Ajah', 'Lagos Mainland', 'Yaba', 'Surulere', 'Shomolu',
-] as const;
+export { LAGOS_AREAS };
 export const AREAS: string[] = [...LAGOS_AREAS];
 
 // ─── Properties (8 approved · 1 submitted · 1 needs correction · 1 rejected · 1 suspended) ───
@@ -188,6 +186,66 @@ export const seedProperties: Property[] = [
     ],
     assignedPartnerIds: ['u-partner-2'],
     createdAt: '2026-10-14T15:00:00Z',
+  },
+  {
+    id: 'p-13', title: 'Alagomeji Tech Hub 2-Bed Serviced Flat', type: 'Serviced apartment', area: 'Yaba',
+    address: '18 Hughes Avenue, Alagomeji, Yaba, Lagos Mainland', nightlyRate: 110000, cleaningFee: 15000,
+    mandatoryCharges: [{ label: 'Cleaning & turnover (mandatory)', amount: 15000 }], deposit: 100000,
+    bedrooms: 2, bathrooms: 2, capacity: 4, bedSetup: '1 king · 1 queen',
+    amenities: ['Wifi', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'TV', 'Air Conditioning', 'Generator'],
+    images: [IMG('living-1'), IMG('studio-1'), IMG('kitchen-1'), IMG('bath-1')],
+    houseRules: ['No parties or events', 'Check-in from 2:00 PM', 'Check-out by 11:00 AM', 'Quiet hours after 10 PM'],
+    status: 'approved', trustLabel: 'Verified owner & inspection',
+    verification: { ownership: 'verified', identity: 'verified', authority: 'verified', inspection: 'verified' },
+    ownerName: 'Tunde Adeyemi', ownerId: 'u-partner-1', submittedBy: 'Tunde Adeyemi', submittedRole: 'Owner',
+    authorityBasis: 'Registered owner — title deed & utility bill reviewed',
+    docs: [
+      { label: 'Certificate of occupancy / title deed', status: 'verified' },
+      { label: 'Government-issued ID of owner', status: 'verified' },
+      { label: 'Property inspection report', status: 'verified', note: 'Physical inspection 16 Oct 2026 — passed' },
+    ],
+    assignedPartnerIds: ['u-partner-1'],
+    createdAt: '2026-10-16T10:30:00Z',
+  },
+  {
+    id: 'p-14', title: 'Bode Thomas Executive 2-Bed Apartment', type: 'Apartment', area: 'Surulere',
+    address: '42 Bode Thomas Street, Surulere, Lagos Mainland', nightlyRate: 120000, cleaningFee: 18000,
+    mandatoryCharges: [{ label: 'Cleaning & turnover (mandatory)', amount: 18000 }], deposit: 100000,
+    bedrooms: 2, bathrooms: 2, capacity: 4, bedSetup: '2 queen beds',
+    amenities: ['Wifi', 'Parking', '24/7 Power', 'Security', 'Kitchen', 'TV', 'Air Conditioning', 'Generator'],
+    images: [IMG('bed-1'), IMG('dining-1'), IMG('kitchen-1'), IMG('bath-1')],
+    houseRules: ['No parties or events', 'Check-in from 2:00 PM', 'Check-out by 11:00 AM'],
+    status: 'approved', trustLabel: 'Verified owner & inspection',
+    verification: { ownership: 'verified', identity: 'verified', authority: 'verified', inspection: 'verified' },
+    ownerName: 'Chiamaka Eze', ownerId: 'u-partner-2', submittedBy: 'Chiamaka Eze', submittedRole: 'Property Manager',
+    authorityBasis: 'Management agreement — owner consent on file',
+    docs: [
+      { label: 'Management agreement', status: 'verified' },
+      { label: 'Government-issued ID of manager', status: 'verified' },
+      { label: 'Property inspection report', status: 'verified', note: 'Physical inspection 17 Oct 2026 — passed' },
+    ],
+    assignedPartnerIds: ['u-partner-2'],
+    createdAt: '2026-10-17T11:15:00Z',
+  },
+  {
+    id: 'p-15', title: 'Palmgrove Estate 1-Bed Modern Suite', type: 'Serviced apartment', area: 'Shomolu',
+    address: '7 Oguntona Crescent, Palmgrove / Onipanu, Shomolu, Lagos Mainland', nightlyRate: 85000, cleaningFee: 12000,
+    mandatoryCharges: [{ label: 'Cleaning & turnover (mandatory)', amount: 12000 }], deposit: 75000,
+    bedrooms: 1, bathrooms: 1, capacity: 2, bedSetup: '1 king bed',
+    amenities: ['Wifi', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'TV', 'Air Conditioning'],
+    images: [IMG('studio-1'), IMG('bed-2'), IMG('kitchen-1'), IMG('bath-1')],
+    houseRules: ['No parties', 'Check-in from 2:00 PM', 'Check-out by 11:00 AM', 'Non-smoking'],
+    status: 'approved', trustLabel: 'Documentation verified',
+    verification: { ownership: 'verified', identity: 'verified', authority: 'verified', inspection: 'pending_review' },
+    ownerName: 'Tunde Adeyemi', ownerId: 'u-partner-1', submittedBy: 'Tunde Adeyemi', submittedRole: 'Owner',
+    authorityBasis: 'Registered owner — title deed reviewed',
+    docs: [
+      { label: 'Certificate of occupancy / title deed', status: 'verified' },
+      { label: 'Government-issued ID of owner', status: 'verified' },
+      { label: 'Property inspection report', status: 'pending_review', note: 'Inspection scheduled 28 Oct 2026' },
+    ],
+    assignedPartnerIds: ['u-partner-1'],
+    createdAt: '2026-10-18T09:20:00Z',
   },
   // Non-approved supply (not publicly discoverable)
   {
