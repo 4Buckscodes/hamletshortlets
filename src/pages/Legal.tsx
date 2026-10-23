@@ -1,5 +1,6 @@
-import { useParams, NavLink } from 'react-router-dom';
+import { Link, useParams, NavLink } from 'react-router-dom';
 import { GuestLayout } from '../components/Navbar';
+import { usePageMeta } from '../lib/brand';
 import { ShieldCheck, ScrollText, Banknote, FileCheck } from 'lucide-react';
 
 const TABS = [
@@ -55,6 +56,7 @@ const CONTENT: Record<string, { title: string; intro: string; sections: { h: str
 export default function Legal() {
   const { page } = useParams<{ page: string }>();
   const c = CONTENT[page ?? 'privacy'] ?? CONTENT.privacy;
+  usePageMeta(`${c.title} | HAMLET`, c.intro);
 
   return (
     <GuestLayout>
@@ -79,7 +81,15 @@ export default function Legal() {
             </section>
           ))}
         </div>
-        <p className="mt-6 text-[10.5px] font-semibold text-ink-400">HAMLET v1.0 · Decision date 11 October 2026 · Lagos pilot · These documents reflect the pilot release and are subject to the Nigerian legal review launch dependency. Last updated 22 Oct 2026.</p>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 pt-5 text-[11.5px] font-semibold text-ink-500">
+          <p className="text-[10.5px] text-ink-400">HAMLET v1.0 · Lagos · Last updated Oct 2026.</p>
+          <div className="flex flex-wrap gap-3 text-jade-800">
+            <Link to="/how-it-works" className="hover:underline">How HAMLET works</Link>
+            <Link to="/safety" className="hover:underline">Safety & guest protection</Link>
+            <Link to="/faqs" className="hover:underline">FAQs</Link>
+            <Link to="/about" className="hover:underline">About HAMLET</Link>
+          </div>
+        </div>
       </div>
     </GuestLayout>
   );

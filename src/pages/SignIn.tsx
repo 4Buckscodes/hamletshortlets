@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
+import { HAMLET_TAGLINE, usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import {
   resolvePostSignInRedirect,
@@ -22,6 +23,11 @@ const DEMO_ACCOUNTS = [
 type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 
 export default function SignIn() {
+  usePageMeta(
+    'Sign In or Create Account | HAMLET',
+    'Sign in or create your HAMLET account to book shortlets in Lagos, track reservations, complete checkout, or manage your partner properties.',
+  );
+
   const {
     state,
     signIn,
@@ -226,8 +232,9 @@ export default function SignIn() {
         <div className="relative flex h-full flex-col justify-between p-12">
           <Link to="/"><div className="flex items-center gap-3"><HamletMark size={40} light /><span className="font-display text-3xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></div></Link>
           <div>
-            <h1 className="font-display text-5xl font-black leading-[1.05] text-paper">Verified homes.<br /><span className="italic text-brass-400">Real accountability.</span></h1>
-            <p className="mt-5 max-w-md text-[14px] font-medium leading-relaxed text-ink-100">From listing review through booking, stay, issue resolution and settlement — every actor is named, every naira is ledgered.</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-brass-300">{HAMLET_TAGLINE}</p>
+            <h1 className="mt-2 font-display text-5xl font-black leading-[1.05] text-paper">Shortlet stays,<br /><span className="italic text-brass-400">sorted before you arrive.</span></h1>
+            <p className="mt-5 max-w-md text-[14px] font-medium leading-relaxed text-ink-100">Compare locations, amenities, house rules, and total pricing before you commit — with clear booking status and support from request to check-out.</p>
             <div className="mt-6 space-y-2 text-[12.5px] font-semibold text-ink-200">
               {['Manual, evidence-based verification before any listing goes live', 'Total price visible before you commit — 3% guest fee, 0% owner fee', 'Payment confirmed only by server-side provider webhook'].map(t => (
                 <p key={t} className="flex items-start gap-2"><ShieldCheck size={15} className="mt-0.5 shrink-0 text-brass-400" />{t}</p>

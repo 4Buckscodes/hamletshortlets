@@ -7,7 +7,10 @@ import {
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
+import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
+import { useCurrency } from '../lib/currency';
+import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { priceStay, nightsBetween, formatNaira, lagosIsoDateOffset, addDaysToIsoDate } from '../lib/pricing';
 import { buildAuthPath } from '../lib/authRedirect';
@@ -16,12 +19,21 @@ export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
+  const { currency, currencySymbol, formatPrice, ngnPerUnit } = useCurrency();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
 
   const property = state.properties.find(p => p.id === id);
+
+  usePageMeta(
+    property ? `${property.title} · ${property.area}, Lagos | HAMLET` : 'Shortlet Details in Lagos | HAMLET',
+    property
+      ? `Explore ${property.title} in ${property.area}, Lagos. Review amenities, house rules, verification status, and upfront total pricing on HAMLET.`
+      : undefined,
+  );
+
   const [gallery, setGallery] = useState({ propertyId: id, imageIndex: 0 });
   const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
   const [checkIn, setCheckIn] = useState(() => searchParams.get('checkIn') ?? lagosIsoDateOffset(2));
@@ -31,6 +43,7 @@ export default function PropertyDetail() {
     return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
   });
   const [showModal, setShowModal] = useState(() => searchParams.get('book') === '1');
+  const [termsConfirmed, setTermsConfirmed] = useState(false);
   const [note, setNote] = useState(() => searchParams.get('note') ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [datesUnavailable, setDatesUnavailable] = useState(false);
@@ -58,22 +71,22 @@ export default function PropertyDetail() {
   const dateError = useMemo(() => {
     if (checkIn < todayIso) return 'Check-in cannot be in the past.';
     if (new Date(checkOut) <= new Date(checkIn)) return 'Check-out must be after check-in.';
-    if (nights > 60) return 'Stays are limited to 60 nights in the pilot.';
+    if (nights > 60) return 'Stays are limited to 60 nights.';
     if (datesUnavailable) return 'Selected dates overlap an already confirmed or held booking. Please pick another window.';
     return '';
   }, [checkIn, checkOut, nights, todayIso, datesUnavailable]);
 
   if (!backendReady) {
-    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-500">Loading stay details…</p></div></GuestLayout>;
+    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-500">Finding spaces that fit your plans…</p></div></GuestLayout>;
   }
   if (backendError) {
-    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><h1 className="font-display text-2xl font-black text-ink-900">Stay details are unavailable</h1><p role="alert" className="mt-2 text-sm text-red-700">{backendError}</p><Link to="/stays" className="btn-jade mt-6">Browse stays</Link></div></GuestLayout>;
+    return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><h1 className="font-display text-2xl font-black text-ink-900">Something didn’t go as planned.</h1><p role="alert" className="mt-2 text-sm text-red-700">{backendError}</p><Link to="/stays" className="btn-jade mt-6">Browse stays</Link></div></GuestLayout>;
   }
   if (!property) {
     return (
       <GuestLayout>
         <div className="mx-auto max-w-lg px-4 py-24 text-center">
-          <h1 className="font-display text-2xl font-black text-ink-900">We couldn't find that stay</h1>
+          <h1 className="font-display text-2xl font-black text-ink-900">We couldn’t find that stay</h1>
           <p className="mt-2 text-sm text-ink-500">It may have been suspended or removed since you last saw it.</p>
           <Link to="/stays" className="btn-jade mt-6">Browse approved stays</Link>
         </div>
@@ -107,6 +120,10 @@ export default function PropertyDetail() {
   const submitRequest = async () => {
     if (!session) { navigate(buildAuthPath({ signup: true, redirect: bookingReturnPath })); return; }
     if (session.role !== 'guest') { toast('Partner and admin accounts cannot book stays. Use a guest account.', 'error'); return; }
+    if (!termsConfirmed) {
+      toast('Please confirm you have reviewed the property details, house rules, and booking terms.', 'error');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await requestBooking({
@@ -115,7 +132,7 @@ export default function PropertyDetail() {
       });
       if (!res.ok) { toast(res.error ?? 'Could not submit request.', 'error'); return; }
       closeModal();
-      toast(`Booking request ${res.booking?.ref ?? ''} sent to the host.`);
+      toast(`Your request (${res.booking?.ref ?? ''}) is on its way.`);
       navigate('/account');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not submit request.', 'error');
@@ -129,7 +146,13 @@ export default function PropertyDetail() {
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6">
         {/* Breadcrumb */}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Link to="/stays" className="text-[12px] font-bold text-ink-500 hover:text-jade-700">← All stays</Link>
+          <div className="flex flex-wrap items-center gap-2 text-[12px] font-bold text-ink-500">
+            <Link to="/stays" className="hover:text-jade-700">← All stays</Link>
+            <span>·</span>
+            <Link to="/lagos" className="hover:text-jade-700">Lagos</Link>
+            <span>·</span>
+            <Link to={`/stays?area=${encodeURIComponent(property.area)}`} className="hover:text-jade-700">{property.area}</Link>
+          </div>
           <span className="text-[11px] font-semibold text-ink-400">Listed by {property.submittedRole === 'Owner' ? 'owner' : property.submittedRole.toLowerCase()} · {property.ownerName}</span>
         </div>
 
@@ -170,7 +193,10 @@ export default function PropertyDetail() {
             {/* Verification panel */}
             <div className="mt-6 rounded-2xl border border-jade-200 bg-jade-50/60 p-4 sm:p-5">
               <h2 className="flex items-center gap-2 font-display text-base font-black text-jade-900"><ShieldCheck size={18} className="shrink-0" /> How this home was verified</h2>
-              <p className="mt-1 text-[11.5px] font-medium text-jade-800">Evidence reviewed by a HAMLET operations lead. Outcomes are recorded — self-reported items are labelled as such.</p>
+              <p className="mt-1 text-[11.5px] font-medium text-jade-800">
+                Evidence reviewed by a HAMLET operations lead. Outcomes are recorded — self-reported items are labelled as such.{' '}
+                <Link to="/safety" className="underline hover:text-jade-950">Read guest protection guide</Link>.
+              </p>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
                   { label: 'Ownership', s: property.verification.ownership },
@@ -203,10 +229,13 @@ export default function PropertyDetail() {
 
             {/* Deposit & charges */}
             <div className="mt-7 rounded-2xl border border-ink-100 bg-white p-4 sm:p-5">
-              <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><Banknote size={17} className="shrink-0 text-jade-700" />Deposit & mandatory charges</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><Banknote size={17} className="shrink-0 text-jade-700" />Deposit & mandatory charges</h2>
+                <CurrencyToggle compact />
+              </div>
               <dl className="mt-3 space-y-1.5 text-[13px] font-medium text-ink-800">
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable security deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(property.deposit)}</dd></div>
-                {property.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable security deposit</dt><dd className="shrink-0 tabular-nums">{formatPrice(property.deposit)}</dd></div>
+                {property.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatPrice(c.amount)}</dd></div>)}
               </dl>
               <p className="mt-2.5 text-[11px] font-medium leading-relaxed text-ink-400">The deposit is refundable after checkout inspection, is held separately and is never part of the HAMLET fee base. Mandatory charges are known in advance and included in your total before payment.</p>
             </div>
@@ -215,12 +244,15 @@ export default function PropertyDetail() {
           {/* ── Booking widget ──────────────────────── */}
           <aside className="mt-8 lg:col-span-5 lg:mt-0">
             <div className="card overflow-hidden lg:sticky lg:top-20">
-              <div className="border-b border-ink-100 bg-ink-950 px-5 py-4 sm:px-6">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Request to book</p>
-                <div className="mt-1 flex flex-wrap items-baseline gap-2">
-                  <span className="font-display text-2xl font-black tabular-nums text-paper">{formatNaira(property.nightlyRate)}</span>
-                  <span className="text-[12px] font-semibold text-ink-300">/ night · 0% owner fee</span>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 bg-ink-950 px-5 py-4 sm:px-6">
+                <div>
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Request to book</p>
+                  <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                    <span className="font-display text-2xl font-black tabular-nums text-paper">{formatPrice(property.nightlyRate)}</span>
+                    <span className="text-[12px] font-semibold text-ink-300">/ night · 0% owner fee</span>
+                  </div>
                 </div>
+                <CurrencyToggle variant="dark" />
               </div>
               <div className="p-4 sm:p-6">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -265,29 +297,40 @@ export default function PropertyDetail() {
                 {/* Price breakdown — the shared pricing engine */}
                 {pricing && nights > 0 && !dateError && (
                   <dl className="mt-4 space-y-1.5 border-t border-ink-100 pt-4 text-[13px] font-medium text-ink-800">
-                    <div className="flex justify-between gap-3"><dt className="min-w-0">{formatNaira(property.nightlyRate)} × {nights} night{nights > 1 ? 's' : ''}</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
-                    {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0 text-ink-600">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                    <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest service fee (3% × {formatNaira(pricing.accommodationSubtotal)})</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
-                    <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900"><dt className="min-w-0">Total (₦, before payment)</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
-                    <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">{formatPrice(property.nightlyRate)} × {nights} night{nights > 1 ? 's' : ''}</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.accommodationSubtotal)}</dd></div>
+                    {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0 text-ink-600">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatPrice(c.amount)}</dd></div>)}
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest service fee (3% × {formatPrice(pricing.accommodationSubtotal)})</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.hamletGuestServiceFee)}</dd></div>
+                    <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900">
+                      <dt className="min-w-0">Total ({currency === 'NGN' ? '₦' : `${currencySymbol}, est.`}, before payment)</dt>
+                      <dd className="shrink-0 tabular-nums text-jade-800">{formatPrice(pricing.guestTotal)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.refundableDeposit)}</dd></div>
+                    {currency !== 'NGN' && (
+                      <p className="pt-1 text-[11px] font-semibold text-jade-800">
+                        {currency} shown at ₦{ngnPerUnit.toLocaleString('en-NG')}/{currencySymbol}1 for comparison. Checkout settles in Naira ({formatNaira(pricing.guestTotal)}).
+                      </p>
+                    )}
                   </dl>
                 )}
                 <p className="mt-3 text-[10.5px] font-medium leading-snug text-ink-400">
-                  3% guest fee on the accommodation subtotal after any discount. Provider processing-fee policy is not yet decided and is not added here. Your total cannot increase unexpectedly at checkout.
+                  3% guest fee on the accommodation subtotal after any discount. Your total cannot increase unexpectedly at checkout.
                 </p>
 
                 {guestCanBook ? (
                   <button
                     className="btn-jade mt-4 w-full !py-4 text-[15px]"
                     disabled={!!dateError || !!warning || nights === 0}
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      setTermsConfirmed(false);
+                      setShowModal(true);
+                    }}
                   >
                     Request to book <ArrowRight size={17} />
                   </button>
                 ) : (
                   <button className="btn-outline mt-4 w-full !py-4 text-[15px]" disabled>Not bookable — listing under review</button>
                 )}
-                <p className="mt-2 text-center text-[10.5px] font-semibold text-ink-400">You won't be charged yet. The host has 24–48h to confirm availability & terms.</p>
+                <p className="mt-2 text-center text-[10.5px] font-semibold text-ink-400">You won’t be charged yet. Availability and terms are confirmed first.</p>
               </div>
             </div>
           </aside>
@@ -303,30 +346,53 @@ export default function PropertyDetail() {
               className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-t-3xl bg-white p-4 shadow-2xl sm:rounded-3xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Confirm your request</p>
-                  <h2 className="mt-1 font-display text-xl font-black text-ink-900">{property.title}</h2>
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-700">{property.title}</p>
+                  <h2 className="mt-1 font-display text-xl font-black text-ink-900">One last look before you book.</h2>
+                  <p className="mt-1 text-[11.5px] font-medium text-ink-500">
+                    Check your dates, guest count, total price, house rules, and cancellation terms before sending your request.
+                  </p>
                 </div>
                 <button onClick={closeModal} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-50" aria-label="Close"><X size={20} /></button>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl bg-ink-50 p-3 text-center">
+              <div className="mt-4 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-400">Display currency</span>
+                <CurrencyToggle compact />
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 rounded-2xl bg-ink-50 p-3 text-center">
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Dates</p><p className="text-[12px] font-bold text-ink-900 sm:text-[12.5px]">{checkIn.slice(5)} → {checkOut.slice(5)}</p></div>
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Nights</p><p className="text-[12.5px] font-bold text-ink-900">{nights}</p></div>
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Guests</p><p className="text-[12.5px] font-bold text-ink-900">{guests}</p></div>
               </div>
               <dl className="mt-4 space-y-1.5 text-[13px] font-medium text-ink-800">
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
-                {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
-                <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black"><dt className="min-w-0">Total due on acceptance</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
-                <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.accommodationSubtotal)}</dd></div>
+                {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatPrice(c.amount)}</dd></div>)}
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.hamletGuestServiceFee)}</dd></div>
+                <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black"><dt className="min-w-0">Total due on acceptance</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatPrice(pricing.guestTotal)}</dd></div>
+                <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.refundableDeposit)}</dd></div>
+                {currency !== 'NGN' && (
+                  <p className="pt-1 text-[11px] font-semibold text-jade-800">
+                    Settled in Naira at checkout: {formatNaira(pricing.guestTotal)}
+                  </p>
+                )}
               </dl>
               <label className="mt-4 block">
                 <span className="label">Note for the host (optional)</span>
-                <textarea className="input min-h-[72px] resize-none" placeholder="e.g. Arriving from Abuja, flight lands 14:10…" value={note} onChange={e => setNote(e.target.value)} />
+                <textarea className="input min-h-[72px] resize-none" placeholder="e.g. Arriving from Murtala Muhammed Airport, flight lands 14:10…" value={note} onChange={e => setNote(e.target.value)} />
               </label>
+              {session && (
+                <label className="mt-3.5 flex cursor-pointer items-start gap-2.5 rounded-xl border border-ink-200 bg-ink-50/60 p-3 text-[12px] font-semibold text-ink-800">
+                  <input
+                    type="checkbox"
+                    checked={termsConfirmed}
+                    onChange={e => setTermsConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-jade-600"
+                  />
+                  <span>I have reviewed the property details, house rules, and booking terms.</span>
+                </label>
+              )}
               {session ? (
-                <button className="btn-jade mt-4 w-full !py-4" onClick={submitRequest} disabled={submitting}>
-                  {submitting ? 'Sending…' : <>Send booking request <ArrowRight size={16} /></>}
+                <button className="btn-jade mt-4 w-full !py-4 disabled:opacity-50" onClick={submitRequest} disabled={submitting || !termsConfirmed}>
+                  {submitting ? 'Sending…' : <>Submit booking request <ArrowRight size={16} /></>}
                 </button>
               ) : (
                 <div className="mt-4 space-y-2">

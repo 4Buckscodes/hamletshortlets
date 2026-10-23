@@ -153,7 +153,7 @@ export default function NewProperty() {
               </label>
               <label className="sm:col-span-2"><span className="label-dark">Full address</span><input className="input-dark" placeholder="Street, landmark, area, Lagos" value={address} onChange={e => setAddress(e.target.value)} /></label>
             </div>
-            <p className="text-[10.5px] font-medium text-ink-500">Launch market is Lagos only. Abuja and Ibadan expansion is a later release — submissions from other cities will be rejected.</p>
+            <p className="text-[10.5px] font-medium text-ink-500">HAMLET currently serves Lagos neighbourhoods only — submissions outside Lagos will be rejected.</p>
           </div>
         )}
 

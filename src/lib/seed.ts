@@ -15,7 +15,7 @@ export const seedAccounts: Account[] = [
 const IMG = (n: string) => `/images/prop/${n}.jpg`;
 const LAGOS_AREAS = [
   'Victoria Island', 'Ikoyi', 'Lekki Phase 1', 'Oniru', 'Ikeja GRA', 'Banana Island',
-  'Lagos Mainland', 'Yaba', 'Surulere', 'Shomolu',
+  'Ajah', 'Lagos Mainland', 'Yaba', 'Surulere', 'Shomolu',
 ] as const;
 export const AREAS: string[] = [...LAGOS_AREAS];
 
