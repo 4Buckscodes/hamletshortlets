@@ -126,7 +126,7 @@ export default function AdminProperties() {
                 <div className="mt-2 grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-ink-300 sm:grid-cols-4">
                   {(['ownership', 'identity', 'authority', 'inspection'] as const).map(k => (
                     <div key={k} className="rounded-lg border border-ink-800 bg-ink-850 px-2.5 py-1.5">
-                      <span className="block text-[8.5px] font-extrabold uppercase tracking-[0.16em] text-ink-500">{k}</span>
+                      <span className="block text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{k}</span>
                       <span className={p.verification[k] === 'verified' ? 'text-jade-400' : p.verification[k] === 'missing' ? 'text-red-400' : 'text-amber-400'}>{p.verification[k] === 'verified' ? '✓ Verified' : p.verification[k] === 'pending_review' ? '◷ Pending' : p.verification[k] === 'missing' ? '✕ Missing' : '◔ Self-reported'}</span>
                     </div>
                   ))}

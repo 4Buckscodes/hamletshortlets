@@ -91,7 +91,7 @@ export default function SignIn() {
                   className={`rounded-2xl border p-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-md ${acc.color} ${email === acc.email ? 'ring-2 ring-ink-900' : ''}`}>
                   <acc.Icon size={18} />
                   <p className="mt-1.5 text-[11px] font-black text-ink-900">{acc.role}</p>
-                  <p className="truncate text-[9px] font-semibold text-ink-500">{acc.email}</p>
+                  <p className="truncate text-[10.5px] font-semibold text-ink-600">{acc.email}</p>
                 </button>
               ))}
             </div>

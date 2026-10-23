@@ -39,7 +39,7 @@ export default function AdminAudit() {
           {entries.map(a => (
             <li key={a.id} className="flex flex-wrap items-start gap-3 bg-ink-900/60 px-5 py-3.5 transition hover:bg-ink-850 sm:flex-nowrap">
               <span className="w-36 shrink-0 pt-0.5 text-[10px] font-semibold leading-snug text-ink-500">{formatDateTime(a.at)}</span>
-              <span className={`chip border !px-2 !py-1 text-[8.5px] font-extrabold uppercase tracking-wide ${actionTone(a.action)} shrink-0`}>{a.action.replace(/_/g, ' ')}</span>
+              <span className={`chip border !px-2 !py-1 text-[9.5px] font-extrabold uppercase tracking-wide ${actionTone(a.action)} shrink-0`}>{a.action.replace(/_/g, ' ')}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-[11.5px] font-semibold leading-snug text-ink-100">{a.detail}</p>
                 <p className="mt-0.5 text-[10px] font-medium text-ink-500"><span className="font-bold text-ink-300">{a.actor}</span> ({a.actorRole}) → <span className="font-mono">{a.target}</span></p>

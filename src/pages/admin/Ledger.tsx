@@ -143,7 +143,7 @@ export default function AdminLedger() {
       <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
         {cards.map(c => (
           <button key={c.type} onClick={() => setFilter(filter === c.type ? 'all' : c.type)} className={`rounded-2xl border p-3 text-left transition ${filter === c.type ? 'border-brass-500 bg-brass-500/15' : 'border-ink-800 bg-ink-900 hover:border-ink-700'}`}>
-            <span className={`chip border !px-2 !py-0.5 text-[8.5px] uppercase ${TYPE_META[c.type].cls}`}>{TYPE_META[c.type].label}</span>
+            <span className={`chip border !px-2 !py-0.5 text-[9.5px] uppercase ${TYPE_META[c.type].cls}`}>{TYPE_META[c.type].label}</span>
             <p className="mt-1.5 font-display text-[15px] font-black tabular-nums text-ink-50">{formatNaira(c.value)}</p>
           </button>
         ))}
@@ -165,9 +165,9 @@ export default function AdminLedger() {
               <tr key={l.id} className={`transition hover:bg-ink-850 ${l.variance !== 0 ? 'bg-red-950/20' : ''}`}>
                 <td className="td whitespace-nowrap text-[10.5px] font-semibold text-ink-300">{formatDateTime(l.at)}</td>
                 <td className="td font-mono text-[10.5px] font-bold text-brass-300">{l.bookingRef}</td>
-                <td className="td"><span className={`chip border !px-2 !py-0.5 text-[9px] uppercase ${TYPE_META[l.type].cls}`}>{TYPE_META[l.type].label}</span></td>
-                <td className="td max-w-[280px] text-[11px] leading-snug">{l.description}{l.note && <span className="block text-[9.5px] leading-snug text-ink-500">{l.note}</span>}</td>
-                <td className="td max-w-[120px] truncate font-mono text-[9.5px] text-ink-400">{l.providerRef ?? '—'}</td>
+                <td className="td"><span className={`chip border !px-2 !py-0.5 text-[9.5px] uppercase ${TYPE_META[l.type].cls}`}>{TYPE_META[l.type].label}</span></td>
+                <td className="td max-w-[280px] text-[11px] leading-snug text-ink-200">{l.description}{l.note && <span className="block text-[10px] leading-snug text-ink-400">{l.note}</span>}</td>
+                <td className="td max-w-[120px] truncate font-mono text-[10px] text-ink-400">{l.providerRef ?? '—'}</td>
                 <td className="td text-right tabular-nums font-bold text-ink-50">{formatNaira(l.amount)}</td>
                 <td className={`td text-right tabular-nums font-bold ${l.variance !== 0 ? 'text-red-400' : 'text-jade-400'}`}>{l.variance === 0 ? '—' : formatNaira(l.variance)}</td>
                 <td className="td"><LedgerStatusPill status={l.status} /></td>
