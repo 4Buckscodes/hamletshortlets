@@ -36,11 +36,14 @@ clients load or refresh data and periodically while the app is open. A booking
 is never confirmed by this lifecycle migration; verified payment integration
 is still required.
 
-Database-level booking lifecycle tests are in
-`supabase/tests/booking_lifecycle.test.sql`. With Docker and the Supabase CLI
-available as a development dependency, run `npx supabase start` and then
-`npm test` from the repository root. These tests use a local database and roll
-back all fixtures; do not run them against the live project.
+Database-level booking lifecycle and pricing tests run without Docker via
+`npm test` (`vitest run`). `supabase/tests/booking_lifecycle.test.ts` boots an
+isolated in-memory PostgreSQL instance via `@electric-sql/pglite`, applies
+every migration in `supabase/migrations/*.sql`, and verifies the real
+PostgreSQL triggers, RLS policies, role grants, and `SECURITY DEFINER` RPCs
+without connecting to your live project. If Docker and a local Supabase stack
+(`npx supabase start`) are available, `supabase/tests/booking_lifecycle.test.sql`
+can also be run via `npm run test:pgtap`.
 
 When Supabase is configured, sign-in/session restoration, guest account
 creation, public approved-listing reads, partner applications, partner
