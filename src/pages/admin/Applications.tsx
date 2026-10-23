@@ -90,27 +90,27 @@ export default function AdminApplications() {
 
       <div className="mt-5 grid gap-4 xl:grid-cols-2">
         {list.map(a => (
-          <article key={a.id} className="flex flex-col rounded-2xl border border-ink-800 bg-ink-900 p-5">
+          <article key={a.id} className="flex flex-col rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className={`chip border ${statusCls[a.status]} capitalize`}>{a.status.replace('_', ' ')}</span>
-                <h2 className="mt-2 font-display text-lg font-bold text-ink-50">{a.name}</h2>
-                <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-brass-300"><Building2 size={12} />{a.company} · {a.role}</p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[10.5px] font-medium text-ink-400">
-                  <span className="inline-flex items-center gap-1"><Mail size={11} />{a.email}</span>
-                  <span className="inline-flex items-center gap-1"><Phone size={11} />{a.phone}</span>
+                <h2 className="mt-2 break-words font-display text-lg font-bold text-ink-50">{a.name}</h2>
+                <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-brass-300"><Building2 size={12} className="shrink-0" /><span className="min-w-0 break-words">{a.company} · {a.role}</span></p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] font-medium text-ink-400">
+                  <span className="inline-flex min-w-0 items-center gap-1"><Mail size={11} className="shrink-0" /><span className="break-all">{a.email}</span></span>
+                  <span className="inline-flex items-center gap-1"><Phone size={11} className="shrink-0" />{a.phone}</span>
                 </p>
               </div>
               <p className="shrink-0 text-[10px] font-semibold text-ink-500">{timeAgo(a.submittedAt)}</p>
             </div>
-            {a.motivation && <p className="mt-3 text-[12px] font-medium leading-relaxed text-ink-200">“{a.motivation}”</p>}
+            {a.motivation && <p className="mt-3 break-words text-[12px] font-medium leading-relaxed text-ink-200">“{a.motivation}”</p>}
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] font-semibold text-ink-400">
               <span>Areas: {a.areas.join(', ')}</span>
               <span>Properties: {a.propertiesCount}</span>
             </div>
-            {a.reviewNote && <p className="mt-3 rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold uppercase text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
+            {a.reviewNote && <p className="mt-3 break-words rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold uppercase text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
             {(a.status === 'pending' || a.status === 'needs_correction') && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-4 [&>button>svg]:shrink-0">
                 <button onClick={() => { setNoteFor({ id: a.id, action: 'approve' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Approve partner</button>
                 <button onClick={() => { setNoteFor(noteFor?.id === a.id ? null : { id: a.id, action: 'needs_correction' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-4 py-2.5 text-[11.5px] font-bold text-amber-300 hover:bg-amber-950"><FileWarning size={14} /> Request correction</button>
                 <button onClick={() => { setNoteFor({ id: a.id, action: 'reject' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-red-800 px-4 py-2.5 text-[11.5px] font-bold text-red-300 hover:bg-red-950"><XCircle size={14} /> Reject</button>
@@ -120,7 +120,7 @@ export default function AdminApplications() {
               <div className="mt-3 rounded-xl border border-amber-800/50 bg-amber-950/10 p-3">
                 <p className="mb-2 text-[11px] font-semibold text-ink-300">{noteFor.action === 'approve' ? 'Approval note' : noteFor.action === 'reject' ? 'Reason for rejection' : 'What must they provide?'}</p>
                 <textarea autoFocus className="input-dark min-h-[64px] !text-[12px]" placeholder="Document the decision (min 10 characters)" value={note} onChange={e => setNote(e.target.value)} />
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <button onClick={() => void review()} disabled={saving} className="rounded-xl bg-amber-600 px-3.5 py-2 text-[11px] font-bold text-ink-950 hover:bg-amber-500 disabled:opacity-50">{saving ? 'Saving…' : `Confirm ${noteFor.action === 'needs_correction' ? 'correction request' : noteFor.action}`}</button>
                   <button onClick={() => setNoteFor(null)} disabled={saving} className="rounded-xl border border-ink-700 px-3.5 py-2 text-[11px] font-bold text-ink-300">Cancel</button>
                 </div>
@@ -135,13 +135,13 @@ export default function AdminApplications() {
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400"><ShieldAlert size={13} /> Partner account governance</p>
+            <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400"><ShieldAlert size={13} className="shrink-0" /> Partner account governance</p>
             <h2 className="mt-1 font-display text-xl font-black text-ink-50">Approved partner directory ({partnerAccounts.length})</h2>
             <p className="mt-0.5 text-[11.5px] font-medium text-ink-400">Suspend partners immediately for misrepresentation, safety violations, or off-platform payment solicitation. Every suspension or reinstatement is audit-logged.</p>
           </div>
         </div>
 
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-ink-800">
+        <div className="mt-4 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
           <table className="w-full min-w-[680px] text-left">
             <thead className="bg-ink-900">
               <tr>
@@ -220,17 +220,17 @@ export default function AdminApplications() {
               />
             </label>
             {govTarget.nextStatus === 'suspended' && (
-              <label className="mt-2.5 flex items-center gap-2 text-[11.5px] font-semibold text-ink-200">
+              <label className="mt-2.5 flex items-start gap-2.5 text-[11.5px] font-semibold text-ink-200">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-[#C9A227]"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A227]"
                   checked={cascadeSuspend}
                   onChange={e => setCascadeSuspend(e.target.checked)}
                 />
-                Also suspend any publicly approved listings submitted by this partner
+                <span>Also suspend any publicly approved listings submitted by this partner</span>
               </label>
             )}
-            <div className="mt-3.5 flex gap-2">
+            <div className="mt-3.5 flex flex-wrap gap-2">
               <button disabled={govSaving} onClick={() => void applyPartnerGovernance()} className="btn-brass !px-4 !py-2 text-[11.5px] disabled:opacity-50">
                 {govSaving ? 'Saving…' : 'Confirm & audit-log'}
               </button>

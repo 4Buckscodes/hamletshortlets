@@ -145,7 +145,7 @@ export default function AdminBookings() {
 
           return (
             <article key={b.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
-              <div className="flex flex-wrap items-center gap-4 p-5">
+              <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-[10.5px] font-bold text-brass-300">{b.ref}</span>
@@ -154,20 +154,20 @@ export default function AdminBookings() {
                     {b.refundStatus === 'processed' && <span className="chip border border-teal-400/50 bg-teal-400/10 text-teal-300">Refunded {formatNaira(b.refundAmount ?? b.guestTotal)}</span>}
                     {conflicts.length > 0 && <span className="chip border border-red-400/50 bg-red-400/10 text-red-300">{conflicts.length} overlap flag(s)</span>}
                   </div>
-                  <h2 className="mt-1.5 font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[11px] font-semibold text-ink-300">
-                    <span className="inline-flex items-center gap-1"><CalendarDays size={12} />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n</span>
-                    <span className="inline-flex items-center gap-1"><Users size={12} />{b.guestName} · {b.guests} guest(s)</span>
-                    <span className="inline-flex items-center gap-1"><CircleDollarSign size={12} />{formatNaira(b.guestTotal)} total</span>
+                  <h2 className="mt-1.5 break-words font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] font-semibold text-ink-300">
+                    <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n</span>
+                    <span className="inline-flex items-center gap-1"><Users size={12} className="shrink-0" />{b.guestName} · {b.guests} guest(s)</span>
+                    <span className="inline-flex items-center gap-1 tabular-nums"><CircleDollarSign size={12} className="shrink-0" />{formatNaira(b.guestTotal)} total</span>
                   </p>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  <button onClick={() => setOpen(expand ? null : b.id)} className="flex items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline & actions {expand ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
+                <div className="flex shrink-0 items-center justify-end gap-2">
+                  <button onClick={() => setOpen(expand ? null : b.id)} className="flex items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline & actions {expand ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
                 </div>
               </div>
 
               {/* Action rail */}
-              <div className="flex flex-wrap items-center gap-2 border-t border-ink-800 bg-ink-850/50 px-5 py-3">
+              <div className="flex flex-wrap items-center gap-2 border-t border-ink-800 bg-ink-850/50 px-4 py-3 sm:px-5 [&>button>svg]:shrink-0">
                 {b.status === 'requested' && (
                   <button disabled={busy} onClick={() => void runTransition(b, 'checking', 'Moved to "availability & terms being checked".')} className="btn-ghost-dark !border !border-ink-700 !px-3.5 !py-2 text-[11px] disabled:opacity-50"><Clock3 size={13} /> Begin check</button>
                 )}
@@ -179,7 +179,7 @@ export default function AdminBookings() {
                 )}
                 {b.status === 'awaiting_payment' && backendConfigured && (
                   <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-700 bg-ink-900 px-3 py-1.5 text-[10.5px] font-semibold text-ink-300">
-                    <ShieldCheck size={13} className="text-brass-400" /> Confirms automatically via verified Paystack webhook
+                    <ShieldCheck size={13} className="shrink-0 text-brass-400" /> Confirms automatically via verified Paystack webhook
                   </span>
                 )}
                 {b.status === 'awaiting_payment' && (!backendConfigured || deadlineElapsed) && (
@@ -260,18 +260,18 @@ export default function AdminBookings() {
               <AnimatePresence>
                 {expand && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-800">
-                    <div className="grid gap-6 p-5 lg:grid-cols-2">
+                    <div className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2">
                       <div>
                         <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Price & ledger snapshot</p>
                         <dl className="mt-1.5 space-y-1 text-[11.5px] font-medium text-ink-200">
-                          <div className="flex justify-between"><dt>Subtotal</dt><dd className="tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
-                          <div className="flex justify-between"><dt>Mandatory charges</dt><dd className="tabular-nums">{formatNaira(b.mandatoryTotal)}</dd></div>
-                          <div className="flex justify-between"><dt>HAMLET guest fee (3%)</dt><dd className="tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
-                          <div className="flex justify-between border-t border-ink-800 pt-1 font-bold text-paper"><dt>Guest total</dt><dd className="tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                          <div className="flex justify-between text-ink-400"><dt>Refundable deposit</dt><dd className="tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>Subtotal</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>Mandatory charges</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.mandatoryTotal)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
+                          <div className="flex justify-between gap-3 border-t border-ink-800 pt-1 font-bold text-paper"><dt>Guest total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                          <div className="flex justify-between gap-3 text-ink-400"><dt>Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
                         </dl>
-                        {b.paymentRef && <p className="mt-2 font-mono text-[10px] font-bold text-ink-500">{b.paymentProvider} · {b.paymentRef}</p>}
-                        {b.cancelReason && <p className="mt-2 text-[11px] font-semibold text-red-300">Cancellation reason: {b.cancelReason}</p>}
+                        {b.paymentRef && <p className="mt-2 break-all font-mono text-[10px] font-bold text-ink-500">{b.paymentProvider} · {b.paymentRef}</p>}
+                        {b.cancelReason && <p className="mt-2 break-words text-[11px] font-semibold text-red-300">Cancellation reason: {b.cancelReason}</p>}
                       </div>
                       <div>
                         <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Timeline</p>

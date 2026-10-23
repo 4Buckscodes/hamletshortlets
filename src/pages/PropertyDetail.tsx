@@ -3,17 +3,18 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BedDouble, Bath, Users, MapPin, ShieldCheck, X, Check, ChevronLeft, ChevronRight,
-  AlertTriangle, Info, ListChecks, Banknote, ArrowRight,
+  AlertTriangle, Info, ListChecks, Banknote, ArrowRight, UserPlus, LogIn,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { priceStay, nightsBetween, formatNaira } from '../lib/pricing';
+import { buildAuthPath } from '../lib/authRedirect';
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -28,9 +29,12 @@ export default function PropertyDetail() {
   const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
   const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') ?? '2026-11-13');
   const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') ?? '2026-11-16');
-  const [guests, setGuests] = useState(Number(searchParams.get('guests') ?? '2'));
-  const [showModal, setShowModal] = useState(false);
-  const [note, setNote] = useState('');
+  const [guests, setGuests] = useState(() => {
+    const parsed = Number(searchParams.get('guests') ?? '2');
+    return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
+  });
+  const [showModal, setShowModal] = useState(() => searchParams.get('book') === '1');
+  const [note, setNote] = useState(() => searchParams.get('note') ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [datesUnavailable, setDatesUnavailable] = useState(false);
 
@@ -80,12 +84,31 @@ export default function PropertyDetail() {
     );
   }
 
+  const bookingParams = new URLSearchParams({
+    checkIn,
+    checkOut,
+    guests: String(guests),
+    book: '1',
+  });
+  if (note.trim()) bookingParams.set('note', note.trim());
+  const bookingReturnPath = `/stays/${property.id}?${bookingParams.toString()}`;
+
+  const closeModal = () => {
+    setShowModal(false);
+    if (searchParams.has('book') || searchParams.has('note')) {
+      const cleaned = new URLSearchParams(searchParams);
+      cleaned.delete('book');
+      cleaned.delete('note');
+      setSearchParams(cleaned, { replace: true });
+    }
+  };
+
   const guestCanBook = property.status === 'approved';
   const warning = property.status === 'approved' && nights > 0 && guests > property.capacity
     ? `This home sleeps ${property.capacity} — please reduce guests to ${property.capacity} or fewer.` : '';
 
   const submitRequest = async () => {
-    if (!session) { navigate('/signin'); return; }
+    if (!session) { navigate(buildAuthPath({ signup: true, redirect: bookingReturnPath })); return; }
     if (session.role !== 'guest') { toast('Partner and admin accounts cannot book stays. Use a guest account.', 'error'); return; }
     setSubmitting(true);
     try {
@@ -94,7 +117,7 @@ export default function PropertyDetail() {
         checkIn, checkOut, guests, specialRequests: note.trim() || undefined,
       });
       if (!res.ok) { toast(res.error ?? 'Could not submit request.', 'error'); return; }
-      setShowModal(false);
+      closeModal();
       toast(`Booking request ${res.booking?.ref ?? ''} sent to the host.`);
       navigate('/account');
     } catch (error) {
@@ -115,7 +138,7 @@ export default function PropertyDetail() {
 
         <h1 className="mt-3 font-display text-2xl font-black leading-tight text-ink-900 sm:text-4xl">{property.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-600"><MapPin size={15} className="text-jade-600" />{property.address}</span>
+          <span className="inline-flex items-start gap-1.5 text-[13px] font-semibold text-ink-600"><MapPin size={15} className="mt-0.5 shrink-0 text-jade-600" /><span>{property.address}</span></span>
           <TrustBadge label={property.trustLabel} />
         </div>
 
@@ -141,15 +164,15 @@ export default function PropertyDetail() {
         <div className="mt-8 grid gap-8 lg:grid-cols-12">
           {/* ── Left column ─────────────────────────── */}
           <div className="lg:col-span-7">
-            <div className="flex flex-wrap items-center gap-5 border-b border-ink-100 pb-6 text-[13px] font-semibold text-ink-700">
-              <span className="inline-flex items-center gap-2"><BedDouble size={17} className="text-jade-700" />{property.bedrooms} bedrooms · {property.bedSetup}</span>
-              <span className="inline-flex items-center gap-2"><Bath size={17} className="text-jade-700" />{property.bathrooms} bathrooms</span>
-              <span className="inline-flex items-center gap-2"><Users size={17} className="text-jade-700" />Sleeps {property.capacity}</span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-ink-100 pb-6 text-[13px] font-semibold text-ink-700">
+              <span className="inline-flex items-center gap-2"><BedDouble size={17} className="shrink-0 text-jade-700" />{property.bedrooms} bedrooms · {property.bedSetup}</span>
+              <span className="inline-flex items-center gap-2"><Bath size={17} className="shrink-0 text-jade-700" />{property.bathrooms} bathrooms</span>
+              <span className="inline-flex items-center gap-2"><Users size={17} className="shrink-0 text-jade-700" />Sleeps {property.capacity}</span>
             </div>
 
             {/* Verification panel */}
-            <div className="mt-6 rounded-2xl border border-jade-200 bg-jade-50/60 p-5">
-              <h2 className="flex items-center gap-2 font-display text-base font-black text-jade-900"><ShieldCheck size={18} /> How this home was verified</h2>
+            <div className="mt-6 rounded-2xl border border-jade-200 bg-jade-50/60 p-4 sm:p-5">
+              <h2 className="flex items-center gap-2 font-display text-base font-black text-jade-900"><ShieldCheck size={18} className="shrink-0" /> How this home was verified</h2>
               <p className="mt-1 text-[11.5px] font-medium text-jade-800">Evidence reviewed by a HAMLET operations lead. Outcomes are recorded — self-reported items are labelled as such.</p>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
@@ -161,8 +184,8 @@ export default function PropertyDetail() {
                   <div key={v.label} className="rounded-xl border border-jade-100 bg-white px-3 py-2.5">
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-ink-500">{v.label}</p>
                     <p className={`mt-0.5 flex items-center gap-1 text-[12px] font-bold ${v.s === 'verified' ? 'text-jade-700' : v.s === 'missing' ? 'text-red-700' : 'text-amber-800'}`}>
-                      {v.s === 'verified' ? <Check size={13} strokeWidth={3} /> : <Info size={13} />}
-                      {v.s === 'verified' ? 'Verified' : v.s === 'pending_review' ? 'Pending' : v.s === 'missing' ? 'Missing' : 'Self-reported'}
+                      {v.s === 'verified' ? <Check size={13} strokeWidth={3} className="shrink-0" /> : <Info size={13} className="shrink-0" />}
+                      <span className="truncate">{v.s === 'verified' ? 'Verified' : v.s === 'pending_review' ? 'Pending' : v.s === 'missing' ? 'Missing' : 'Self-reported'}</span>
                     </p>
                   </div>
                 ))}
@@ -182,35 +205,35 @@ export default function PropertyDetail() {
             </ul>
 
             {/* Deposit & charges */}
-            <div className="mt-7 rounded-2xl border border-ink-100 bg-white p-5">
-              <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><Banknote size={17} className="text-jade-700" />Deposit & mandatory charges</h2>
+            <div className="mt-7 rounded-2xl border border-ink-100 bg-white p-4 sm:p-5">
+              <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><Banknote size={17} className="shrink-0 text-jade-700" />Deposit & mandatory charges</h2>
               <dl className="mt-3 space-y-1.5 text-[13px] font-medium text-ink-800">
-                <div className="flex justify-between"><dt>Refundable security deposit</dt><dd className="tabular-nums">{formatNaira(property.deposit)}</dd></div>
-                {property.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between"><dt>{c.label}</dt><dd className="tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable security deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(property.deposit)}</dd></div>
+                {property.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
               </dl>
               <p className="mt-2.5 text-[11px] font-medium leading-relaxed text-ink-400">The deposit is refundable after checkout inspection, is held separately and is never part of the HAMLET fee base. Mandatory charges are known in advance and included in your total before payment.</p>
             </div>
           </div>
 
           {/* ── Booking widget ──────────────────────── */}
-          <aside className="lg:col-span-5">
-            <div className="card sticky top-20 overflow-hidden">
-              <div className="border-b border-ink-100 bg-ink-950 px-6 py-4">
+          <aside className="mt-8 lg:col-span-5 lg:mt-0">
+            <div className="card overflow-hidden lg:sticky lg:top-20">
+              <div className="border-b border-ink-100 bg-ink-950 px-5 py-4 sm:px-6">
                 <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Request to book</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-2xl font-black text-paper">{formatNaira(property.nightlyRate)}</span>
+                <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                  <span className="font-display text-2xl font-black tabular-nums text-paper">{formatNaira(property.nightlyRate)}</span>
                   <span className="text-[12px] font-semibold text-ink-300">/ night · 0% owner fee</span>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-2">
-                  <label>
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label className="min-w-0">
                     <span className="label">Check in</span>
-                    <input type="date" className="input" value={checkIn} min={todayIso} onChange={e => setCheckIn(e.target.value)} />
+                    <input type="date" className="input min-w-0" value={checkIn} min={todayIso} onChange={e => setCheckIn(e.target.value)} />
                   </label>
-                  <label>
+                  <label className="min-w-0">
                     <span className="label">Check out</span>
-                    <input type="date" className="input" value={checkOut} min={checkIn || todayIso} onChange={e => setCheckOut(e.target.value)} />
+                    <input type="date" className="input min-w-0" value={checkOut} min={checkIn || todayIso} onChange={e => setCheckOut(e.target.value)} />
                   </label>
                 </div>
                 <label className="mt-3 block">
@@ -227,11 +250,11 @@ export default function PropertyDetail() {
                 {/* Price breakdown — the shared pricing engine */}
                 {pricing && nights > 0 && !dateError && (
                   <dl className="mt-4 space-y-1.5 border-t border-ink-100 pt-4 text-[13px] font-medium text-ink-800">
-                    <div className="flex justify-between"><dt>{formatNaira(property.nightlyRate)} × {nights} night{nights > 1 ? 's' : ''}</dt><dd className="tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
-                    {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between"><dt className="pr-2 text-ink-600">{c.label}</dt><dd className="tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                    <div className="flex justify-between"><dt>HAMLET guest service fee (3% × {formatNaira(pricing.accommodationSubtotal)})</dt><dd className="tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
-                    <div className="flex justify-between border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900"><dt>Total (₦, before payment)</dt><dd className="tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
-                    <div className="flex justify-between text-[11.5px] text-ink-400"><dt>Refundable deposit (held separately)</dt><dd className="tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">{formatNaira(property.nightlyRate)} × {nights} night{nights > 1 ? 's' : ''}</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
+                    {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0 text-ink-600">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest service fee (3% × {formatNaira(pricing.accommodationSubtotal)})</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
+                    <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900"><dt className="min-w-0">Total (₦, before payment)</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
+                    <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
                   </dl>
                 )}
                 <p className="mt-3 text-[10.5px] font-medium leading-snug text-ink-400">
@@ -260,27 +283,27 @@ export default function PropertyDetail() {
       <AnimatePresence>
         {showModal && pricing && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+            <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={closeModal} />
             <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="relative max-h-[94vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
-              <div className="flex items-start justify-between">
-                <div>
+              className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-t-3xl bg-white p-4 shadow-2xl sm:rounded-3xl sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Confirm your request</p>
                   <h2 className="mt-1 font-display text-xl font-black text-ink-900">{property.title}</h2>
                 </div>
-                <button onClick={() => setShowModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-50"><X size={20} /></button>
+                <button onClick={closeModal} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-50" aria-label="Close"><X size={20} /></button>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl bg-ink-50 p-3 text-center">
-                <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Dates</p><p className="text-[12.5px] font-bold text-ink-900">{checkIn.slice(5)} → {checkOut.slice(5)}</p></div>
+                <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Dates</p><p className="text-[12px] font-bold text-ink-900 sm:text-[12.5px]">{checkIn.slice(5)} → {checkOut.slice(5)}</p></div>
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Nights</p><p className="text-[12.5px] font-bold text-ink-900">{nights}</p></div>
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Guests</p><p className="text-[12.5px] font-bold text-ink-900">{guests}</p></div>
               </div>
               <dl className="mt-4 space-y-1.5 text-[13px] font-medium text-ink-800">
-                <div className="flex justify-between"><dt>Subtotal</dt><dd className="tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
-                {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between"><dt>{c.label}</dt><dd className="tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                <div className="flex justify-between"><dt>HAMLET guest fee (3%)</dt><dd className="tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
-                <div className="flex justify-between border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black"><dt>Total due on acceptance</dt><dd className="tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
-                <div className="flex justify-between text-[11.5px] text-ink-400"><dt>Refundable deposit</dt><dd className="tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.accommodationSubtotal)}</dd></div>
+                {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.hamletGuestServiceFee)}</dd></div>
+                <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black"><dt className="min-w-0">Total due on acceptance</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd></div>
+                <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
               </dl>
               <label className="mt-4 block">
                 <span className="label">Note for the host (optional)</span>
@@ -291,7 +314,20 @@ export default function PropertyDetail() {
                   {submitting ? 'Sending…' : <>Send booking request <ArrowRight size={16} /></>}
                 </button>
               ) : (
-                <Link to="/signin" className="btn-jade mt-4 w-full !py-4">Sign in to send request <ArrowRight size={16} /></Link>
+                <div className="mt-4 space-y-2">
+                  <Link
+                    to={buildAuthPath({ signup: true, redirect: bookingReturnPath })}
+                    className="btn-jade w-full !py-4"
+                  >
+                    <UserPlus size={16} /> Create guest account to book <ArrowRight size={16} />
+                  </Link>
+                  <Link
+                    to={buildAuthPath({ signup: false, redirect: bookingReturnPath })}
+                    className="btn-outline w-full !py-3 text-[13px]"
+                  >
+                    <LogIn size={15} /> Already have an account? Sign in
+                  </Link>
+                </div>
               )}
               <p className="mt-2 text-center text-[10.5px] font-medium text-ink-400">Request → host checks availability & terms → accepted with a payment deadline → confirmed only after verified provider payment.</p>
             </motion.div>

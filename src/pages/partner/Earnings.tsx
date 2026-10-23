@@ -36,9 +36,9 @@ export default function PartnerEarnings() {
           { label: 'Guest fees paid by guests', value: formatNaira(totalGuestFeeExcluded), sub: 'Never deducted from your proceeds', Icon: TrendingUp },
           { label: 'My ledger entries', value: String(myLedger.length), sub: 'Read-only view — full control stays with HAMLET operations', Icon: Receipt },
         ].map(c => (
-          <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-5">
-            <c.Icon size={20} className="text-brass-400" />
-            <p className="mt-3 font-display text-2xl font-black tabular-nums text-ink-50">{c.value}</p>
+          <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
+            <c.Icon size={20} className="shrink-0 text-brass-400" />
+            <p className="mt-3 break-words font-display text-xl font-black tabular-nums text-ink-50 sm:text-2xl">{c.value}</p>
             <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-medium text-ink-500">{c.sub}</p>
           </div>
@@ -46,7 +46,7 @@ export default function PartnerEarnings() {
       </div>
 
       <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Booking-by-booking proceeds</h2>
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-ink-800">
+      <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">Booking</th><th className="th">Stay</th><th className="th">Subtotal</th><th className="th">Mandatory</th><th className="th">Your proceeds (0% fee)</th><th className="th">Status</th></tr></thead>
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">
@@ -66,7 +66,7 @@ export default function PartnerEarnings() {
       </div>
 
       <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Ledger lines for my bookings (read-only)</h2>
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-ink-800">
+      <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">When</th><th className="th">Type</th><th className="th">Description</th><th className="th">Amount</th><th className="th">Variance</th></tr></thead>
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">

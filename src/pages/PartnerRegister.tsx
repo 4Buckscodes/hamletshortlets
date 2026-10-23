@@ -116,7 +116,7 @@ export default function PartnerRegister() {
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">Apply to join</p>
               <h2 className="mt-1.5 font-display text-3xl font-black text-paper">Partner application</h2>
               <p className="mt-1 text-[12px] font-medium text-ink-300">Every application is reviewed manually. Submitting here never grants admin access — roles and permissions are assigned by HAMLET after verification.</p>
-              {backendConfigured && !state.session && <p className="mt-3 rounded-xl border border-brass-500/40 bg-brass-500/10 p-3 text-[11px] font-semibold text-brass-200">Sign in or create a guest account first, then return here to submit your application. <Link to="/signin?mode=signup" className="underline">Create guest account</Link> · <Link to="/signin" className="underline">Sign in</Link></p>}
+              {backendConfigured && !state.session && <p className="mt-3 rounded-xl border border-brass-500/40 bg-brass-500/10 p-3 text-[11px] font-semibold text-brass-200">Sign in or create a guest account first, then return here to submit your application. <Link to="/signin?mode=signup&redirect=%2Fpartner%2Fregister" className="underline">Create guest account</Link> · <Link to="/signin?redirect=%2Fpartner%2Fregister" className="underline">Sign in</Link></p>}
               {backendConfigured && state.session?.role === 'guest' && <p className="mt-3 rounded-xl border border-jade-700 bg-jade-900/40 p-3 text-[11px] font-semibold text-jade-100">Signed in as {state.session.email}; enter this same email below.</p>}
               {errors.account && <p role="alert" className="mt-3 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-[11px] font-semibold text-red-200">{errors.account}</p>}
 
@@ -127,10 +127,10 @@ export default function PartnerRegister() {
                 <label className="sm:col-span-2"><span className="label-dark">Company / trading name</span><input className={`input-dark ${errors.company ? '!border-red-500' : ''}`} value={form.company} onChange={set('company')} placeholder="e.g. Adeyemi Estates Ltd / private owner" />{errors.company && <Err msg={errors.company} />}</label>
                 <div className="sm:col-span-2">
                   <span className="label-dark">Your role</span>
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:grid-cols-3">
                     {ROLES.map(r => (
                       <button key={r.value} type="button" onClick={() => setForm(f => ({ ...f, role: r.value }))} title={r.blurb}
-                        className={`rounded-xl border px-2.5 py-2.5 text-left text-[10.5px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{r.value}</button>
+                        className={`rounded-xl border px-3 py-2.5 text-left text-[11px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{r.value}</button>
                     ))}
                   </div>
                 </div>

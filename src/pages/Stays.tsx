@@ -89,11 +89,17 @@ export default function Stays() {
       </div>
 
       <div className="mx-auto max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12">
+        <div className="mb-4 lg:hidden">
+          <button onClick={() => setShowFilters(v => !v)} className="btn-outline !py-2.5 text-[12px]">
+            <SlidersHorizontal size={15} /> {showFilters ? 'Hide filters' : 'Show filters'}
+          </button>
+        </div>
+
         {/* Filters */}
         <aside className={`${showFilters ? 'block' : 'hidden'} lg:col-span-3 lg:block`}>
-          <div className="card sticky top-20 p-5">
+          <div className="card mb-6 p-5 lg:mb-0 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto lg:overscroll-y-contain">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><SlidersHorizontal size={16} /> Filters</h2>
+              <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-900"><SlidersHorizontal size={16} className="shrink-0" /> Filters</h2>
               <button
                 onClick={() => setParams({}, { replace: true })}
                 className="text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-800"
@@ -108,23 +114,23 @@ export default function Stays() {
               </select>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <label>
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <label className="min-w-0">
                 <span className="label">Check-in</span>
                 <input
                   type="date"
                   min={minDate}
-                  className="input !px-2.5 text-[12px]"
+                  className="input min-w-0 !px-2.5 text-[12px]"
                   value={checkIn}
                   onChange={e => update({ checkIn: e.target.value })}
                 />
               </label>
-              <label>
+              <label className="min-w-0">
                 <span className="label">Check-out</span>
                 <input
                   type="date"
                   min={checkIn || minDate}
-                  className="input !px-2.5 text-[12px]"
+                  className="input min-w-0 !px-2.5 text-[12px]"
                   value={checkOut}
                   onChange={e => update({ checkOut: e.target.value })}
                 />
@@ -181,7 +187,7 @@ export default function Stays() {
             </div>
 
             <div className="mt-5 rounded-xl bg-jade-50 p-3 text-[10.5px] font-semibold leading-relaxed text-jade-900">
-              <ShieldCheck size={13} className="mb-1" />
+              <ShieldCheck size={13} className="mb-1 shrink-0" />
               Only approved, non-suspended listings appear here. Verification outcomes are recorded honestly — see each listing's trust badge.
             </div>
           </div>
@@ -189,10 +195,6 @@ export default function Stays() {
 
         {/* Results */}
         <div className="lg:col-span-9">
-          <button onClick={() => setShowFilters(v => !v)} className="btn-outline mb-4 !py-2.5 text-[12px] lg:hidden">
-            <SlidersHorizontal size={15} /> {showFilters ? 'Hide filters' : 'Show filters'}
-          </button>
-
           {results.length === 0 ? (
             <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
               <SearchX size={40} className="text-ink-300" />

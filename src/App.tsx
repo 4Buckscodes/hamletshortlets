@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-d
 import { useEffect } from 'react';
 import { HamletProvider } from './lib/store';
 import { ToastProvider } from './lib/toast';
+import { buildAuthPath } from './lib/authRedirect';
 import Home from './pages/Home';
 import Stays from './pages/Stays';
 import PropertyDetail from './pages/PropertyDetail';
@@ -33,6 +34,12 @@ function ScrollToTop() {
   return null;
 }
 
+function SignupRedirect() {
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  return <Navigate to={buildAuthPath({ signup: true, redirect: params.get('redirect') })} replace />;
+}
+
 export default function App() {
   return (
     <HamletProvider>
@@ -46,7 +53,7 @@ export default function App() {
             <Route path="/stays/:id" element={<PropertyDetail />} />
             <Route path="/account" element={<Account />} />
             <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<Navigate to="/signin?mode=signup" replace />} />
+            <Route path="/signup" element={<SignupRedirect />} />
             <Route path="/partner/register" element={<PartnerRegister />} />
             <Route path="/legal/:page" element={<Legal />} />
 

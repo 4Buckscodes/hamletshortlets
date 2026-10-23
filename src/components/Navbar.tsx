@@ -1,10 +1,11 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { HamletWordmark } from './Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { HAMLET_TAGLINE } from '../lib/brand';
+import { buildAuthPath } from '../lib/authRedirect';
 
 export function GuestNavbar() {
   const { state, signOut } = useHamlet();
@@ -12,8 +13,14 @@ export function GuestNavbar() {
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const s = state.session;
   const dashboardPath = s?.role === 'admin' ? '/admin' : s?.role === 'partner' ? '/partner' : '/account';
+  const propertyRedirect = location.pathname.startsWith('/stays/')
+    ? `${location.pathname}${location.search}`
+    : null;
+  const signUpHref = buildAuthPath({ signup: true, redirect: propertyRedirect });
+  const signInHref = buildAuthPath({ signup: false, redirect: propertyRedirect });
 
   const nav = [
     { to: '/stays', label: 'Explore stays' },
@@ -36,20 +43,20 @@ export function GuestNavbar() {
           {s ? (
             <div className="relative">
               <button onClick={() => setMenu(v => !v)} className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white py-1.5 pl-1.5 pr-2 transition hover:border-ink-400">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-jade-700 text-[11px] font-black text-white">{s.name.split(' ').map(w => w[0]).slice(0, 2).join('')}</span>
-                <span className="hidden text-[12px] font-bold text-ink-800 sm:block">{s.name.split(' ')[0]}</span>
-                <ChevronDown size={14} className="text-ink-400" />
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-jade-700 text-[11px] font-black text-white">{s.name.split(' ').map(w => w[0]).slice(0, 2).join('')}</span>
+                <span className="hidden max-w-28 truncate text-[12px] font-bold text-ink-800 sm:block">{s.name.split(' ')[0]}</span>
+                <ChevronDown size={14} className="shrink-0 text-ink-400" />
               </button>
               {menu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
-                  <div className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-xl">
+                  <div className="absolute right-0 z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-xl">
                     <div className="border-b border-ink-50 px-4 py-3">
-                      <p className="text-sm font-bold text-ink-900">{s.name}</p>
-                      <p className="text-[11px] text-ink-500">{s.email} · {s.role}</p>
+                      <p className="truncate text-sm font-bold text-ink-900">{s.name}</p>
+                      <p className="truncate text-[11px] text-ink-500">{s.email} · {s.role}</p>
                     </div>
-                    <button onClick={() => { setMenu(false); navigate(dashboardPath); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><LayoutDashboard size={15} />{s.role === 'admin' ? 'Admin console' : s.role === 'partner' ? 'Partner workspace' : 'My bookings'}</button>
-                    {s.role === 'guest' && <button onClick={() => { setMenu(false); navigate('/account'); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><User size={15} />Account & feedback</button>}
+                    <button onClick={() => { setMenu(false); navigate(dashboardPath); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><LayoutDashboard size={15} className="shrink-0" />{s.role === 'admin' ? 'Admin console' : s.role === 'partner' ? 'Partner workspace' : 'My bookings'}</button>
+                    {s.role === 'guest' && <button onClick={() => { setMenu(false); navigate('/account'); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-ink-800 hover:bg-ink-50"><User size={15} className="shrink-0" />Account & feedback</button>}
                     <button onClick={async () => {
                       setMenu(false);
                       try {
@@ -59,20 +66,20 @@ export function GuestNavbar() {
                       } catch (error) {
                         toast(error instanceof Error ? error.message : 'Could not sign out.', 'error');
                       }
-                    }} className="flex w-full items-center gap-2.5 border-t border-ink-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 hover:bg-red-50"><LogOut size={15} />Sign out</button>
+                    }} className="flex w-full items-center gap-2.5 border-t border-ink-50 px-4 py-2.5 text-[13px] font-semibold text-red-700 hover:bg-red-50"><LogOut size={15} className="shrink-0" />Sign out</button>
                   </div>
                 </>
               )}
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/signin?mode=signup" className="hidden rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-2 text-[12px] font-bold text-jade-800 transition hover:border-jade-400 hover:bg-jade-100 sm:inline-flex">
+              <Link to={signUpHref} className="hidden rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-2 text-[12px] font-bold text-jade-800 transition hover:border-jade-400 hover:bg-jade-100 sm:inline-flex">
                 Guest sign up
               </Link>
-              <Link to="/signin" className="btn-dark !px-4 !py-2 text-[12px]">Sign in</Link>
+              <Link to={signInHref} className="btn-dark !px-3.5 !py-2 text-[12px] sm:!px-4">Sign in</Link>
             </div>
           )}
-          <button className="rounded-xl border border-ink-200 p-2 md:hidden" onClick={() => setOpen(v => !v)} aria-label="Menu">
+          <button className="shrink-0 rounded-xl border border-ink-200 p-2 md:hidden" onClick={() => setOpen(v => !v)} aria-label="Menu">
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
@@ -82,8 +89,8 @@ export function GuestNavbar() {
           <div className="flex flex-col gap-1">
             {nav.map(n => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">{n.label}</Link>)}
             <Link to="/partner/register" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50"><LayoutDashboard size={15} /> List your property</Link>
-            {!s && <Link to="/signin?mode=signup" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50">Guest sign up</Link>}
-            {!s && <Link to="/signin" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">Sign in</Link>}
+            {!s && <Link to={signUpHref} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50">Guest sign up</Link>}
+            {!s && <Link to={signInHref} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">Sign in</Link>}
           </div>
         </div>
       )}

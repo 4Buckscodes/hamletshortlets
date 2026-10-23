@@ -31,7 +31,7 @@ export function WorkspaceShell({
   const initials = (s?.name ?? '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   const sidebar = (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-ink-800 bg-ink-950 dark-scroll">
+    <aside className="flex h-full w-64 max-w-[82vw] shrink-0 flex-col border-r border-ink-800 bg-ink-950 dark-scroll">
       <div className="border-b border-ink-800 px-5 py-4">
         <Link to="/" className="flex items-center gap-2.5">
           <HamletMark size={28} light />
@@ -82,25 +82,25 @@ export function WorkspaceShell({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-950 text-ink-100">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-ink-950 text-ink-100">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">{sidebar}</div>
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 h-full">{sidebar}</div>
+          <div className="absolute left-0 top-0 h-full max-w-[82vw]">{sidebar}</div>
         </div>
       )}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-ink-800 bg-ink-950 px-4 lg:px-6">
-          <button className="rounded-lg p-2 text-ink-300 hover:bg-ink-800 lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-ink-800 bg-ink-950 px-4 lg:px-6">
+          <button className="shrink-0 rounded-lg p-2 text-ink-300 hover:bg-ink-800 lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <p className="hidden text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-500 lg:block">HAMLET · {title} · Lagos pilot</p>
-          <p className="text-[10.5px] font-semibold text-ink-500">Thursday, 22 Oct 2026</p>
+          <p className="hidden truncate text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-500 lg:block">HAMLET · {title} · Lagos pilot</p>
+          <p className="truncate text-[10.5px] font-semibold text-ink-500">Thursday, 22 Oct 2026</p>
         </div>
-        <main className="min-w-0 flex-1 overflow-y-auto dark-scroll">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain dark-scroll">{children}</main>
       </div>
     </div>
   );

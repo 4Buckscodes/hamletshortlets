@@ -44,8 +44,8 @@ export default function PartnerOverview() {
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map(c => (
           <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
-            <c.Icon size={20} className={c.tone} />
-            <p className="mt-2.5 font-display text-xl font-black leading-none text-ink-50 sm:text-2xl">{c.value}</p>
+            <c.Icon size={20} className={`shrink-0 ${c.tone}`} />
+            <p className="mt-2.5 break-words font-display text-lg font-black leading-none tabular-nums text-ink-50 sm:text-2xl">{c.value}</p>
             <p className="mt-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-semibold text-ink-500">{c.sub}</p>
           </div>
@@ -55,26 +55,28 @@ export default function PartnerOverview() {
       <div className="mt-6 grid gap-5 xl:grid-cols-5">
         {/* Pending requests */}
         <section className="rounded-2xl border border-ink-800 bg-ink-900 xl:col-span-3">
-          <div className="flex items-center justify-between border-b border-ink-800 px-5 py-4">
-            <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50"><Clock3 size={17} className="text-brass-400" /> Requests needing your action</h2>
-            <Link to="/partner/bookings" className="text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">All bookings <ArrowRight size={11} className="inline" /></Link>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800 px-4 py-4 sm:px-5">
+            <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50"><Clock3 size={17} className="shrink-0 text-brass-400" /> Requests needing your action</h2>
+            <Link to="/partner/bookings" className="shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">All bookings <ArrowRight size={11} className="inline shrink-0" /></Link>
           </div>
           <div className="divide-y divide-ink-800">
             {pending.length === 0 && (
               <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-                <CheckCircle2 size={30} className="text-jade-500" />
+                <CheckCircle2 size={30} className="shrink-0 text-jade-500" />
                 <p className="text-[13px] font-bold text-ink-100">Nothing waiting on you right now.</p>
                 <p className="text-[11.5px] font-medium text-ink-400">New guest requests for your approved properties will appear here.</p>
               </div>
             )}
             {pending.slice(0, 4).map(b => (
-              <div key={b.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
+              <div key={b.id} className="flex flex-col gap-2.5 px-4 py-4 sm:flex-row sm:items-center sm:gap-3 sm:px-5">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] font-bold text-ink-50">{b.propertyTitle}</p>
                   <p className="text-[11px] font-medium text-ink-400">{b.ref} · {formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n · {b.guests} guests</p>
                 </div>
-                <BookingStatusPill status={b.status} />
-                <Link to="/partner/bookings" className="btn-ghost-dark !px-3 !py-2 text-[11px]">Review</Link>
+                <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                  <BookingStatusPill status={b.status} />
+                  <Link to="/partner/bookings" className="btn-ghost-dark !px-3 !py-2 text-[11px]">Review</Link>
+                </div>
               </div>
             ))}
           </div>
@@ -82,13 +84,13 @@ export default function PartnerOverview() {
 
         {/* My properties pipeline */}
         <section className="rounded-2xl border border-ink-800 bg-ink-900 xl:col-span-2">
-          <div className="flex items-center justify-between border-b border-ink-800 px-5 py-4">
+          <div className="flex items-center justify-between gap-2 border-b border-ink-800 px-4 py-4 sm:px-5">
             <h2 className="font-display text-base font-black text-ink-50">My properties</h2>
-            <Link to="/partner/properties" className="text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">Manage <ArrowRight size={11} className="inline" /></Link>
+            <Link to="/partner/properties" className="shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">Manage <ArrowRight size={11} className="inline shrink-0" /></Link>
           </div>
           <div className="divide-y divide-ink-800">
             {myProps.slice(0, 5).map(p => (
-              <Link to="/partner/properties" key={p.id} className="flex items-center gap-3 px-5 py-3.5 transition hover:bg-ink-850">
+              <Link to="/partner/properties" key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5 transition hover:bg-ink-850 sm:flex-nowrap sm:px-5">
                 <img src={p.images[0]} alt="" className="h-12 w-14 shrink-0 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12.5px] font-bold text-ink-50">{p.title}</p>
