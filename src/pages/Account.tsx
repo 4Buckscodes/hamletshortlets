@@ -7,8 +7,11 @@ import {
   UserCog, Building2, Printer, Paperclip, CheckCircle2,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
+import { CurrencyToggle } from '../components/CurrencyToggle';
 import { BookingStatusPill, IssueStatusPill, SeverityPill, ApplicationStatusPill } from '../components/Badges';
 import { useHamlet } from '../lib/store';
+import { useCurrency } from '../lib/currency';
+import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { buildWorkspaceSignInPath } from '../lib/authRedirect';
 import type { Booking } from '../lib/types';
@@ -188,6 +191,11 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
 }
 
 export default function Account() {
+  usePageMeta(
+    'My Bookings & Account | HAMLET',
+    'Track your shortlet booking requests, complete verified payment, view arrival details, and manage guest support on HAMLET.',
+  );
+
   const {
     state,
     bookingTransition,
@@ -201,6 +209,7 @@ export default function Account() {
     backendReady,
     backendError,
   } = useHamlet();
+  const { currency, formatMoney } = useCurrency();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -404,6 +413,7 @@ export default function Account() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <CurrencyToggle />
             {backendConfigured && (
               <button
                 type="button"
@@ -553,14 +563,22 @@ export default function Account() {
                       </div>
                       <div className="flex items-baseline justify-between gap-2 border-t border-ink-50 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
                         <div>
-                          <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatNaira(b.guestTotal)}</p>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">total incl. 3% fee</p>
+                          <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatMoney(b.guestTotal)}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">
+                            total incl. 3% fee{currency === 'USD' ? ` · ${formatNaira(b.guestTotal)}` : ''}
+                          </p>
                         </div>
                         <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
                           Details {open ? <ChevronUp size={13} className="shrink-0" /> : <ChevronDown size={13} className="shrink-0" />}
                         </button>
                       </div>
                     </div>
+
+                    {(b.status === 'requested' || b.status === 'checking') && (
+                      <div className="border-t border-ink-100 bg-clay/50 px-5 py-2.5 text-[11.5px] font-medium text-ink-700">
+                        <strong className="text-ink-900">Your request is on its way.</strong> We’ve shared your booking request for confirmation. Keep an eye on your email and booking page for the next update.
+                      </div>
+                    )}
 
                     {b.status === 'awaiting_payment' && (
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
@@ -585,7 +603,10 @@ export default function Account() {
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-jade-200 bg-jade-50/70 px-5 py-3 text-[12px] font-semibold text-jade-900">
                         <span className="inline-flex items-center gap-1.5">
                           <CheckCircle2 size={15} className="shrink-0 text-jade-700" />
-                          Verified stay{linkedProperty ? ` · ${linkedProperty.address}, ${linkedProperty.area}` : ''}
+                          <span>
+                            <strong>Your stay is {b.status === 'completed' ? 'completed' : 'confirmed'}.</strong>{' '}
+                            {linkedProperty ? `${linkedProperty.address}, ${linkedProperty.area} · ` : ''}Check your booking details for arrival instructions, check-in timing, and contact information.
+                          </span>
                         </span>
                         <button
                           type="button"
@@ -604,11 +625,11 @@ export default function Account() {
                             <div>
                               <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price breakdown</h3>
                               <dl className="mt-2 space-y-1 text-[12px] font-medium text-ink-700">
-                                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
-                                {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
-                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                                <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.accommodationSubtotal)}</dd></div>
+                                {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatMoney(c.amount)}</dd></div>)}
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.hamletGuestFee)}</dd></div>
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.guestTotal)}</dd></div>
+                                <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.deposit)}</dd></div>
                               </dl>
                               {b.paymentRef && <p className="mt-3 break-all font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
                               {b.cancelReason && <p className="mt-2 break-words text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
+import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { AREAS } from '../lib/seed';
 import { formatDateTime } from '../lib/pricing';
@@ -21,6 +22,11 @@ const ROLES = [
 ];
 
 export default function PartnerRegister() {
+  usePageMeta(
+    'List Your Lagos Shortlet Property | HAMLET Partners',
+    'Own or manage a shortlet in Lagos? Join the HAMLET partner network to showcase your property, manage bookings, and reach serious guests.',
+  );
+
   const {
     registerPartner,
     resubmitPartnerApplication,
@@ -164,13 +170,13 @@ export default function PartnerRegister() {
           <Link to="/" className="flex items-center gap-2.5"><HamletMark size={30} light /><span className="font-display text-xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></Link>
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">HAMLET Partner Network</p>
-            <h1 className="mt-3 font-display text-4xl font-black leading-[1.06] text-paper">List on verified<br />ground.</h1>
-            <p className="mt-4 max-w-sm text-[13px] font-medium leading-relaxed text-ink-100">One partner registration for owners, agents, property managers, shortlet operators, co-hosts and referral partners. Approval, role-based access, explicit property assignments — and a 0% HAMLET owner fee.</p>
+            <h1 className="mt-3 font-display text-4xl font-black leading-[1.06] text-paper">Bring your property<br />to the right guests.</h1>
+            <p className="mt-4 max-w-sm text-[13px] font-medium leading-relaxed text-ink-100">Own or manage a shortlet in Lagos? HAMLET helps property owners, managers, and hospitality partners showcase their spaces clearly, connect with serious guests, and manage bookings in one organised place.</p>
             <ul className="mt-6 space-y-3 text-[12px] font-semibold text-ink-100">
               {[
                 { Icon: BadgePercent, t: '0% owner fee — guests pay HAMLET’s 3%, you never do' },
-                { Icon: ShieldCheck, t: 'Evidence-based verification builds trust with every guest you receive' },
-                { Icon: Users, t: 'Role-based access: you only ever see your own data and authorised properties' },
+                { Icon: ShieldCheck, t: 'Present your property with clear details, photos, amenities, and house rules' },
+                { Icon: Users, t: 'Role-based access: manage availability and booking requests from one dashboard' },
                 { Icon: Building2, t: 'Commissions recorded only when specifically agreed in writing' },
               ].map(({ Icon, t }) => (
                 <li key={t} className="flex items-start gap-2.5"><Icon size={16} className="mt-0.5 shrink-0 text-brass-400" />{t}</li>
@@ -269,7 +275,7 @@ export default function PartnerRegister() {
           ) : (
             <motion.form key="form" exit={{ opacity: 0, y: -12 }} onSubmit={submit} className="w-full max-w-xl">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Link to="/" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={13} /> Back to hamlet.ng</Link>
+                <Link to="/" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={13} /> Back to HAMLET</Link>
                 {!session && (
                   <Link
                     to="/signin?redirect=%2Fpartner%2Fregister"

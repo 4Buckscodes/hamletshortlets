@@ -1,21 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, SearchX, ShieldCheck, Building2 } from 'lucide-react';
+import { SlidersHorizontal, SearchX, ShieldCheck, Building2, Search } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
+import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
+import { useCurrency } from '../lib/currency';
+import { usePageMeta } from '../lib/brand';
 import { AREAS } from '../lib/seed';
 import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
 
 const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'Generator', 'Concierge'];
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
+const MAX_PRICE_TIERS = [100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000];
 
 export default function Stays() {
+  usePageMeta(
+    'Explore Shortlets in Lagos | Compare Apartments & Prices — HAMLET',
+    'Browse shortlets across Lagos — Lekki, Victoria Island, Ikoyi, Ikeja, Ajah, and more. Filter by dates, guests, amenities, and compare prices in Naira or USD.',
+  );
+
   const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
+  const { formatPrice } = useCurrency();
   const [params, setParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [unavailableIds, setUnavailableIds] = useState<Set<string>>(() => new Set());
 
+  const keyword = params.get('q') ?? '';
   const area = params.get('area') ?? '';
   const checkIn = params.get('checkIn') ?? '';
   const checkOut = params.get('checkOut') ?? '';
@@ -58,10 +69,17 @@ export default function Stays() {
     update({ amenities: next.join(',') });
   };
 
+  const normalizedQuery = keyword.trim().toLowerCase();
+
   // Only approved, non-suspended listings without overlapping confirmed/held bookings are discoverable for selected dates.
   const results = state.properties
     .filter(p => p.status === 'approved')
     .filter(p => !unavailableIds.has(p.id))
+    .filter(p => {
+      if (!normalizedQuery) return true;
+      const haystack = `${p.title} ${p.area} ${p.address} ${p.type}`.toLowerCase();
+      return haystack.includes(normalizedQuery);
+    })
     .filter(p => !area || p.area === area)
     .filter(p => p.capacity >= guests)
     .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
@@ -69,16 +87,36 @@ export default function Stays() {
     .filter(p => amenities.every(a => p.amenities.includes(a)))
     .sort((a, b) => a.nightlyRate - b.nightlyRate);
 
+  const forwardQuery = new URLSearchParams();
+  if (checkIn) forwardQuery.set('checkIn', checkIn);
+  if (checkOut) forwardQuery.set('checkOut', checkOut);
+  if (guests > 1) forwardQuery.set('guests', String(guests));
+
   return (
     <GuestLayout>
       <div className="border-b border-ink-100 bg-clay/60">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-          <h1 className="font-display text-2xl font-black text-ink-900 sm:text-3xl">Explore verified Lagos stays</h1>
-          <p className="mt-1 text-[12.5px] font-medium text-ink-500">
-            {results.length} approved propert{results.length === 1 ? 'y' : 'ies'}{area ? ` in ${area}` : ''}{checkIn && checkOut ? ` · ${checkIn} → ${checkOut}` : ''} · capacity {guests}+ · only approved listings are shown
-          </p>
-          {backendError && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">Could not load stays: {backendError}</p>}
-          {!backendReady && <p role="status" className="mt-2 text-sm font-semibold text-ink-500">Loading verified stays…</p>}
+        <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-6 sm:px-6">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
+              <Link to="/lagos" className="hover:underline">Lagos shortlets</Link>
+              <span>·</span>
+              <span>Your stay, sorted.</span>
+            </div>
+            <h1 className="mt-1 font-display text-2xl font-black text-ink-900 sm:text-3xl">
+              {keyword.trim() ? `Stays matching “${keyword.trim()}”` : area ? `Shortlets in ${area}` : 'Explore Lagos stays'}
+            </h1>
+            <p className="mt-1 text-[12.5px] font-medium text-ink-500">
+              {!backendReady
+                ? 'Finding spaces that fit your plans…'
+                : `${results.length} approved propert${results.length === 1 ? 'y' : 'ies'}${area ? ` in ${area}` : ''}${checkIn && checkOut ? ` · ${checkIn} → ${checkOut}` : ''} · capacity ${guests}+`}
+            </p>
+            {backendError && (
+              <p role="alert" className="mt-2 text-sm font-semibold text-red-700">
+                Something didn’t go as planned ({backendError}). Please refresh the page and try again.
+              </p>
+            )}
+          </div>
+          <CurrencyToggle />
         </div>
       </div>
 
@@ -98,6 +136,21 @@ export default function Stays() {
                 onClick={() => setParams({}, { replace: true })}
                 className="text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-800"
               >Clear all</button>
+            </div>
+
+            <div className="mt-4">
+              <label className="label" htmlFor="f-q">Neighbourhood or keyword</label>
+              <div className="relative">
+                <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                <input
+                  id="f-q"
+                  type="search"
+                  placeholder="e.g. Lekki, Ikeja, Ikoyi…"
+                  className="input !pl-8.5"
+                  value={keyword}
+                  onChange={e => update({ q: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="mt-4">
@@ -154,12 +207,9 @@ export default function Stays() {
               <label className="label" htmlFor="f-price">Max nightly rate</label>
               <select id="f-price" className="input" value={maxPrice} onChange={e => update({ maxPrice: e.target.value })}>
                 <option value="">No maximum</option>
-                <option value="100000">₦100,000</option>
-                <option value="200000">₦200,000</option>
-                <option value="350000">₦350,000</option>
-                <option value="500000">₦500,000</option>
-                <option value="750000">₦750,000</option>
-                <option value="1000000">₦1,000,000</option>
+                {MAX_PRICE_TIERS.map(tier => (
+                  <option key={tier} value={String(tier)}>{formatPrice(tier)}</option>
+                ))}
               </select>
             </div>
 
@@ -189,37 +239,47 @@ export default function Stays() {
 
             <div className="mt-5 rounded-xl bg-jade-50 p-3 text-[10.5px] font-semibold leading-relaxed text-jade-900">
               <ShieldCheck size={13} className="mb-1 shrink-0" />
-              Only approved, non-suspended listings appear here. Verification outcomes are recorded honestly — see each listing's trust badge.
+              Only approved, non-suspended listings appear here. Verification outcomes are recorded honestly — see each listing’s trust badge.
             </div>
           </div>
         </aside>
 
         {/* Results */}
         <div className="lg:col-span-9">
-          {results.length === 0 ? (
+          {!backendReady ? (
+            <div className="card flex flex-col items-center gap-2 px-6 py-16 text-center">
+              <p role="status" className="font-display text-lg font-bold text-ink-800">Finding spaces that fit your plans…</p>
+            </div>
+          ) : results.length === 0 ? (
             <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
               <SearchX size={40} className="text-ink-300" />
               <h2 className="font-display text-xl font-black text-ink-900">
-                {totalApproved === 0 ? 'Verified Lagos stays are onboarding now' : 'No matches — yet'}
+                {totalApproved === 0 ? 'We’re still adding stays in this area.' : 'Nothing matches your search right now.'}
               </h2>
               <p className="max-w-md text-[13px] font-medium leading-relaxed text-ink-500">
                 {totalApproved === 0
-                  ? 'HAMLET publishes only manually verified Lagos apartments — never sample or uninspected homes. Property owners and managers can apply to list now while our operations team completes initial supply verification.'
-                  : 'No approved properties match those filters right now. Try widening your search or dates — new supply is approved weekly.'}
+                  ? 'Try another neighbourhood or check back as more properties become available. Property owners and managers in Lagos can apply to list now.'
+                  : 'Try adjusting your dates, location, or filters to see more available stays.'}
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2.5">
                 {totalApproved === 0 ? (
-                  <Link to="/partner/register" className="btn-jade !py-2.5 text-[12px]">
-                    <Building2 size={14} /> Apply to list a property
-                  </Link>
+                  <>
+                    <Link to="/partner/register" className="btn-jade !py-2.5 text-[12px]">
+                      <Building2 size={14} /> List your property
+                    </Link>
+                    <Link to="/lagos" className="btn-outline !py-2.5 text-[12px]">Lagos neighbourhood guide</Link>
+                  </>
                 ) : (
-                  <button onClick={() => setParams({}, { replace: true })} className="btn-jade !py-2.5 text-[12px]">Clear filters</button>
+                  <>
+                    <button onClick={() => setParams({}, { replace: true })} className="btn-jade !py-2.5 text-[12px]">Clear filters</button>
+                    <Link to="/lagos" className="btn-outline !py-2.5 text-[12px]">Browse Lagos neighbourhoods</Link>
+                  </>
                 )}
               </div>
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {results.map(p => <PropertyCard key={p.id} p={p} searchQuery={params.toString()} />)}
+              {results.map(p => <PropertyCard key={p.id} p={p} searchQuery={forwardQuery.toString()} />)}
             </div>
           )}
         </div>
