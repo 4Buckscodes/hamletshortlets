@@ -10,6 +10,7 @@ import {
   resolvePostSignInRedirect,
   resolvePostSignUpRedirect,
   sanitizeGuestRedirect,
+  sanitizeInternalRedirect,
 } from '../lib/authRedirect';
 
 const DEMO_ACCOUNTS = [
@@ -25,8 +26,19 @@ export default function SignIn() {
   const [searchParams, setSearchParams] = useSearchParams();
   const creatingAccount = searchParams.get('mode') === 'signup';
   const redirectParam = searchParams.get('redirect');
-  const safeRedirect = sanitizeGuestRedirect(redirectParam);
-  const returningToProperty = Boolean(safeRedirect && safeRedirect.startsWith('/stays/'));
+  const safeGuestRedirect = sanitizeGuestRedirect(redirectParam);
+  const safeInternalRedirect = sanitizeInternalRedirect(redirectParam);
+  const returningToProperty = Boolean(safeGuestRedirect && safeGuestRedirect.startsWith('/stays/'));
+  const returningToPartnerWorkspace = Boolean(
+    safeInternalRedirect &&
+      (safeInternalRedirect === '/partner' ||
+        (safeInternalRedirect.startsWith('/partner/') &&
+          !safeInternalRedirect.startsWith('/partner/register'))),
+  );
+  const returningToAdminWorkspace = Boolean(
+    safeInternalRedirect &&
+      (safeInternalRedirect === '/admin' || safeInternalRedirect.startsWith('/admin/')),
+  );
 
   const [email, setEmail] = useState(() => (backendConfigured || creatingAccount ? '' : 'guest@hamlet.ng'));
   const [password, setPassword] = useState(() => (backendConfigured || creatingAccount ? '' : 'demo1234'));
@@ -38,10 +50,16 @@ export default function SignIn() {
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const updateAuthParams = (signup: boolean, nextRedirect: string | null = safeRedirect) => {
+  const updateAuthParams = (signup: boolean, nextRedirect?: string | null) => {
+    const resolvedRedirect =
+      nextRedirect !== undefined
+        ? nextRedirect
+        : signup
+          ? safeGuestRedirect
+          : safeInternalRedirect;
     const next = new URLSearchParams();
     if (signup) next.set('mode', 'signup');
-    if (nextRedirect) next.set('redirect', nextRedirect);
+    if (resolvedRedirect) next.set('redirect', resolvedRedirect);
     setSearchParams(next, { replace: true });
   };
 
@@ -185,6 +203,22 @@ export default function SignIn() {
               <Home size={14} className="shrink-0 text-jade-700" />
               <span>
                 You’ll return directly to your selected stay after {creatingAccount ? 'creating your guest account' : 'signing in'}.
+              </span>
+            </p>
+          )}
+          {!creatingAccount && returningToPartnerWorkspace && (
+            <p className="mb-4 flex items-center gap-2 rounded-xl border border-brass-400/50 bg-brass-200/30 px-3 py-2.5 text-[11.5px] font-semibold text-ink-900">
+              <Building2 size={14} className="shrink-0 text-brass-700" />
+              <span>
+                Sign in with your authorised partner account to open your requested booking directly in the Partner Workspace.
+              </span>
+            </p>
+          )}
+          {!creatingAccount && returningToAdminWorkspace && (
+            <p className="mb-4 flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-[11.5px] font-semibold text-ink-800">
+              <KeyRound size={14} className="shrink-0 text-ink-700" />
+              <span>
+                Sign in with your HAMLET operations account to open the requested booking directly.
               </span>
             </p>
           )}

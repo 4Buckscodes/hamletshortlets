@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ChevronDown, ChevronUp, CalendarDays, Users, ShieldCheck, Ban, Clock3,
-  RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign, AlertTriangle,
+  RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign, AlertTriangle, Mail,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
@@ -26,11 +27,23 @@ type PendingAction =
   | { bookingId: string; kind: 'refund' };
 
 export default function AdminBookings() {
-  const { state, backendConfigured, bookingTransition, verifyPayment, recordBookingRefund } = useHamlet();
+  const {
+    state,
+    backendConfigured,
+    bookingTransition,
+    verifyPayment,
+    recordBookingRefund,
+    retryBookingNotifications,
+  } = useHamlet();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('needs_action');
-  const [open, setOpen] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const deepLinkedBooking = searchParams.get('booking')?.trim() || null;
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(() =>
+    deepLinkedBooking ? 'all' : 'needs_action',
+  );
+  const [open, setOpen] = useState<string | null>(deepLinkedBooking);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [retryingNotifId, setRetryingNotifId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionNote, setActionNote] = useState('');
   const [refundAmount, setRefundAmount] = useState<number>(0);
@@ -41,6 +54,14 @@ export default function AdminBookings() {
     const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  const resolvedOpenId = useMemo(() => {
+    if (!open) return null;
+    const match = state.bookings.find(
+      b => b.id.toLowerCase() === open.toLowerCase() || b.ref.toLowerCase() === open.toLowerCase(),
+    );
+    return match ? match.id : open;
+  }, [open, state.bookings]);
 
   const filtered = state.bookings.filter(b => {
     if (filter === 'all') return true;
@@ -136,12 +157,16 @@ export default function AdminBookings() {
 
       <div className="mt-5 grid gap-4">
         {filtered.map(b => {
-          const expand = open === b.id;
+          const expand = resolvedOpenId === b.id;
           const conflicts = overlapping(b);
           const busy = busyId === b.id;
           const activePrompt = pendingAction?.bookingId === b.id ? pendingAction : null;
           const deadlineElapsed = b.paymentDeadline ? new Date(b.paymentDeadline).getTime() <= nowMs : false;
           const canRecordRefund = ['cancelled', 'disputed', 'no_show'].includes(b.status) && b.refundStatus !== 'processed';
+          const bookingNotifications = state.notifications.filter(n => n.bookingId === b.id);
+          const hasRetryableNotifications = bookingNotifications.some(
+            n => (n.deliveryStatus === 'pending' || n.deliveryStatus === 'failed') && n.attemptCount < n.maxAttempts,
+          );
 
           return (
             <article key={b.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
@@ -283,6 +308,87 @@ export default function AdminBookings() {
                           ))}
                         </ol>
                       </div>
+                    </div>
+
+                    {/* Email Notification Outbox & Delivery Log */}
+                    <div className="border-t border-ink-800 bg-ink-950/50 p-4 sm:p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="flex items-center gap-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-400">
+                          <Mail size={12} className="shrink-0 text-brass-400" /> Email notification outbox ({bookingNotifications.length})
+                        </p>
+                        {backendConfigured && hasRetryableNotifications && (
+                          <button
+                            type="button"
+                            disabled={retryingNotifId === b.id}
+                            onClick={() => {
+                              setRetryingNotifId(b.id);
+                              void retryBookingNotifications(b.id)
+                                .then(res => {
+                                  if (res.ok) {
+                                    toast(`Sent ${res.sent} pending notification(s) for ${b.ref}.`, 'success');
+                                  } else {
+                                    toast(
+                                      res.error || `Notification retry completed with ${res.failed} failure(s).`,
+                                      'error',
+                                    );
+                                  }
+                                })
+                                .finally(() => setRetryingNotifId(null));
+                            }}
+                            className="btn-ghost-dark !border !border-ink-700 !px-3 !py-1.5 text-[10.5px] disabled:opacity-50"
+                          >
+                            <RefreshCcw size={11} className={retryingNotifId === b.id ? 'animate-spin' : ''} />
+                            {retryingNotifId === b.id ? 'Dispatching…' : 'Dispatch / retry emails'}
+                          </button>
+                        )}
+                      </div>
+
+                      {bookingNotifications.length === 0 ? (
+                        <p className="mt-2 text-[11px] font-medium text-ink-500">
+                          No email notification records logged for this booking yet.
+                        </p>
+                      ) : (
+                        <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
+                          {bookingNotifications.map(notif => (
+                            <div
+                              key={notif.id}
+                              className="rounded-xl border border-ink-800 bg-ink-900 p-3 text-[11px]"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                                <span className="font-mono text-[10px] font-bold uppercase text-brass-300">
+                                  {notif.recipientType} · {notif.eventType.replace(/^booking_/, '').replace(/_/g, ' ')}
+                                </span>
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase ${
+                                    notif.deliveryStatus === 'sent'
+                                      ? 'bg-jade-950 text-jade-300'
+                                      : notif.deliveryStatus === 'failed'
+                                        ? 'bg-red-950 text-red-300'
+                                        : 'bg-ink-800 text-ink-300'
+                                  }`}
+                                >
+                                  {notif.deliveryStatus} ({notif.attemptCount}/{notif.maxAttempts})
+                                </span>
+                              </div>
+                              {notif.recipientEmail && (
+                                <p className="mt-1 break-all text-[10.5px] font-semibold text-ink-200">
+                                  To: {notif.recipientEmail}
+                                </p>
+                              )}
+                              {notif.providerMessageId && (
+                                <p className="mt-0.5 break-all font-mono text-[9.5px] text-ink-400">
+                                  Resend ID: {notif.providerMessageId}
+                                </p>
+                              )}
+                              {notif.lastError && (
+                                <p className="mt-1 break-words text-[10.5px] font-medium text-red-300">
+                                  {notif.lastError}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
