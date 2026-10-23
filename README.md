@@ -37,37 +37,48 @@ clients load or refresh data and periodically while the app is open.
 Verified payment webhook confirmation, controlled ledger reconciliation,
 duplicate-listing protection, post-confirmation admin operations & refunds,
 issue assignment/escalation/resolution, and partner property assignments are in
-`supabase/migrations/20261023100000_payments_ledger_and_operations.sql`, paired
-with the server-side Paystack webhook Edge Function in
+`supabase/migrations/20261023100000_payments_ledger_and_operations.sql`.
+Partner account suspension/reinstatement, structured property correction &
+resubmission, Lagos-only geography validation, private pilot stay feedback, and
+privacy-safe date availability lookups are in
+`supabase/migrations/20261023120000_pilot_feedback_partner_governance_and_corrections.sql`,
+paired with the server-side Paystack Edge Functions in
+`supabase/functions/paystack-initialize/index.ts` and
 `supabase/functions/paystack-webhook/index.ts` (see `MVP_SPECIFICATION.md` for
 the locked Version 1.0 product and commercial rules). Configure
 `PAYSTACK_SECRET_KEY` via `supabase secrets set` — never in `.env.local` or
-`VITE_*` variables — so `confirm_booking_payment_webhook` is invoked
-exclusively by `service_role` after `HMAC-SHA512` signature verification.
+`VITE_*` variables — so checkout initialization and `confirm_booking_payment_webhook`
+run exclusively server-side.
 
-Database-level booking lifecycle, payment/ledger, operations, and pricing tests
-run without Docker via `npm test` (`vitest run`).
-`supabase/tests/booking_lifecycle.test.ts` and
-`supabase/tests/payments_ledger_and_operations.test.ts` boot an isolated
+Database-level booking lifecycle, payment/ledger, operations, partner
+governance, private feedback, checkout initialization, and pricing tests run
+without Docker via `npm test` (`vitest run`).
+`supabase/tests/booking_lifecycle.test.ts`,
+`supabase/tests/payments_ledger_and_operations.test.ts`, and
+`supabase/tests/pilot_feedback_governance_and_checkout.test.ts` boot an isolated
 in-memory PostgreSQL instance via `@electric-sql/pglite`, apply every migration
 in `supabase/migrations/*.sql`, and verify the real PostgreSQL triggers, RLS
-policies, role grants, `SECURITY DEFINER` RPCs, and `HMAC-SHA512` webhook
-signature checks without connecting to your live project. If Docker and a local
+policies, role grants, `SECURITY DEFINER` RPCs, and Paystack Edge Function
+handlers without connecting to your live project. If Docker and a local
 Supabase stack (`npx supabase start`) are available,
 `supabase/tests/booking_lifecycle.test.sql` can also be run via
 `npm run test:pgtap`.
 
 When Supabase is configured, sign-in/session restoration, guest account
-creation, public approved-listing reads, partner applications, partner
-property submissions (with normalized duplicate checks), guest booking requests
-and cancellations, partner availability decisions, verified Paystack webhook
-confirmations, controlled ledger reconciliation & refunds, partner property
-assignments/revocations, and issue workflows use Supabase with database
-policies and server-side transition checks. Property evidence declarations are
-stored as self-reported and require manual review; file uploads and automated
-checkout session initiation still require live provider setup. Without Supabase
-configuration, the app continues to use its local demo store. The demo payment
-flow is disabled in Supabase mode and is never treated as proof of payment.
+creation, public approved-listing reads (with privacy-safe date conflict
+filtering), partner applications and partner account suspension/reinstatement,
+partner property submissions and structured correction edits (with Lagos-only
+and normalized duplicate checks), guest booking requests and cancellations,
+partner availability decisions, server-initialized Paystack checkouts and
+verified webhook confirmations, controlled ledger reconciliation, manual
+adjustments & refunds, partner property assignments/revocations, issue
+workflows, and private post-stay pilot feedback all run against Supabase with
+database policies and server-side transition checks. Property evidence
+declarations are stored as self-reported and require manual review; binary file
+uploads and live Paystack merchant onboarding remain open launch dependencies.
+Without Supabase configuration, the app continues to use its local demo store.
+The demo payment flow is disabled in Supabase mode and browser redirects are
+never treated as proof of payment.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

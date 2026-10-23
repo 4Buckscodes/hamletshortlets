@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   CreditCard, X, ChevronDown, ChevronUp, MessageSquarePlus, ShieldCheck,
-  Star, BedDouble, CalendarDays, AlertCircle, Loader2, Lock, Receipt, LifeBuoy,
+  Star, BedDouble, CalendarDays, AlertCircle, Loader2, Lock, Receipt, LifeBuoy, RefreshCcw,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { BookingStatusPill } from '../components/Badges';
@@ -68,7 +68,7 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 font-display text-sm font-black text-white">P</span>
-              <div><p className="text-[13px] font-black text-white">Paystack Checkout</p><p className="text-[9.5px] font-semibold text-white/80">Test mode · webhook-verified · {session.email}</p></div>
+              <div><p className="text-[13px] font-black text-white">Paystack Checkout</p><p className="text-[9.5px] font-semibold text-white/80">Demo simulation · webhook-verified · {session.email}</p></div>
             </div>
             {stage === 'idle' && <button onClick={onClose} aria-label="Close"><X size={20} className="text-white/80" /></button>}
           </div>
@@ -116,9 +116,11 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
   const [category, setCategory] = useState<Parameters<typeof reportIssue>[0]['category']>('Property condition');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
     if (!subject.trim() || !description.trim()) { toast('Please describe the issue.', 'error'); return; }
+    setSubmitting(true);
     try {
       const issue = await reportIssue({
         bookingRef: booking.ref, propertyTitle: booking.propertyTitle,
@@ -129,6 +131,8 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
       onClose();
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not report the issue.', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -148,15 +152,25 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
         </label>
         <label className="mt-3 block"><span className="label">Subject</span><input className="input" value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. AC not cooling on arrival" /></label>
         <label className="mt-3 block"><span className="label">What happened?</span><textarea className="input min-h-[80px] resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the issue, when it happened and what you need…" /></label>
-        <button onClick={submit} className="btn-jade mt-4 w-full">Submit issue to HAMLET support</button>
+        <button disabled={submitting} onClick={() => void submit()} className="btn-jade mt-4 w-full disabled:opacity-50">{submitting ? 'Submitting…' : 'Submit issue to HAMLET support'}</button>
       </motion.div>
     </motion.div>
   );
 }
 
 export default function Account() {
-  const { state, bookingTransition, addFeedback, backendConfigured, backendReady, backendError } = useHamlet();
+  const {
+    state,
+    bookingTransition,
+    submitBookingFeedback,
+    initializeBookingCheckout,
+    refreshState,
+    backendConfigured,
+    backendReady,
+    backendError,
+  } = useHamlet();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const session = state.session;
   const [expanded, setExpanded] = useState<string | null>(null);
   const [payFor, setPayFor] = useState<Booking | null>(null);
@@ -164,7 +178,17 @@ export default function Account() {
   const [fbRating, setFbRating] = useState(5);
   const [fbText, setFbText] = useState('');
   const [fbCategory, setFbCategory] = useState('Stay experience');
+  const [submittingFbId, setSubmittingFbId] = useState<string | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [checkoutBusyId, setCheckoutBusyId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const returnedFromPayment = searchParams.get('payment') === 'returned';
+
+  useEffect(() => {
+    if (!returnedFromPayment || !backendConfigured) return;
+    void refreshState().catch(() => { /* surfaced via manual refresh if needed */ });
+  }, [returnedFromPayment, backendConfigured, refreshState]);
 
   const myBookings = useMemo(
     () => state.bookings.filter(b => b.guestId === session?.userId).sort((a, b) => +new Date(b.requestedAt) - +new Date(a.requestedAt)),
@@ -201,11 +225,50 @@ export default function Account() {
     );
   }
 
-  const submitFeedback = (bookingRef: string) => {
-    if (!fbText.trim()) { toast('Please write a few words.', 'error'); return; }
-    addFeedback({ bookingRef, guestName: session.name, rating: fbRating, text: fbText.trim(), category: fbCategory });
-    setFbText(''); setFbRating(5);
-    toast('Thank you — feedback recorded privately for the pilot.');
+  const submitFeedback = async (booking: Booking) => {
+    if (fbText.trim().length < 5) { toast('Please write at least 5 characters.', 'error'); return; }
+    setSubmittingFbId(booking.id);
+    try {
+      await submitBookingFeedback({
+        bookingId: booking.id,
+        bookingRef: booking.ref,
+        propertyTitle: booking.propertyTitle,
+        rating: fbRating,
+        category: fbCategory,
+        text: fbText.trim(),
+      });
+      setFbText('');
+      setFbRating(5);
+      toast('Thank you — feedback recorded privately for HAMLET operations.');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not submit feedback.', 'error');
+    } finally {
+      setSubmittingFbId(null);
+    }
+  };
+
+  const startConnectedCheckout = async (booking: Booking) => {
+    setCheckoutBusyId(booking.id);
+    try {
+      const { authorizationUrl } = await initializeBookingCheckout(booking.id);
+      window.location.assign(authorizationUrl);
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Online checkout could not be started.', 'error');
+    } finally {
+      setCheckoutBusyId(null);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshState();
+      toast('Booking status refreshed.');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not refresh status.', 'error');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -219,6 +282,23 @@ export default function Account() {
           </div>
           <Link to="/stays" className="btn-outline !py-2.5 text-[12px]">Book another stay</Link>
         </div>
+
+        {returnedFromPayment && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-300 bg-sky-50 px-4 py-3.5 text-[12px] font-semibold text-sky-950">
+            <div className="max-w-2xl">
+              <p className="font-bold">Returned from Paystack checkout</p>
+              <p className="mt-0.5 text-[11.5px] font-medium text-sky-900">
+                A browser redirect is never proof of payment. Your booking transitions to <strong>Confirmed</strong> automatically as soon as Paystack's signed server webhook is verified.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button disabled={refreshing} onClick={() => void handleRefresh()} className="btn-outline !px-3 !py-1.5 text-[11px]">
+                <RefreshCcw size={13} className={refreshing ? 'animate-spin' : ''} /> Refresh status
+              </button>
+              <button onClick={() => setSearchParams({}, { replace: true })} className="text-[11px] font-bold text-sky-800 hover:underline">Dismiss</button>
+            </div>
+          </div>
+        )}
 
         {/* Pilot notice: private feedback, no public reviews yet */}
         <div className="mt-5 flex items-start gap-3 rounded-2xl border border-brass-400/40 bg-brass-200/30 px-4 py-3 text-[12px] font-semibold leading-relaxed text-ink-800">
@@ -238,10 +318,11 @@ export default function Account() {
 
           {myBookings.map(b => {
             const open = expanded === b.id;
-            const canPay = !backendConfigured && b.status === 'awaiting_payment';
             const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
             const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
             const canFeedback = ['completed', 'disputed'].includes(b.status);
+            const existingFeedback = state.feedback.find(f => f.bookingRef === b.ref);
+
             return (
               <article key={b.id} className="card overflow-hidden">
                 <div className="flex flex-wrap items-center gap-4 p-5">
@@ -266,13 +347,22 @@ export default function Account() {
                   </div>
                 </div>
 
-                {backendConfigured && b.status === 'awaiting_payment' && (
-                  <p className="border-t border-amber-200 bg-amber-50 px-5 py-3 text-[12px] font-semibold text-amber-900">Online payment is not enabled yet. Do not send payment outside a verified HAMLET checkout.</p>
-                )}
-                {canPay && (
+                {b.status === 'awaiting_payment' && (
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
-                    <p className="text-[12px] font-bold text-amber-900">Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — after which the booking expires and dates are released.</p>
-                    <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(b.guestTotal)}</button>
+                    <p className="max-w-xl text-[12px] font-bold text-amber-900">
+                      Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (screenshots or off-platform transfers never confirm a stay).
+                    </p>
+                    {backendConfigured ? (
+                      <button
+                        disabled={checkoutBusyId === b.id}
+                        onClick={() => void startConnectedCheckout(b)}
+                        className="btn-brass !px-4 !py-2.5 text-[12px] disabled:opacity-50"
+                      >
+                        <CreditCard size={15} /> {checkoutBusyId === b.id ? 'Starting checkout…' : `Pay ${formatNaira(b.guestTotal)}`}
+                      </button>
+                    ) : (
+                      <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(b.guestTotal)}</button>
+                    )}
                   </div>
                 )}
 
@@ -324,23 +414,35 @@ export default function Account() {
                           </ol>
                         </div>
                       </div>
-                      {canFeedback && !backendConfigured && (
+                      {canFeedback && (
                         <div className="border-t border-ink-100 bg-clay/50 p-5">
-                          <h3 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} /> Private pilot feedback — not public</h3>
-                          <div className="mt-2 flex items-center gap-1.5">
-                            {[1, 2, 3, 4, 5].map(n => (
-                              <button key={n} onClick={() => setFbRating(n)} aria-label={`${n} stars`}>
-                                <Star size={22} className={n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'} strokeWidth={1.5} />
-                              </button>
-                            ))}
-                            <select className="input ml-3 !w-auto !py-1.5 text-[11px]" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
-                              {['Stay experience', 'Property condition', 'Check-in & access', 'Value for money', 'Host communication'].map(c => <option key={c}>{c}</option>)}
-                            </select>
-                          </div>
-                          <div className="mt-2 flex gap-2">
-                            <input className="input" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
-                            <button className="btn-dark !px-4 !py-2 text-[12px]" onClick={() => submitFeedback(b.ref)}>Send</button>
-                          </div>
+                          <h3 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} /> Private pilot feedback — reviewed by HAMLET operations only</h3>
+                          {existingFeedback ? (
+                            <div className="mt-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-[12px] font-medium text-ink-800">
+                              <p className="font-bold text-jade-800">{existingFeedback.rating}/5 · {existingFeedback.category}</p>
+                              <p className="mt-1">“{existingFeedback.text}”</p>
+                              <p className="mt-1 text-[10px] font-semibold text-ink-400">Submitted privately on {formatDateTime(existingFeedback.at)}</p>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                {[1, 2, 3, 4, 5].map(n => (
+                                  <button key={n} type="button" onClick={() => setFbRating(n)} aria-label={`${n} stars`}>
+                                    <Star size={22} className={n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'} strokeWidth={1.5} />
+                                  </button>
+                                ))}
+                                <select className="input ml-3 !w-auto !py-1.5 text-[11px]" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
+                                  {['Stay experience', 'Property condition', 'Check-in & access', 'Value for money', 'Host communication'].map(c => <option key={c}>{c}</option>)}
+                                </select>
+                              </div>
+                              <div className="mt-2 flex gap-2">
+                                <input className="input" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
+                                <button disabled={submittingFbId === b.id} className="btn-dark !px-4 !py-2 text-[12px] disabled:opacity-50" onClick={() => void submitFeedback(b)}>
+                                  {submittingFbId === b.id ? 'Sending…' : 'Send'}
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
                     </motion.div>

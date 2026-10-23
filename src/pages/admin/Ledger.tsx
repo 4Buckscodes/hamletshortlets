@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Info, Landmark, ScrollText, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Landmark, PlusCircle, ScrollText, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
@@ -19,7 +19,7 @@ const TYPE_META: Record<LedgerType, { label: string; cls: string }> = {
 };
 
 export default function AdminLedger() {
-  const { state, reconcileLedgerEntry } = useHamlet();
+  const { state, reconcileLedgerEntry, recordLedgerAdjustment } = useHamlet();
   const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | LedgerType>('all');
   const [selected, setSelected] = useState<LedgerEntry | null>(null);
@@ -27,6 +27,18 @@ export default function AdminLedger() {
   const [nextVariance, setNextVariance] = useState<number>(0);
   const [reconcileNote, setReconcileNote] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Manual ledger adjustment modal state
+  const [showAdd, setShowAdd] = useState(false);
+  const [adjBookingId, setAdjBookingId] = useState('');
+  const [adjType, setAdjType] = useState<LedgerType>('accommodation_revenue');
+  const [adjAmount, setAdjAmount] = useState<number>(0);
+  const [adjStatus, setAdjStatus] = useState<LedgerStatus>('settled');
+  const [adjDesc, setAdjDesc] = useState('');
+  const [adjRef, setAdjRef] = useState('');
+  const [adjVariance, setAdjVariance] = useState<number>(0);
+  const [adjNote, setAdjNote] = useState('');
+  const [adjSaving, setAdjSaving] = useState(false);
 
   const entries = state.ledger.filter(l => filter === 'all' || l.type === filter);
   const totals = useMemo(() => {
@@ -80,11 +92,46 @@ export default function AdminLedger() {
     }
   };
 
+  const saveAdjustment = async () => {
+    if (!adjBookingId) { toast('Select a booking reference.', 'error'); return; }
+    setAdjSaving(true);
+    try {
+      await recordLedgerAdjustment({
+        bookingId: adjBookingId,
+        type: adjType,
+        amount: adjAmount,
+        status: adjStatus,
+        description: adjDesc,
+        providerRef: adjRef || undefined,
+        variance: adjVariance,
+        note: adjNote || undefined,
+      });
+      toast('Manual ledger entry recorded and audit-logged.');
+      setShowAdd(false);
+      setAdjDesc('');
+      setAdjRef('');
+      setAdjNote('');
+      setAdjAmount(0);
+      setAdjVariance(0);
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not record manual ledger entry.', 'error');
+    } finally {
+      setAdjSaving(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Financial records</p>
-      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Transaction ledger & settlement</h1>
-      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Controlled pilot ledger — every line carries booking reference, amount, status, provider reference, fee calc, refunds, variance and the responsible operator. Manual reconciliation; HAMLET holds no customer funds; no internal wallet.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Financial records</p>
+          <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Transaction ledger & settlement</h1>
+          <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Controlled pilot ledger — every line carries booking reference, amount, status, provider reference, fee calc, refunds, variance and the responsible operator. Manual reconciliation; HAMLET holds no customer funds; no internal wallet.</p>
+        </div>
+        <button onClick={() => { setShowAdd(true); if (!adjBookingId && state.bookings[0]) setAdjBookingId(state.bookings[0].id); }} className="btn-brass !py-2.5 text-[12px]">
+          <PlusCircle size={15} /> Record manual entry
+        </button>
+      </div>
 
       {/* Undecided policy banner */}
       <div className="mt-4 flex flex-wrap items-start gap-3 rounded-2xl border border-violet-500/30 bg-violet-500/5 px-4 py-3.5 text-[11px] font-semibold leading-relaxed text-violet-200">
@@ -176,6 +223,78 @@ export default function AdminLedger() {
                 <button onClick={() => setSelected(null)} disabled={saving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
                 <button onClick={() => void saveReconciliation()} disabled={saving} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
                   <CheckCircle2 size={14} /> {saving ? 'Saving…' : 'Save & audit-log'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAdd && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { if (!adjSaving) setShowAdd(false); }} />
+            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative w-full max-w-lg rounded-2xl border border-ink-800 bg-ink-900 p-6 shadow-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Manual pilot settlement / adjustment</p>
+                  <h2 className="mt-1 font-display text-lg font-black text-ink-50">Record ledger entry</h2>
+                </div>
+                <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white"><X size={18} /></button>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Booking</span>
+                  <select className="input-dark" value={adjBookingId} onChange={e => setAdjBookingId(e.target.value)}>
+                    <option value="">— select booking —</option>
+                    {state.bookings.map(b => (
+                      <option key={b.id} value={b.id}>{b.ref} · {b.propertyTitle} ({b.status})</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span className="label-dark">Concept / type</span>
+                  <select className="input-dark" value={adjType} onChange={e => setAdjType(e.target.value as LedgerType)}>
+                    {(Object.keys(TYPE_META) as LedgerType[]).map(t => (
+                      <option key={t} value={t}>{TYPE_META[t].label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span className="label-dark">Status</span>
+                  <select className="input-dark" value={adjStatus} onChange={e => setAdjStatus(e.target.value as LedgerStatus)}>
+                    {(['recorded', 'reconciled', 'settled', 'pending', 'flagged'] as const).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span className="label-dark">Amount (₦)</span>
+                  <input type="number" min={0} className="input-dark" value={adjAmount} onChange={e => setAdjAmount(Number(e.target.value))} />
+                </label>
+                <label>
+                  <span className="label-dark">Variance (₦, 0 = clean)</span>
+                  <input type="number" className="input-dark" value={adjVariance} onChange={e => setAdjVariance(Number(e.target.value))} />
+                </label>
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Description (min 8 characters)</span>
+                  <input className="input-dark" placeholder="e.g. Manual owner bank transfer settlement — dual operator sign-off" value={adjDesc} onChange={e => setAdjDesc(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Provider / bank ref (optional)</span>
+                  <input className="input-dark" placeholder="e.g. NIP_SETTLE_0092" value={adjRef} onChange={e => setAdjRef(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Operator note (optional)</span>
+                  <input className="input-dark" placeholder="Batch or dual sign-off ref" value={adjNote} onChange={e => setAdjNote(e.target.value)} />
+                </label>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
+                <button onClick={() => void saveAdjustment()} disabled={adjSaving} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
+                  <CheckCircle2 size={14} /> {adjSaving ? 'Recording…' : 'Record & audit-log'}
                 </button>
               </div>
             </motion.div>

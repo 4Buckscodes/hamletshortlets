@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -14,9 +14,14 @@ import { priceStay, nightsBetween, formatNaira } from '../lib/pricing';
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { state, requestBooking, backendReady, backendError } = useHamlet();
+  const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const todayIso = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }, []);
 
   const property = state.properties.find(p => p.id === id);
   const [gallery, setGallery] = useState({ propertyId: id, imageIndex: 0 });
@@ -27,16 +32,35 @@ export default function PropertyDetail() {
   const [showModal, setShowModal] = useState(false);
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [datesUnavailable, setDatesUnavailable] = useState(false);
 
   const nights = nightsBetween(checkIn, checkOut);
   const pricing = property ? priceStay(property, checkIn, checkOut) : null;
   const session = state.session;
 
+  useEffect(() => {
+    let active = true;
+    if (!property || !checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) {
+      Promise.resolve().then(() => { if (active) setDatesUnavailable(false); });
+      return () => { active = false; };
+    }
+    void getUnavailablePropertyIds(checkIn, checkOut)
+      .then(ids => {
+        if (active) setDatesUnavailable(ids.includes(property.id));
+      })
+      .catch(() => {
+        if (active) setDatesUnavailable(false);
+      });
+    return () => { active = false; };
+  }, [property, checkIn, checkOut, getUnavailablePropertyIds, state.bookings]);
+
   const dateError = useMemo(() => {
+    if (checkIn < todayIso) return 'Check-in cannot be in the past.';
     if (new Date(checkOut) <= new Date(checkIn)) return 'Check-out must be after check-in.';
     if (nights > 60) return 'Stays are limited to 60 nights in the pilot.';
+    if (datesUnavailable) return 'Selected dates overlap an already confirmed or held booking. Please pick another window.';
     return '';
-  }, [checkIn, checkOut, nights]);
+  }, [checkIn, checkOut, nights, todayIso, datesUnavailable]);
 
   if (!backendReady) {
     return <GuestLayout><div className="mx-auto max-w-lg px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-500">Loading stay details…</p></div></GuestLayout>;
@@ -182,11 +206,11 @@ export default function PropertyDetail() {
                 <div className="grid grid-cols-2 gap-2">
                   <label>
                     <span className="label">Check in</span>
-                    <input type="date" className="input" value={checkIn} min="2026-10-22" onChange={e => setCheckIn(e.target.value)} />
+                    <input type="date" className="input" value={checkIn} min={todayIso} onChange={e => setCheckIn(e.target.value)} />
                   </label>
                   <label>
                     <span className="label">Check out</span>
-                    <input type="date" className="input" value={checkOut} min="2026-10-23" onChange={e => setCheckOut(e.target.value)} />
+                    <input type="date" className="input" value={checkOut} min={checkIn || todayIso} onChange={e => setCheckOut(e.target.value)} />
                   </label>
                 </div>
                 <label className="mt-3 block">

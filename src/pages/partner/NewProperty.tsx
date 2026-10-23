@@ -226,7 +226,7 @@ export default function NewProperty() {
               ))}
             </div>
             <div className="mt-4 rounded-2xl border border-jade-500/30 bg-jade-500/10 p-4 text-[11.5px] font-medium leading-relaxed text-jade-200">
-              <BadgeCheck size={14} className="mb-1" />               On submission, this listing enters <strong>submitted</strong> status. HAMLET must manually review the listing and check for duplicates; this form does not perform an automatic duplicate check. The listing is not public until it is approved.
+              <BadgeCheck size={14} className="mb-1" /> On submission, this listing enters <strong>submitted</strong> status after automated Lagos geography and normalized duplicate screening, followed by manual HAMLET document and inspection review. The listing is not public until it is approved.
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, SearchX, ShieldCheck } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
@@ -9,16 +9,47 @@ import { AREAS } from '../lib/seed';
 const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'Generator', 'Concierge'];
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
 
+function todayIso(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export default function Stays() {
-  const { state, backendReady, backendError } = useHamlet();
+  const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
   const [params, setParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const [unavailableIds, setUnavailableIds] = useState<Set<string>>(() => new Set());
 
   const area = params.get('area') ?? '';
+  const checkIn = params.get('checkIn') ?? '';
+  const checkOut = params.get('checkOut') ?? '';
   const guests = Number(params.get('guests') ?? '1');
   const maxPrice = params.get('maxPrice') ?? '';
   const type = params.get('type') ?? 'All types';
   const amenities = (params.get('amenities') ?? '').split(',').filter(Boolean);
+  const minDate = todayIso();
+
+  useEffect(() => {
+    let active = true;
+    const validWindow = Boolean(checkIn && checkOut && new Date(checkOut) > new Date(checkIn));
+    if (!validWindow) {
+      Promise.resolve().then(() => {
+        if (active) setUnavailableIds(new Set());
+      });
+      return () => { active = false; };
+    }
+    void getUnavailablePropertyIds(checkIn, checkOut)
+      .then(ids => {
+        if (active) setUnavailableIds(new Set(ids));
+      })
+      .catch(() => {
+        if (active) setUnavailableIds(new Set());
+      });
+    return () => { active = false; };
+  }, [checkIn, checkOut, getUnavailablePropertyIds, state.bookings]);
 
   const update = (patch: Record<string, string>) => {
     const next = new URLSearchParams(params);
@@ -33,9 +64,10 @@ export default function Stays() {
     update({ amenities: next.join(',') });
   };
 
-  // Only approved, non-suspended listings are ever discoverable.
+  // Only approved, non-suspended listings without overlapping confirmed/held bookings are discoverable for selected dates.
   const results = state.properties
     .filter(p => p.status === 'approved')
+    .filter(p => !unavailableIds.has(p.id))
     .filter(p => !area || p.area === area)
     .filter(p => p.capacity >= guests)
     .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
@@ -49,7 +81,7 @@ export default function Stays() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
           <h1 className="font-display text-2xl font-black text-ink-900 sm:text-3xl">Explore verified Lagos stays</h1>
           <p className="mt-1 text-[12.5px] font-medium text-ink-500">
-            {results.length} approved propert{results.length === 1 ? 'y' : 'ies'}{area ? ` in ${area}` : ''} · capacity {guests}+ · only approved listings are shown
+            {results.length} approved propert{results.length === 1 ? 'y' : 'ies'}{area ? ` in ${area}` : ''}{checkIn && checkOut ? ` · ${checkIn} → ${checkOut}` : ''} · capacity {guests}+ · only approved listings are shown
           </p>
           {backendError && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">Could not load stays: {backendError}</p>}
           {!backendReady && <p role="status" className="mt-2 text-sm font-semibold text-ink-500">Loading verified stays…</p>}
@@ -75,6 +107,34 @@ export default function Stays() {
                 {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <label>
+                <span className="label">Check-in</span>
+                <input
+                  type="date"
+                  min={minDate}
+                  className="input !px-2.5 text-[12px]"
+                  value={checkIn}
+                  onChange={e => update({ checkIn: e.target.value })}
+                />
+              </label>
+              <label>
+                <span className="label">Check-out</span>
+                <input
+                  type="date"
+                  min={checkIn || minDate}
+                  className="input !px-2.5 text-[12px]"
+                  value={checkOut}
+                  onChange={e => update({ checkOut: e.target.value })}
+                />
+              </label>
+            </div>
+            {checkIn && checkOut && (
+              <p className="mt-1.5 text-[10px] font-medium leading-snug text-ink-500">
+                Excludes homes with confirmed/held bookings on these dates. Final availability is still verified by the host on request.
+              </p>
+            )}
 
             <div className="mt-4">
               <label className="label" htmlFor="f-guests">Guests (min capacity)</label>
@@ -137,7 +197,7 @@ export default function Stays() {
             <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
               <SearchX size={40} className="text-ink-300" />
               <h2 className="font-display text-xl font-black text-ink-900">No matches — yet</h2>
-              <p className="max-w-sm text-[13px] font-medium text-ink-500">No approved properties match those filters right now. Try widening your search — new supply is approved weekly.</p>
+              <p className="max-w-sm text-[13px] font-medium text-ink-500">No approved properties match those filters right now. Try widening your search or dates — new supply is approved weekly.</p>
               <button onClick={() => setParams({}, { replace: true })} className="btn-jade mt-2 !py-2.5 text-[12px]">Clear filters</button>
             </div>
           ) : (
