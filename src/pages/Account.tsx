@@ -565,7 +565,7 @@ export default function Account() {
                         <div>
                           <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatMoney(b.guestTotal)}</p>
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">
-                            total incl. 3% fee{currency === 'USD' ? ` · ${formatNaira(b.guestTotal)}` : ''}
+                            total incl. 3% fee{currency !== 'NGN' ? ` · ${formatNaira(b.guestTotal)}` : ''}
                           </p>
                         </div>
                         <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">

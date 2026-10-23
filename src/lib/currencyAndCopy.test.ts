@@ -2,8 +2,13 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  convertNairaToGbp,
   convertNairaToUsd,
+  CURRENCY_ORDER,
+  CURRENCY_SYMBOLS,
+  DEFAULT_NGN_PER_GBP,
   DEFAULT_NGN_PER_USD,
+  formatGbp,
   formatStayAmount,
   formatUsd,
 } from './currency';
@@ -24,23 +29,39 @@ function collectFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe('Stay currency switcher (NGN ₦ <-> USD $)', () => {
-  it('converts Naira stay amounts into USD accurately and formats both currencies', () => {
+describe('Stay currency switcher (NGN ₦ <-> USD $ <-> GBP £)', () => {
+  it('converts Naira stay amounts into USD and GBP accurately and formats all three currencies', () => {
+    expect(CURRENCY_ORDER).toEqual(['NGN', 'USD', 'GBP']);
+    expect(CURRENCY_SYMBOLS).toEqual({ NGN: '₦', USD: '$', GBP: '£' });
+
     expect(DEFAULT_NGN_PER_USD).toBe(1600);
     expect(convertNairaToUsd(160_000, 1600)).toBe(100);
     expect(convertNairaToUsd(200_000, 1600)).toBe(125);
     expect(convertNairaToUsd(185_000, 1600)).toBe(115.63);
 
+    expect(DEFAULT_NGN_PER_GBP).toBe(2000);
+    expect(convertNairaToGbp(200_000, 2000)).toBe(100);
+    expect(convertNairaToGbp(185_000, 2000)).toBe(92.5);
+
     expect(formatUsd(100)).toBe('$100');
     expect(formatUsd(115.63)).toBe('$115.63');
-    expect(formatStayAmount(160_000, 'NGN', 1600)).toBe('₦160,000');
+    expect(formatGbp(100)).toBe('£100');
+    expect(formatGbp(92.5)).toBe('£92.50');
+
+    expect(formatStayAmount(160_000, 'NGN')).toBe('₦160,000');
     expect(formatStayAmount(160_000, 'USD', 1600)).toBe('$100');
     expect(formatStayAmount(185_000, 'USD', 1600)).toBe('$115.63');
+    expect(formatStayAmount(200_000, 'GBP', 2000)).toBe('£100');
+    expect(formatStayAmount(185_000, 'GBP', 2000)).toBe('£92.50');
   });
 
-  it('wires CurrencyProvider and CurrencyToggle across guest stay discovery and booking views', () => {
+  it('wires CurrencyProvider and NGN/USD/GBP CurrencyToggle across guest stay discovery and booking views', () => {
     const appSrc = readFileSync(join(ROOT, 'src/App.tsx'), 'utf8');
     expect(appSrc).toContain('CurrencyProvider');
+
+    const toggleSrc = readFileSync(join(ROOT, 'src/components/CurrencyToggle.tsx'), 'utf8');
+    expect(toggleSrc).toContain('GBP');
+    expect(toggleSrc).toContain('£');
 
     for (const rel of [
       'src/components/Navbar.tsx',

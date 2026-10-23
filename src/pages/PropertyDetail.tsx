@@ -19,7 +19,7 @@ export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
-  const { currency, formatPrice, ngnPerUsd } = useCurrency();
+  const { currency, currencySymbol, formatPrice, ngnPerUnit } = useCurrency();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -301,13 +301,13 @@ export default function PropertyDetail() {
                     {pricing.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0 text-ink-600">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatPrice(c.amount)}</dd></div>)}
                     <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest service fee (3% × {formatPrice(pricing.accommodationSubtotal)})</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.hamletGuestServiceFee)}</dd></div>
                     <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900">
-                      <dt className="min-w-0">Total ({currency === 'USD' ? '$, est.' : '₦'}, before payment)</dt>
+                      <dt className="min-w-0">Total ({currency === 'NGN' ? '₦' : `${currencySymbol}, est.`}, before payment)</dt>
                       <dd className="shrink-0 tabular-nums text-jade-800">{formatPrice(pricing.guestTotal)}</dd>
                     </div>
                     <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.refundableDeposit)}</dd></div>
-                    {currency === 'USD' && (
+                    {currency !== 'NGN' && (
                       <p className="pt-1 text-[11px] font-semibold text-jade-800">
-                        USD shown at ₦{ngnPerUsd.toLocaleString('en-NG')}/$1 for comparison. Checkout settles in Naira ({formatNaira(pricing.guestTotal)}).
+                        {currency} shown at ₦{ngnPerUnit.toLocaleString('en-NG')}/{currencySymbol}1 for comparison. Checkout settles in Naira ({formatNaira(pricing.guestTotal)}).
                       </p>
                     )}
                   </dl>
@@ -369,7 +369,7 @@ export default function PropertyDetail() {
                 <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.hamletGuestServiceFee)}</dd></div>
                 <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black"><dt className="min-w-0">Total due on acceptance</dt><dd className="shrink-0 tabular-nums text-jade-800">{formatPrice(pricing.guestTotal)}</dd></div>
                 <div className="flex justify-between gap-3 text-[11.5px] text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatPrice(pricing.refundableDeposit)}</dd></div>
-                {currency === 'USD' && (
+                {currency !== 'NGN' && (
                   <p className="pt-1 text-[11px] font-semibold text-jade-800">
                     Settled in Naira at checkout: {formatNaira(pricing.guestTotal)}
                   </p>

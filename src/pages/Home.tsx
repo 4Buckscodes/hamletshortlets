@@ -390,7 +390,7 @@ export default function Home() {
             <div className="grid gap-4 sm:grid-cols-2 lg:col-span-7">
               {[
                 { Icon: BedDouble, title: 'Know the space.', body: 'Review photos, amenities, occupancy limits, and house rules before committing.' },
-                { Icon: Banknote, title: 'Understand the cost.', body: 'Check the price breakdown and applicable charges — in Naira or US Dollars — before confirming your booking.' },
+                { Icon: Banknote, title: 'Understand the cost.', body: 'Check the price breakdown and applicable charges — in Naira (₦), US Dollars ($), or British Pounds (£) — before confirming your booking.' },
                 { Icon: KeyRound, title: 'Plan your arrival.', body: 'Know the check-in process and the contact arrangements for your stay.' },
                 { Icon: CheckCircle2, title: 'Choose with confidence.', body: 'Review the available property information and any verification details shown on the listing.' },
               ].map(({ Icon, title, body }) => (
@@ -430,7 +430,7 @@ export default function Home() {
             {
               Icon: Globe,
               title: 'The returning Nigerian',
-              body: 'A welcoming base for reconnecting with family, friends, and home — with clear pricing in NGN or USD.',
+              body: 'A welcoming base for reconnecting with family, friends, and home — with clear pricing in NGN (₦), USD ($), or GBP (£).',
             },
             {
               Icon: Compass,

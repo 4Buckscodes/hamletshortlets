@@ -91,7 +91,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
               </span>
               <span className="text-[11.5px] font-semibold text-ink-500"> /night</span>
               <p className="text-[10px] font-medium text-ink-400">
-                Est. {formatPrice(est)}/night incl. fees{currency === 'USD' ? ' · settled in ₦' : ''}
+                Est. {formatPrice(est)}/night incl. fees{currency !== 'NGN' ? ' · settled in ₦' : ''}
               </p>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-jade-50 px-2.5 py-1.5 text-[11px] font-extrabold text-jade-800 transition group-hover:bg-jade-700 group-hover:text-white">

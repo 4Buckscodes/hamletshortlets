@@ -14,7 +14,7 @@ export default function HowItWorks() {
       step: 'Step 1',
       Icon: Search,
       title: 'Find a space that fits.',
-      body: 'Start with your destination, dates, and number of guests. Explore available apartments and compare their location, photos, amenities, prices (in Naira or US Dollars), and house rules.',
+      body: 'Start with your destination, dates, and number of guests. Explore available apartments and compare their location, photos, amenities, prices (in Naira, US Dollars, or British Pounds), and house rules.',
       extra: 'Need strong Wi-Fi for work? A kitchen for family meals? A particular Lagos neighbourhood? Start with the things that matter most.',
       cta: { label: 'Explore available stays', to: '/stays' },
     },

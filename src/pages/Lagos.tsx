@@ -128,7 +128,7 @@ export default function Lagos() {
                 Shortlets in Lagos
               </h2>
               <p className="mt-1.5 text-sm font-medium text-ink-600">
-                Compare prices in Naira or US Dollars and inspect full property details before requesting to book.
+                Compare prices in Naira (₦), US Dollars ($), or British Pounds (£) and inspect full property details before requesting to book.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">

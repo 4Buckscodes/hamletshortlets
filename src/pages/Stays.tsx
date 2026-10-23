@@ -17,7 +17,7 @@ const MAX_PRICE_TIERS = [100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000]
 export default function Stays() {
   usePageMeta(
     'Explore Shortlets in Lagos | Compare Apartments & Prices — HAMLET',
-    'Browse shortlets across Lagos — Lekki, Victoria Island, Ikoyi, Ikeja, Ajah, and more. Filter by dates, guests, amenities, and compare prices in Naira or USD.',
+    'Browse shortlets across Lagos — Lekki, Victoria Island, Ikoyi, Ikeja, Ajah, and more. Filter by dates, guests, amenities, and compare prices in Naira, USD, or GBP.',
   );
 
   const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
