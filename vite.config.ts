@@ -26,6 +26,9 @@ export default defineConfig(async ({ mode }) => {
     server: {
       allowedHosts: ['.e2b.app'],
     },
+    preview: {
+      allowedHosts: ['.e2b.app'],
+    },
     build: {
       rollupOptions: {
         output: {

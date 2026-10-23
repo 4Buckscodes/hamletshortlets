@@ -92,12 +92,23 @@ export async function handlePaystackWebhook(
   req: Request,
   deps: PaystackWebhookDeps,
 ): Promise<Response> {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'POST, OPTIONS',
+        'access-control-allow-headers': 'content-type, x-paystack-signature',
+      },
+    });
+  }
+
   if (req.method !== 'POST') {
     return jsonResponse({ ok: false, error: 'Method not allowed.' }, 405);
   }
 
   const secret = deps.paystackSecretKey?.trim();
-  if (!secret) {
+  if (!secret || secret.toLowerCase().includes('replace_with_')) {
     return jsonResponse(
       { ok: false, error: 'Payment webhook secret is not configured on the server.' },
       503,
@@ -111,20 +122,25 @@ export async function handlePaystackWebhook(
     return jsonResponse({ ok: false, error: 'Invalid Paystack webhook signature.' }, 401);
   }
 
-  let payload: PaystackWebhookPayload;
+  let parsedPayload: unknown;
   try {
-    payload = JSON.parse(rawBody) as PaystackWebhookPayload;
+    parsedPayload = JSON.parse(rawBody);
   } catch {
     return jsonResponse({ ok: false, error: 'Malformed JSON webhook body.' }, 400);
   }
 
+  if (!parsedPayload || typeof parsedPayload !== 'object' || Array.isArray(parsedPayload)) {
+    return jsonResponse({ ok: false, error: 'Webhook JSON payload must be an object.' }, 400);
+  }
+
+  const payload = parsedPayload as PaystackWebhookPayload;
   const eventName = typeof payload.event === 'string' ? payload.event : '';
   if (eventName !== 'charge.success') {
     return jsonResponse({ ok: true, ignored: true, event: eventName }, 200);
   }
 
   const data = payload.data;
-  if (!data || typeof data !== 'object' || data.status !== 'success') {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || data.status !== 'success') {
     return jsonResponse({ ok: false, error: 'Charge payload is missing success status.' }, 400);
   }
 
@@ -134,7 +150,7 @@ export async function handlePaystackWebhook(
   }
 
   const amountKobo = typeof data.amount === 'number' ? data.amount : Number.NaN;
-  if (!Number.isFinite(amountKobo) || amountKobo < 0) {
+  if (!Number.isInteger(amountKobo) || amountKobo <= 0) {
     return jsonResponse({ ok: false, error: 'Invalid transaction amount in kobo.' }, 400);
   }
 
@@ -154,14 +170,25 @@ export async function handlePaystackWebhook(
     ? data.currency.trim().toUpperCase()
     : 'NGN';
 
-  const { data: rpcResult, error } = await deps.confirmPaymentRpc({
-    target_booking_id: metadataBookingId,
-    provider_name: 'Paystack',
-    provider_ref: providerRef,
-    paid_amount_naira: paidAmountNaira,
-    provider_fee_naira: providerFeeNaira,
-    currency_code: currencyCode,
-  });
+  let rpcResult: ConfirmWebhookResult | null = null;
+  let error: { message: string } | null = null;
+  try {
+    const rpcOutcome = await deps.confirmPaymentRpc({
+      target_booking_id: metadataBookingId,
+      provider_name: 'Paystack',
+      provider_ref: providerRef,
+      paid_amount_naira: paidAmountNaira,
+      provider_fee_naira: providerFeeNaira,
+      currency_code: currencyCode,
+    });
+    rpcResult = rpcOutcome.data;
+    error = rpcOutcome.error;
+  } catch (err) {
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : 'Payment confirmation RPC failed.' },
+      500,
+    );
+  }
 
   if (error || !rpcResult) {
     return jsonResponse(

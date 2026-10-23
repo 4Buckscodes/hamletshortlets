@@ -120,3 +120,22 @@ export function buildWorkspaceSignInPath(targetPath: string | null | undefined):
   params.set('redirect', safe);
   return `/signin?${params.toString()}`;
 }
+
+/**
+ * Normalizes direct non-hash SPA route requests (e.g. `/stays` or
+ * `/partner/bookings/bkg-1?foo=bar`) into `<HashRouter>` URLs (`/#/stays`)
+ * while leaving root (`/`), static file paths, and existing hashes untouched.
+ */
+export function normalizeDirectPathnameToHash(
+  pathname: string,
+  search = '',
+  hash = '',
+): string | null {
+  if (!pathname || pathname === '/' || pathname === '/index.html') return null;
+  if (hash && hash !== '#') return null;
+  // Do not rewrite static file paths with extensions
+  if (/\.[a-z0-9]{1,8}$/i.test(pathname)) return null;
+  const cleanSearch = search && search !== '?' ? search : '';
+  return `/#${pathname}${cleanSearch}`;
+}
+

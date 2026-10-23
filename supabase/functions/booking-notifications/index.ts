@@ -12,8 +12,19 @@ interface DenoRuntime {
 
 const denoRuntime = (globalThis as unknown as { Deno?: DenoRuntime }).Deno;
 
+const CORS_HEADERS: Record<string, string> = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'POST, OPTIONS',
+  'access-control-allow-headers':
+    'authorization, x-client-info, apikey, content-type, x-hamlet-internal-secret',
+};
+
 if (denoRuntime) {
   denoRuntime.serve(async (req: Request) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
     const supabaseUrl = denoRuntime.env.get('SUPABASE_URL');
     const serviceRoleKey = denoRuntime.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -23,7 +34,7 @@ if (denoRuntime) {
         {
           status: 503,
           headers: {
-            'access-control-allow-origin': '*',
+            ...CORS_HEADERS,
             'content-type': 'application/json; charset=utf-8',
           },
         },

@@ -11,7 +11,7 @@ import {
   seedApplications, seedAssignments, seedAudit,
 } from './seed';
 import { calculateGuestPricing, nightsBetween, formatNaira } from './pricing';
-import { isSupabaseConfigured, supabase } from './supabase';
+import { extractEdgeFunctionError, isSupabaseConfigured, supabase } from './supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface FeedbackItem {
@@ -193,7 +193,11 @@ async function invokeBookingNotificationsEdgeFunction(
       },
     });
     if (error) {
-      return { ok: false, sent: 0, failed: 0, error: error.message };
+      const detailedError = await extractEdgeFunctionError(
+        error,
+        'Notification dispatch request failed.',
+      );
+      return { ok: false, sent: 0, failed: 0, error: detailedError };
     }
     const payload = (data ?? {}) as {
       ok?: boolean;
@@ -1320,6 +1324,13 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         const nights = nightsBetween(checkIn, checkOut);
         if (nights <= 0) return { ok: false, error: 'Check-out must be after check-in.' };
         if (nights > 60) return { ok: false, error: 'Stays are limited to 60 nights.' };
+        const todayLagos = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Africa/Lagos',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date());
+        if (checkIn < todayLagos) return { ok: false, error: 'Check-in cannot be in the past.' };
         const pricing = calculateGuestPricing({
           accommodationSubtotal: nights * property.nightlyRate,
           mandatoryCharges: property.mandatoryCharges,
@@ -1706,9 +1717,11 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         },
       });
       if (error) {
-        throw new Error(
-          error.message || 'Online checkout is awaiting live Paystack merchant configuration. Do not pay outside HAMLET.',
+        const detailedError = await extractEdgeFunctionError(
+          error,
+          'Online checkout is awaiting live Paystack merchant configuration. Do not pay outside HAMLET.',
         );
+        throw new Error(detailedError);
       }
       if (!data?.ok || !data.authorization_url || !data.reference) {
         throw new Error(
@@ -1842,9 +1855,9 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     refreshState: async () => {
       if (!supabase) return;
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError) throw new Error(authError.message);
-      dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw new Error(sessionError.message);
+      dispatch({ type: 'HYDRATE', state: await loadSupabaseState(sessionData.session?.user ?? null) });
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),
