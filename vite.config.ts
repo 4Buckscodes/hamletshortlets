@@ -23,6 +23,9 @@ export default defineConfig(async ({ mode }) => {
     plugins,
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     define: processEnvDefines,
+    server: {
+      allowedHosts: ['.e2b.app'],
+    },
     build: {
       rollupOptions: {
         output: {

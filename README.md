@@ -32,29 +32,42 @@ Booking decisions, guest cancellation, payment-deadline expiry, and booking
 audit entries are in `supabase/migrations/20261022143000_booking_lifecycle.sql`.
 Apply it after the admin property review migration before enabling partner
 booking decisions. Expired payment requests are swept when authenticated
-clients load or refresh data and periodically while the app is open. A booking
-is never confirmed by this lifecycle migration; verified payment integration
-is still required.
+clients load or refresh data and periodically while the app is open.
 
-Database-level booking lifecycle and pricing tests run without Docker via
-`npm test` (`vitest run`). `supabase/tests/booking_lifecycle.test.ts` boots an
-isolated in-memory PostgreSQL instance via `@electric-sql/pglite`, applies
-every migration in `supabase/migrations/*.sql`, and verifies the real
-PostgreSQL triggers, RLS policies, role grants, and `SECURITY DEFINER` RPCs
-without connecting to your live project. If Docker and a local Supabase stack
-(`npx supabase start`) are available, `supabase/tests/booking_lifecycle.test.sql`
-can also be run via `npm run test:pgtap`.
+Verified payment webhook confirmation, controlled ledger reconciliation,
+duplicate-listing protection, post-confirmation admin operations & refunds,
+issue assignment/escalation/resolution, and partner property assignments are in
+`supabase/migrations/20261023100000_payments_ledger_and_operations.sql`, paired
+with the server-side Paystack webhook Edge Function in
+`supabase/functions/paystack-webhook/index.ts` (see `MVP_SPECIFICATION.md` for
+the locked Version 1.0 product and commercial rules). Configure
+`PAYSTACK_SECRET_KEY` via `supabase secrets set` — never in `.env.local` or
+`VITE_*` variables — so `confirm_booking_payment_webhook` is invoked
+exclusively by `service_role` after `HMAC-SHA512` signature verification.
+
+Database-level booking lifecycle, payment/ledger, operations, and pricing tests
+run without Docker via `npm test` (`vitest run`).
+`supabase/tests/booking_lifecycle.test.ts` and
+`supabase/tests/payments_ledger_and_operations.test.ts` boot an isolated
+in-memory PostgreSQL instance via `@electric-sql/pglite`, apply every migration
+in `supabase/migrations/*.sql`, and verify the real PostgreSQL triggers, RLS
+policies, role grants, `SECURITY DEFINER` RPCs, and `HMAC-SHA512` webhook
+signature checks without connecting to your live project. If Docker and a local
+Supabase stack (`npx supabase start`) are available,
+`supabase/tests/booking_lifecycle.test.sql` can also be run via
+`npm run test:pgtap`.
 
 When Supabase is configured, sign-in/session restoration, guest account
 creation, public approved-listing reads, partner applications, partner
-property submissions, guest booking requests and cancellations, partner
-availability decisions, and issue reports use Supabase with database policies
-and server-side transition checks. Property evidence declarations are stored as
-self-reported and require manual review; file uploads are not yet implemented.
-Without Supabase configuration, the app continues to use its local demo store.
-Other partner/admin mutations and payment processing still require
-server-side integration; the demo payment flow is not available in Supabase
-mode, and must not be used as proof of payment.
+property submissions (with normalized duplicate checks), guest booking requests
+and cancellations, partner availability decisions, verified Paystack webhook
+confirmations, controlled ledger reconciliation & refunds, partner property
+assignments/revocations, and issue workflows use Supabase with database
+policies and server-side transition checks. Property evidence declarations are
+stored as self-reported and require manual review; file uploads and automated
+checkout session initiation still require live provider setup. Without Supabase
+configuration, the app continues to use its local demo store. The demo payment
+flow is disabled in Supabase mode and is never treated as proof of payment.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

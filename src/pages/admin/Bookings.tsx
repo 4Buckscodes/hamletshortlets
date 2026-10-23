@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, CalendarDays, Users, ShieldCheck, Ban, Clock3, RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  ChevronDown, ChevronUp, CalendarDays, Users, ShieldCheck, Ban, Clock3,
+  RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign, AlertTriangle,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { BookingStatusPill } from '../../components/Badges';
-import type { BookingStatus } from '../../lib/types';
+import type { Booking, BookingStatus } from '../../lib/types';
 import { formatNaira, formatDate, formatDateTime } from '../../lib/pricing';
 
 const FILTERS: { key: BookingStatus | 'all' | 'needs_action'; label: string }[] = [
@@ -15,13 +18,29 @@ const FILTERS: { key: BookingStatus | 'all' | 'needs_action'; label: string }[] 
   { key: 'disputed', label: 'Disputed' },
   { key: 'completed', label: 'Completed' },
   { key: 'cancelled', label: 'Cancelled' },
+  { key: 'refunded', label: 'Refunded' },
 ];
 
+type PendingAction =
+  | { bookingId: string; kind: 'cancel' | 'dispute' | 'no_show' }
+  | { bookingId: string; kind: 'refund' };
+
 export default function AdminBookings() {
-  const { state, bookingTransition: transition, verifyPayment } = useHamlet();
+  const { state, backendConfigured, bookingTransition, verifyPayment, recordBookingRefund } = useHamlet();
   const { toast } = useToast();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('needs_action');
   const [open, setOpen] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [actionNote, setActionNote] = useState('');
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [refundRef, setRefundRef] = useState('');
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const filtered = state.bookings.filter(b => {
     if (filter === 'all') return true;
@@ -29,8 +48,79 @@ export default function AdminBookings() {
     return b.status === filter;
   });
 
-  const overlapping = (b: (typeof state.bookings)[number]) =>
-    state.bookings.filter(o => o.id !== b.id && o.propertyId === b.propertyId && ['confirmed', 'awaiting_payment'].includes(o.status) && new Date(o.checkIn) < new Date(b.checkOut) && new Date(o.checkOut) > new Date(b.checkIn));
+  const overlapping = (b: Booking) =>
+    state.bookings.filter(
+      o =>
+        o.id !== b.id &&
+        o.propertyId === b.propertyId &&
+        ['confirmed', 'awaiting_payment'].includes(o.status) &&
+        new Date(o.checkIn) < new Date(b.checkOut) &&
+        new Date(o.checkOut) > new Date(b.checkIn),
+    );
+
+  const runTransition = async (
+    booking: Booking,
+    nextStatus: BookingStatus,
+    successMsg: string,
+    opts?: { note?: string; reason?: string },
+  ) => {
+    setBusyId(booking.id);
+    try {
+      await bookingTransition(booking.id, nextStatus, opts);
+      toast(successMsg, ['cancelled', 'expired', 'no_show', 'disputed'].includes(nextStatus) ? 'info' : 'success');
+      setPendingAction(null);
+      setActionNote('');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not update booking.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openDocumentedAction = (booking: Booking, kind: PendingAction['kind']) => {
+    setPendingAction({ bookingId: booking.id, kind });
+    setActionNote('');
+    if (kind === 'refund') {
+      setRefundAmount(booking.guestTotal);
+      setRefundRef('');
+    }
+  };
+
+  const submitDocumentedAction = async (booking: Booking) => {
+    if (!pendingAction) return;
+    const trimmed = actionNote.trim();
+    if (trimmed.length < 8) {
+      toast('Provide a documented operational note (min 8 characters).', 'error');
+      return;
+    }
+    if (pendingAction.kind === 'refund') {
+      setBusyId(booking.id);
+      try {
+        await recordBookingRefund(booking.id, {
+          amount: refundAmount,
+          providerRef: refundRef.trim() || undefined,
+          note: trimmed,
+        });
+        toast(`Refund recorded for ${booking.ref} and added to ledger.`);
+        setPendingAction(null);
+        setActionNote('');
+        setRefundRef('');
+      } catch (error) {
+        toast(error instanceof Error ? error.message : 'Could not record refund.', 'error');
+      } finally {
+        setBusyId(null);
+      }
+      return;
+    }
+
+    if (pendingAction.kind === 'cancel') {
+      await runTransition(booking, 'cancelled', `${booking.ref} cancelled.`, { reason: trimmed, note: trimmed });
+    } else if (pendingAction.kind === 'dispute') {
+      await runTransition(booking, 'disputed', `${booking.ref} marked disputed.`, { note: trimmed });
+    } else if (pendingAction.kind === 'no_show') {
+      await runTransition(booking, 'no_show', `No-show recorded for ${booking.ref}.`, { note: trimmed });
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -48,6 +138,11 @@ export default function AdminBookings() {
         {filtered.map(b => {
           const expand = open === b.id;
           const conflicts = overlapping(b);
+          const busy = busyId === b.id;
+          const activePrompt = pendingAction?.bookingId === b.id ? pendingAction : null;
+          const deadlineElapsed = b.paymentDeadline ? new Date(b.paymentDeadline).getTime() <= nowMs : false;
+          const canRecordRefund = ['cancelled', 'disputed', 'no_show'].includes(b.status) && b.refundStatus !== 'processed';
+
           return (
             <article key={b.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
               <div className="flex flex-wrap items-center gap-4 p-5">
@@ -55,6 +150,8 @@ export default function AdminBookings() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-[10.5px] font-bold text-brass-300">{b.ref}</span>
                     <BookingStatusPill status={b.status} />
+                    {b.refundStatus === 'pending_review' && <span className="chip border border-amber-400/50 bg-amber-400/10 text-amber-300">Refund pending review</span>}
+                    {b.refundStatus === 'processed' && <span className="chip border border-teal-400/50 bg-teal-400/10 text-teal-300">Refunded {formatNaira(b.refundAmount ?? b.guestTotal)}</span>}
                     {conflicts.length > 0 && <span className="chip border border-red-400/50 bg-red-400/10 text-red-300">{conflicts.length} overlap flag(s)</span>}
                   </div>
                   <h2 className="mt-1.5 font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
@@ -71,16 +168,94 @@ export default function AdminBookings() {
 
               {/* Action rail */}
               <div className="flex flex-wrap items-center gap-2 border-t border-ink-800 bg-ink-850/50 px-5 py-3">
-                {b.status === 'requested' && <button onClick={() => { transition(b.id, 'checking'); toast('Moved to "availability & terms being checked".', 'info'); }} className="btn-ghost-dark !border !border-ink-700 !px-3.5 !py-2 text-[11px]"><Clock3 size={13} /> Begin check</button>}
-                {(b.status === 'requested' || b.status === 'checking') && <button onClick={() => { transition(b.id, 'awaiting_payment'); toast(`${b.ref} accepted — 48h payment deadline set.`); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={13} /> Accept — set deadline</button>}
-                {b.status === 'awaiting_payment' && <button onClick={() => { verifyPayment(b.id); toast('Payment verified server-side (webhook). Booking confirmed.'); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500"><ShieldCheck size={13} /> Verify provider webhook</button>}
-                {b.status === 'awaiting_payment' && <button onClick={() => { transition(b.id, 'expired'); toast('Payment deadline expired — booking expired, dates released.', 'info'); }} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-3.5 py-2 text-[11px] font-bold text-amber-300 hover:bg-amber-950"><XOctagon size={13} /> Expire (deadline missed)</button>}
-                {b.status === 'confirmed' && <button onClick={() => { transition(b.id, 'completed'); toast('Stay marked completed.'); }} className="flex items-center gap-1.5 rounded-xl bg-jade-700 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-600"><CheckCircle2 size={13} /> Mark completed</button>}
-                {b.status === 'confirmed' && <button onClick={() => { transition(b.id, 'no_show', { note: 'Guest did not arrive — no-show recorded' }); toast('No-show recorded.', 'info'); }} className="flex items-center gap-1.5 rounded-xl border border-ink-700 px-3.5 py-2 text-[11px] font-bold text-ink-200 hover:bg-ink-800"><Users size={13} /> No-show</button>}
-                {['confirmed', 'awaiting_payment', 'disputed'].includes(b.status) && <button onClick={() => { transition(b.id, 'cancelled', { reason: 'Cancelled by HAMLET operations' }); toast('Booking cancelled.', 'info'); }} className="flex items-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3.5 py-2 text-[11px] font-bold text-red-300 hover:bg-red-950"><Ban size={13} /> Cancel</button>}
-                {b.status === 'disputed' && <button onClick={() => { transition(b.id, 'refunded', { note: 'Refund processed via provider after dispute resolution' }); toast('Marked refunded.'); }} className="flex items-center gap-1.5 rounded-xl border border-teal-700 bg-teal-950/40 px-3.5 py-2 text-[11px] font-bold text-teal-300 hover:bg-teal-950"><RefreshCcw size={13} /> Mark refunded</button>}
+                {b.status === 'requested' && (
+                  <button disabled={busy} onClick={() => void runTransition(b, 'checking', 'Moved to "availability & terms being checked".')} className="btn-ghost-dark !border !border-ink-700 !px-3.5 !py-2 text-[11px] disabled:opacity-50"><Clock3 size={13} /> Begin check</button>
+                )}
+                {(b.status === 'requested' || b.status === 'checking') && (
+                  <button disabled={busy} onClick={() => void runTransition(b, 'awaiting_payment', `${b.ref} accepted — 48h payment deadline set.`)} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500 disabled:opacity-50"><CheckCircle2 size={13} /> Accept — set deadline</button>
+                )}
+                {b.status === 'awaiting_payment' && !backendConfigured && (
+                  <button disabled={busy} onClick={() => { verifyPayment(b.id); toast('Demo payment verified (webhook simulation). Booking confirmed.'); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500 disabled:opacity-50"><ShieldCheck size={13} /> Simulate provider webhook (demo)</button>
+                )}
+                {b.status === 'awaiting_payment' && backendConfigured && (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl border border-ink-700 bg-ink-900 px-3 py-1.5 text-[10.5px] font-semibold text-ink-300">
+                    <ShieldCheck size={13} className="text-brass-400" /> Confirms automatically via verified Paystack webhook
+                  </span>
+                )}
+                {b.status === 'awaiting_payment' && (!backendConfigured || deadlineElapsed) && (
+                  <button disabled={busy} onClick={() => void runTransition(b, 'expired', 'Payment deadline expired — booking expired, dates released.')} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-3.5 py-2 text-[11px] font-bold text-amber-300 hover:bg-amber-950 disabled:opacity-50"><XOctagon size={13} /> Expire (deadline missed)</button>
+                )}
+                {b.status === 'confirmed' && (
+                  <button disabled={busy} onClick={() => void runTransition(b, 'completed', 'Stay marked completed.')} className="flex items-center gap-1.5 rounded-xl bg-jade-700 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-600 disabled:opacity-50"><CheckCircle2 size={13} /> Mark completed</button>
+                )}
+                {b.status === 'confirmed' && (
+                  <button disabled={busy} onClick={() => openDocumentedAction(b, 'no_show')} className="flex items-center gap-1.5 rounded-xl border border-ink-700 px-3.5 py-2 text-[11px] font-bold text-ink-200 hover:bg-ink-800 disabled:opacity-50"><Users size={13} /> No-show</button>
+                )}
+                {['confirmed', 'completed'].includes(b.status) && (
+                  <button disabled={busy} onClick={() => openDocumentedAction(b, 'dispute')} className="flex items-center gap-1.5 rounded-xl border border-orange-800 bg-orange-950/40 px-3.5 py-2 text-[11px] font-bold text-orange-300 hover:bg-orange-950 disabled:opacity-50"><AlertTriangle size={13} /> Flag disputed</button>
+                )}
+                {['requested', 'checking', 'awaiting_payment', 'confirmed', 'disputed'].includes(b.status) && (
+                  <button disabled={busy} onClick={() => openDocumentedAction(b, 'cancel')} className="flex items-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3.5 py-2 text-[11px] font-bold text-red-300 hover:bg-red-950 disabled:opacity-50"><Ban size={13} /> Cancel</button>
+                )}
+                {canRecordRefund && (
+                  <button disabled={busy} onClick={() => openDocumentedAction(b, 'refund')} className="flex items-center gap-1.5 rounded-xl border border-teal-700 bg-teal-950/40 px-3.5 py-2 text-[11px] font-bold text-teal-300 hover:bg-teal-950 disabled:opacity-50"><RefreshCcw size={13} /> Record refund</button>
+                )}
                 {b.specialRequests && <span className="w-full text-[10.5px] font-medium italic text-ink-400">Guest note: “{b.specialRequests}”</span>}
               </div>
+
+              {activePrompt && (
+                <div className="border-t border-brass-500/30 bg-ink-950/70 px-5 py-4">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-brass-300">
+                    {activePrompt.kind === 'refund'
+                      ? 'Record verified guest refund (writes to ledger & audit log)'
+                      : activePrompt.kind === 'cancel'
+                        ? 'Operational cancellation — documented reason required'
+                        : activePrompt.kind === 'dispute'
+                          ? 'Flag booking as disputed — documented summary required'
+                          : 'Record guest no-show — documented summary required'}
+                  </p>
+                  {activePrompt.kind === 'refund' && (
+                    <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
+                      <label>
+                        <span className="label-dark">Refund amount (₦, max {formatNaira(b.guestTotal + b.deposit)})</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={b.guestTotal + b.deposit}
+                          className="input-dark !py-2 text-[12px]"
+                          value={refundAmount}
+                          onChange={e => setRefundAmount(Number(e.target.value))}
+                        />
+                      </label>
+                      <label>
+                        <span className="label-dark">Provider refund reference (optional)</span>
+                        <input
+                          className="input-dark !py-2 text-[12px]"
+                          placeholder="e.g. PSK_RFD_20261023"
+                          value={refundRef}
+                          onChange={e => setRefundRef(e.target.value)}
+                        />
+                      </label>
+                    </div>
+                  )}
+                  <label className="mt-2.5 block">
+                    <span className="label-dark">Operational note (required, min 8 characters)</span>
+                    <input
+                      autoFocus
+                      className="input-dark !py-2 text-[12px]"
+                      placeholder="Document reason, approval basis, and operator context…"
+                      value={actionNote}
+                      onChange={e => setActionNote(e.target.value)}
+                    />
+                  </label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button disabled={busy} onClick={() => void submitDocumentedAction(b)} className="btn-brass !px-4 !py-2 text-[11.5px] disabled:opacity-50">
+                      {busy ? 'Saving…' : 'Confirm & audit-log'}
+                    </button>
+                    <button disabled={busy} onClick={() => setPendingAction(null)} className="btn-ghost-dark !px-3.5 !py-2 text-[11px]">Back</button>
+                  </div>
+                </div>
+              )}
 
               <AnimatePresence>
                 {expand && (
@@ -96,6 +271,7 @@ export default function AdminBookings() {
                           <div className="flex justify-between text-ink-400"><dt>Refundable deposit</dt><dd className="tabular-nums">{formatNaira(b.deposit)}</dd></div>
                         </dl>
                         {b.paymentRef && <p className="mt-2 font-mono text-[10px] font-bold text-ink-500">{b.paymentProvider} · {b.paymentRef}</p>}
+                        {b.cancelReason && <p className="mt-2 text-[11px] font-semibold text-red-300">Cancellation reason: {b.cancelReason}</p>}
                       </div>
                       <div>
                         <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Timeline</p>

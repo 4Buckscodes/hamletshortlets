@@ -185,3 +185,23 @@ export async function asAnon<T>(
     return fn(tx);
   });
 }
+
+/**
+ * Executes a callback inside a server-side `service_role` transaction (used by
+ * verified Edge Function webhook handlers, never exposed to browser clients).
+ */
+export async function asServiceRole<T>(
+  db: PGlite,
+  fn: (tx: Transaction) => Promise<T>,
+): Promise<T> {
+  return db.transaction(async tx => {
+    await tx.exec(`
+      select
+        set_config('request.jwt.claims', '{"role":"service_role"}', true),
+        set_config('request.jwt.claim.sub', '', true),
+        set_config('request.jwt.claim.role', 'service_role', true);
+      set local role service_role;
+    `);
+    return fn(tx);
+  });
+}
