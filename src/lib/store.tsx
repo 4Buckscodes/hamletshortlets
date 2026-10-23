@@ -4,6 +4,7 @@ import {
 import type {
   Account, Session, Property, Booking, LedgerEntry, Issue, IssueStatus,
   PartnerApplication, PartnerAssignment, AuditEntry, AccountRole, TimelineEvent,
+  BookingNotificationRecord, NotificationEventType, NotificationRecipientType,
 } from './types';
 import {
   seedAccounts, seedProperties, seedBookings, seedLedger, seedIssues,
@@ -28,12 +29,13 @@ export interface DBState {
   assignments: PartnerAssignment[];
   audit: AuditEntry[];
   feedback: FeedbackItem[];
+  notifications: BookingNotificationRecord[];
   session: Session | null;
 }
 
 const emptyState = (): DBState => ({
   accounts: [], properties: [], bookings: [], ledger: [], issues: [],
-  applications: [], assignments: [], audit: [], feedback: [], session: null,
+  applications: [], assignments: [], audit: [], feedback: [], notifications: [], session: null,
 });
 
 const DB_KEY = 'hamlet-db-v1';
@@ -44,15 +46,21 @@ function initialState(): DBState {
   try {
     const raw = localStorage.getItem(DB_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as Omit<DBState, 'session'>;
+      const parsed = JSON.parse(raw) as Partial<Omit<DBState, 'session'>> & { accounts: Account[] };
       const sessionRaw = localStorage.getItem(SESSION_KEY);
-      return { ...parsed, accounts: parsed.accounts.map(a => ({ ...a, password: 'demo1234' })), session: sessionRaw ? JSON.parse(sessionRaw) : null };
+      return {
+        ...emptyState(),
+        ...parsed,
+        notifications: parsed.notifications ?? [],
+        accounts: parsed.accounts.map(a => ({ ...a, password: 'demo1234' })),
+        session: sessionRaw ? JSON.parse(sessionRaw) : null,
+      };
     }
   } catch { /* fall through to seed */ }
   return {
     accounts: seedAccounts, properties: seedProperties, bookings: seedBookings,
     ledger: seedLedger, issues: seedIssues, applications: seedApplications,
-    assignments: seedAssignments, audit: seedAudit, feedback: [], session: null,
+    assignments: seedAssignments, audit: seedAudit, feedback: [], notifications: [], session: null,
   };
 }
 
@@ -143,6 +151,71 @@ type RemoteProfile = {
 type RemoteAuditEntry = {
   id: string; actor_id: string; actor_role: string; action: string; target: string; detail: string; created_at: string;
 };
+
+type RemoteBookingNotificationRow = {
+  id: string;
+  booking_id: string;
+  booking_reference: string;
+  property_id: string;
+  event_type: NotificationEventType;
+  recipient_type: NotificationRecipientType;
+  recipient_email?: string | null;
+  subject?: string | null;
+  delivery_status: BookingNotificationRecord['deliveryStatus'];
+  provider: string;
+  provider_message_id?: string | null;
+  attempt_count: number;
+  max_attempts: number;
+  last_error?: string | null;
+  idempotency_key: string;
+  sent_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+async function invokeBookingNotificationsEdgeFunction(
+  bookingId: string,
+  opts?: { forceRetry?: boolean },
+): Promise<{ ok: boolean; sent: number; failed: number; error?: string }> {
+  if (!supabase) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: 0,
+      error: 'Supabase is not configured in local demo mode.',
+    };
+  }
+  try {
+    const { data, error } = await supabase.functions.invoke('booking-notifications', {
+      body: {
+        bookingId,
+        ...(opts?.forceRetry ? { forceRetry: true } : {}),
+      },
+    });
+    if (error) {
+      return { ok: false, sent: 0, failed: 0, error: error.message };
+    }
+    const payload = (data ?? {}) as {
+      ok?: boolean;
+      sent?: number;
+      failed?: number;
+      error?: string;
+    };
+    return {
+      ok: Boolean(payload.ok),
+      sent: typeof payload.sent === 'number' ? payload.sent : 0,
+      failed: typeof payload.failed === 'number' ? payload.failed : 0,
+      error: payload.error,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: 0,
+      error: err instanceof Error ? err.message : 'Notification dispatch request failed.',
+    };
+  }
+}
 
 function toRemoteProperty(
   row: RemoteProperty,
@@ -270,6 +343,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     issueResult,
     feedbackResult,
     auditResult,
+    notificationResult,
   ] = await Promise.all([
     supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,account_status,suspension_reason,created_at').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -281,6 +355,9 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     supabase.from('booking_issues').select('*').order('created_at', { ascending: false }),
     supabase.from('booking_feedback').select('*').order('created_at', { ascending: false }),
     supabase.from('admin_audit_log').select('*').order('created_at', { ascending: false }).limit(100),
+    session.role === 'admin'
+      ? supabase.from('booking_notifications').select('*').order('created_at', { ascending: false }).limit(250)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   for (const result of [
@@ -294,6 +371,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     issueResult,
     feedbackResult,
     auditResult,
+    notificationResult,
   ]) {
     if (result.error) throw new Error(`Could not load HAMLET data: ${result.error.message}`);
   }
@@ -445,6 +523,28 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       detail: entry.detail,
     };
   });
+  const notifications: BookingNotificationRecord[] = (
+    (notificationResult.data ?? []) as unknown as RemoteBookingNotificationRow[]
+  ).map(row => ({
+    id: row.id,
+    bookingId: row.booking_id,
+    bookingRef: row.booking_reference,
+    propertyId: row.property_id,
+    eventType: row.event_type,
+    recipientType: row.recipient_type,
+    recipientEmail: row.recipient_email ?? undefined,
+    subject: row.subject ?? undefined,
+    deliveryStatus: row.delivery_status,
+    provider: row.provider,
+    providerMessageId: row.provider_message_id ?? undefined,
+    attemptCount: row.attempt_count,
+    maxAttempts: row.max_attempts,
+    lastError: row.last_error ?? undefined,
+    idempotencyKey: row.idempotency_key,
+    sentAt: row.sent_at ?? undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
 
   return {
     ...emptyState(),
@@ -457,8 +557,34 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     assignments,
     audit,
     feedback,
+    notifications,
     session,
   };
+}
+
+function buildDemoNotifications(
+  booking: Booking,
+  eventType: NotificationEventType,
+  recipients: NotificationRecipientType[],
+): BookingNotificationRecord[] {
+  const now = nowIso();
+  return recipients.map(recipientType => ({
+    id: uid(),
+    bookingId: booking.id,
+    bookingRef: booking.ref,
+    propertyId: booking.propertyId,
+    eventType,
+    recipientType,
+    recipientEmail: recipientType === 'guest' ? booking.guestEmail : undefined,
+    deliveryStatus: 'skipped',
+    provider: 'demo-preview',
+    attemptCount: 0,
+    maxAttempts: 3,
+    lastError: 'Local demo mode — live email delivery runs via deployed Supabase Edge Function & Resend.',
+    idempotencyKey: `${booking.id}:${eventType}:${recipientType}`,
+    createdAt: now,
+    updatedAt: now,
+  }));
 }
 
 function auditEntry(actorName: string, actorRole: string, action: string, target: string, detail: string): AuditEntry {
@@ -613,7 +739,14 @@ function reducer(state: DBState, action: Action): DBState {
       };
     }
     case 'ADD_BOOKING':
-      return { ...state, bookings: [action.booking, ...state.bookings] };
+      return {
+        ...state,
+        bookings: [action.booking, ...state.bookings],
+        notifications: [
+          ...buildDemoNotifications(action.booking, 'booking_request_created', ['guest', 'partner', 'operations']),
+          ...state.notifications,
+        ],
+      };
     case 'BOOKING_TRANSITION': {
       const b = state.bookings.find(x => x.id === action.id);
       if (!b) return state;
@@ -642,9 +775,16 @@ function reducer(state: DBState, action: Action): DBState {
         : action.to === 'expired' ? 'booking_expired'
         : action.to === 'disputed' ? 'booking_disputed'
         : 'booking_status_change';
+      const demoTransitionNotifications =
+        (b.status === 'requested' || b.status === 'checking') && action.to === 'awaiting_payment'
+          ? buildDemoNotifications(updated, 'booking_availability_confirmed', ['guest', 'operations'])
+          : (b.status === 'requested' || b.status === 'checking') && action.to === 'declined'
+            ? buildDemoNotifications(updated, 'booking_availability_declined', ['guest', 'operations'])
+            : [];
       return {
         ...state,
         bookings: state.bookings.map(x => (x.id === action.id ? updated : x)),
+        notifications: [...demoTransitionNotifications, ...state.notifications],
         audit: [auditEntry(action.actor.name, action.actor.role, auditAction, b.ref, `→ ${action.to}${action.reason ? ` · ${action.reason}` : ''}`), ...state.audit],
       };
     }
@@ -821,6 +961,7 @@ interface Store {
   setPartnerAccountStatus: (partnerId: string, status: 'active' | 'suspended', reason: string, cascadeSuspendProperties?: boolean) => Promise<void>;
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
+  retryBookingNotifications: (bookingId: string) => Promise<{ ok: boolean; sent: number; failed: number; error?: string }>;
   verifyPayment: (id: string) => void;
   initializeBookingCheckout: (bookingId: string, callbackUrl?: string) => Promise<{ authorizationUrl: string; reference: string }>;
   recordBookingRefund: (id: string, input: { amount: number; providerRef?: string; note: string }) => Promise<void>;
@@ -1201,6 +1342,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           special_requests: specialRequests,
         }).select('*').single();
         if (error) return { ok: false, error: error.message };
+        // Non-blocking notification dispatch: booking creation must succeed even if email delivery fails.
+        void invokeBookingNotificationsEdgeFunction(data.id);
         try {
           const { data: authData, error: authError } = await supabase.auth.getUser();
           if (authError) throw authError;
@@ -1246,13 +1389,26 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     bookingTransition: async (id, to, opts) => {
       if (!state.session) return;
       if (supabase) {
-        const { error } = await supabase.rpc('transition_booking', {
+        const client = supabase;
+        const { error } = await client.rpc('transition_booking', {
           target_booking_id: id,
           next_status: to,
           transition_note: opts?.reason ?? opts?.note ?? null,
         });
         if (error) throw new Error(`Could not update booking: ${error.message}`);
-        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (to === 'awaiting_payment' || to === 'declined') {
+          const isAdminSession = state.session.role === 'admin';
+          void invokeBookingNotificationsEdgeFunction(id).then(async () => {
+            if (!isAdminSession) return;
+            try {
+              const { data: latestAuth } = await client.auth.getUser();
+              if (latestAuth.user) {
+                dispatch({ type: 'HYDRATE', state: await loadSupabaseState(latestAuth.user) });
+              }
+            } catch { /* non-fatal background refresh */ }
+          });
+        }
+        const { data: authData, error: authError } = await client.auth.getUser();
         if (authError) throw new Error(`Booking updated, but refresh failed: ${authError.message}`);
         try {
           dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
@@ -1264,6 +1420,21 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         return;
       }
       dispatch({ type: 'BOOKING_TRANSITION', id, to, actor: state.session, note: opts?.note, reason: opts?.reason });
+    },
+    retryBookingNotifications: async (bookingId) => {
+      if (!state.session) {
+        return { ok: false, sent: 0, failed: 0, error: 'Sign in before retrying notifications.' };
+      }
+      const res = await invokeBookingNotificationsEdgeFunction(bookingId, { forceRetry: true });
+      if (supabase) {
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          if (authData.user) {
+            dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+          }
+        } catch { /* keep dispatch result */ }
+      }
+      return res;
     },
     verifyPayment: (id) => {
       if (supabase) {

@@ -77,5 +77,11 @@ describe('Global & Page-by-Page Responsiveness Invariants (Icons, Text & Scrolls
       expect(overflowMatches, `${file} should have overflow-x-auto`).toBeGreaterThan(0);
       expect(overscrollMatches, `${file} should pair overflow-x-auto with overscroll-x-contain`).toBe(overflowMatches);
     }
+
+    // Verify new PartnerBookingReview page enforces responsive padding and shrink-0 icons
+    const bookingReview = readSrc('pages/partner/BookingReview.tsx');
+    expect(bookingReview).toContain('p-4 sm:p-6 lg:p-8');
+    expect(bookingReview).toContain('shrink-0');
+    expect(bookingReview).toContain('min-w-0');
   });
 });

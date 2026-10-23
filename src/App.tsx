@@ -15,6 +15,7 @@ import PartnerOverview from './pages/partner/Overview';
 import PartnerProperties from './pages/partner/Properties';
 import NewProperty from './pages/partner/NewProperty';
 import PartnerBookings from './pages/partner/Bookings';
+import PartnerBookingReview from './pages/partner/BookingReview';
 import PartnerEarnings from './pages/partner/Earnings';
 import PartnerAssignments from './pages/partner/Assignments';
 import PartnerProfile from './pages/partner/Profile';
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/partner/properties" element={<PartnerLayout><PartnerProperties /></PartnerLayout>} />
             <Route path="/partner/properties/new" element={<PartnerLayout><NewProperty /></PartnerLayout>} />
             <Route path="/partner/bookings" element={<PartnerLayout><PartnerBookings /></PartnerLayout>} />
+            <Route path="/partner/bookings/:bookingId" element={<PartnerLayout><PartnerBookingReview /></PartnerLayout>} />
             <Route path="/partner/earnings" element={<PartnerLayout><PartnerEarnings /></PartnerLayout>} />
             <Route path="/partner/assignments" element={<PartnerLayout><PartnerAssignments /></PartnerLayout>} />
             <Route path="/partner/profile" element={<PartnerLayout><PartnerProfile /></PartnerLayout>} />

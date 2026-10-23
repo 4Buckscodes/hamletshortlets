@@ -237,3 +237,43 @@ export interface PartnerAssignment {
   grantedAt: string;
   revokedAt?: string;
 }
+
+export type NotificationEventType =
+  | 'booking_request_created'
+  | 'booking_availability_confirmed'
+  | 'booking_availability_declined'
+  | 'booking_payment_confirmed'
+  | 'booking_cancelled'
+  | 'booking_expired'
+  | 'booking_refunded';
+
+export type NotificationRecipientType = 'guest' | 'partner' | 'operations';
+
+export type NotificationDeliveryStatus =
+  | 'pending'
+  | 'processing'
+  | 'sent'
+  | 'failed'
+  | 'skipped';
+
+export interface BookingNotificationRecord {
+  id: string;
+  bookingId: string;
+  bookingRef: string;
+  propertyId: string;
+  eventType: NotificationEventType;
+  recipientType: NotificationRecipientType;
+  recipientEmail?: string;
+  subject?: string;
+  deliveryStatus: NotificationDeliveryStatus;
+  provider: string;
+  providerMessageId?: string;
+  attemptCount: number;
+  maxAttempts: number;
+  lastError?: string;
+  idempotencyKey: string;
+  sentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+

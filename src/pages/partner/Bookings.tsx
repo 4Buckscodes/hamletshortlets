@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, XCircle, Users, ChevronDown, ChevronUp, AlertTriangle, LifeBuoy, SearchCheck, AlertOctagon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CalendarDays, CheckCircle2, XCircle, Users, ChevronDown, ChevronUp, AlertTriangle, LifeBuoy, SearchCheck, AlertOctagon, ArrowUpRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
@@ -89,7 +90,15 @@ export default function PartnerBookings() {
               <p className="font-display text-lg font-black tabular-nums text-brass-300 sm:text-right">{formatNaira(b.accommodationSubtotal + b.mandatoryTotal)}</p>
               <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">your proceeds · 0% fee</p>
             </div>
-            <button onClick={() => setExpanded(open ? null : b.id)} className="flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to={`/partner/bookings/${b.id}`}
+                className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-brass-300 hover:text-brass-200"
+              >
+                {needsAction ? 'Review request' : 'Booking details'} <ArrowUpRight size={12} className="shrink-0" />
+              </Link>
+              <button onClick={() => setExpanded(open ? null : b.id)} className="flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
+            </div>
           </div>
         </div>
 

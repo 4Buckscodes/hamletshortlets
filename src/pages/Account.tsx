@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   CreditCard, X, ChevronDown, ChevronUp, MessageSquarePlus, ShieldCheck,
@@ -9,6 +9,7 @@ import { GuestLayout } from '../components/Navbar';
 import { BookingStatusPill } from '../components/Badges';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
+import { buildWorkspaceSignInPath } from '../lib/authRedirect';
 import type { Booking } from '../lib/types';
 import { formatNaira, formatDate, formatDateTime } from '../lib/pricing';
 
@@ -179,8 +180,10 @@ export default function Account() {
   } = useHamlet();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const session = state.session;
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const focusedBookingParam = searchParams.get('booking')?.trim() || null;
+  const [expanded, setExpanded] = useState<string | null>(focusedBookingParam);
   const [payFor, setPayFor] = useState<Booking | null>(null);
   const [issueFor, setIssueFor] = useState<Booking | null>(null);
   const [fbRating, setFbRating] = useState(5);
@@ -203,6 +206,14 @@ export default function Account() {
     [state.bookings, session],
   );
 
+  const resolvedExpanded = useMemo(() => {
+    if (expanded) {
+      const match = myBookings.find(b => b.id === expanded || b.ref === expanded);
+      if (match) return match.id;
+    }
+    return expanded;
+  }, [expanded, myBookings]);
+
   if (!backendReady) {
     return <GuestLayout><div className="mx-auto max-w-md px-4 py-24 text-center"><p className="text-sm font-semibold text-ink-600">Connecting to your account…</p></div></GuestLayout>;
   }
@@ -210,6 +221,7 @@ export default function Account() {
     return <GuestLayout><div className="mx-auto max-w-md px-4 py-24 text-center"><h1 className="font-display text-2xl font-black text-ink-900">Couldn't load your account</h1><p role="alert" className="mt-2 text-sm text-red-700">{backendError}</p><button onClick={() => window.location.reload()} className="btn-jade mt-6">Try again</button></div></GuestLayout>;
   }
   if (!session) {
+    const signInReturnPath = buildWorkspaceSignInPath(`${location.pathname}${location.search}`);
     return (
       <GuestLayout>
         <div className="mx-auto max-w-md px-4 py-24 text-center">
@@ -217,7 +229,7 @@ export default function Account() {
           <h1 className="mt-4 font-display text-2xl font-black text-ink-900">Sign in to see your bookings</h1>
           <p className="mt-2 text-sm text-ink-500">Track requests, complete payment and report issues from one place.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-            <Link to="/signin?redirect=%2Faccount" className="btn-jade">Sign in</Link>
+            <Link to={signInReturnPath} className="btn-jade">Sign in</Link>
             <Link to="/signin?mode=signup" className="btn-outline">Guest sign up</Link>
           </div>
         </div>
@@ -328,7 +340,7 @@ export default function Account() {
           )}
 
           {myBookings.map(b => {
-            const open = expanded === b.id;
+            const open = resolvedExpanded === b.id;
             const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
             const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
             const canFeedback = ['completed', 'disputed'].includes(b.status);
@@ -474,20 +486,69 @@ export default function Account() {
 }
 
 export function WorkspaceGuard({ expected, children }: { expected: 'partner' | 'admin'; children: React.ReactNode }) {
-  const { state } = useHamlet();
+  const { state, backendReady, signOut } = useHamlet();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [switchingAccount, setSwitchingAccount] = useState(false);
+
+  const intendedTarget = `${location.pathname}${location.search}`;
+  const signInWithRedirect = buildWorkspaceSignInPath(intendedTarget);
+
+  if (!backendReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-ink-950 p-6">
+        <p className="text-[13px] font-semibold text-ink-300">Restoring your secure workspace session…</p>
+      </div>
+    );
+  }
 
   const s = state.session;
   if (!s || s.role !== expected) {
+    const switchToAuthorizedAccount = async () => {
+      if (!s) {
+        navigate(signInWithRedirect);
+        return;
+      }
+      setSwitchingAccount(true);
+      try {
+        await signOut();
+      } catch {
+        // Proceed to sign-in even if session cleanup had already completed
+      } finally {
+        setSwitchingAccount(false);
+      }
+      navigate(signInWithRedirect);
+    };
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink-950 p-6">
-        <div className="max-w-sm text-center">
+        <div className="max-w-md text-center">
           <ShieldCheck size={44} className="mx-auto text-brass-400" />
-          <h1 className="mt-4 font-display text-2xl font-black text-ink-50">{expected === 'admin' ? 'Admin access required' : 'Partner access required'}</h1>
-          <p className="mt-2 text-[13px] font-medium text-ink-300">This area is role-protected. Public registration never grants {expected} access — accounts are provisioned after verification.</p>
-          <div className="mt-6 flex justify-center gap-3">
-            <button onClick={() => navigate('/signin')} className="btn-brass !py-2.5 text-[12px]">Sign in</button>
-            {expected === 'partner' && <button onClick={() => navigate('/partner/register')} className="btn-ghost-dark !py-2.5 text-[12px]">Apply as partner</button>}
+          <h1 className="mt-4 font-display text-2xl font-black text-ink-50">
+            {s
+              ? 'Access denied for current account'
+              : expected === 'admin'
+                ? 'Admin access required'
+                : 'Partner access required'}
+          </h1>
+          <p className="mt-2 text-[13px] font-medium leading-relaxed text-ink-300">
+            {s
+              ? `You are signed in as ${s.email} (${s.role}), which is not authorised for the ${expected} workspace. Private property and booking details are hidden.`
+              : `Sign in with your verified ${expected} account to continue. After signing in, you will return directly to this page.`}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              disabled={switchingAccount}
+              onClick={() => void switchToAuthorizedAccount()}
+              className="btn-brass !py-2.5 text-[12px] disabled:opacity-50"
+            >
+              {s ? `Sign in with ${expected} account` : 'Sign in'}
+            </button>
+            {expected === 'partner' && !s && (
+              <button onClick={() => navigate('/partner/register')} className="btn-ghost-dark !py-2.5 text-[12px]">
+                Apply as partner
+              </button>
+            )}
           </div>
         </div>
       </div>
