@@ -13,6 +13,12 @@ import {
   formatUsd,
 } from './currency';
 import { HAMLET_TAGLINE } from './brand';
+import {
+  isMainlandProperty,
+  LAGOS_AREAS,
+  MAINLAND_AREAS,
+  matchesLagosAreaFilter,
+} from './areas';
 
 const ROOT = resolve(process.cwd());
 
@@ -74,6 +80,50 @@ describe('Stay currency switcher (NGN ₦ <-> USD $ <-> GBP £)', () => {
     ]) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
       expect(content, `${rel} should expose currency switching or formatting`).toMatch(/CurrencyToggle|useCurrency/);
+    }
+  });
+});
+
+describe('Lagos Mainland (Yaba, Shomolu, Surulere & environs) support', () => {
+  it('includes Yaba, Shomolu, Surulere, and surrounding Mainland environs in canonical Lagos areas', () => {
+    for (const area of ['Lagos Mainland', 'Yaba', 'Shomolu', 'Surulere', 'Gbagada', 'Maryland', 'Ilupeju', 'Ebute Metta', 'Ogudu', 'Magodo', 'Ikeja GRA']) {
+      expect(MAINLAND_AREAS).toContain(area);
+      expect(LAGOS_AREAS).toContain(area);
+    }
+  });
+
+  it('matches umbrella "Lagos Mainland" filter across Yaba, Shomolu/Somolu, Surulere, and environs while excluding Island stays', () => {
+    const yabaFlat = { area: 'Yaba', address: '18 Hughes Avenue, Alagomeji, Yaba', title: 'Alagomeji 2-Bed' };
+    const shomoluSuite = { area: 'Shomolu', address: '7 Oguntona Crescent, Palmgrove / Onipanu', title: 'Palmgrove Suite' };
+    const surulereApt = { area: 'Surulere', address: '42 Bode Thomas Street, Surulere', title: 'Bode Thomas Executive' };
+    const gbagadaApt = { area: 'Gbagada', address: '12 Medina Estate, Gbagada', title: 'Medina Flat' };
+    const viPenthouse = { area: 'Victoria Island', address: '14 Adeola Odeku, VI', title: 'Sky Residence' };
+
+    expect(isMainlandProperty(yabaFlat)).toBe(true);
+    expect(isMainlandProperty(shomoluSuite)).toBe(true);
+    expect(isMainlandProperty(surulereApt)).toBe(true);
+    expect(isMainlandProperty(gbagadaApt)).toBe(true);
+    expect(isMainlandProperty(viPenthouse)).toBe(false);
+
+    expect(matchesLagosAreaFilter(yabaFlat, 'Lagos Mainland')).toBe(true);
+    expect(matchesLagosAreaFilter(shomoluSuite, 'Lagos Mainland')).toBe(true);
+    expect(matchesLagosAreaFilter(surulereApt, 'Lagos Mainland')).toBe(true);
+    expect(matchesLagosAreaFilter(gbagadaApt, 'Lagos Mainland')).toBe(true);
+    expect(matchesLagosAreaFilter(viPenthouse, 'Lagos Mainland')).toBe(false);
+
+    // Spelling/sub-area matching (Somolu <-> Shomolu / Palmgrove, Sabo -> Yaba, Bode Thomas -> Surulere)
+    expect(matchesLagosAreaFilter(shomoluSuite, 'Somolu')).toBe(true);
+    expect(matchesLagosAreaFilter({ area: 'Lagos Mainland', address: 'Sabo, Yaba', title: 'Sabo Studio' }, 'Yaba')).toBe(true);
+    expect(matchesLagosAreaFilter(surulereApt, 'Surulere')).toBe(true);
+  });
+
+  it('surfaces Lagos Mainland, Yaba, Shomolu, and Surulere across Home, Lagos guide, and Stays', () => {
+    for (const rel of ['src/pages/Home.tsx', 'src/pages/Lagos.tsx', 'src/pages/Stays.tsx']) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      expect(content).toContain('Lagos Mainland');
+      expect(content).toContain('Yaba');
+      expect(content).toContain('Shomolu');
+      expect(content).toContain('Surulere');
     }
   });
 });

@@ -126,7 +126,8 @@ export function Footer() {
             <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-brass-400">Discover & book</p>
             <ul className="mt-3 space-y-2 text-[13px] font-medium">
               <li><Link to="/stays" className="hover:text-white">Explore available stays</Link></li>
-              <li><Link to="/lagos" className="hover:text-white">Shortlets in Lagos</Link></li>
+              <li><Link to="/stays?area=Lagos+Mainland" className="hover:text-white">Lagos Mainland (Yaba, Surulere, Shomolu)</Link></li>
+              <li><Link to="/lagos" className="hover:text-white">Lagos neighbourhood guide</Link></li>
               <li><Link to="/how-it-works" className="hover:text-white">How HAMLET works</Link></li>
               <li><Link to="/account" className="hover:text-white">Get help with your stay</Link></li>
             </ul>

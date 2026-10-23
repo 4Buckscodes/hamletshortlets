@@ -8,35 +8,47 @@ import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
 import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
-import { AREAS } from '../lib/seed';
+import {
+  ISLAND_AND_LEKKI_AREAS,
+  MAINLAND_AREAS,
+  matchesLagosAreaFilter,
+} from '../lib/areas';
 import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
 import { HAMLET_TAGLINE, usePageMeta } from '../lib/brand';
 
 const QUICK_AREAS = [
   { label: 'All Lagos', match: '' },
-  { label: 'Lekki', match: 'lekki' },
-  { label: 'Victoria Island', match: 'victoria island' },
-  { label: 'Ikoyi', match: 'ikoyi' },
-  { label: 'Ikeja', match: 'ikeja' },
-  { label: 'Ajah', match: 'ajah' },
-  { label: 'Oniru', match: 'oniru' },
-  { label: 'Banana Island', match: 'banana island' },
+  { label: 'Lagos Mainland', match: 'Lagos Mainland' },
+  { label: 'Yaba', match: 'Yaba' },
+  { label: 'Surulere', match: 'Surulere' },
+  { label: 'Shomolu', match: 'Shomolu' },
+  { label: 'Ikeja', match: 'Ikeja' },
+  { label: 'Gbagada', match: 'Gbagada' },
+  { label: 'Lekki', match: 'Lekki' },
+  { label: 'Victoria Island', match: 'Victoria Island' },
+  { label: 'Ikoyi', match: 'Ikoyi' },
+  { label: 'Ajah', match: 'Ajah' },
+  { label: 'Oniru', match: 'Oniru' },
+  { label: 'Banana Island', match: 'Banana Island' },
 ];
 
 const QUICK_AMENITIES = ['24/7 Power', 'Wifi', 'Pool', 'Workspace'] as const;
 
 const NEIGHBOURHOOD_CARDS = [
+  { name: 'Lagos Mainland', tag: 'Yaba, Shomolu, Surulere & environs', href: '/stays?area=Lagos+Mainland', featured: true },
+  { name: 'Yaba', tag: 'Sabo, Alagomeji, Akoka & tech hub', href: '/stays?area=Yaba' },
+  { name: 'Surulere', tag: 'Bode Thomas, Adeniran Ogunsanya & Aguda', href: '/stays?area=Surulere' },
+  { name: 'Shomolu', tag: 'Palmgrove, Onipanu, Pedro & Fadeyi', href: '/stays?area=Shomolu' },
+  { name: 'Ikeja & Environs', tag: 'Ikeja GRA, Maryland, Gbagada & Magodo', href: '/stays?q=Ikeja' },
   { name: 'Lekki', tag: 'Dining, lifestyle & coastal stays', href: '/stays?q=Lekki' },
   { name: 'Victoria Island', tag: 'Business districts & city access', href: '/stays?area=Victoria+Island' },
-  { name: 'Ikoyi', tag: 'Quiet residential Island stays', href: '/stays?area=Ikoyi' },
-  { name: 'Ikeja', tag: 'Mainland & airport convenience', href: '/stays?q=Ikeja' },
-  { name: 'Ajah', tag: 'Spacious Lekki–Ajah stays', href: '/stays?area=Ajah' },
+  { name: 'Ikoyi & Ajah', tag: 'Residential Island & Lekki–Ajah corridor', href: '/lagos' },
 ];
 
 export default function Home() {
   usePageMeta(
     'HAMLET Shortlets | Find Your Next Stay in Lagos',
-    'Explore shortlets in Lagos, from Lekki and Victoria Island to Ikoyi and Ikeja. Compare locations, amenities, prices, and check-in details on HAMLET.',
+    'Explore shortlets across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja & environs) and Lagos Island (Lekki, Victoria Island, Ikoyi & Ajah) on HAMLET.',
   );
 
   const { state, backendReady, backendError } = useHamlet();
@@ -59,9 +71,8 @@ export default function Home() {
 
   const filteredMarketplace = useMemo(() => {
     return approved.filter(p => {
-      if (activeAreaFilter) {
-        const hay = `${p.area} ${p.address} ${p.title}`.toLowerCase();
-        if (!hay.includes(activeAreaFilter)) return false;
+      if (activeAreaFilter && !matchesLagosAreaFilter(p, activeAreaFilter)) {
+        return false;
       }
       if (activeAmenity && !p.amenities.includes(activeAmenity)) return false;
       return true;
@@ -94,13 +105,13 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
           <div className="max-w-2xl">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-brass-300">
-              Lagos shortlets · {HAMLET_TAGLINE}
+              Lagos Mainland & Island · {HAMLET_TAGLINE}
             </p>
             <h1 className="mt-2 font-display text-3xl font-black leading-[1.06] tracking-tight text-paper sm:text-5xl">
               Come in. Settle down. Feel at home.
             </h1>
             <p className="mt-2.5 max-w-xl text-sm font-medium text-ink-200 sm:text-[15px]">
-              Browse verified Lagos apartments with upfront pricing, confirmed amenities, and clear arrival details.
+              Browse verified Lagos apartments — from Yaba, Shomolu & Surulere to Lekki, VI & Ikoyi — with upfront pricing and confirmed amenities.
             </p>
           </div>
 
@@ -117,12 +128,21 @@ export default function Home() {
                   value={area}
                   onChange={event => setArea(event.target.value)}
                   aria-label="Where would you like to stay?"
-                  className="w-full bg-transparent text-[13px] font-bold text-white outline-none [&>option]:text-ink-900"
+                  className="w-full bg-transparent text-[13px] font-bold text-white outline-none [&>option]:text-ink-900 [&>optgroup]:text-ink-900"
                 >
                   <option value="">All Lagos areas</option>
-                  {AREAS.map(destination => (
-                    <option key={destination} value={destination}>{destination}</option>
-                  ))}
+                  <optgroup label="Lagos Mainland & Environs">
+                    {MAINLAND_AREAS.map(destination => (
+                      <option key={destination} value={destination}>
+                        {destination === 'Lagos Mainland' ? 'Lagos Mainland (Yaba, Shomolu, Surulere & environs)' : destination}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Lagos Island & Lekki Corridor">
+                    {ISLAND_AND_LEKKI_AREAS.map(destination => (
+                      <option key={destination} value={destination}>{destination}</option>
+                    ))}
+                  </optgroup>
                 </select>
               </span>
             </label>
@@ -194,8 +214,8 @@ export default function Home() {
               {!backendReady
                 ? 'Finding spaces that fit your plans…'
                 : approved.length > 0
-                  ? `${filteredMarketplace.length} available stay${filteredMarketplace.length === 1 ? '' : 's'} · 3% guest fee disclosed upfront`
-                  : 'Verified Lagos apartments · manual review before listing'}
+                  ? `${filteredMarketplace.length} available stay${filteredMarketplace.length === 1 ? '' : 's'}${activeAreaFilter ? ` in ${activeAreaFilter}` : ''} · 3% guest fee disclosed upfront`
+                  : 'Verified Lagos Mainland & Island apartments · manual review before listing'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -300,10 +320,10 @@ export default function Home() {
               <ShieldCheck size={13} className="shrink-0" /> Verified Lagos supply onboarding
             </span>
             <h3 className="mt-3 font-display text-xl font-black text-ink-900 sm:text-2xl">
-              We’re onboarding verified Lagos stays now.
+              We’re onboarding verified Lagos Mainland & Island stays now.
             </h3>
             <p className="mx-auto mt-1.5 max-w-md text-xs font-medium leading-relaxed text-ink-500 sm:text-[13px]">
-              Every apartment completes manual document and inspection review before appearing in the marketplace.
+              Every apartment across Yaba, Shomolu, Surulere, Ikeja, Lekki, VI & Ikoyi completes manual document and inspection review before appearing in the marketplace.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
               <Link to="/stays" className="btn-jade !py-2.5 text-xs">
@@ -317,28 +337,37 @@ export default function Home() {
         )}
       </section>
 
-      {/* ── 3. Compact Neighbourhood Shortcuts ──────────────────────────── */}
+      {/* ── 3. Compact Neighbourhood Shortcuts (Mainland + Island) ───────── */}
       <section className="border-t border-ink-100 bg-clay/50 py-10 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-xl font-black text-ink-900 sm:text-2xl">
-              Browse by Lagos neighbourhood
-            </h2>
+            <div>
+              <h2 className="font-display text-xl font-black text-ink-900 sm:text-2xl">
+                Browse by Lagos neighbourhood
+              </h2>
+              <p className="mt-0.5 text-xs font-medium text-ink-500">
+                Lagos Mainland (Yaba, Shomolu, Surulere & environs) · Lagos Island & Lekki
+              </p>
+            </div>
             <Link to="/lagos" className="inline-flex items-center gap-1 text-xs font-extrabold text-jade-800 hover:underline">
               Lagos neighbourhood guide <ChevronRight size={14} className="shrink-0" />
             </Link>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {NEIGHBOURHOOD_CARDS.map(item => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="group flex items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-jade-400 hover:shadow-sm"
+                className={`group flex items-center justify-between gap-2 rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm ${
+                  item.featured
+                    ? 'border-jade-300 bg-jade-50/70 hover:border-jade-600'
+                    : 'border-ink-100 bg-white hover:border-jade-400'
+                }`}
               >
                 <div className="min-w-0">
                   <p className="font-display text-base font-black text-ink-900 group-hover:text-jade-800">{item.name}</p>
-                  <p className="mt-0.5 truncate text-[11.5px] font-medium text-ink-500">{item.tag}</p>
+                  <p className="mt-0.5 truncate text-[11.5px] font-medium text-ink-600">{item.tag}</p>
                 </div>
                 <ChevronRight size={16} className="shrink-0 text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-jade-700" />
               </Link>
@@ -384,10 +413,10 @@ export default function Home() {
               <Building2 size={22} className="shrink-0 text-brass-400" />
               <div>
                 <p className="font-display text-base font-black sm:text-lg">
-                  Own or manage a shortlet in Lagos?
+                  Own or manage a shortlet on Lagos Mainland or Island?
                 </p>
                 <p className="text-xs font-medium text-ink-300">
-                  0% owner fee · Reach verified guests and manage bookings in one workspace.
+                  0% owner fee · List apartments in Yaba, Surulere, Shomolu, Ikeja, Lekki, VI & Ikoyi.
                 </p>
               </div>
             </div>

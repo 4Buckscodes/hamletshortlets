@@ -6,44 +6,82 @@ import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
 import { usePageMeta } from '../lib/brand';
 
-const NEIGHBOURHOOD_GUIDES = [
+const MAINLAND_GUIDES = [
+  {
+    name: 'Yaba & Environs',
+    subareas: 'Sabo · Alagomeji · Akoka · Ebute Metta · Jibowu',
+    tagline: 'For tech hubs, campuses & central Mainland access',
+    body: 'Searching for shortlets in Yaba? Stay close to Lagos’s technology corridor, universities, medical centres, and quick Third Mainland Bridge links to Lagos Island.',
+    href: '/stays?area=Yaba',
+  },
+  {
+    name: 'Surulere & Environs',
+    subareas: 'Bode Thomas · Adeniran Ogunsanya · Eric Moore · Aguda · Iponri',
+    tagline: 'For vibrant residential streets, studios & family visits',
+    body: 'Explore serviced apartments in Surulere with easy access to shopping, dining, stadiums, creative studios, and central routes connecting both Mainland and Island.',
+    href: '/stays?area=Surulere',
+  },
+  {
+    name: 'Shomolu & Environs',
+    subareas: 'Palmgrove · Onipanu · Pedro · Fadeyi · Gbagada · Anthony · Ilupeju',
+    tagline: 'For central Ikorodu Road & Gbagada expressway links',
+    body: 'Need a practical Mainland base around Shomolu, Palmgrove, Onipanu, or nearby Gbagada and Ilupeju? Compare power arrangements, gated parking, and proximity to commercial hubs.',
+    href: '/stays?area=Shomolu',
+  },
+  {
+    name: 'Ikeja & Northern Mainland',
+    subareas: 'Ikeja GRA · Maryland · Opebi · Ogudu · Magodo',
+    tagline: 'For airport proximity, corporate offices & quiet GRAs',
+    body: 'Consider apartments in Ikeja GRA, Maryland, Ogudu, and Magodo for seamless Murtala Muhammed Airport transfers, mainland business districts, and family stays.',
+    href: '/stays?q=Ikeja',
+  },
+];
+
+const ISLAND_GUIDES = [
   {
     name: 'Lekki',
     tagline: 'For the lifestyle and the plans around it',
-    body: 'Looking for shortlets in Lekki? Explore apartments close to dining spots, shopping, entertainment, and popular social destinations. Lekki can suit couples, groups, families, and travellers who want a lively base for their time in Lagos.',
-    note: 'Check the exact location and likely journey to your planned destinations before booking.',
+    body: 'Explore apartments close to dining spots, shopping, entertainment, and social destinations across Lekki Phase 1 and Oniru.',
     href: '/stays?q=Lekki',
   },
   {
     name: 'Victoria Island',
     tagline: 'For business and city convenience',
-    body: 'Need a shortlet in Victoria Island? Explore accommodation suited to corporate visits, meetings, conferences, and stays close to Lagos Island’s business districts. Look for practical amenities, a suitable workspace, and clear arrival arrangements.',
+    body: 'Explore accommodation suited to corporate visits, meetings, conferences, and stays close to Lagos Island’s business districts.',
     href: '/stays?area=Victoria+Island',
   },
   {
     name: 'Ikoyi',
     tagline: 'For a more private city stay',
-    body: 'If you value a quieter residential setting, explore shortlets in Ikoyi. Compare apartment features, building access, parking, and proximity to your planned destinations.',
+    body: 'Compare quieter residential apartments across Ikoyi and Banana Island with clear building access, security, and parking.',
     href: '/stays?area=Ikoyi',
-  },
-  {
-    name: 'Ikeja',
-    tagline: 'For mainland convenience',
-    body: 'Searching for shortlets in Ikeja? Consider apartments that make it easier to reach mainland business districts, family addresses, and transport connections. Confirm the precise location and route to the places you need to visit.',
-    href: '/stays?q=Ikeja',
   },
   {
     name: 'Ajah',
     tagline: 'For residential stays and room to settle in',
-    body: 'Explore shortlets in Ajah for family visits, longer stays, and plans centred around the Lekki–Ajah corridor. Review transport considerations, nearby amenities, and power arrangements before making your decision.',
+    body: 'Explore shortlets in Ajah for family visits, longer stays, and plans centred around the Lekki–Ajah corridor.',
     href: '/stays?area=Ajah',
   },
 ];
 
+const MAINLAND_ENVIRONS_CHIPS = [
+  { label: 'All Lagos Mainland', to: '/stays?area=Lagos+Mainland' },
+  { label: 'Yaba', to: '/stays?area=Yaba' },
+  { label: 'Shomolu', to: '/stays?area=Shomolu' },
+  { label: 'Surulere', to: '/stays?area=Surulere' },
+  { label: 'Gbagada', to: '/stays?area=Gbagada' },
+  { label: 'Maryland', to: '/stays?area=Maryland' },
+  { label: 'Ilupeju', to: '/stays?area=Ilupeju' },
+  { label: 'Ebute Metta', to: '/stays?area=Ebute+Metta' },
+  { label: 'Ogudu', to: '/stays?area=Ogudu' },
+  { label: 'Magodo', to: '/stays?area=Magodo' },
+  { label: 'Ikeja GRA', to: '/stays?area=Ikeja+GRA' },
+];
+
 export default function Lagos() {
   usePageMeta(
-    'Shortlets in Lagos | Find Apartments for Your Stay — HAMLET',
-    'Explore shortlets in Lagos, from Lekki and Victoria Island to Ikoyi and Ikeja. Compare locations, amenities, prices, and check-in details on HAMLET.',
+    'Shortlets in Lagos | Mainland (Yaba, Shomolu, Surulere) & Island — HAMLET',
+    'Explore shortlets across Lagos Mainland — Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja & environs — and Lagos Island (Lekki, Victoria Island, Ikoyi, Ajah) on HAMLET.',
   );
 
   const { state, backendReady, backendError } = useHamlet();
@@ -59,57 +97,106 @@ export default function Lagos() {
           className="absolute inset-0 h-full w-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/75 to-ink-950/35" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-brass-300">
-            Lagos shortlets & serviced apartments
+            Lagos Mainland & Island shortlets
           </p>
           <h1 className="mt-3 max-w-2xl font-display text-4xl font-black leading-tight sm:text-5xl">
             Find your place in Lagos.
           </h1>
-          <p className="mt-3 max-w-2xl text-base font-semibold text-brass-200">
-            Lagos is easier to enjoy when your accommodation works with your plans.
+          <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-100 sm:text-base">
+            Whether your plans are centred around <strong className="text-brass-200">Lagos Mainland</strong> — Yaba, Shomolu, Surulere, Gbagada, Maryland, and Ikeja — or <strong className="text-brass-200">Lagos Island & Lekki</strong>, explore apartments with upfront pricing and confirmed arrival details.
           </p>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-100">
-            Whether you’re coming for meetings on Victoria Island, a weekend around Lekki, a family visit on the mainland, or a few days away from your routine, HAMLET helps you explore shortlets in Lagos with the details you need to make a confident choice.
-          </p>
-          <p className="mt-2.5 max-w-2xl text-sm font-medium leading-relaxed text-ink-200">
-            Compare apartment locations, available amenities, guest capacity, and booking terms before choosing your next stay. From a practical base for business to a comfortable apartment for a weekend staycation in Lagos, start with the neighbourhood that makes the most sense for you.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link to="/stays" className="btn-brass min-h-12">
-              Browse shortlets in Lagos <ArrowRight size={15} />
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link to="/stays?area=Lagos+Mainland" className="btn-brass min-h-12">
+              Explore Lagos Mainland <ArrowRight size={15} />
+            </Link>
+            <Link to="/stays" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-4 py-3 text-sm font-bold text-paper transition hover:bg-white/10">
+              Browse all Lagos stays
             </Link>
             <CurrencyToggle variant="dark" />
           </div>
         </div>
       </section>
 
-      {/* Explore Lagos by neighbourhood */}
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+      {/* Lagos Mainland Spotlight: Yaba, Shomolu, Surulere & Environs */}
+      <section id="lagos-mainland" className="border-b border-ink-100 bg-paper py-12 sm:py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
+                Lagos Mainland & Environs
+              </p>
+              <h2 className="mt-1.5 font-display text-2xl font-black text-ink-900 sm:text-3xl">
+                Yaba, Shomolu, Surulere & surrounding hubs
+              </h2>
+              <p className="mt-1.5 text-sm font-medium text-ink-600">
+                Stay close to Mainland business corridors, universities, family addresses, Murtala Muhammed Airport, and fast bridge connections to the Island.
+              </p>
+            </div>
+            <Link to="/stays?area=Lagos+Mainland" className="btn-jade !py-2.5 text-xs">
+              View all Mainland stays <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* Quick Environs Chips */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {MAINLAND_ENVIRONS_CHIPS.map(chip => (
+              <Link
+                key={chip.label}
+                to={chip.to}
+                className="rounded-full border border-jade-200 bg-jade-50/70 px-3.5 py-1.5 text-xs font-bold text-jade-900 transition hover:border-jade-600 hover:bg-jade-700 hover:text-white"
+              >
+                {chip.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {MAINLAND_GUIDES.map(n => (
+              <article key={n.name} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-2xs">
+                <div className="flex items-center gap-2 text-jade-700">
+                  <MapPin size={16} className="shrink-0" />
+                  <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em]">Lagos Mainland</span>
+                </div>
+                <h3 className="mt-2 font-display text-lg font-black text-ink-900">{n.name}</h3>
+                <p className="mt-0.5 text-[11px] font-bold text-jade-800">{n.subareas}</p>
+                <p className="mt-2 text-[12px] font-bold text-ink-800">{n.tagline}</p>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
+                <Link
+                  to={n.href}
+                  className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[12px] font-extrabold text-jade-800 hover:text-jade-900"
+                >
+                  Explore {n.name.split(' ')[0]} stays <ArrowRight size={13} className="shrink-0" />
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lagos Island & Lekki Corridor */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
         <div className="max-w-2xl">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Neighbourhood guide</p>
-          <h2 className="mt-1.5 font-display text-3xl font-black text-ink-900 sm:text-4xl">
-            Explore Lagos by neighbourhood
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Lagos Island & Lekki Corridor</p>
+          <h2 className="mt-1.5 font-display text-2xl font-black text-ink-900 sm:text-3xl">
+            Victoria Island, Ikoyi, Lekki & Ajah
           </h2>
-          <p className="mt-2 text-sm font-medium text-ink-500">
-            Select a neighbourhood to filter available stays and review proximity to your planned destinations.
-          </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {NEIGHBOURHOOD_GUIDES.map(n => (
-            <article key={n.name} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-6 shadow-2xs">
+        <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {ISLAND_GUIDES.map(n => (
+            <article key={n.name} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-2xs">
               <div className="flex items-center gap-2 text-jade-700">
-                <MapPin size={17} className="shrink-0" />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.16em]">Lagos</span>
+                <MapPin size={16} className="shrink-0" />
+                <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em]">Lagos Island / Lekki</span>
               </div>
-              <h3 className="mt-2 font-display text-xl font-black text-ink-900">{n.name}</h3>
-              <p className="mt-0.5 text-[12.5px] font-bold text-ink-700">{n.tagline}</p>
-              <p className="mt-2.5 text-[13px] leading-relaxed text-ink-600">{n.body}</p>
-              {n.note && <p className="mt-2 text-[11.5px] font-semibold text-ink-500">{n.note}</p>}
+              <h3 className="mt-2 font-display text-lg font-black text-ink-900">{n.name}</h3>
+              <p className="mt-0.5 text-[12px] font-bold text-ink-700">{n.tagline}</p>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
               <Link
                 to={n.href}
-                className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[12.5px] font-extrabold text-jade-800 hover:text-jade-900"
+                className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[12px] font-extrabold text-jade-800 hover:text-jade-900"
               >
                 Explore {n.name} stays <ArrowRight size={13} className="shrink-0" />
               </Link>
@@ -119,13 +206,13 @@ export default function Lagos() {
       </section>
 
       {/* Available Lagos stays */}
-      <section className="border-y border-ink-100 bg-clay/60 py-14 sm:py-16">
+      <section className="border-y border-ink-100 bg-clay/60 py-12 sm:py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Available inventory</p>
               <h2 className="mt-1.5 font-display text-3xl font-black text-ink-900 sm:text-4xl">
-                Shortlets in Lagos
+                Shortlets across Lagos
               </h2>
               <p className="mt-1.5 text-sm font-medium text-ink-600">
                 Compare prices in Naira (₦), US Dollars ($), or British Pounds (£) and inspect full property details before requesting to book.
@@ -134,7 +221,7 @@ export default function Lagos() {
             <div className="flex flex-wrap items-center gap-2.5">
               <CurrencyToggle />
               <Link to="/stays" className="btn-dark !py-2.5 text-[12px]">
-                Filter by dates & amenities <ArrowRight size={14} />
+                Filter by area & dates <ArrowRight size={14} />
               </Link>
             </div>
           </div>
@@ -160,7 +247,7 @@ export default function Lagos() {
                 We’re still adding stays in this area.
               </h3>
               <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-500">
-                Try another neighbourhood or check back as more properties become available. Every Lagos shortlet on HAMLET completes manual verification before going live.
+                Try another neighbourhood or check back as more properties across Lagos Mainland and Island become available.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link to="/partner/register" className="btn-jade">List your Lagos property</Link>
@@ -172,25 +259,22 @@ export default function Lagos() {
       </section>
 
       {/* What to look for when booking a Lagos shortlet */}
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
         <div className="max-w-3xl">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Practical booking checklist</p>
-          <h2 className="mt-2 font-display text-3xl font-black text-ink-900 sm:text-4xl">
-            What to look for when booking a Lagos shortlet
+          <h2 className="mt-2 font-display text-2xl font-black text-ink-900 sm:text-3xl">
+            What to check before booking in Lagos
           </h2>
-          <p className="mt-3 text-sm font-medium leading-relaxed text-ink-600">
-            Lagos traffic can change how convenient a property feels. A beautiful apartment may not be the right choice if it puts you too far from the places you need to reach. Before booking, consider:
-          </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { Icon: MapPin, title: 'Location', body: 'How close is the property to your meetings, events, or family?' },
-            { Icon: Zap, title: 'Power', body: 'Is there an inverter or generator? What exactly does the backup support?' },
-            { Icon: Wifi, title: 'Internet', body: 'Is Wi-Fi provided, and are speed or backup arrangements specified?' },
-            { Icon: Lock, title: 'Access and security', body: 'What are the building entry procedures and security arrangements?' },
-            { Icon: Banknote, title: 'Total price', body: 'What charges apply beyond the advertised nightly rate?' },
-            { Icon: KeyRound, title: 'Check-in', body: 'Who will assist with access, and what happens if you arrive late?' },
+            { Icon: MapPin, title: 'Location & bridge routes', body: 'Check proximity to your Mainland or Island meetings, events, or family.' },
+            { Icon: Zap, title: 'Power backup', body: 'Confirm whether 24/7 estate power, inverter, or generator backup is included.' },
+            { Icon: Wifi, title: 'Internet', body: 'Check whether Wi-Fi or workspace arrangements suit remote work.' },
+            { Icon: Lock, title: 'Access & security', body: 'Review gated street/estate entry procedures and security.' },
+            { Icon: Banknote, title: 'Total price', body: 'Review cleaning charges, the 3% guest fee, and refundable deposit upfront.' },
+            { Icon: KeyRound, title: 'Check-in window', body: 'Confirm arrival hours and host or manager contact arrangements.' },
           ].map(({ Icon, title, body }) => (
             <div key={title} className="rounded-2xl border border-ink-100 bg-white p-5">
               <Icon size={20} className="shrink-0 text-jade-700" />
@@ -198,25 +282,6 @@ export default function Lagos() {
               <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">{body}</p>
             </div>
           ))}
-        </div>
-
-        <div className="mt-10 rounded-3xl bg-ink-950 p-7 text-paper sm:p-10">
-          <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
-            <div className="max-w-2xl">
-              <h2 className="font-display text-2xl font-black sm:text-3xl">Find a Lagos stay that works for you.</h2>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-200">
-                From luxury shortlets in Victoria Island to convenient apartments in Ikeja and lifestyle-led stays in Lekki, choose based on the experience you want and the practical details that matter.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/stays" className="btn-brass min-h-12">
-                Browse shortlets in Lagos <ArrowRight size={15} />
-              </Link>
-              <Link to="/faqs" className="inline-flex min-h-12 items-center rounded-xl border border-white/25 bg-white/5 px-4 py-3 text-sm font-bold text-paper transition hover:bg-white/10">
-                Read booking FAQs
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
     </GuestLayout>

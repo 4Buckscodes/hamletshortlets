@@ -146,7 +146,7 @@ export default function About() {
               Built for the way you actually travel in Lagos.
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              From the corporate pulse of Victoria Island and Ikoyi to the energy of Lekki and the mainland convenience of Ikeja, every trip comes with different expectations.
+              From the corporate pulse of Victoria Island and Ikoyi to the energy of Lekki and the central convenience of Lagos Mainland — Yaba, Surulere, Shomolu, Ikeja, and surrounding neighbourhoods — every trip comes with different expectations.
             </p>
             <p className="mt-2.5 text-sm leading-relaxed text-ink-600">
               A business traveller may need dependable internet and a convenient location. A family may prioritise space, security arrangements, and a kitchen. A couple planning a weekend away may care about privacy, atmosphere, and a comfortable setting.

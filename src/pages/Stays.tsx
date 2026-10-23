@@ -7,17 +7,22 @@ import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
 import { useCurrency } from '../lib/currency';
 import { usePageMeta } from '../lib/brand';
-import { AREAS } from '../lib/seed';
+import {
+  ISLAND_AND_LEKKI_AREAS,
+  MAINLAND_AREAS,
+  matchesLagosAreaFilter,
+} from '../lib/areas';
 import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
 
 const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'Generator', 'Concierge'];
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
 const MAX_PRICE_TIERS = [100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000];
+const MAINLAND_QUICK_HUBS = ['Lagos Mainland', 'Yaba', 'Surulere', 'Shomolu', 'Ikeja GRA', 'Gbagada', 'Maryland', 'Ilupeju', 'Ebute Metta', 'Magodo'] as const;
 
 export default function Stays() {
   usePageMeta(
-    'Explore Shortlets in Lagos | Compare Apartments & Prices — HAMLET',
-    'Browse shortlets across Lagos — Lekki, Victoria Island, Ikoyi, Ikeja, Ajah, and more. Filter by dates, guests, amenities, and compare prices in Naira, USD, or GBP.',
+    'Explore Shortlets in Lagos | Mainland & Island Apartments — HAMLET',
+    'Browse shortlets across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja, Gbagada, Maryland & environs) and Lagos Island (Lekki, VI, Ikoyi, Ajah). Compare prices in Naira, USD, or GBP.',
   );
 
   const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
@@ -70,6 +75,7 @@ export default function Stays() {
   };
 
   const normalizedQuery = keyword.trim().toLowerCase();
+  const isMainlandActive = MAINLAND_AREAS.some(m => m.toLowerCase() === area.trim().toLowerCase());
 
   // Only approved, non-suspended listings without overlapping confirmed/held bookings are discoverable for selected dates.
   const results = state.properties
@@ -77,10 +83,11 @@ export default function Stays() {
     .filter(p => !unavailableIds.has(p.id))
     .filter(p => {
       if (!normalizedQuery) return true;
+      if (matchesLagosAreaFilter(p, normalizedQuery)) return true;
       const haystack = `${p.title} ${p.area} ${p.address} ${p.type}`.toLowerCase();
       return haystack.includes(normalizedQuery);
     })
-    .filter(p => !area || p.area === area)
+    .filter(p => !area || matchesLagosAreaFilter(p, area))
     .filter(p => p.capacity >= guests)
     .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
     .filter(p => type === 'All types' || p.type === type)
@@ -103,7 +110,13 @@ export default function Stays() {
               <span>Your stay, sorted.</span>
             </div>
             <h1 className="mt-1 font-display text-2xl font-black text-ink-900 sm:text-3xl">
-              {keyword.trim() ? `Stays matching “${keyword.trim()}”` : area ? `Shortlets in ${area}` : 'Explore Lagos stays'}
+              {keyword.trim()
+                ? `Stays matching “${keyword.trim()}”`
+                : area === 'Lagos Mainland'
+                  ? 'Shortlets in Lagos Mainland (Yaba, Shomolu, Surulere & environs)'
+                  : area
+                    ? `Shortlets in ${area}`
+                    : 'Explore Lagos stays'}
             </h1>
             <p className="mt-1 text-[12.5px] font-medium text-ink-500">
               {!backendReady
@@ -145,7 +158,7 @@ export default function Stays() {
                 <input
                   id="f-q"
                   type="search"
-                  placeholder="e.g. Lekki, Ikeja, Ikoyi…"
+                  placeholder="e.g. Yaba, Surulere, Shomolu, Lekki…"
                   className="input !pl-8.5"
                   value={keyword}
                   onChange={e => update({ q: e.target.value })}
@@ -157,7 +170,18 @@ export default function Stays() {
               <label className="label" htmlFor="f-area">Area</label>
               <select id="f-area" className="input" value={area} onChange={e => update({ area: e.target.value })}>
                 <option value="">All Lagos areas</option>
-                {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                <optgroup label="Lagos Mainland & Environs">
+                  {MAINLAND_AREAS.map(a => (
+                    <option key={a} value={a}>
+                      {a === 'Lagos Mainland' ? 'Lagos Mainland (All)' : a}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Lagos Island & Lekki Corridor">
+                  {ISLAND_AND_LEKKI_AREAS.map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
@@ -246,6 +270,33 @@ export default function Stays() {
 
         {/* Results */}
         <div className="lg:col-span-9">
+          {isMainlandActive && (
+            <div className="mb-4 rounded-2xl border border-jade-200 bg-jade-50/70 p-3.5">
+              <p className="text-[11px] font-extrabold uppercase tracking-wider text-jade-800">
+                Lagos Mainland & Environs
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {MAINLAND_QUICK_HUBS.map(hub => {
+                  const selected = area === hub;
+                  return (
+                    <button
+                      key={hub}
+                      type="button"
+                      onClick={() => update({ area: hub })}
+                      className={`rounded-full border px-3 py-1 text-[11px] font-bold transition ${
+                        selected
+                          ? 'border-jade-700 bg-jade-700 text-white'
+                          : 'border-jade-200 bg-white text-ink-700 hover:border-jade-500'
+                      }`}
+                    >
+                      {hub === 'Lagos Mainland' ? 'All Mainland' : hub}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {!backendReady ? (
             <div className="card flex flex-col items-center gap-2 px-6 py-16 text-center">
               <p role="status" className="font-display text-lg font-bold text-ink-800">Finding spaces that fit your plans…</p>
@@ -258,7 +309,7 @@ export default function Stays() {
               </h2>
               <p className="max-w-md text-[13px] font-medium leading-relaxed text-ink-500">
                 {totalApproved === 0
-                  ? 'Try another neighbourhood or check back as more properties become available. Property owners and managers in Lagos can apply to list now.'
+                  ? 'Try another neighbourhood or check back as more properties become available. Property owners and managers across Lagos Mainland and Island can apply to list now.'
                   : 'Try adjusting your dates, location, or filters to see more available stays.'}
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2.5">
