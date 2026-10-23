@@ -38,7 +38,7 @@ export default function PartnerEarnings() {
         ].map(c => (
           <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-5">
             <c.Icon size={20} className="text-brass-400" />
-            <p className="mt-3 font-display text-2xl font-black text-ink-50">{c.value}</p>
+            <p className="mt-3 font-display text-2xl font-black tabular-nums text-ink-50">{c.value}</p>
             <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-medium text-ink-500">{c.sub}</p>
           </div>
@@ -54,8 +54,8 @@ export default function PartnerEarnings() {
               <tr key={b.id} className="transition hover:bg-ink-850">
                 <td className="td"><span className="font-mono text-[10.5px] font-bold text-brass-300">{b.ref}</span><span className="block text-[10px] font-semibold text-ink-400">{formatDate(b.checkIn)}</span></td>
                 <td className="td max-w-[180px]"><span className="line-clamp-1 text-[12px] font-semibold text-ink-100">{b.propertyTitle}</span></td>
-                <td className="td tabular-nums">{formatNaira(b.accommodationSubtotal)}</td>
-                <td className="td tabular-nums">{formatNaira(b.mandatoryTotal)}</td>
+                <td className="td tabular-nums text-ink-200">{formatNaira(b.accommodationSubtotal)}</td>
+                <td className="td tabular-nums text-ink-200">{formatNaira(b.mandatoryTotal)}</td>
                 <td className="td font-bold tabular-nums text-ink-50">{formatNaira(ownerProceeds({ accommodationSubtotal: b.accommodationSubtotal, mandatoryChargesTotal: b.mandatoryTotal }))}</td>
                 <td className="td"><BookingStatusPill status={b.status} /></td>
               </tr>
@@ -72,10 +72,10 @@ export default function PartnerEarnings() {
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">
             {myLedger.map(l => (
               <tr key={l.id} className="transition hover:bg-ink-850">
-                <td className="td whitespace-nowrap text-[11px]">{formatDate(l.at)}</td>
+                <td className="td whitespace-nowrap text-[11px] font-semibold text-ink-300">{formatDate(l.at)}</td>
                 <td className="td"><span className="rounded-md bg-ink-800 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase text-ink-200">{l.type.replace(/_/g, ' ')}</span></td>
-                <td className="td max-w-[280px] text-[11px] leading-snug">{l.description}{l.note && <span className="block text-[10px] text-ink-500">{l.note}</span>}</td>
-                <td className="td tabular-nums">{formatNaira(l.amount)}</td>
+                <td className="td max-w-[280px] text-[11px] leading-snug text-ink-200">{l.description}{l.note && <span className="block text-[10px] text-ink-400">{l.note}</span>}</td>
+                <td className="td font-semibold tabular-nums text-ink-100">{formatNaira(l.amount)}</td>
                 <td className={`td tabular-nums font-bold ${l.variance !== 0 ? 'text-red-400' : 'text-jade-400'}`}>{l.variance === 0 ? '—' : formatNaira(l.variance)}</td>
               </tr>
             ))}
