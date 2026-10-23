@@ -1,4 +1,4 @@
-import type { BookingStatus, PropertyStatus, IssueStatus, LedgerStatus, DocStatus } from '../lib/types';
+import type { BookingStatus, PropertyStatus, IssueStatus, LedgerStatus, DocStatus, ApplicationStatus } from '../lib/types';
 import { ShieldCheck, Clock, FileWarning, PauseCircle, BadgeCheck, Circle, Loader2, CalendarClock, CheckCircle2, XCircle, Ban, RefreshCcw, AlertCircle, UserX } from 'lucide-react';
 
 const pill = 'chip border';
@@ -78,6 +78,27 @@ export function TrustBadge({ label }: { label: string }) {
 export function SeverityDot({ severity }: { severity: 'low' | 'medium' | 'high' | 'critical' }) {
   const cls = { low: 'bg-sky-400', medium: 'bg-amber-400', high: 'bg-orange-500', critical: 'bg-red-600' }[severity];
   return <span className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${cls}`} title={`${severity} severity`} />;
+}
+
+export function SeverityPill({ severity }: { severity: 'low' | 'medium' | 'high' | 'critical' }) {
+  const map: Record<'low' | 'medium' | 'high' | 'critical', string> = {
+    low: 'bg-sky-50 text-sky-800 border-sky-200',
+    medium: 'bg-amber-50 text-amber-900 border-amber-300',
+    high: 'bg-orange-50 text-orange-900 border-orange-300',
+    critical: 'bg-red-100 text-red-900 border-red-300',
+  };
+  return <span className={`${pill} ${map[severity]} capitalize`}>{severity}</span>;
+}
+
+export function ApplicationStatusPill({ status }: { status: ApplicationStatus }) {
+  const map: Record<ApplicationStatus, { cls: string; label: string }> = {
+    pending: { cls: 'bg-amber-50 text-amber-900 border-amber-200', label: 'Pending review' },
+    approved: { cls: 'bg-jade-50 text-jade-800 border-jade-200', label: 'Approved' },
+    needs_correction: { cls: 'bg-orange-50 text-orange-900 border-orange-200', label: 'Needs correction' },
+    rejected: { cls: 'bg-red-50 text-red-800 border-red-200', label: 'Rejected' },
+  };
+  const { cls, label } = map[status];
+  return <span className={`${pill} ${cls}`}>{label}</span>;
 }
 
 export function VerifiedTick({ className = '' }: { className?: string }) {

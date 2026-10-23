@@ -4,10 +4,11 @@ import {
   Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star,
 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
-import { formatNaira, formatDateTime } from '../../lib/pricing';
+import { formatNaira, formatDateTime, daysUntilLagosDate } from '../../lib/pricing';
 
 export default function AdminOverview() {
   const { state } = useHamlet();
+  const pilotDaysRemaining = daysUntilLagosDate('2026-10-31');
 
   const approved = state.properties.filter(p => p.status === 'approved');
   const inReview = state.properties.filter(p => ['submitted', 'needs_correction'].includes(p.status));
@@ -40,7 +41,9 @@ export default function AdminOverview() {
             <div className="text-right">
               <p className="font-display text-4xl font-black tabular-nums text-brass-400">{approved.length}<span className="text-xl text-ink-500">/50</span></p>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">approved supply target</p>
-              <p className="text-[10px] font-semibold text-ink-500">due 31 Oct 2026 · 9 days left</p>
+              <p className="text-[10px] font-semibold text-ink-500">
+                due 31 Oct 2026 · {pilotDaysRemaining > 0 ? `${pilotDaysRemaining} day${pilotDaysRemaining === 1 ? '' : 's'} left` : pilotDaysRemaining === 0 ? 'due today' : `${Math.abs(pilotDaysRemaining)}d past milestone`}
+              </p>
             </div>
             <div className="h-14 w-14 shrink-0">
               <svg viewBox="0 0 56 56">

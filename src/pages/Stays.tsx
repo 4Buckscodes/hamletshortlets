@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, SearchX, ShieldCheck } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { SlidersHorizontal, SearchX, ShieldCheck, Building2 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
 import { useHamlet } from '../lib/store';
 import { AREAS } from '../lib/seed';
+import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
 
 const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'Generator', 'Concierge'];
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
-
-function todayIso(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
 
 export default function Stays() {
   const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
@@ -30,7 +23,8 @@ export default function Stays() {
   const maxPrice = params.get('maxPrice') ?? '';
   const type = params.get('type') ?? 'All types';
   const amenities = (params.get('amenities') ?? '').split(',').filter(Boolean);
-  const minDate = todayIso();
+  const minDate = lagosIsoDateOffset(0);
+  const totalApproved = state.properties.filter(p => p.status === 'approved').length;
 
   useEffect(() => {
     let active = true;
@@ -122,14 +116,21 @@ export default function Stays() {
                   min={minDate}
                   className="input min-w-0 !px-2.5 text-[12px]"
                   value={checkIn}
-                  onChange={e => update({ checkIn: e.target.value })}
+                  onChange={e => {
+                    const nextIn = e.target.value;
+                    if (nextIn && checkOut && checkOut <= nextIn) {
+                      update({ checkIn: nextIn, checkOut: addDaysToIsoDate(nextIn, 2) });
+                    } else {
+                      update({ checkIn: nextIn });
+                    }
+                  }}
                 />
               </label>
               <label className="min-w-0">
                 <span className="label">Check-out</span>
                 <input
                   type="date"
-                  min={checkIn || minDate}
+                  min={checkIn ? addDaysToIsoDate(checkIn, 1) : addDaysToIsoDate(minDate, 1)}
                   className="input min-w-0 !px-2.5 text-[12px]"
                   value={checkOut}
                   onChange={e => update({ checkOut: e.target.value })}
@@ -198,9 +199,23 @@ export default function Stays() {
           {results.length === 0 ? (
             <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
               <SearchX size={40} className="text-ink-300" />
-              <h2 className="font-display text-xl font-black text-ink-900">No matches — yet</h2>
-              <p className="max-w-sm text-[13px] font-medium text-ink-500">No approved properties match those filters right now. Try widening your search or dates — new supply is approved weekly.</p>
-              <button onClick={() => setParams({}, { replace: true })} className="btn-jade mt-2 !py-2.5 text-[12px]">Clear filters</button>
+              <h2 className="font-display text-xl font-black text-ink-900">
+                {totalApproved === 0 ? 'Verified Lagos stays are onboarding now' : 'No matches — yet'}
+              </h2>
+              <p className="max-w-md text-[13px] font-medium leading-relaxed text-ink-500">
+                {totalApproved === 0
+                  ? 'HAMLET publishes only manually verified Lagos apartments — never sample or uninspected homes. Property owners and managers can apply to list now while our operations team completes initial supply verification.'
+                  : 'No approved properties match those filters right now. Try widening your search or dates — new supply is approved weekly.'}
+              </p>
+              <div className="mt-2 flex flex-wrap justify-center gap-2.5">
+                {totalApproved === 0 ? (
+                  <Link to="/partner/register" className="btn-jade !py-2.5 text-[12px]">
+                    <Building2 size={14} /> Apply to list a property
+                  </Link>
+                ) : (
+                  <button onClick={() => setParams({}, { replace: true })} className="btn-jade !py-2.5 text-[12px]">Clear filters</button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">

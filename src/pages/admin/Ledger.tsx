@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Info, Landmark, PlusCircle, ScrollText, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Download, Info, Landmark, PlusCircle, ScrollText, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { LedgerStatusPill } from '../../components/Badges';
 import type { LedgerEntry, LedgerStatus, LedgerType } from '../../lib/types';
-import { formatNaira, formatDateTime } from '../../lib/pricing';
+import { formatNaira, formatDateTime, lagosIsoDateOffset } from '../../lib/pricing';
+import { downloadCsvFile } from '../../lib/csv';
 
 const TYPE_META: Record<LedgerType, { label: string; cls: string }> = {
   guest_charge: { label: 'Guest charge', cls: 'text-sky-300 border-sky-500/30 bg-sky-500/10' },
@@ -128,9 +129,36 @@ export default function AdminLedger() {
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Transaction ledger & settlement</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Controlled pilot ledger — every line carries booking reference, amount, status, provider reference, fee calc, refunds, variance and the responsible operator. Manual reconciliation; HAMLET holds no customer funds; no internal wallet.</p>
         </div>
-        <button onClick={() => { setShowAdd(true); if (!adjBookingId && state.bookings[0]) setAdjBookingId(state.bookings[0].id); }} className="btn-brass !py-2.5 text-[12px]">
-          <PlusCircle size={15} /> Record manual entry
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              downloadCsvFile(
+                `hamlet-ledger-${lagosIsoDateOffset(0)}.csv`,
+                ['Booking Ref', 'Type', 'Amount (NGN)', 'Status', 'Variance (NGN)', 'Provider Ref', 'Description', 'Operator', 'Recorded At', 'Note'],
+                entries.map(e => [
+                  e.bookingRef,
+                  e.type,
+                  e.amount,
+                  e.status,
+                  e.variance,
+                  e.providerRef ?? '',
+                  e.description,
+                  e.operator,
+                  e.at,
+                  e.note ?? '',
+                ]),
+              );
+              toast(`Exported ${entries.length} ledger row(s) to CSV.`);
+            }}
+            disabled={entries.length === 0}
+            className="btn-ghost-dark !border !border-ink-700 !py-2.5 text-[12px] disabled:opacity-40"
+          >
+            <Download size={14} /> Export CSV ({entries.length})
+          </button>
+          <button onClick={() => { setShowAdd(true); if (!adjBookingId && state.bookings[0]) setAdjBookingId(state.bookings[0].id); }} className="btn-brass !py-2.5 text-[12px]">
+            <PlusCircle size={15} /> Record manual entry
+          </button>
+        </div>
       </div>
 
       {/* Undecided policy banner */}

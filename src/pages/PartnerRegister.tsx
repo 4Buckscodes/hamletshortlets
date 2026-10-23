@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, Users, BadgePercent, ShieldCheck, ArrowRight, CheckCircle2, ChevronLeft, CircleAlert,
+  RefreshCcw, Eye, EyeOff, LogIn, AlertTriangle, Clock3,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { AREAS } from '../lib/seed';
+import { formatDateTime } from '../lib/pricing';
 
 const ROLES = [
   { value: 'Property Owner', blurb: 'List homes you own' },
@@ -19,49 +21,132 @@ const ROLES = [
 ];
 
 export default function PartnerRegister() {
-  const { registerPartner, signIn, state, backendConfigured } = useHamlet();
+  const {
+    registerPartner,
+    resubmitPartnerApplication,
+    refreshState,
+    signIn,
+    state,
+    backendConfigured,
+  } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const session = state.session;
+
+  const existingApplication = useMemo(() => {
+    if (!session) return undefined;
+    return state.applications.find(
+      a =>
+        a.applicantId === session.userId ||
+        a.email.toLowerCase() === session.email.toLowerCase(),
+    );
+  }, [state.applications, session]);
+
+  const isCorrectionMode = existingApplication?.status === 'needs_correction';
+
   const [done, setDone] = useState(false);
-  const [form, setForm] = useState({
-    name: '', email: '', phone: '', company: '', role: 'Property Owner',
-    propertiesCount: 1, motivation: '',
-  });
-  const [areas, setAreas] = useState<string[]>([]);
+  const [needsEmailConfirm, setNeedsEmailConfirm] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [form, setForm] = useState(() => ({
+    name: existingApplication?.name ?? session?.name ?? '',
+    email: existingApplication?.email ?? session?.email ?? '',
+    phone: existingApplication?.phone ?? session?.phone ?? '',
+    company: existingApplication?.company ?? session?.company ?? '',
+    role: existingApplication?.role ?? 'Property Owner',
+    propertiesCount: existingApplication?.propertiesCount ?? 1,
+    motivation: existingApplication?.motivation ?? '',
+  }));
+  const [areas, setAreas] = useState<string[]>(() => existingApplication?.areas ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: k === 'propertiesCount' ? Number(e.target.value) : e.target.value }));
 
-  const toggleArea = (a: string) => setAreas(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
+  const toggleArea = (a: string) =>
+    setAreas(prev => (prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]));
+
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      await refreshState();
+      toast('Latest application & role status loaded.');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not refresh status.', 'error');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (backendConfigured && (!state.session || state.session.role !== 'guest')) {
-      setErrors({ account: 'Create or sign in to a guest account before submitting a partner application.' });
-      return;
-    }
-    if (backendConfigured && state.session?.email.toLowerCase() !== form.email.trim().toLowerCase()) {
-      setErrors({ account: 'Use the same email address as your signed-in account.' });
-      return;
-    }
+    const effectiveEmail = session ? session.email : form.email.trim().toLowerCase();
     const errs: Record<string, string> = {};
-    if (form.name.trim().length < 3) errs.name = 'Enter the full name.';
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = 'Enter a valid email.';
+    if (form.name.trim().length < 2) errs.name = 'Enter your full name.';
+    if (!/^\S+@\S+\.\S+$/.test(effectiveEmail)) errs.email = 'Enter a valid email address.';
     if (form.phone.trim().length < 7) errs.phone = 'Enter a reachable phone number.';
-    if (form.company.trim().length < 2) errs.company = 'Enter the company or trading name.';
+    if (form.company.trim().length < 2) errs.company = 'Enter your company or trading name.';
     if (form.propertiesCount < 1) errs.propertiesCount = 'Enter at least one property.';
     if (areas.length === 0) errs.areas = 'Select at least one Lagos area.';
+    if (form.motivation.trim().length < 20) {
+      errs.motivation = 'Briefly describe your portfolio & authority basis (at least 20 characters).';
+    }
+
+    if (backendConfigured && !session) {
+      if (password.length < 6) {
+        errs.password = 'Choose a password of at least 6 characters.';
+      } else if (password !== confirmPassword) {
+        errs.confirmPassword = 'Passwords do not match.';
+      }
+    }
+
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (Object.keys(errs).length > 0) return;
+
     setSubmitting(true);
     try {
-      const result = await registerPartner({ ...form, areas });
-      if (!result.ok) { setErrors({ account: result.error ?? 'Could not submit your application.' }); return; }
-      if (!backendConfigured) await signIn(form.email, 'demo1234');
+      if (isCorrectionMode && existingApplication) {
+        await resubmitPartnerApplication(existingApplication.id, {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          company: form.company.trim(),
+          role: form.role,
+          areas,
+          propertiesCount: form.propertiesCount,
+          motivation: form.motivation.trim(),
+        });
+        toast('Updated partner application resubmitted for HAMLET review.');
+        setDone(true);
+        return;
+      }
+
+      const result = await registerPartner({
+        ...form,
+        email: effectiveEmail,
+        areas,
+        password: password || undefined,
+      });
+      if (!result.ok) {
+        setErrors({ account: result.error ?? 'Could not submit your application.' });
+        return;
+      }
+      if (result.needsEmailConfirmation) {
+        setNeedsEmailConfirm(true);
+        setDone(true);
+        toast('Account created — confirm your email to complete your partner application.');
+        return;
+      }
+      if (!backendConfigured) await signIn(effectiveEmail, password || 'demo1234');
       setDone(true);
-      toast(backendConfigured ? 'Application submitted for review.' : 'Application submitted — demo partner account signed in.');
+      toast(
+        backendConfigured
+          ? 'Partner account created & application submitted for manual review.'
+          : 'Application submitted — demo partner workspace ready.',
+      );
     } catch (error) {
       setErrors({ account: error instanceof Error ? error.message : 'Could not submit your application.' });
     } finally {
@@ -96,61 +181,280 @@ export default function PartnerRegister() {
         </div>
       </div>
 
-      {/* Form panel */}
+      {/* Form / Status panel */}
       <div className="flex items-center justify-center overflow-y-auto p-4 py-10 sm:p-8 lg:col-span-3">
         <AnimatePresence mode="wait">
-          {done ? (
+          {session && (session.role === 'partner' || session.role === 'admin') ? (
+            <motion.div key="already-partner" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md rounded-3xl border border-ink-800 bg-ink-900 p-6 text-center sm:p-8">
+              <CheckCircle2 size={52} className="mx-auto text-jade-400" />
+              <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
+                {session.role === 'admin' ? 'Administrator active' : 'Approved partner active'}
+              </p>
+              <h2 className="mt-1.5 font-display text-2xl font-black text-paper">
+                {session.role === 'admin' ? 'Your Admin Console is ready' : 'Your Partner Workspace is active'}
+              </h2>
+              <p className="mt-2 text-[13px] font-medium leading-relaxed text-ink-300">
+                Signed in as <strong className="text-ink-100">{session.email}</strong>. Manage properties, availability confirmations and earnings directly from your workspace.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(session.role === 'admin' ? '/admin' : '/partner')}
+                  className="btn-brass"
+                >
+                  Open {session.role === 'admin' ? 'Admin Console' : 'Partner Workspace'} <ArrowRight size={16} />
+                </button>
+                <Link to="/" className="btn-ghost-dark">Back to site</Link>
+              </div>
+            </motion.div>
+          ) : done ? (
             <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md text-center">
               <CheckCircle2 size={56} className="mx-auto text-jade-400" />
-              <h2 className="mt-5 font-display text-3xl font-black text-paper">Application received.</h2>
-              <p className="mt-3 text-[13px] font-medium leading-relaxed text-ink-200">Thank you, {form.name.split(' ')[0]}. Your partner application is in the review queue. HAMLET operations manually reviews every application and property — you will hear from us through the workspace.</p>
-              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">{backendConfigured ? 'Your guest account remains active while HAMLET reviews your application. Partner access is granted only after approval.' : <>You are signed in to your demo partner workspace. Properties you submit will enter <span className="text-brass-300">submitted</span> status until reviewed.</>}</p>
-              <div className="mt-6 flex justify-center gap-3">
-                <button onClick={() => navigate(backendConfigured ? '/account' : '/partner')} className="btn-brass">{backendConfigured ? 'Return to account' : 'Go to workspace'} <ArrowRight size={16} /></button>
+              <h2 className="mt-5 font-display text-3xl font-black text-paper">
+                {needsEmailConfirm ? 'Confirm your email' : 'Application in review.'}
+              </h2>
+              <p className="mt-3 text-[13px] font-medium leading-relaxed text-ink-200">
+                {needsEmailConfirm
+                  ? `We created your HAMLET account for ${form.email}. Confirm the link sent to your inbox, then sign in here to submit your partner details.`
+                  : `Thank you, ${form.name.split(' ')[0]}. Your partner application for ${form.company} is in the HAMLET operations review queue.`}
+              </p>
+              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">
+                {backendConfigured
+                  ? 'You can track your application review status anytime from your HAMLET account. As soon as HAMLET operations approves your application, your Partner Workspace unlocks automatically.'
+                  : <>You are signed in to your demo partner workspace. Properties you submit will enter <span className="text-brass-300">submitted</span> status until reviewed.</>}
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(needsEmailConfirm ? '/signin?redirect=%2Fpartner%2Fregister' : backendConfigured ? '/account' : '/partner')}
+                  className="btn-brass"
+                >
+                  {needsEmailConfirm ? 'Go to sign in' : backendConfigured ? 'Track status in my account' : 'Go to workspace'} <ArrowRight size={16} />
+                </button>
                 <Link to="/" className="btn-ghost-dark">Back to site</Link>
+              </div>
+            </motion.div>
+          ) : existingApplication && existingApplication.status === 'pending' ? (
+            <motion.div key="pending-tracker" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-lg rounded-3xl border border-ink-800 bg-ink-900 p-6 sm:p-8">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-amber-300">
+                  <Clock3 size={13} /> Pending manual review
+                </span>
+                {backendConfigured && (
+                  <button
+                    type="button"
+                    disabled={refreshing}
+                    onClick={() => void handleRefreshStatus()}
+                    className="btn-ghost-dark !border !border-ink-700 !px-3 !py-1.5 text-[11px] disabled:opacity-50"
+                  >
+                    <RefreshCcw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh status
+                  </button>
+                )}
+              </div>
+              <h2 className="mt-4 font-display text-2xl font-black text-paper">{existingApplication.company}</h2>
+              <p className="mt-1 text-[12px] font-medium text-ink-300">
+                {existingApplication.role} · {existingApplication.propertiesCount} propert{existingApplication.propertiesCount === 1 ? 'y' : 'ies'} · {existingApplication.areas.join(', ')}
+              </p>
+              <p className="mt-1 text-[11px] font-semibold text-ink-500">
+                Submitted {formatDateTime(existingApplication.submittedAt)}
+              </p>
+              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-950/70 p-4 text-[12px] font-medium leading-relaxed text-ink-200">
+                HAMLET operations is reviewing your identity, company details and authority scope. Once approved, refreshing this page or signing in will take you straight into the Partner Workspace.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link to="/account" className="btn-brass !py-2.5 text-[12px]">Go to my account <ArrowRight size={14} /></Link>
+                <Link to="/" className="btn-ghost-dark !py-2.5 text-[12px]">Back to site</Link>
               </div>
             </motion.div>
           ) : (
             <motion.form key="form" exit={{ opacity: 0, y: -12 }} onSubmit={submit} className="w-full max-w-xl">
-              <Link to="/" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={13} /> Back to hamlet.ng</Link>
-              <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">Apply to join</p>
-              <h2 className="mt-1.5 font-display text-3xl font-black text-paper">Partner application</h2>
-              <p className="mt-1 text-[12px] font-medium text-ink-300">Every application is reviewed manually. Submitting here never grants admin access — roles and permissions are assigned by HAMLET after verification.</p>
-              {backendConfigured && !state.session && <p className="mt-3 rounded-xl border border-brass-500/40 bg-brass-500/10 p-3 text-[11px] font-semibold text-brass-200">Sign in or create a guest account first, then return here to submit your application. <Link to="/signin?mode=signup&redirect=%2Fpartner%2Fregister" className="underline">Create guest account</Link> · <Link to="/signin?redirect=%2Fpartner%2Fregister" className="underline">Sign in</Link></p>}
-              {backendConfigured && state.session?.role === 'guest' && <p className="mt-3 rounded-xl border border-jade-700 bg-jade-900/40 p-3 text-[11px] font-semibold text-jade-100">Signed in as {state.session.email}; enter this same email below.</p>}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Link to="/" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={13} /> Back to hamlet.ng</Link>
+                {!session && (
+                  <Link
+                    to="/signin?redirect=%2Fpartner%2Fregister"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-ink-800 bg-ink-900 px-3 py-1.5 text-[11px] font-bold text-brass-300 hover:border-brass-500/40"
+                  >
+                    <LogIn size={13} /> Already have an account? Sign in
+                  </Link>
+                )}
+              </div>
+
+              <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">
+                {isCorrectionMode ? 'Respond to reviewer feedback' : 'Apply to join'}
+              </p>
+              <h2 className="mt-1.5 font-display text-3xl font-black text-paper">
+                {isCorrectionMode ? 'Update & resubmit partner application' : 'Partner registration & application'}
+              </h2>
+              <p className="mt-1 text-[12px] font-medium text-ink-300">
+                {isCorrectionMode
+                  ? 'Address the correction note from HAMLET operations below and resubmit your application for review.'
+                  : !session && backendConfigured
+                    ? 'Create your HAMLET account and submit your partner application in one step. Every application is manually verified by HAMLET operations.'
+                    : 'Every application is reviewed manually. Submitting here never grants admin access — roles and permissions are assigned by HAMLET after verification.'}
+              </p>
+
+              {isCorrectionMode && existingApplication?.reviewNote && (
+                <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-2xl border border-orange-500/45 bg-orange-950/35 p-4 text-[12px] font-semibold text-orange-200">
+                  <AlertTriangle size={17} className="mt-0.5 shrink-0 text-orange-400" />
+                  <div>
+                    <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-300">Correction requested by HAMLET operations</p>
+                    <p className="mt-1 leading-relaxed">{existingApplication.reviewNote}</p>
+                  </div>
+                </div>
+              )}
+
+              {existingApplication?.status === 'rejected' && existingApplication.reviewNote && (
+                <div className="mt-4 rounded-2xl border border-red-500/35 bg-red-950/30 p-3.5 text-[11.5px] font-semibold text-red-200">
+                  Previous application note: {existingApplication.reviewNote}
+                </div>
+              )}
+
+              {session?.role === 'guest' && !isCorrectionMode && (
+                <p className="mt-3 rounded-xl border border-jade-700 bg-jade-900/40 p-3 text-[11px] font-semibold text-jade-100">
+                  Signed in as <strong>{session.email}</strong> — your partner application will be linked directly to this account.
+                </p>
+              )}
+
               {errors.account && <p role="alert" className="mt-3 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-[11px] font-semibold text-red-200">{errors.account}</p>}
 
               <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
-                <label className="sm:col-span-2"><span className="label-dark">Full name</span><input className={`input-dark ${errors.name ? '!border-red-500' : ''}`} value={form.name} onChange={set('name')} placeholder="Tunde Adeyemi" />{errors.name && <Err msg={errors.name} />}</label>
-                <label><span className="label-dark">Email</span><input type="email" className={`input-dark ${errors.email ? '!border-red-500' : ''}`} value={form.email} onChange={set('email')} placeholder="you@company.com" />{errors.email && <Err msg={errors.email} />}</label>
-                <label><span className="label-dark">Phone (reachable)</span><input className={`input-dark ${errors.phone ? '!border-red-500' : ''}`} value={form.phone} onChange={set('phone')} placeholder="+234 800 000 0000" />{errors.phone && <Err msg={errors.phone} />}</label>
-                <label className="sm:col-span-2"><span className="label-dark">Company / trading name</span><input className={`input-dark ${errors.company ? '!border-red-500' : ''}`} value={form.company} onChange={set('company')} placeholder="e.g. Adeyemi Estates Ltd / private owner" />{errors.company && <Err msg={errors.company} />}</label>
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Full name</span>
+                  <input className={`input-dark ${errors.name ? '!border-red-500' : ''}`} value={form.name} onChange={set('name')} placeholder="Tunde Adeyemi" />
+                  {errors.name && <Err msg={errors.name} />}
+                </label>
+
+                <label>
+                  <span className="label-dark">Email</span>
+                  <input
+                    type="email"
+                    disabled={Boolean(session)}
+                    className={`input-dark disabled:opacity-65 ${errors.email ? '!border-red-500' : ''}`}
+                    value={session ? session.email : form.email}
+                    onChange={set('email')}
+                    placeholder="you@company.com"
+                  />
+                  {errors.email && <Err msg={errors.email} />}
+                </label>
+
+                <label>
+                  <span className="label-dark">Phone (reachable WhatsApp / mobile)</span>
+                  <input className={`input-dark ${errors.phone ? '!border-red-500' : ''}`} value={form.phone} onChange={set('phone')} placeholder="+234 800 000 0000" />
+                  {errors.phone && <Err msg={errors.phone} />}
+                </label>
+
+                {backendConfigured && !session && (
+                  <>
+                    <label>
+                      <span className="label-dark">Create account password</span>
+                      <span className="relative block">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          className={`input-dark pr-10 ${errors.password ? '!border-red-500' : ''}`}
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          autoComplete="new-password"
+                          placeholder="At least 6 characters"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(v => !v)}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-200"
+                        >
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </span>
+                      {errors.password && <Err msg={errors.password} />}
+                    </label>
+
+                    <label>
+                      <span className="label-dark">Confirm password</span>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        className={`input-dark ${errors.confirmPassword ? '!border-red-500' : ''}`}
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
+                        placeholder="Re-enter password"
+                      />
+                      {errors.confirmPassword && <Err msg={errors.confirmPassword} />}
+                    </label>
+                  </>
+                )}
+
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Company / trading name (or private owner name)</span>
+                  <input className={`input-dark ${errors.company ? '!border-red-500' : ''}`} value={form.company} onChange={set('company')} placeholder="e.g. Adeyemi Estates Ltd / Private Deeded Owner" />
+                  {errors.company && <Err msg={errors.company} />}
+                </label>
+
                 <div className="sm:col-span-2">
-                  <span className="label-dark">Your role</span>
+                  <span className="label-dark">Your partner role</span>
                   <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:grid-cols-3">
                     {ROLES.map(r => (
-                      <button key={r.value} type="button" onClick={() => setForm(f => ({ ...f, role: r.value }))} title={r.blurb}
-                        className={`rounded-xl border px-3 py-2.5 text-left text-[11px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{r.value}</button>
+                      <button
+                        key={r.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, role: r.value }))}
+                        title={r.blurb}
+                        className={`rounded-xl border px-3 py-2.5 text-left text-[11px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
+                      >
+                        {r.value}
+                      </button>
                     ))}
                   </div>
                 </div>
-                <label><span className="label-dark">Properties to list (count)</span><input type="number" min={1} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />{errors.propertiesCount && <Err msg={errors.propertiesCount} />}</label>
+
+                <label>
+                  <span className="label-dark">Properties to list (count)</span>
+                  <input type="number" min={1} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />
+                  {errors.propertiesCount && <Err msg={errors.propertiesCount} />}
+                </label>
+
                 <div className="sm:col-span-1">
-                  <span className="label-dark">Areas of operation {errors.areas && <span className="text-red-400 normal-case">— {errors.areas}</span>}</span>
+                  <span className="label-dark">Lagos areas of operation {errors.areas && <span className="normal-case text-red-400">— {errors.areas}</span>}</span>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {AREAS.map(a => (
-                      <button key={a} type="button" onClick={() => toggleArea(a)} className={`rounded-full border px-2.5 py-1.5 text-[10px] font-bold transition ${areas.includes(a) ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{a}</button>
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => toggleArea(a)}
+                        className={`rounded-full border px-2.5 py-1.5 text-[10px] font-bold transition ${areas.includes(a) ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
+                      >
+                        {a}
+                      </button>
                     ))}
                   </div>
                 </div>
-                <label className="sm:col-span-2"><span className="label-dark">Motivation & experience <span className="normal-case text-ink-500">(optional)</span></span>
-                  <textarea className="input-dark min-h-[84px]" value={form.motivation} onChange={set('motivation')} placeholder="Share your experience or tell us why you’d like to work with HAMLET…" />
+
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Portfolio, authority basis & operational experience</span>
+                  <textarea
+                    className={`input-dark min-h-[88px] ${errors.motivation ? '!border-red-500' : ''}`}
+                    value={form.motivation}
+                    onChange={set('motivation')}
+                    placeholder="Describe your Lagos properties, whether you hold title deeds or a signed owner mandate, power/security setup, and hosting experience…"
+                  />
+                  {errors.motivation && <Err msg={errors.motivation} />}
                 </label>
               </div>
 
-              <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><CircleAlert size={12} className="mt-0.5 shrink-0" /> By applying you consent to a manual review of your identity, authority and documentation. Providing false information leads to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).</p>
+              <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500">
+                <CircleAlert size={12} className="mt-0.5 shrink-0" /> By applying you consent to a manual review of your identity, authority and documentation. Providing false information leads to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).
+              </p>
 
-              <button type="submit" disabled={submitting} className="btn-brass mt-4 w-full !py-4 text-[15px]">{submitting ? 'Submitting…' : 'Submit application'} <ArrowRight size={16} /></button>
+              <button type="submit" disabled={submitting} className="btn-brass mt-4 w-full !py-4 text-[15px]">
+                {submitting
+                  ? 'Submitting…'
+                  : isCorrectionMode
+                    ? 'Save corrections & resubmit'
+                    : !session && backendConfigured
+                      ? 'Create account & submit partner application'
+                      : 'Submit partner application'}{' '}
+                <ArrowRight size={16} />
+              </button>
             </motion.form>
           )}
         </AnimatePresence>

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert, ImagePlus, Loader2 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { AREAS } from '../../lib/seed';
@@ -10,9 +10,10 @@ const AMENITIES = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', '
 const PROPERTY_TYPES = ['Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa', 'Terrace'];
 
 export default function NewProperty() {
-  const { submitProperty, state } = useHamlet();
+  const { submitProperty, uploadPropertyImage, state, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [step, setStep] = useState(0);
 
   const [title, setTitle] = useState('');
@@ -28,7 +29,10 @@ export default function NewProperty() {
   const [deposit, setDeposit] = useState(150000);
   const [amenities, setAmenities] = useState<string[]>(['Wifi', 'Kitchen', 'TV', 'Air Conditioning']);
   const [imageUrl, setImageUrl] = useState('');
-  const [images, setImages] = useState<string[]>(['/images/prop/living-1.jpg', '/images/prop/bed-1.jpg']);
+  const [images, setImages] = useState<string[]>(() =>
+    backendConfigured ? [] : ['/images/prop/living-1.jpg', '/images/prop/bed-1.jpg'],
+  );
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [houseRules, setHouseRules] = useState('Check-in from 2:00 PM\nCheck-out by 11:00 AM\nNo parties or events');
   const [role, setRole] = useState(state.session?.partnerRole ?? 'Property Owner');
   const [ownershipDoc, setOwnershipDoc] = useState(false);
@@ -42,13 +46,42 @@ export default function NewProperty() {
   const addImage = () => {
     const v = imageUrl.trim();
     if (!v) return;
+    if (images.length >= 12) {
+      toast('Maximum 12 photos per listing.', 'error');
+      return;
+    }
     setImages(prev => [...prev, v]);
     setImageUrl('');
   };
 
+  const handlePhotoFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    if (selected.length === 0) return;
+    const remainingSlots = Math.max(0, 12 - images.length);
+    if (remainingSlots === 0) {
+      toast('Maximum 12 photos per listing.', 'error');
+      return;
+    }
+    setUploadingPhotos(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of selected.slice(0, remainingSlots)) {
+        const publicUrl = await uploadPropertyImage(file);
+        uploadedUrls.push(publicUrl);
+      }
+      setImages(prev => [...prev, ...uploadedUrls]);
+      toast(`${uploadedUrls.length} photo${uploadedUrls.length === 1 ? '' : 's'} uploaded.`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not upload property photo.', 'error');
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
   const stepValid = [
     title.trim().length >= 8 && address.trim().length >= 10,
-    bedrooms >= 1 && capacity >= 1 && bedSetup.trim().length > 0,
+    bedrooms >= 1 && capacity >= 1 && bedSetup.trim().length > 0 && images.length >= 1,
     nightlyRate >= 20000 && deposit >= 0,
     ownershipDoc && idDoc && authorityDoc && selfDeclaration && authorityNote.trim().length > 8,
     true,
@@ -141,20 +174,49 @@ export default function NewProperty() {
               </div>
             </div>
             <div>
-              <span className="label-dark">Photos — references (URLs)</span>
+              <span className="label-dark">Property photos (min 1, up to 12 · JPEG, PNG or WebP up to 5 MB each)</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={e => void handlePhotoFiles(e)}
+                className="hidden"
+              />
               <div className="flex flex-col gap-2 sm:flex-row">
-                <input className="input-dark flex-1" placeholder="Paste an image URL…" value={imageUrl} onChange={e => setImageUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())} />
-                <button type="button" onClick={addImage} className="btn-ghost-dark shrink-0 !px-4"><UploadCloud size={16} /> Add</button>
+                <button
+                  type="button"
+                  disabled={uploadingPhotos || images.length >= 12}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="btn-brass shrink-0 !px-4 !py-2.5 text-[12px] disabled:opacity-50"
+                >
+                  {uploadingPhotos ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
+                  {uploadingPhotos ? 'Uploading…' : 'Upload photos from device'}
+                </button>
+                <input
+                  className="input-dark flex-1"
+                  placeholder="Or paste a hosted https:// photo URL…"
+                  value={imageUrl}
+                  onChange={e => setImageUrl(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())}
+                />
+                <button type="button" onClick={addImage} className="btn-ghost-dark shrink-0 !border !border-ink-700 !px-4"><UploadCloud size={16} /> Add URL</button>
               </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {images.map((src, i) => (
-                  <span key={i} className="group relative">
-                    <img src={src} alt={`Reference ${i + 1}`} className="h-16 w-20 rounded-lg object-cover" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                    <button type="button" onClick={() => setImages(prev => prev.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-black text-white">×</button>
-                  </span>
-                ))}
-              </div>
-              <p className="mt-1.5 text-[10px] font-medium text-ink-500">Photo references are stored with the listing. HAMLET will validate actual media during review.</p>
+              {images.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2.5">
+                  {images.map((src, i) => (
+                    <span key={i} className="group relative">
+                      <img src={src} alt={`Property photo ${i + 1}`} className="h-16 w-20 rounded-lg border border-ink-800 object-cover" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                      <button type="button" onClick={() => setImages(prev => prev.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-black text-white">×</button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 rounded-xl border border-dashed border-ink-700 px-4 py-3 text-[11px] font-semibold text-amber-300">
+                  Upload at least 1 real photo of your apartment to continue. Sample or stock photos are rejected during HAMLET review.
+                </p>
+              )}
+              <p className="mt-1.5 text-[10px] font-medium text-ink-500">Uploaded photos are stored securely in HAMLET property media storage and verified against physical inspection.</p>
             </div>
             <label><span className="label-dark">House rules (one per line)</span><textarea className="input-dark min-h-[84px]" value={houseRules} onChange={e => setHouseRules(e.target.value)} /></label>
           </div>
