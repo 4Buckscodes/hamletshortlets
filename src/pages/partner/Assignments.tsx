@@ -1,11 +1,27 @@
+import { useState } from 'react';
 import { KeyRound, Ban, ShieldCheck, Percent } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
+import { useToast } from '../../lib/toast';
 import { formatDate } from '../../lib/pricing';
 
 export default function PartnerAssignments() {
   const { state, revokeAssignment } = useHamlet();
+  const { toast } = useToast();
+  const [revokingId, setRevokingId] = useState<string | null>(null);
   const myId = state.session!.userId;
   const mine = state.assignments.filter(a => a.partnerId === myId);
+
+  const handleRevoke = async (id: string) => {
+    setRevokingId(id);
+    try {
+      await revokeAssignment(id, 'Partner voluntarily relinquished property access.');
+      toast('Access revoked immediately.', 'info');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not revoke assignment.', 'error');
+    } finally {
+      setRevokingId(null);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -33,7 +49,7 @@ export default function PartnerAssignments() {
                   <p className="max-w-[220px] text-[9.5px] font-semibold leading-snug text-ink-400">{a.commissionNote}</p>
                 </div>
                 {a.status === 'active' && (
-                  <button onClick={() => revokeAssignment(a.id)} className="btn-ghost-dark !border !border-red-900/60 !px-3.5 !py-2 text-[11px] text-red-300 hover:bg-red-950 hover:text-red-200"><Ban size={13} /> Revoke my access</button>
+                  <button disabled={revokingId === a.id} onClick={() => void handleRevoke(a.id)} className="btn-ghost-dark !border !border-red-900/60 !px-3.5 !py-2 text-[11px] text-red-300 hover:bg-red-950 hover:text-red-200 disabled:opacity-50"><Ban size={13} /> {revokingId === a.id ? 'Revoking…' : 'Revoke my access'}</button>
                 )}
               </div>
             </div>

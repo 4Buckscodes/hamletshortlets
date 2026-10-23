@@ -13,23 +13,53 @@ export default function AdminIssues() {
   const [selected, setSelected] = useState<Issue | null>(null);
   const [note, setNote] = useState('');
   const [filter, setFilter] = useState<'active' | 'all'>('active');
+  const [saving, setSaving] = useState(false);
 
   const issues = state.issues
     .filter(i => filter === 'all' || !['resolved', 'closed'].includes(i.status))
     .sort((a, b) => ({ critical: 0, high: 1, medium: 2, low: 3 }[a.severity] - { critical: 0, high: 1, medium: 2, low: 3 }[b.severity]));
 
-  const setStatus = (status: IssueStatus) => {
+  const setStatus = async (status: IssueStatus) => {
     if (!selected) return;
-    updateIssue(selected.id, status, { note: note.trim() || undefined, resolution: status === 'resolved' || status === 'closed' ? note.trim() || 'Resolved by operations.' : undefined });
-    toast(`Issue ${selected.ref} → ${status}.`, status === 'escalated' ? 'error' : 'info');
-    setSelected(null); setNote('');
+    const trimmed = note.trim();
+    if ((status === 'resolved' || status === 'closed') && trimmed.length < 8 && !selected.resolution) {
+      toast('Enter a documented resolution summary (min 8 characters) before resolving or closing.', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateIssue(selected.id, status, {
+        note: trimmed || undefined,
+        resolution: status === 'resolved' || status === 'closed' ? (trimmed || selected.resolution) : undefined,
+      });
+      toast(`Issue ${selected.ref} → ${status}.`, status === 'escalated' ? 'error' : 'info');
+      setSelected(null);
+      setNote('');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not update issue.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const assign = () => {
+  const assign = async () => {
     if (!selected) return;
-    updateIssue(selected.id, 'assigned', { assignee: 'Funmi Balogun', note: note.trim() || 'Assigned to operations lead' });
-    toast(`${selected.ref} assigned to Funmi Balogun.`);
-    setSelected(null); setNote('');
+    const assigneeName = state.session?.name ?? 'HAMLET operations';
+    setSaving(true);
+    try {
+      await updateIssue(selected.id, 'assigned', {
+        assignee: assigneeName,
+        assigneeId: state.session?.userId,
+        note: note.trim() || `Assigned to ${assigneeName}`,
+      });
+      toast(`${selected.ref} assigned to ${assigneeName}.`);
+      setSelected(null);
+      setNote('');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not assign issue.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -115,11 +145,11 @@ export default function AdminIssues() {
                       <textarea className="input-dark min-h-[64px]" placeholder="What did you do / decide / find?…" value={note} onChange={e => setNote(e.target.value)} />
                     </label>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <button onClick={assign} className="flex items-center gap-1.5 rounded-xl border border-ink-700 px-3 py-2 text-[11px] font-bold text-ink-100 hover:bg-ink-800"><UserPlus size={13} /> Assign to me</button>
-                      <button onClick={() => setStatus('investigating')} className="flex items-center gap-1.5 rounded-xl border border-sky-800 bg-sky-950/40 px-3 py-2 text-[11px] font-bold text-sky-300 hover:bg-sky-950"><SearchCheck size={13} /> Investigating</button>
-                      <button onClick={() => setStatus('escalated')} className="flex items-center gap-1.5 rounded-xl border border-orange-800 bg-orange-950/40 px-3 py-2 text-[11px] font-bold text-orange-300 hover:bg-orange-950"><AlertOctagon size={13} /> Escalate</button>
-                      <button onClick={() => setStatus('resolved')} className="flex items-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2 text-[11px] font-bold text-jade-300 hover:bg-jade-950"><CheckCheck size={13} /> Resolve</button>
-                      <button onClick={() => setStatus('closed')} className="flex items-center gap-1.5 rounded-xl bg-ink-700 px-3 py-2 text-[11px] font-bold text-ink-100 hover:bg-ink-600"><X size={13} /> Close</button>
+                      <button disabled={saving} onClick={() => void assign()} className="flex items-center gap-1.5 rounded-xl border border-ink-700 px-3 py-2 text-[11px] font-bold text-ink-100 hover:bg-ink-800 disabled:opacity-50"><UserPlus size={13} /> Assign to me</button>
+                      <button disabled={saving} onClick={() => void setStatus('investigating')} className="flex items-center gap-1.5 rounded-xl border border-sky-800 bg-sky-950/40 px-3 py-2 text-[11px] font-bold text-sky-300 hover:bg-sky-950 disabled:opacity-50"><SearchCheck size={13} /> Investigating</button>
+                      <button disabled={saving} onClick={() => void setStatus('escalated')} className="flex items-center gap-1.5 rounded-xl border border-orange-800 bg-orange-950/40 px-3 py-2 text-[11px] font-bold text-orange-300 hover:bg-orange-950 disabled:opacity-50"><AlertOctagon size={13} /> Escalate</button>
+                      <button disabled={saving} onClick={() => void setStatus('resolved')} className="flex items-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2 text-[11px] font-bold text-jade-300 hover:bg-jade-950 disabled:opacity-50"><CheckCheck size={13} /> Resolve</button>
+                      <button disabled={saving} onClick={() => void setStatus('closed')} className="flex items-center gap-1.5 rounded-xl bg-ink-700 px-3 py-2 text-[11px] font-bold text-ink-100 hover:bg-ink-600 disabled:opacity-50"><X size={13} /> Close</button>
                     </div>
                   </div>
                 )}

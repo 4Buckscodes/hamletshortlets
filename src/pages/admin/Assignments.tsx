@@ -16,21 +16,42 @@ export default function AdminAssignments() {
   const [scope, setScope] = useState('Full management — pricing, availability, guest comms');
   const [commission, setCommission] = useState('none');
   const [commissionNote, setCommissionNote] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
-  const grant = () => {
+  const grant = async () => {
     const p = approvedProps.find(x => x.id === propertyId);
     const partner = partners.find(x => x.id === partnerId);
     if (!p || !partner) { toast('Select both a property and a partner.', 'error'); return; }
     const rate = commission === 'none' ? null : Number(commission) / 100;
     if (rate !== null && commissionNote.trim().length < 8) { toast('A commission requires a written-note reference (min 8 chars).', 'error'); return; }
-    grantAssignment({
-      propertyId: p.id, propertyTitle: p.title, partnerId: partner.id, partnerName: partner.name,
-      partnerRole: partner.partnerRole ?? 'Partner', scope: scope.trim(),
-      commissionRate: rate,
-      commissionNote: rate === null ? 'No commission agreed' : commissionNote.trim(),
-    });
-    toast(`${partner.name} assigned to ${p.title}.`);
-    setShowGrant(false); setPropertyId(''); setPartnerId(''); setCommission('none'); setCommissionNote('');
+    setSaving(true);
+    try {
+      await grantAssignment({
+        propertyId: p.id, propertyTitle: p.title, partnerId: partner.id, partnerName: partner.name,
+        partnerRole: partner.partnerRole ?? 'Partner', scope: scope.trim(),
+        commissionRate: rate,
+        commissionNote: rate === null ? 'No commission agreed' : commissionNote.trim(),
+      });
+      toast(`${partner.name} assigned to ${p.title}.`);
+      setShowGrant(false); setPropertyId(''); setPartnerId(''); setCommission('none'); setCommissionNote('');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not grant assignment.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const revoke = async (id: string) => {
+    setRevokingId(id);
+    try {
+      await revokeAssignment(id);
+      toast('Assignment revoked — access removed immediately.', 'info');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not revoke assignment.', 'error');
+    } finally {
+      setRevokingId(null);
+    }
   };
 
   return (
@@ -72,7 +93,7 @@ export default function AdminAssignments() {
             </label>
             {commission !== 'none' && <label><span className="label-dark">Written agreement reference</span><input className="input-dark" placeholder="e.g. mandate #CM-2026-021" value={commissionNote} onChange={e => setCommissionNote(e.target.value)} /></label>}
           </div>
-          <button onClick={grant} className="btn-brass mt-4 !py-2.5 text-[12px]"><ShieldCheck size={14} /> Grant — audit-logged</button>
+          <button disabled={saving} onClick={() => void grant()} className="btn-brass mt-4 !py-2.5 text-[12px] disabled:opacity-50"><ShieldCheck size={14} /> {saving ? 'Granting…' : 'Grant — audit-logged'}</button>
         </div>
       )}
 
@@ -88,7 +109,7 @@ export default function AdminAssignments() {
                 <td className="td">{a.commissionRate === null ? <span className="text-[10.5px] font-bold text-ink-400">None agreed</span> : <span className="flex items-center gap-1 text-[12px] font-black text-brass-300"><Percent size={12} />{(a.commissionRate * 100).toFixed(1)}%<span className="block max-w-[130px] text-[8.5px] font-semibold normal-case leading-tight text-ink-500">{a.commissionNote}</span></span>}</td>
                 <td className="td whitespace-nowrap text-[10.5px] font-semibold text-ink-300">{formatDate(a.grantedAt)}{a.revokedAt && <span className="block text-red-400">revoked {formatDate(a.revokedAt)}</span>}</td>
                 <td className="td"><span className={`chip border ${a.status === 'active' ? 'border-jade-500/40 bg-jade-500/10 text-jade-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>{a.status}</span></td>
-                <td className="td">{a.status === 'active' && <button onClick={() => { revokeAssignment(a.id); toast('Assignment revoked — access removed immediately.', 'info'); }} className="flex items-center gap-1 rounded-lg border border-red-800 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-950"><Ban size={12} /> Revoke</button>}</td>
+                <td className="td">{a.status === 'active' && <button disabled={revokingId === a.id} onClick={() => void revoke(a.id)} className="flex items-center gap-1 rounded-lg border border-red-800 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-950 disabled:opacity-50"><Ban size={12} /> {revokingId === a.id ? 'Revoking…' : 'Revoke'}</button>}</td>
               </tr>
             ))}
           </tbody>

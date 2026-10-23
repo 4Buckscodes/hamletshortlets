@@ -43,6 +43,19 @@ export default function AdminProperties() {
     (!q || [p.title, p.area, p.ownerName, p.submittedBy, p.address].join(' ').toLowerCase().includes(q)),
   );
 
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const getDuplicateStatus = (property: Property): 'exact' | 'address_only' | null => {
+    const others = state.properties.filter(other => other.id !== property.id && other.status !== 'rejected');
+    const sameAreaAddress = others.filter(
+      other =>
+        normalize(other.area) === normalize(property.area) &&
+        normalize(other.address) === normalize(property.address),
+    );
+    if (sameAreaAddress.length === 0) return null;
+    if (sameAreaAddress.some(other => normalize(other.title) === normalize(property.title))) return 'exact';
+    return 'address_only';
+  };
+
   const act = async () => {
     if (!noteFor) return;
     if (note.trim().length < 10) {
@@ -100,6 +113,12 @@ export default function AdminProperties() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <PropertyStatusPill status={p.status} />
+                  {getDuplicateStatus(p) === 'exact' && (
+                    <span className="chip border border-red-400/60 bg-red-400/15 text-red-300">Duplicate title & address</span>
+                  )}
+                  {getDuplicateStatus(p) === 'address_only' && (
+                    <span className="chip border border-amber-400/50 bg-amber-400/10 text-amber-300">Same address — verify distinct unit</span>
+                  )}
                   <span className="text-[9.5px] font-bold uppercase tracking-widest text-ink-500">{p.type} · {p.area} · submitted {formatDateTime(p.createdAt).split('·')[0]}</span>
                 </div>
                 <h2 className="mt-1.5 font-display text-lg font-bold text-ink-50">{p.title}</h2>

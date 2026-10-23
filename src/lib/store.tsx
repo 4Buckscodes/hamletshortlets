@@ -67,7 +67,9 @@ type Action =
   | { type: 'ADD_BOOKING'; booking: Booking }
   | { type: 'BOOKING_TRANSITION'; id: string; to: Booking['status']; actor: Session; note?: string; reason?: string }
   | { type: 'VERIFY_PAYMENT'; id: string; actor: Session; providerRef: string; provider: string }
+  | { type: 'RECORD_REFUND'; id: string; actor: Session; amount: number; providerRef?: string; note: string }
   | { type: 'ADD_LEDGER'; entries: LedgerEntry[] }
+  | { type: 'RECONCILE_LEDGER'; id: string; actor: Session; status: LedgerEntry['status']; variance: number; note?: string }
   | { type: 'ADD_ISSUE'; issue: Issue }
   | { type: 'ISSUE_UPDATE'; id: string; status: IssueStatus; actor: Session; note?: string; assignee?: string; resolution?: string }
   | { type: 'REVIEW_APPLICATION'; id: string; status: PartnerApplication['status']; actor: Session; note?: string }
@@ -112,9 +114,21 @@ type RemoteApplication = {
 };
 
 type RemoteIssue = {
-  id: string; reference: string; booking_id: string; category: Issue['category'];
+  id: string; reference: string; booking_id: string; reporter_id: string; category: Issue['category'];
   severity: Issue['severity']; subject: string; description: string; status: IssueStatus;
-  assignee_id?: string; resolution?: string; evidence: string[]; created_at: string; updated_at: string;
+  assignee_id?: string; assignee_name?: string; resolution?: string; evidence: string[];
+  timeline?: TimelineEvent[]; created_at: string; updated_at: string;
+};
+
+type RemoteLedgerRow = {
+  id: string; booking_id: string; record_type: LedgerEntry['type']; amount: number;
+  provider_reference?: string; status: LedgerEntry['status']; description: string;
+  variance: number; note?: string; operator_name: string; created_at: string;
+};
+
+type RemoteProfile = {
+  id: string; full_name: string; role: AccountRole; phone?: string;
+  company?: string; partner_role?: string; created_at: string;
 };
 
 type RemoteAuditEntry = {
@@ -160,7 +174,13 @@ function toRemoteProperty(
   };
 }
 
-function toRemoteBooking(row: RemoteBooking, property: Property | undefined, session: Session): Booking {
+function toRemoteBooking(
+  row: RemoteBooking,
+  property: Property | undefined,
+  session: Session,
+  profileById?: Map<string, RemoteProfile>,
+): Booking {
+  const guestProfile = profileById?.get(row.guest_id);
   return {
     id: row.id,
     ref: row.reference,
@@ -168,7 +188,7 @@ function toRemoteBooking(row: RemoteBooking, property: Property | undefined, ses
     propertyTitle: property?.title ?? 'Stay',
     area: property?.area ?? '',
     guestId: row.guest_id,
-    guestName: row.guest_id === session.userId ? session.name : 'Guest',
+    guestName: row.guest_id === session.userId ? session.name : (guestProfile?.full_name || 'Guest'),
     guestEmail: row.guest_id === session.userId ? session.email : '',
     checkIn: row.check_in,
     checkOut: row.check_out,
@@ -224,20 +244,44 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const { error: expiryError } = await supabase.rpc('expire_overdue_bookings');
   if (expiryError) throw new Error(`Could not process expired booking deadlines: ${expiryError.message}`);
 
-  const [propertyResult, accessResult, privateRecordResult, bookingResult, applicationResult, issueResult, auditResult] = await Promise.all([
+  const [
+    profilesResult,
+    propertyResult,
+    accessResult,
+    privateRecordResult,
+    bookingResult,
+    ledgerResult,
+    applicationResult,
+    issueResult,
+    auditResult,
+  ] = await Promise.all([
+    supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,created_at').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
     supabase.from('property_access').select('property_id,user_id,access_role,scope,commission_rate,commission_note,status,granted_at,revoked_at'),
     supabase.from('property_private_records').select('property_id,record_type,record_data').eq('record_type', 'partner_submission'),
     supabase.from('bookings').select('*').order('created_at', { ascending: false }),
+    supabase.from('booking_payment_records').select('*').order('created_at', { ascending: false }),
     supabase.from('partner_applications').select('*').order('submitted_at', { ascending: false }),
     supabase.from('booking_issues').select('*').order('created_at', { ascending: false }),
     supabase.from('admin_audit_log').select('*').order('created_at', { ascending: false }).limit(100),
   ]);
 
-  for (const result of [propertyResult, accessResult, privateRecordResult, bookingResult, applicationResult, issueResult, auditResult]) {
+  for (const result of [
+    profilesResult,
+    propertyResult,
+    accessResult,
+    privateRecordResult,
+    bookingResult,
+    ledgerResult,
+    applicationResult,
+    issueResult,
+    auditResult,
+  ]) {
     if (result.error) throw new Error(`Could not load HAMLET data: ${result.error.message}`);
   }
 
+  const profileRows = (profilesResult.data ?? []) as unknown as RemoteProfile[];
+  const profileById = new Map(profileRows.map(item => [item.id, item]));
   const propertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
   const accesses = (accessResult.data ?? []) as unknown as Array<{
     property_id: string; user_id: string; access_role: string; scope: string;
@@ -253,7 +297,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id)));
   const propertyById = new Map(properties.map(property => [property.id, property]));
   const bookings = ((bookingResult.data ?? []) as unknown as RemoteBooking[])
-    .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session));
+    .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session, profileById));
   const applications = ((applicationResult.data ?? []) as unknown as RemoteApplication[]).map(application => ({
     id: application.id,
     name: application.full_name,
@@ -269,8 +313,27 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     reviewNote: application.review_note,
   }));
   const bookingById = new Map(bookings.map(booking => [booking.id, booking]));
+  const ledger: LedgerEntry[] = ((ledgerResult.data ?? []) as unknown as RemoteLedgerRow[]).map(row => {
+    const booking = bookingById.get(row.booking_id);
+    return {
+      id: row.id,
+      at: row.created_at,
+      bookingRef: booking?.ref ?? row.booking_id,
+      propertyTitle: booking?.propertyTitle,
+      type: row.record_type,
+      description: row.description || row.record_type.replace(/_/g, ' '),
+      amount: row.amount,
+      status: row.status,
+      providerRef: row.provider_reference ?? undefined,
+      operator: row.operator_name || 'System',
+      variance: row.variance ?? 0,
+      note: row.note ?? undefined,
+    };
+  });
   const issues = ((issueResult.data ?? []) as unknown as RemoteIssue[]).map(issue => {
     const booking = bookingById.get(issue.booking_id);
+    const reporterProfile = profileById.get(issue.reporter_id);
+    const assigneeProfile = issue.assignee_id ? profileById.get(issue.assignee_id) : undefined;
     return {
       id: issue.id,
       ref: issue.reference,
@@ -280,57 +343,78 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       severity: issue.severity,
       subject: issue.subject,
       description: issue.description,
-      reporter: 'HAMLET user',
-      reporterType: 'guest' as const,
+      reporter: issue.reporter_id === user.id ? session.name : (reporterProfile?.full_name || 'HAMLET user'),
+      reporterType: (reporterProfile?.role === 'partner' ? 'partner' : reporterProfile?.role === 'admin' ? 'internal' : 'guest') as Issue['reporterType'],
       status: issue.status,
-      assignee: issue.assignee_id,
+      assignee: issue.assignee_name ?? assigneeProfile?.full_name ?? issue.assignee_id,
       createdAt: issue.created_at,
       updatedAt: issue.updated_at,
       evidence: issue.evidence ?? [],
       resolution: issue.resolution,
-      timeline: [],
+      timeline: issue.timeline ?? [],
     };
   });
-  const assignments: PartnerAssignment[] = accesses.map(access => ({
-    id: `${access.property_id}:${access.user_id}`,
-    propertyId: access.property_id,
-    propertyTitle: propertyById.get(access.property_id)?.title ?? 'Property',
-    partnerId: access.user_id,
-    partnerName: access.user_id === user.id ? session.name : 'Authorised partner',
-    partnerRole: access.access_role,
-    scope: access.scope,
-    commissionRate: access.commission_rate,
-    commissionNote: access.commission_note,
-    status: access.status,
-    grantedAt: access.granted_at,
-    revokedAt: access.revoked_at,
-  }));
-  const account: Account = {
-    id: user.id,
-    name: session.name,
-    email: session.email,
-    password: '',
-    role: session.role,
-    partnerRole: session.partnerRole,
-    company: session.company,
-    phone: profile.phone ?? undefined,
-    createdAt: profile.created_at,
-  };
-  const audit: AuditEntry[] = ((auditResult.data ?? []) as unknown as RemoteAuditEntry[]).map(entry => ({
-    id: entry.id,
-    at: entry.created_at,
-    actor: entry.actor_id === user.id ? session.name : entry.actor_role === 'admin' ? 'HAMLET administrator' : 'HAMLET partner',
-    actorRole: entry.actor_role,
-    action: entry.action,
-    target: entry.target,
-    detail: entry.detail,
-  }));
+  const assignments: PartnerAssignment[] = accesses.map(access => {
+    const partnerProfile = profileById.get(access.user_id);
+    return {
+      id: `${access.property_id}:${access.user_id}`,
+      propertyId: access.property_id,
+      propertyTitle: propertyById.get(access.property_id)?.title ?? 'Property',
+      partnerId: access.user_id,
+      partnerName: access.user_id === user.id ? session.name : (partnerProfile?.full_name || 'Authorised partner'),
+      partnerRole: access.access_role,
+      scope: access.scope,
+      commissionRate: access.commission_rate,
+      commissionNote: access.commission_note,
+      status: access.status,
+      grantedAt: access.granted_at,
+      revokedAt: access.revoked_at,
+    };
+  });
+  const accounts: Account[] = profileRows.length > 0
+    ? profileRows.map(row => ({
+        id: row.id,
+        name: row.id === user.id ? session.name : (row.full_name || 'HAMLET user'),
+        email: row.id === user.id ? session.email : '',
+        password: '',
+        role: row.role,
+        partnerRole: row.partner_role ?? undefined,
+        company: row.company ?? undefined,
+        phone: row.phone ?? undefined,
+        createdAt: row.created_at,
+      }))
+    : [{
+        id: user.id,
+        name: session.name,
+        email: session.email,
+        password: '',
+        role: session.role,
+        partnerRole: session.partnerRole,
+        company: session.company,
+        phone: profile.phone ?? undefined,
+        createdAt: profile.created_at,
+      }];
+  const audit: AuditEntry[] = ((auditResult.data ?? []) as unknown as RemoteAuditEntry[]).map(entry => {
+    const actorProfile = profileById.get(entry.actor_id);
+    return {
+      id: entry.id,
+      at: entry.created_at,
+      actor: entry.actor_id === user.id
+        ? session.name
+        : actorProfile?.full_name || (entry.actor_role === 'admin' ? 'HAMLET administrator' : entry.actor_role === 'system' ? 'HAMLET system' : 'HAMLET partner'),
+      actorRole: entry.actor_role,
+      action: entry.action,
+      target: entry.target,
+      detail: entry.detail,
+    };
+  });
 
   return {
     ...emptyState(),
-    accounts: [account],
+    accounts,
     properties,
     bookings,
+    ledger,
     issues,
     applications,
     assignments,
@@ -454,9 +538,11 @@ function reducer(state: DBState, action: Action): DBState {
         ],
       };
       const entries: LedgerEntry[] = [
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_charge', description: `Guest accommodation charge (${b.nights} nights + mandatory charges)`, amount: b.accommodationSubtotal + b.mandatoryTotal, status: 'reconciled', operator: action.actor.name, variance: 0, providerRef: action.providerRef },
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_service_fee', description: `HAMLET guest service fee (3.0% × ${formatNaira(b.accommodationSubtotal)})`, amount: b.hamletGuestFee, status: 'reconciled', operator: action.actor.name, variance: 0, providerRef: action.providerRef },
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'deposit_hold', description: 'Refundable security deposit — held, not revenue. Excluded from fee base.', amount: b.deposit, status: 'recorded', operator: action.actor.name, variance: 0 },
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_charge', description: `Guest payment verified via webhook (${b.nights} nights + mandatory charges + 3% HAMLET guest fee)`, amount: b.guestTotal, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'accommodation_revenue', description: `Owner accommodation revenue (${b.nights} nights · 0% HAMLET owner fee)`, amount: b.accommodationSubtotal, status: 'recorded', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
+        ...(b.mandatoryTotal > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'mandatory_charges' as const, description: 'Disclosed mandatory property charges (owner settlement)', amount: b.mandatoryTotal, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef }] : []),
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_service_fee', description: `HAMLET guest service fee (3.0% × ${formatNaira(b.accommodationSubtotal)})`, amount: b.hamletGuestFee, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
+        ...(b.deposit > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'deposit_hold' as const, description: 'Refundable security deposit — held, not revenue. Excluded from fee base.', amount: b.deposit, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef }] : []),
       ];
       return {
         ...state,
@@ -468,8 +554,70 @@ function reducer(state: DBState, action: Action): DBState {
         ],
       };
     }
+    case 'RECORD_REFUND': {
+      const b = state.bookings.find(x => x.id === action.id);
+      if (!b) return state;
+      const at = nowIso();
+      const updated: Booking = {
+        ...b,
+        status: 'refunded',
+        refundStatus: 'processed',
+        refundAmount: action.amount,
+        timeline: [
+          ...b.timeline,
+          {
+            at,
+            label: 'Refund processed',
+            actor: `${action.actor.name} (${action.actor.role})`,
+            detail: `${formatNaira(action.amount)} · ${action.note}${action.providerRef ? ` · Ref ${action.providerRef}` : ''}`,
+          },
+        ],
+      };
+      const refundEntry: LedgerEntry = {
+        id: uid(),
+        at,
+        bookingRef: b.ref,
+        propertyTitle: b.propertyTitle,
+        type: 'refund',
+        description: `Guest refund processed — ${action.note}`,
+        amount: action.amount,
+        status: 'reconciled',
+        providerRef: action.providerRef,
+        operator: action.actor.name,
+        variance: 0,
+        note: action.note,
+      };
+      return {
+        ...state,
+        bookings: state.bookings.map(x => (x.id === action.id ? updated : x)),
+        ledger: [refundEntry, ...state.ledger],
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, 'booking_refunded', b.ref, `Refunded ${formatNaira(action.amount)}: ${action.note}`),
+          ...state.audit,
+        ],
+      };
+    }
     case 'ADD_LEDGER':
       return { ...state, ledger: [...action.entries, ...state.ledger] };
+    case 'RECONCILE_LEDGER': {
+      const entry = state.ledger.find(x => x.id === action.id);
+      if (!entry) return state;
+      const updatedEntry: LedgerEntry = {
+        ...entry,
+        status: action.status,
+        variance: action.variance,
+        note: action.note ?? entry.note,
+        operator: action.actor.name,
+      };
+      return {
+        ...state,
+        ledger: state.ledger.map(x => (x.id === action.id ? updatedEntry : x)),
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, `ledger_${action.status}`, entry.bookingRef, `${entry.type} → ${action.status} · variance ${formatNaira(action.variance)}${action.note ? ` · ${action.note}` : ''}`),
+          ...state.audit,
+        ],
+      };
+    }
     case 'ADD_ISSUE':
       return { ...state, issues: [action.issue, ...state.issues] };
     case 'ISSUE_UPDATE': {
@@ -549,12 +697,14 @@ interface Store {
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   verifyPayment: (id: string) => void;
+  recordBookingRefund: (id: string, input: { amount: number; providerRef?: string; note: string }) => Promise<void>;
+  reconcileLedgerEntry: (id: string, input: { status: LedgerEntry['status']; variance?: number; note?: string }) => Promise<void>;
   reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType'] }) => Promise<Issue>;
-  updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; resolution?: string }) => void;
+  updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; assigneeId?: string; resolution?: string }) => Promise<void>;
   reviewApplication: (id: string, status: PartnerApplication['status'], note?: string) => Promise<void>;
   approvePartner: (applicationId: string, note?: string) => Promise<void>;
-  grantAssignment: (input: Omit<PartnerAssignment, 'id' | 'grantedAt' | 'status'>) => void;
-  revokeAssignment: (id: string) => void;
+  grantAssignment: (input: Omit<PartnerAssignment, 'id' | 'grantedAt' | 'status'>) => Promise<void>;
+  revokeAssignment: (id: string, note?: string) => Promise<void>;
   addFeedback: (item: Omit<FeedbackItem, 'id' | 'at'>) => void;
   resetDemo: () => void;
 }
@@ -950,7 +1100,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     verifyPayment: (id) => {
       if (supabase) {
-        setBackendError('Online payments are not enabled until a verified payment-provider webhook is configured.');
+        setBackendError('Online payments are confirmed exclusively via verified Paystack server webhooks.');
         return;
       }
       if (!state.session) return;
@@ -958,6 +1108,63 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (!b) return;
       const providerRef = `PSK_webhook_${uid().slice(0, 10)}`;
       dispatch({ type: 'VERIFY_PAYMENT', id, actor: state.session, providerRef, provider: 'Paystack' });
+    },
+    recordBookingRefund: async (id, input) => {
+      if (!state.session) throw new Error('Sign in before recording a booking refund.');
+      const trimmedNote = input.note.trim();
+      if (trimmedNote.length < 8) throw new Error('A refund note (min 8 characters) is required.');
+      const amount = Math.round(input.amount);
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error('Refund amount must be a positive Naira value.');
+      if (supabase) {
+        const { error } = await supabase.rpc('record_booking_refund', {
+          target_booking_id: id,
+          refund_amount_naira: amount,
+          provider_ref: input.providerRef?.trim() || null,
+          refund_note: trimmedNote,
+        });
+        if (error) throw new Error(`Could not record refund: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Refund recorded, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'RECORD_REFUND',
+        id,
+        actor: state.session,
+        amount,
+        providerRef: input.providerRef?.trim() || undefined,
+        note: trimmedNote,
+      });
+    },
+    reconcileLedgerEntry: async (id, input) => {
+      if (!state.session) throw new Error('Sign in before reconciling ledger entries.');
+      const variance = Math.round(input.variance ?? 0);
+      const trimmedNote = input.note?.trim() || undefined;
+      if ((input.status === 'flagged' || variance !== 0) && (!trimmedNote || trimmedNote.length < 8)) {
+        throw new Error('A reconciliation note (min 8 characters) is required when flagging or recording a variance.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('reconcile_ledger_entry', {
+          target_entry_id: id,
+          next_status: input.status,
+          next_variance: variance,
+          reconciliation_note: trimmedNote ?? null,
+        });
+        if (error) throw new Error(`Could not reconcile ledger entry: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Ledger entry updated, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'RECONCILE_LEDGER',
+        id,
+        actor: state.session,
+        status: input.status,
+        variance,
+        note: trimmedNote,
+      });
     },
     reportIssue: async (input) => {
       if (supabase) {
@@ -980,7 +1187,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           severity: data.severity, subject: data.subject, description: data.description,
           reporter: state.session.name, reporterType: 'guest', status: data.status,
           createdAt: data.created_at, updatedAt: data.updated_at,
-          evidence: data.evidence ?? [], resolution: data.resolution, timeline: [],
+          evidence: data.evidence ?? [], resolution: data.resolution,
+          timeline: (data.timeline as TimelineEvent[] | undefined) ?? [],
         };
         dispatch({ type: 'HYDRATE', state: { ...state, issues: [issue, ...state.issues] } });
         return issue;
@@ -995,18 +1203,62 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'ADD_ISSUE', issue });
       return issue;
     },
-    updateIssue: (id, status, opts) => {
-      if (!state.session) return;
+    updateIssue: async (id, status, opts) => {
+      if (!state.session) throw new Error('Sign in before updating an issue.');
+      if (supabase) {
+        const { error } = await supabase.rpc('transition_booking_issue', {
+          target_issue_id: id,
+          next_status: status,
+          action_note: opts?.note?.trim() || null,
+          next_assignee_id: opts?.assigneeId ?? (status === 'assigned' ? state.session.userId : null),
+          next_assignee_name: opts?.assignee?.trim() || null,
+          resolution_summary: opts?.resolution?.trim() || null,
+        });
+        if (error) throw new Error(`Could not update issue: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Issue updated, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
       dispatch({ type: 'ISSUE_UPDATE', id, status, actor: state.session, note: opts?.note, assignee: opts?.assignee, resolution: opts?.resolution });
     },
     reviewApplication: (id, status, note) => handleApplicationReview(id, status, note),
     approvePartner: (id, note) => handleApplicationReview(id, 'approved', note ?? 'Partner application approved after manual review.', true),
-    grantAssignment: (input) => {
+    grantAssignment: async (input) => {
       const actor = state.session;
-      dispatch({ type: 'ADD_ASSIGNMENT', assignment: { ...input, id: uid(), grantedAt: nowIso(), status: 'active' }, actorName: actor?.name ?? 'HAMLET operations', actorRole: actor?.role ?? 'admin' });
+      if (!actor) throw new Error('Sign in as an administrator before granting property assignments.');
+      if (supabase) {
+        const { error } = await supabase.rpc('grant_property_assignment', {
+          target_property_id: input.propertyId,
+          target_partner_id: input.partnerId,
+          authority_scope: input.scope.trim(),
+          agreed_commission_rate: input.commissionRate,
+          agreed_commission_note: input.commissionNote.trim(),
+        });
+        if (error) throw new Error(`Could not grant assignment: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Assignment granted, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({ type: 'ADD_ASSIGNMENT', assignment: { ...input, id: uid(), grantedAt: nowIso(), status: 'active' }, actorName: actor.name, actorRole: actor.role });
     },
-    revokeAssignment: (id) => {
-      if (!state.session) return;
+    revokeAssignment: async (id, note) => {
+      if (!state.session) throw new Error('Sign in before revoking a property assignment.');
+      const target = state.assignments.find(item => item.id === id);
+      if (!target) throw new Error('Property assignment not found.');
+      if (supabase) {
+        const { error } = await supabase.rpc('revoke_property_assignment', {
+          target_property_id: target.propertyId,
+          target_partner_id: target.partnerId,
+          revocation_note: note?.trim() || null,
+        });
+        if (error) throw new Error(`Could not revoke assignment: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Assignment revoked, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
       dispatch({ type: 'REVOKE_ASSIGNMENT', id, actor: state.session });
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
