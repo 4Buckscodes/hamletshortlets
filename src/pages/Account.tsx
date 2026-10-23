@@ -29,7 +29,7 @@ function BookingStepper({ status }: { status: Booking['status'] }) {
           return (
             <div key={label} className="flex flex-1 items-center last:flex-none">
               <div className="flex flex-col items-center">
-                <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 text-[9px] font-black transition ${done ? 'border-jade-600 bg-jade-600 text-white' : 'border-ink-200 bg-white text-ink-400'} ${active ? 'ring-4 ring-jade-100' : ''}`}>
+                <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[9px] font-black transition ${done ? 'border-jade-600 bg-jade-600 text-white' : 'border-ink-200 bg-white text-ink-400'} ${active ? 'ring-4 ring-jade-100' : ''}`}>
                   {done && current > i ? '✓' : i + 1}
                 </div>
                 <span className={`mt-1 hidden text-[9px] font-extrabold uppercase tracking-wide sm:block ${done ? 'text-jade-800' : 'text-ink-400'}`}>{label}</span>
@@ -39,6 +39,11 @@ function BookingStepper({ status }: { status: Booking['status'] }) {
           );
         })}
       </div>
+      {!negative && current >= 0 && (
+        <p className="mt-1.5 text-[10px] font-extrabold uppercase tracking-wide text-jade-800 sm:hidden">
+          Stage {current + 1} of {STAGES.length} · {STAGES[current]}
+        </p>
+      )}
       {negative && <p className="mt-2 text-[11px] font-bold text-red-700">This booking closed as: {status.replace('_', ' ')}</p>}
     </div>
   );
@@ -63,35 +68,38 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
   return (
     <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={stage === 'idle' ? onClose : undefined} />
-      <motion.div initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60, opacity: 0 }} className="relative w-full max-w-md overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
-        <div className="bg-[#0BA4DB] px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 font-display text-sm font-black text-white">P</span>
-              <div><p className="text-[13px] font-black text-white">Paystack Checkout</p><p className="text-[9.5px] font-semibold text-white/80">Demo simulation · webhook-verified · {session.email}</p></div>
+      <motion.div initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-y-contain rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
+        <div className="bg-[#0BA4DB] px-5 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 font-display text-sm font-black text-white">P</span>
+              <div className="min-w-0">
+                <p className="text-[13px] font-black text-white">Paystack Checkout</p>
+                <p className="truncate text-[9.5px] font-semibold text-white/80">Demo simulation · webhook-verified · {session.email}</p>
+              </div>
             </div>
-            {stage === 'idle' && <button onClick={onClose} aria-label="Close"><X size={20} className="text-white/80" /></button>}
+            {stage === 'idle' && <button onClick={onClose} aria-label="Close" className="shrink-0"><X size={20} className="text-white/80" /></button>}
           </div>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {stage === 'idle' && (
             <>
-              <div className="flex items-baseline justify-between">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="text-[12px] font-bold text-ink-500">Paying HAMLET for booking</span>
-                <span className="rounded-md bg-ink-100 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-600">{booking.ref}</span>
+                <span className="shrink-0 rounded-md bg-ink-100 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-600">{booking.ref}</span>
               </div>
-              <p className="mt-2 font-display text-4xl font-black tracking-tight text-ink-900">{formatNaira(booking.guestTotal)}</p>
+              <p className="mt-2 font-display text-3xl font-black tracking-tight tabular-nums text-ink-900 sm:text-4xl">{formatNaira(booking.guestTotal)}</p>
               <dl className="mt-4 space-y-1.5 rounded-2xl border border-ink-100 p-4 text-[12px] font-medium text-ink-700">
-                <div className="flex justify-between"><dt>Accommodation ({booking.nights} nights)</dt><dd className="tabular-nums">{formatNaira(booking.accommodationSubtotal)}</dd></div>
-                {booking.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between"><dt>{c.label}</dt><dd className="tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                <div className="flex justify-between"><dt>HAMLET guest fee (3%)</dt><dd className="tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd></div>
-                <div className="flex justify-between border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Total</dt><dd className="tabular-nums">{formatNaira(booking.guestTotal)}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Accommodation ({booking.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.accommodationSubtotal)}</dd></div>
+                {booking.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd></div>
+                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.guestTotal)}</dd></div>
               </dl>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className="rounded-xl border-2 border-[#0BA4DB] bg-sky-50 p-3 text-center"><CreditCard size={18} className="mx-auto text-[#0BA4DB]" /><p className="mt-1 text-[11px] font-black text-ink-800">Card</p><p className="text-[9px] font-semibold text-ink-400">4084 •••• 4081</p></div>
-                <div className="rounded-xl border border-ink-200 p-3 text-center"><Receipt size={18} className="mx-auto text-ink-500" /><p className="mt-1 text-[11px] font-black text-ink-800">Bank transfer</p><p className="text-[9px] font-semibold text-ink-400">pay with your bank app</p></div>
+                <div className="rounded-xl border-2 border-[#0BA4DB] bg-sky-50 p-3 text-center"><CreditCard size={18} className="mx-auto shrink-0 text-[#0BA4DB]" /><p className="mt-1 text-[11px] font-black text-ink-800">Card</p><p className="text-[9px] font-semibold text-ink-400">4084 •••• 4081</p></div>
+                <div className="rounded-xl border border-ink-200 p-3 text-center"><Receipt size={18} className="mx-auto shrink-0 text-ink-500" /><p className="mt-1 text-[11px] font-black text-ink-800">Bank transfer</p><p className="text-[9px] font-semibold text-ink-400">pay with your bank app</p></div>
               </div>
-              <button onClick={pay} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0BA4DB] py-4 font-display text-[15px] font-black text-white transition hover:bg-[#0993c3]">
+              <button onClick={pay} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0BA4DB] py-4 font-display text-[15px] font-black text-white transition hover:bg-[#0993c3] [&>svg]:shrink-0">
                 <Lock size={15} /> Pay {formatNaira(booking.guestTotal)}
               </button>
               <p className="mt-2 text-center text-[10px] font-medium leading-snug text-ink-400">Confirmation is issued only after Paystack's webhook is verified server-side. A redirect or screenshot is never accepted as proof of payment.</p>
@@ -139,12 +147,12 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
   return (
     <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={onClose} />
-      <motion.div initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60, opacity: 0 }} className="relative w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
-        <div className="flex items-start justify-between">
+      <motion.div initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-y-contain rounded-t-3xl bg-white p-4 shadow-2xl sm:rounded-3xl sm:p-6">
+        <div className="flex items-start justify-between gap-3">
           <h2 className="font-display text-xl font-black text-ink-900">Report an issue</h2>
-          <button onClick={onClose}><X size={20} className="text-ink-400" /></button>
+          <button onClick={onClose} className="shrink-0" aria-label="Close"><X size={20} className="text-ink-400" /></button>
         </div>
-        <p className="mt-1 text-[11px] font-semibold text-ink-500">Booking {booking.ref} · {booking.propertyTitle}</p>
+        <p className="mt-1 break-words text-[11px] font-semibold text-ink-500">Booking {booking.ref} · {booking.propertyTitle}</p>
         <label className="mt-4 block"><span className="label">Category</span>
           <select className="input" value={category} onChange={e => setCategory(e.target.value as typeof category)}>
             {['Property condition', 'Access & check-in', 'Payment & billing', 'Booking conflict', 'Safety & security', 'Host conduct', 'Damages', 'Other'].map(c => <option key={c}>{c}</option>)}
@@ -328,24 +336,26 @@ export default function Account() {
 
             return (
               <article key={b.id} className="card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-4 p-5">
+                <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-[10.5px] font-bold text-ink-400">{b.ref}</span>
                       <BookingStatusPill status={b.status} />
                     </div>
-                    <h2 className="mt-1.5 font-display text-[17px] font-bold leading-snug text-ink-900">{b.propertyTitle}</h2>
-                    <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[11.5px] font-semibold text-ink-500">
-                      <span className="inline-flex items-center gap-1"><CalendarDays size={12} />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights} nights</span>
+                    <h2 className="mt-1.5 break-words font-display text-[17px] font-bold leading-snug text-ink-900">{b.propertyTitle}</h2>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] font-semibold text-ink-500">
+                      <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights} nights</span>
                       <span>{b.guests} guest{b.guests > 1 ? 's' : ''}</span>
                     </p>
                     <BookingStepper status={b.status} />
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <p className="font-display text-xl font-black text-ink-900">{formatNaira(b.guestTotal)}</p>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">total incl. 3% fee</p>
-                    <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
-                      Details {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  <div className="flex items-baseline justify-between gap-2 border-t border-ink-50 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
+                    <div>
+                      <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatNaira(b.guestTotal)}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">total incl. 3% fee</p>
+                    </div>
+                    <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
+                      Details {open ? <ChevronUp size={13} className="shrink-0" /> : <ChevronDown size={13} className="shrink-0" />}
                     </button>
                   </div>
                 </div>
@@ -376,14 +386,14 @@ export default function Account() {
                         <div>
                           <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price breakdown</h3>
                           <dl className="mt-2 space-y-1 text-[12px] font-medium text-ink-700">
-                            <div className="flex justify-between"><dt>Subtotal ({b.nights} nights)</dt><dd className="tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
-                            {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between"><dt>{c.label}</dt><dd className="tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                            <div className="flex justify-between"><dt>HAMLET guest fee (3%)</dt><dd className="tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
-                            <div className="flex justify-between border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                            <div className="flex justify-between text-ink-400"><dt>Refundable deposit</dt><dd className="tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                            <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
+                            {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                            <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
+                            <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                            <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
                           </dl>
-                          {b.paymentRef && <p className="mt-3 font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
-                          {b.cancelReason && <p className="mt-2 text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
+                          {b.paymentRef && <p className="mt-3 break-all font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
+                          {b.cancelReason && <p className="mt-2 break-words text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
                           {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}
                           <div className="mt-4 flex flex-wrap gap-2">
                             {canCancel && <button
@@ -418,12 +428,12 @@ export default function Account() {
                         </div>
                       </div>
                       {canFeedback && (
-                        <div className="border-t border-ink-100 bg-clay/50 p-5">
-                          <h3 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} /> Private pilot feedback — reviewed by HAMLET operations only</h3>
+                        <div className="border-t border-ink-100 bg-clay/50 p-4 sm:p-5">
+                          <h3 className="flex items-start gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} className="mt-0.5 shrink-0" /> Private pilot feedback — reviewed by HAMLET operations only</h3>
                           {existingFeedback ? (
                             <div className="mt-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-[12px] font-medium text-ink-800">
                               <p className="font-bold text-jade-800">{existingFeedback.rating}/5 · {existingFeedback.category}</p>
-                              <p className="mt-1">“{existingFeedback.text}”</p>
+                              <p className="mt-1 break-words">“{existingFeedback.text}”</p>
                               <p className="mt-1 text-[10px] font-semibold text-ink-400">Submitted privately on {formatDateTime(existingFeedback.at)}</p>
                             </div>
                           ) : (
@@ -431,16 +441,16 @@ export default function Account() {
                               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                 {[1, 2, 3, 4, 5].map(n => (
                                   <button key={n} type="button" onClick={() => setFbRating(n)} aria-label={`${n} stars`}>
-                                    <Star size={22} className={n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'} strokeWidth={1.5} />
+                                    <Star size={22} className={`shrink-0 ${n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'}`} strokeWidth={1.5} />
                                   </button>
                                 ))}
-                                <select className="input ml-3 !w-auto !py-1.5 text-[11px]" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
+                                <select className="input w-full !py-1.5 text-[11px] sm:ml-3 sm:!w-auto" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
                                   {['Stay experience', 'Property condition', 'Check-in & access', 'Value for money', 'Host communication'].map(c => <option key={c}>{c}</option>)}
                                 </select>
                               </div>
-                              <div className="mt-2 flex gap-2">
-                                <input className="input" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
-                                <button disabled={submittingFbId === b.id} className="btn-dark !px-4 !py-2 text-[12px] disabled:opacity-50" onClick={() => void submitFeedback(b)}>
+                              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                                <input className="input flex-1" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
+                                <button disabled={submittingFbId === b.id} className="btn-dark shrink-0 !px-4 !py-2 text-[12px] disabled:opacity-50" onClick={() => void submitFeedback(b)}>
                                   {submittingFbId === b.id ? 'Sending…' : 'Send'}
                                 </button>
                               </div>

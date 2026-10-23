@@ -43,9 +43,9 @@ export default function PartnerAssignments() {
                 <p className="mt-1 max-w-lg text-[11.5px] font-medium leading-snug text-ink-300"><span className="text-ink-400">Scope:</span> {a.scope}</p>
                 <p className="mt-1 text-[10.5px] font-semibold text-ink-500">Granted {formatDate(a.grantedAt)}{a.revokedAt ? ` · Revoked ${formatDate(a.revokedAt)}` : ''}</p>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <div className="text-right">
-                  <p className="flex items-center justify-end gap-1 font-display text-xl font-black text-brass-300"><Percent size={15} />{a.commissionRate === null ? 'None' : `${(a.commissionRate * 100).toFixed(1)}%`}</p>
+              <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                <div className="sm:text-right">
+                  <p className="flex items-center gap-1 font-display text-xl font-black text-brass-300 sm:justify-end"><Percent size={15} className="shrink-0" />{a.commissionRate === null ? 'None' : `${(a.commissionRate * 100).toFixed(1)}%`}</p>
                   <p className="max-w-[220px] text-[9.5px] font-semibold leading-snug text-ink-400">{a.commissionNote}</p>
                 </div>
                 {a.status === 'active' && (

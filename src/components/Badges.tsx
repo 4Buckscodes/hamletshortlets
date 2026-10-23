@@ -69,21 +69,21 @@ export function DocStatusBadge({ status }: { status: DocStatus }) {
 
 export function TrustBadge({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/50 bg-gradient-to-r from-brass-500/15 to-transparent py-1 pl-1.5 pr-3 text-[11px] font-bold text-brass-700">
-      <ShieldCheck size={13} strokeWidth={2.5} />{label}
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/50 bg-gradient-to-r from-brass-500/15 to-transparent py-1 pl-1.5 pr-3 text-[11px] font-bold text-brass-700 [&>svg]:shrink-0">
+      <ShieldCheck size={13} strokeWidth={2.5} className="shrink-0" />{label}
     </span>
   );
 }
 
 export function SeverityDot({ severity }: { severity: 'low' | 'medium' | 'high' | 'critical' }) {
   const cls = { low: 'bg-sky-400', medium: 'bg-amber-400', high: 'bg-orange-500', critical: 'bg-red-600' }[severity];
-  return <span className={`inline-block h-2.5 w-2.5 rounded-full ${cls}`} title={`${severity} severity`} />;
+  return <span className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${cls}`} title={`${severity} severity`} />;
 }
 
 export function VerifiedTick({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center justify-center rounded-full bg-jade-600 text-white ${className}`}>
-      <ShieldCheck size={11} strokeWidth={3} />
+    <span className={`inline-flex shrink-0 items-center justify-center rounded-full bg-jade-600 text-white ${className}`}>
+      <ShieldCheck size={11} strokeWidth={3} className="shrink-0" />
     </span>
   );
 }

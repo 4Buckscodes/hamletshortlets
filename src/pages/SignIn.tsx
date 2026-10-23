@@ -206,18 +206,20 @@ export default function SignIn() {
               <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
                 <ChevronDown size={12} /> Demo accounts (password: demo1234)
               </p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {DEMO_ACCOUNTS.map(acc => (
                   <button
                     key={acc.email}
                     type="button"
                     onClick={() => quick(acc)}
                     title={acc.desc}
-                    className={`rounded-2xl border p-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-md ${acc.color} ${email === acc.email ? 'ring-2 ring-ink-900' : ''}`}
+                    className={`flex items-center gap-2.5 rounded-2xl border p-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-md sm:block ${acc.color} ${email === acc.email ? 'ring-2 ring-ink-900' : ''}`}
                   >
-                    <acc.Icon size={18} />
-                    <p className="mt-1.5 text-[11px] font-black text-ink-900">{acc.role}</p>
-                    <p className="truncate text-[10.5px] font-semibold text-ink-600">{acc.email}</p>
+                    <acc.Icon size={18} className="shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-black text-ink-900 sm:mt-1.5">{acc.role}</p>
+                      <p className="truncate text-[10.5px] font-semibold text-ink-600">{acc.email}</p>
+                    </div>
                   </button>
                 ))}
               </div>

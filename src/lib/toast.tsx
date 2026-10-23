@@ -34,8 +34,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               {t.kind === 'success' && <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-jade-400" />}
               {t.kind === 'error' && <AlertTriangle size={18} className="mt-0.5 shrink-0 text-red-400" />}
               {t.kind === 'info' && <Info size={18} className="mt-0.5 shrink-0 text-brass-400" />}
-              <span className="flex-1">{t.message}</span>
-              <button onClick={() => setToasts(x => x.filter(y => y.id !== t.id))} className="text-ink-400 hover:text-white" aria-label="Dismiss">
+              <span className="min-w-0 flex-1 break-words">{t.message}</span>
+              <button onClick={() => setToasts(x => x.filter(y => y.id !== t.id))} className="shrink-0 text-ink-400 hover:text-white" aria-label="Dismiss">
                 <X size={16} />
               </button>
             </motion.div>

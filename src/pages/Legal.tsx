@@ -66,14 +66,14 @@ export default function Legal() {
         <div className="mt-6 flex flex-wrap gap-1.5 border-b border-ink-100 pb-4">
           {TABS.map(t => (
             <NavLink key={t.to} to={t.to} className={({ isActive }) => `inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[11.5px] font-bold transition ${isActive ? 'border-jade-600 bg-jade-700 text-white' : 'border-ink-200 text-ink-600 hover:border-ink-400'}`}>
-              <t.Icon size={14} />{t.label}
+              <t.Icon size={14} className="shrink-0" />{t.label}
             </NavLink>
           ))}
         </div>
 
         <div className="mt-6 grid gap-4">
           {c.sections.map(s => (
-            <section key={s.h} className="card p-6">
+            <section key={s.h} className="card p-4 sm:p-6">
               <h2 className="font-display text-[17px] font-black text-ink-900">{s.h}</h2>
               <p className="mt-1.5 max-w-4xl text-[13.5px] font-medium leading-relaxed text-ink-700">{s.b}</p>
             </section>

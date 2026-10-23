@@ -144,20 +144,20 @@ export default function AdminLedger() {
         {cards.map(c => (
           <button key={c.type} onClick={() => setFilter(filter === c.type ? 'all' : c.type)} className={`rounded-2xl border p-3 text-left transition ${filter === c.type ? 'border-brass-500 bg-brass-500/15' : 'border-ink-800 bg-ink-900 hover:border-ink-700'}`}>
             <span className={`chip border !px-2 !py-0.5 text-[9.5px] uppercase ${TYPE_META[c.type].cls}`}>{TYPE_META[c.type].label}</span>
-            <p className="mt-1.5 font-display text-[15px] font-black tabular-nums text-ink-50">{formatNaira(c.value)}</p>
+            <p className="mt-1.5 break-words font-display text-[15px] font-black tabular-nums text-ink-50">{formatNaira(c.value)}</p>
           </button>
         ))}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[12px] font-bold text-ink-200">{entries.length} line{entries.length === 1 ? '' : 's'}{filter !== 'all' && <> · filtered: <span className="text-brass-300">{TYPE_META[filter].label}</span></>}</p>
-        <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[11.5px] font-black ${totals.variance === 0 ? 'border-jade-500/40 bg-jade-500/10 text-jade-300' : 'border-red-400/50 bg-red-400/10 text-red-300'}`}>
+        <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[11.5px] font-black [&>svg]:shrink-0 ${totals.variance === 0 ? 'border-jade-500/40 bg-jade-500/10 text-jade-300' : 'border-red-400/50 bg-red-400/10 text-red-300'}`}>
           {totals.variance === 0 ? <Landmark size={14} /> : <AlertTriangle size={14} />}
           {totals.variance === 0 ? 'Ledger reconciled — zero variance' : `Open variance: ${formatNaira(totals.variance)} (under review)`}
         </div>
       </div>
 
-      <div className="mt-3 overflow-x-auto rounded-2xl border border-ink-800">
+      <div className="mt-3 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[940px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">Recorded</th><th className="th">Booking</th><th className="th">Type / concept</th><th className="th">Description & note</th><th className="th">Provider ref</th><th className="th text-right">Amount</th><th className="th text-right">Variance</th><th className="th">Status</th><th className="th">Operator</th><th className="th" /></tr></thead>
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">
@@ -190,15 +190,15 @@ export default function AdminLedger() {
         {selected && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { if (!saving) setSelected(null); }} />
-            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative w-full max-w-md rounded-2xl border border-ink-800 bg-ink-900 p-6 shadow-2xl">
+            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-4 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="font-mono text-[10.5px] font-bold text-brass-300">{selected.bookingRef} · {TYPE_META[selected.type].label}</p>
                   <h2 className="mt-1 font-display text-lg font-black text-ink-50">Reconcile ledger line</h2>
                 </div>
-                <button onClick={() => setSelected(null)} disabled={saving} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white"><X size={18} /></button>
+                <button onClick={() => setSelected(null)} disabled={saving} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>
               </div>
-              <p className="mt-2 text-[11.5px] font-medium text-ink-300">{selected.description} · <strong className="text-ink-50">{formatNaira(selected.amount)}</strong></p>
+              <p className="mt-2 break-words text-[11.5px] font-medium text-ink-300">{selected.description} · <strong className="tabular-nums text-ink-50">{formatNaira(selected.amount)}</strong></p>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <label>
@@ -219,7 +219,7 @@ export default function AdminLedger() {
                 <textarea className="input-dark min-h-[76px]" placeholder="Statement batch ref, bank transfer reference, or variance explanation…" value={reconcileNote} onChange={e => setReconcileNote(e.target.value)} />
               </label>
 
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="mt-4 flex flex-wrap justify-end gap-2">
                 <button onClick={() => setSelected(null)} disabled={saving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
                 <button onClick={() => void saveReconciliation()} disabled={saving} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
                   <CheckCircle2 size={14} /> {saving ? 'Saving…' : 'Save & audit-log'}
@@ -234,13 +234,13 @@ export default function AdminLedger() {
         {showAdd && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { if (!adjSaving) setShowAdd(false); }} />
-            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative w-full max-w-lg rounded-2xl border border-ink-800 bg-ink-900 p-6 shadow-2xl">
+            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-4 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Manual pilot settlement / adjustment</p>
                   <h2 className="mt-1 font-display text-lg font-black text-ink-50">Record ledger entry</h2>
                 </div>
-                <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white"><X size={18} /></button>
+                <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -291,7 +291,7 @@ export default function AdminLedger() {
                 </label>
               </div>
 
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="mt-4 flex flex-wrap justify-end gap-2">
                 <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
                 <button onClick={() => void saveAdjustment()} disabled={adjSaving} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
                   <CheckCircle2 size={14} /> {adjSaving ? 'Recording…' : 'Record & audit-log'}

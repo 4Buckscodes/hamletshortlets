@@ -101,9 +101,9 @@ export default function Home() {
                 </select>
               </span>
             </label>
-            <label className="flex min-h-14 items-center gap-2 rounded-xl bg-ink-800/80 px-3 py-2">
+            <label className="flex min-h-14 min-w-0 items-center gap-2 rounded-xl bg-ink-800/80 px-3 py-2">
               <CalendarDays size={17} className="shrink-0 text-brass-400" />
-              <span>
+              <span className="min-w-0 flex-1">
                 <span className="block text-[10px] font-extrabold uppercase tracking-widest text-ink-300">Check-in</span>
                 <input
                   type="date"
@@ -115,13 +115,13 @@ export default function Home() {
                     setCheckIn(nextCheckIn);
                     if (checkOut <= nextCheckIn) setCheckOut(addDays(nextCheckIn, 1));
                   }}
-                  className="max-w-full bg-transparent text-[12px] font-bold text-white outline-none [color-scheme:dark]"
+                  className="w-full min-w-0 bg-transparent text-[12px] font-bold text-white outline-none [color-scheme:dark]"
                 />
               </span>
             </label>
-            <label className="flex min-h-14 items-center gap-2 rounded-xl bg-ink-800/80 px-3 py-2">
+            <label className="flex min-h-14 min-w-0 items-center gap-2 rounded-xl bg-ink-800/80 px-3 py-2">
               <CalendarDays size={17} className="shrink-0 text-brass-400" />
-              <span>
+              <span className="min-w-0 flex-1">
                 <span className="block text-[10px] font-extrabold uppercase tracking-widest text-ink-300">Check-out</span>
                 <input
                   type="date"
@@ -129,7 +129,7 @@ export default function Home() {
                   value={checkOut}
                   min={minCheckOut}
                   onChange={event => setCheckOut(event.target.value)}
-                  className="max-w-full bg-transparent text-[12px] font-bold text-white outline-none [color-scheme:dark]"
+                  className="w-full min-w-0 bg-transparent text-[12px] font-bold text-white outline-none [color-scheme:dark]"
                 />
               </span>
             </label>
@@ -225,10 +225,10 @@ export default function Home() {
         <section className="border-t border-ink-100 bg-clay py-11">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Explore available areas</p>
-            <div className="mt-4 flex gap-2.5 overflow-x-auto pb-2">
+            <div className="mt-4 flex gap-2.5 overflow-x-auto overscroll-x-contain pb-2">
               {areas.map(destination => (
                 <Link key={destination} to={`/stays?area=${encodeURIComponent(destination)}`} className="group inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 font-semibold text-ink-800 transition hover:border-jade-500 hover:text-jade-800">
-                  {destination}<ChevronRight size={15} className="text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-jade-600" />
+                  {destination}<ChevronRight size={15} className="shrink-0 text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-jade-600" />
                 </Link>
               ))}
             </div>

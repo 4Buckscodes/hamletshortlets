@@ -127,10 +127,10 @@ export default function PartnerRegister() {
                 <label className="sm:col-span-2"><span className="label-dark">Company / trading name</span><input className={`input-dark ${errors.company ? '!border-red-500' : ''}`} value={form.company} onChange={set('company')} placeholder="e.g. Adeyemi Estates Ltd / private owner" />{errors.company && <Err msg={errors.company} />}</label>
                 <div className="sm:col-span-2">
                   <span className="label-dark">Your role</span>
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:grid-cols-3">
                     {ROLES.map(r => (
                       <button key={r.value} type="button" onClick={() => setForm(f => ({ ...f, role: r.value }))} title={r.blurb}
-                        className={`rounded-xl border px-2.5 py-2.5 text-left text-[10.5px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{r.value}</button>
+                        className={`rounded-xl border px-3 py-2.5 text-left text-[11px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{r.value}</button>
                     ))}
                   </div>
                 </div>

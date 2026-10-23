@@ -53,12 +53,14 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     background: var(--color-paper);
     color: var(--color-ink-900);
     font-feature-settings: "kern" 1, "liga" 1;
+    overflow-x: clip;
   }
 
   .font-display {
@@ -96,13 +98,13 @@
     @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-ink-300;
   }
   .card { @apply rounded-2xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(16,29,22,0.06),0_8px_24px_-12px_rgba(16,29,22,0.18)]; }
-  .btn { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-jade { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-jade-500 disabled:cursor-not-allowed disabled:opacity-50 bg-jade-700 text-white hover:bg-jade-800 px-5 py-3; }
-  .btn-brass { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brass-400 disabled:cursor-not-allowed disabled:opacity-50 bg-brass-500 text-ink-950 hover:bg-brass-400 px-5 py-3; }
-  .btn-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-700 disabled:cursor-not-allowed disabled:opacity-50 bg-ink-900 text-ink-50 hover:bg-ink-800 px-5 py-3; }
-  .btn-outline { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-300 disabled:cursor-not-allowed disabled:opacity-50 border border-ink-200 bg-white px-5 py-3 text-ink-800 hover:border-ink-400 hover:bg-ink-50; }
-  .btn-ghost-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 px-4 py-2.5 text-ink-200 hover:bg-ink-800 hover:text-white; }
-  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold; }
+  .btn { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:shrink-0; }
+  .btn-jade { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-jade-500 disabled:cursor-not-allowed disabled:opacity-50 bg-jade-700 text-white hover:bg-jade-800 px-5 py-3 [&>svg]:shrink-0; }
+  .btn-brass { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brass-400 disabled:cursor-not-allowed disabled:opacity-50 bg-brass-500 text-ink-950 hover:bg-brass-400 px-5 py-3 [&>svg]:shrink-0; }
+  .btn-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-700 disabled:cursor-not-allowed disabled:opacity-50 bg-ink-900 text-ink-50 hover:bg-ink-800 px-5 py-3 [&>svg]:shrink-0; }
+  .btn-outline { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ink-300 disabled:cursor-not-allowed disabled:opacity-50 border border-ink-200 bg-white px-5 py-3 text-ink-800 hover:border-ink-400 hover:bg-ink-50 [&>svg]:shrink-0; }
+  .btn-ghost-dark { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 px-4 py-2.5 text-ink-200 hover:bg-ink-800 hover:text-white [&>svg]:shrink-0; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold [&>svg]:shrink-0; }
   .th { @apply px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-ink-400; }
   .td { @apply px-4 py-3 align-middle text-sm; }
 }

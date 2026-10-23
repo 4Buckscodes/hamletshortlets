@@ -21,18 +21,18 @@ export default function PartnerProfile() {
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Profile & application</h1>
 
       {/* Identity card */}
-      <div className="mt-6 rounded-2xl border border-ink-800 bg-ink-900 p-6">
+      <div className="mt-6 rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-6">
         <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brass-500 font-display text-xl font-black text-ink-950">{s.name.split(' ').map(w => w[0]).slice(0, 2).join('')}</span>
-          <div>
-            <h2 className="font-display text-xl font-black text-ink-50">{s.name}</h2>
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brass-500 font-display text-lg font-black text-ink-950 sm:h-16 sm:w-16 sm:text-xl">{s.name.split(' ').map(w => w[0]).slice(0, 2).join('')}</span>
+          <div className="min-w-0">
+            <h2 className="break-words font-display text-xl font-black text-ink-50">{s.name}</h2>
             <p className="text-[12px] font-bold text-brass-300">{s.partnerRole}</p>
-            <p className="text-[12px] font-medium text-ink-400">{s.company}</p>
+            <p className="break-words text-[12px] font-medium text-ink-400">{s.company}</p>
           </div>
         </div>
         <dl className="mt-5 grid gap-3 border-t border-ink-800 pt-5 text-[12.5px] font-medium text-ink-100 sm:grid-cols-2">
-          <div className="flex items-center gap-2.5"><Mail size={15} className="text-ink-500" />{s.email}</div>
-          <div className="flex items-center gap-2.5"><Building2 size={15} className="text-ink-500" />{s.company ?? '—'}</div>
+          <div className="flex min-w-0 items-center gap-2.5"><Mail size={15} className="shrink-0 text-ink-500" /><span className="break-all">{s.email}</span></div>
+          <div className="flex min-w-0 items-center gap-2.5"><Building2 size={15} className="shrink-0 text-ink-500" /><span className="break-words">{s.company ?? '—'}</span></div>
         </dl>
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-jade-500/25 bg-jade-500/5 px-4 py-3 text-[11px] font-medium leading-relaxed text-jade-200">
           <ShieldCheck size={14} className="mt-0.5 shrink-0" />
@@ -42,10 +42,10 @@ export default function PartnerProfile() {
 
       {/* Application status */}
       {application ? (
-        <div className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-6">
-          <div className="flex items-center justify-between gap-4">
+        <div className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-display text-base font-black text-ink-50">Partner application</h3>
-            <span className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest text-ink-300">{statusIcon}{application.status.replace('_', ' ')}</span>
+            <span className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest text-ink-300 [&>svg]:shrink-0">{statusIcon}{application.status.replace('_', ' ')}</span>
           </div>
           <dl className="mt-4 grid gap-3 text-[12px] font-medium text-ink-100 sm:grid-cols-2">
             <div><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Submitted</dt><dd className="mt-0.5">{formatDateTime(application.submittedAt)}</dd></div>

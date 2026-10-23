@@ -92,14 +92,14 @@ export default function NewProperty() {
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">List a property</h1>
 
       {/* Stepper */}
-      <ol className="mt-5 flex items-center gap-1 overflow-x-auto pb-1">
+      <ol className="mt-5 flex items-center gap-1 overflow-x-auto overscroll-x-contain pb-1">
         {STEPS.map((label, i) => {
           const done = i < step, active = i === step;
           return (
             <li key={label} className="flex shrink-0 items-center gap-1">
               <button onClick={() => i < step && setStep(i)} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[10.5px] font-extrabold uppercase tracking-wide transition ${active ? 'bg-brass-500 text-ink-950' : done ? 'bg-ink-800 text-jade-300' : 'text-ink-500'}`}>
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black ${active ? 'bg-ink-950 text-brass-400' : done ? 'bg-jade-600 text-white' : 'bg-ink-800'}`}>{done ? <Check size={11} strokeWidth={4} /> : i + 1}</span>
-                <span className="hidden md:inline">{label}</span>
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${active ? 'bg-ink-950 text-brass-400' : done ? 'bg-jade-600 text-white' : 'bg-ink-800'}`}>{done ? <Check size={11} strokeWidth={4} /> : i + 1}</span>
+                <span className={active ? 'inline' : 'hidden md:inline'}>{label}</span>
               </button>
               {i < STEPS.length - 1 && <span className="text-ink-700">›</span>}
             </li>
@@ -142,9 +142,9 @@ export default function NewProperty() {
             </div>
             <div>
               <span className="label-dark">Photos — references (URLs)</span>
-              <div className="flex gap-2">
-                <input className="input-dark" placeholder="Paste an image URL…" value={imageUrl} onChange={e => setImageUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())} />
-                <button type="button" onClick={addImage} className="btn-ghost-dark !px-4"><UploadCloud size={16} /> Add</button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input className="input-dark flex-1" placeholder="Paste an image URL…" value={imageUrl} onChange={e => setImageUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())} />
+                <button type="button" onClick={addImage} className="btn-ghost-dark shrink-0 !px-4"><UploadCloud size={16} /> Add</button>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {images.map((src, i) => (
@@ -170,10 +170,10 @@ export default function NewProperty() {
             <div className="rounded-2xl border border-brass-500/30 bg-brass-500/5 p-4">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">What the guest will see</p>
               <dl className="mt-2 grid gap-1 text-[12px] font-semibold text-ink-100">
-                <div className="flex justify-between"><dt>Accommodation (per night)</dt><dd className="tabular-nums">₦{nightlyRate.toLocaleString()}</dd></div>
-                <div className="flex justify-between"><dt>Mandatory cleaning & turnover</dt><dd className="tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
-                <div className="flex justify-between"><dt>HAMLET guest fee (3% — guest pays, owner pays 0%)</dt><dd className="tabular-nums">₦{Math.round(nightlyRate * 0.03).toLocaleString()} / night</dd></div>
-                <div className="flex justify-between"><dt>Refundable deposit (held separately, excluded from fee)</dt><dd className="tabular-nums">₦{deposit.toLocaleString()}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Accommodation (per night)</dt><dd className="shrink-0 tabular-nums">₦{nightlyRate.toLocaleString()}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Mandatory cleaning & turnover</dt><dd className="shrink-0 tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3% — guest pays, owner pays 0%)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 0.03).toLocaleString()} / night</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable deposit (held separately, excluded from fee)</dt><dd className="shrink-0 tabular-nums">₦{deposit.toLocaleString()}</dd></div>
               </dl>
               <p className="mt-2 text-[10px] font-medium text-ink-400">The guest-facing total is computed by HAMLET's shared pricing engine from the full stay subtotal — never hard-coded in this form. Provider processing-fee treatment remains undecided and is not added here.</p>
             </div>
@@ -199,7 +199,7 @@ export default function NewProperty() {
                 { v: selfDeclaration, set: setSelfDeclaration, label: 'I declare the information is accurate and I consent to a HAMLET inspection and document review' },
               ].map(({ v, set, label }) => (
                 <label key={label} className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-800 bg-ink-850 p-3.5 transition hover:border-ink-600">
-                  <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#C9A227]" checked={v} onChange={e => set(e.target.checked)} />
+                  <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A227]" checked={v} onChange={e => set(e.target.checked)} />
                   <span className="text-[12px] font-medium leading-snug text-ink-100">{label}</span>
                 </label>
               ))}
@@ -210,7 +210,7 @@ export default function NewProperty() {
 
         {step === 4 && (
           <div>
-            <h3 className="flex items-center gap-2 font-display text-lg font-black text-ink-50"><ShieldCheck size={19} className="text-brass-400" /> Review before submitting</h3>
+            <h3 className="flex items-center gap-2 font-display text-lg font-black text-ink-50"><ShieldCheck size={19} className="shrink-0 text-brass-400" /> Review before submitting</h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 text-[12px] font-medium text-ink-100">
               {[
                 ['Title', title || '—'], ['Type / Area', `${type} · ${area}`], ['Address', address || '—'],
@@ -221,7 +221,7 @@ export default function NewProperty() {
               ].map(([k, v]) => (
                 <div key={k as string} className="rounded-xl border border-ink-800 bg-ink-850 px-4 py-3">
                   <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{k}</p>
-                  <p className="mt-0.5">{v}</p>
+                  <p className="mt-0.5 break-words">{v}</p>
                 </div>
               ))}
             </div>

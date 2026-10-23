@@ -97,7 +97,7 @@ export default function AdminAssignments() {
         </div>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-ink-800">
+      <div className="mt-6 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[820px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">Property</th><th className="th">Partner</th><th className="th">Scope</th><th className="th">Commission</th><th className="th">Granted</th><th className="th">Status</th><th className="th" /></tr></thead>
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">
@@ -106,10 +106,10 @@ export default function AdminAssignments() {
                 <td className="td max-w-[200px]"><span className="line-clamp-1 text-[12px] font-bold text-ink-50">{a.propertyTitle}</span></td>
                 <td className="td"><span className="text-[12px] font-semibold text-ink-100">{a.partnerName}</span><span className="block text-[9.5px] font-semibold text-ink-500">{a.partnerRole}</span></td>
                 <td className="td max-w-[240px] text-[10.5px] leading-snug text-ink-300">{a.scope}</td>
-                <td className="td">{a.commissionRate === null ? <span className="text-[10.5px] font-bold text-ink-400">None agreed</span> : <span className="flex items-center gap-1 text-[12px] font-black text-brass-300"><Percent size={12} />{(a.commissionRate * 100).toFixed(1)}%<span className="block max-w-[140px] text-[10px] font-semibold normal-case leading-tight text-ink-400">{a.commissionNote}</span></span>}</td>
+                <td className="td">{a.commissionRate === null ? <span className="text-[10.5px] font-bold text-ink-400">None agreed</span> : <span className="flex items-center gap-1 text-[12px] font-black text-brass-300"><Percent size={12} className="shrink-0" />{(a.commissionRate * 100).toFixed(1)}%<span className="block max-w-[140px] text-[10px] font-semibold normal-case leading-tight text-ink-400">{a.commissionNote}</span></span>}</td>
                 <td className="td whitespace-nowrap text-[10.5px] font-semibold text-ink-300">{formatDate(a.grantedAt)}{a.revokedAt && <span className="block text-red-400">revoked {formatDate(a.revokedAt)}</span>}</td>
                 <td className="td"><span className={`chip border ${a.status === 'active' ? 'border-jade-500/40 bg-jade-500/10 text-jade-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>{a.status}</span></td>
-                <td className="td">{a.status === 'active' && <button disabled={revokingId === a.id} onClick={() => void revoke(a.id)} className="flex items-center gap-1 rounded-lg border border-red-800 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-950 disabled:opacity-50"><Ban size={12} /> {revokingId === a.id ? 'Revoking…' : 'Revoke'}</button>}</td>
+                <td className="td">{a.status === 'active' && <button disabled={revokingId === a.id} onClick={() => void revoke(a.id)} className="flex items-center gap-1 rounded-lg border border-red-800 px-2.5 py-1.5 text-[10px] font-bold text-red-300 hover:bg-red-950 disabled:opacity-50"><Ban size={12} className="shrink-0" /> {revokingId === a.id ? 'Revoking…' : 'Revoke'}</button>}</td>
               </tr>
             ))}
           </tbody>

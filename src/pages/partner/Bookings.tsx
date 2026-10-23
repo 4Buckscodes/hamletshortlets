@@ -71,37 +71,39 @@ export default function PartnerBookings() {
     const needsAction = !isSuspended && (b.status === 'requested' || b.status === 'checking');
     return (
       <article key={b.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
-        <div className="flex flex-wrap items-center gap-4 p-5">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[10.5px] font-bold text-ink-400">{b.ref}</span>
               <BookingStatusPill status={b.status} />
             </div>
-            <h2 className="mt-1.5 font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[11.5px] font-semibold text-ink-300">
-              <span className="inline-flex items-center gap-1"><CalendarDays size={12} />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n</span>
-              <span className="inline-flex items-center gap-1"><Users size={12} />{b.guests} guests</span>
+            <h2 className="mt-1.5 break-words font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] font-semibold text-ink-300">
+              <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n</span>
+              <span className="inline-flex items-center gap-1"><Users size={12} className="shrink-0" />{b.guests} guests</span>
               <span>Guest: {b.guestName}</span>
             </p>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <p className="font-display text-lg font-black text-brass-300">{formatNaira(b.accommodationSubtotal + b.mandatoryTotal)}</p>
-            <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500">your proceeds · 0% fee</p>
-            <button onClick={() => setExpanded(open ? null : b.id)} className="flex items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
+          <div className="flex items-baseline justify-between gap-2 border-t border-ink-800 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
+            <div>
+              <p className="font-display text-lg font-black tabular-nums text-brass-300 sm:text-right">{formatNaira(b.accommodationSubtotal + b.mandatoryTotal)}</p>
+              <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">your proceeds · 0% fee</p>
+            </div>
+            <button onClick={() => setExpanded(open ? null : b.id)} className="flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
           </div>
         </div>
 
         {needsAction && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-brass-500/25 bg-brass-500/5 px-5 py-3">
+          <div className="flex flex-wrap items-center gap-2 border-t border-brass-500/25 bg-brass-500/5 px-4 py-3 sm:px-5">
             {b.status === 'requested' && <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'checking')} className="btn-ghost-dark !border !border-ink-700 !px-4 !py-2.5 text-[11.5px] disabled:opacity-50">Start availability check</button>}
             <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'awaiting_payment')} className="btn-brass !px-4 !py-2.5 text-[11.5px] disabled:opacity-50"><CheckCircle2 size={15} /> Accept — set payment deadline</button>
             <button disabled={busyId === b.id} onClick={() => setDeclineFor(b.id)} className="btn-ghost-dark !px-4 !py-2.5 text-[11.5px] text-red-300 hover:text-red-200 disabled:opacity-50"><XCircle size={15} /> Decline</button>
-            {b.specialRequests && <p className="w-full text-[11px] font-medium text-ink-300">Guest note: “{b.specialRequests}”</p>}
+            {b.specialRequests && <p className="w-full break-words text-[11px] font-medium text-ink-300">Guest note: “{b.specialRequests}”</p>}
           </div>
         )}
         {declineFor === b.id && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-red-500/25 bg-red-500/5 px-5 py-3">
-            <input autoFocus className="input-dark flex-1 !py-2 text-[12px]" placeholder="Reason for declining (shared with guest)…" value={declineReason} onChange={e => setDeclineReason(e.target.value)} />
+          <div className="flex flex-wrap items-center gap-2 border-t border-red-500/25 bg-red-500/5 px-4 py-3 sm:px-5">
+            <input autoFocus className="input-dark w-full !py-2 text-[12px] sm:min-w-[220px] sm:w-auto sm:flex-1" placeholder="Reason for declining (shared with guest)…" value={declineReason} onChange={e => setDeclineReason(e.target.value)} />
             <button disabled={busyId === b.id} onClick={() => void transition(b.id, b.ref, 'declined', declineReason.trim() || 'Declined after availability and terms review.')} className="rounded-xl bg-red-600 px-4 py-2 text-[11.5px] font-bold text-white hover:bg-red-500 disabled:opacity-50">Confirm decline</button>
             <button disabled={busyId === b.id} onClick={() => setDeclineFor(null)} className="btn-ghost-dark !px-3 !py-2 text-[11px]">Back</button>
           </div>
@@ -173,7 +175,7 @@ export default function PartnerBookings() {
                   {!closed && !isSuspended && (
                     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-3">
                       <input
-                        className="input-dark flex-1 !py-2 text-[12px]"
+                        className="input-dark w-full !py-2 text-[12px] sm:min-w-[220px] sm:w-auto sm:flex-1"
                         placeholder="Add technician dispatch, check-in action, or escalation note…"
                         value={issueNoteById[issue.id] ?? ''}
                         onChange={e => setIssueNoteById(prev => ({ ...prev, [issue.id]: e.target.value }))}
@@ -181,14 +183,14 @@ export default function PartnerBookings() {
                       <button
                         disabled={busyIssueId === issue.id}
                         onClick={() => void respondToIssue(issue, 'investigating')}
-                        className="flex items-center gap-1.5 rounded-xl border border-sky-800 bg-sky-950/40 px-3 py-2 text-[11px] font-bold text-sky-300 hover:bg-sky-950 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-xl border border-sky-800 bg-sky-950/40 px-3 py-2 text-[11px] font-bold text-sky-300 hover:bg-sky-950 disabled:opacity-50 [&>svg]:shrink-0"
                       >
                         <SearchCheck size={13} /> Post investigation update
                       </button>
                       <button
                         disabled={busyIssueId === issue.id}
                         onClick={() => void respondToIssue(issue, 'escalated')}
-                        className="flex items-center gap-1.5 rounded-xl border border-orange-800 bg-orange-950/40 px-3 py-2 text-[11px] font-bold text-orange-300 hover:bg-orange-950 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-xl border border-orange-800 bg-orange-950/40 px-3 py-2 text-[11px] font-bold text-orange-300 hover:bg-orange-950 disabled:opacity-50 [&>svg]:shrink-0"
                       >
                         <AlertOctagon size={13} /> Escalate to HAMLET
                       </button>

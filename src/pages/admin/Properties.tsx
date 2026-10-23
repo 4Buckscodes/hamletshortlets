@@ -99,16 +99,16 @@ export default function AdminProperties() {
             );
           })}
         </div>
-        <label className="flex min-w-52 flex-1 items-center gap-2 rounded-xl border border-ink-800 bg-ink-900 px-3 py-2.5 sm:max-w-xs">
-          <Search size={15} className="text-ink-500" />
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search title, area, owner…" className="w-full bg-transparent text-[12.5px] font-medium text-ink-50 outline-none placeholder:text-ink-500" />
+        <label className="flex w-full min-w-0 items-center gap-2 rounded-xl border border-ink-800 bg-ink-900 px-3 py-2.5 sm:min-w-52 sm:flex-1 sm:max-w-xs">
+          <Search size={15} className="shrink-0 text-ink-500" />
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search title, area, owner…" className="w-full min-w-0 bg-transparent text-[12.5px] font-medium text-ink-50 outline-none placeholder:text-ink-500" />
         </label>
       </div>
 
       <div className="mt-5 grid gap-4">
         {filtered.map(p => (
           <article key={p.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
-            <div className="flex flex-col gap-4 p-5 lg:flex-row">
+            <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row">
               <img src={p.images[0]} alt="" className="h-36 w-full shrink-0 rounded-xl object-cover lg:w-48" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -135,28 +135,28 @@ export default function AdminProperties() {
                 {p.reviewNote && <p className="mt-1.5 rounded-lg border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><FileText size={11} className="mr-1 inline" />Last review note: {p.reviewNote}</p>}
               </div>
               <div className="flex shrink-0 flex-col items-stretch justify-center gap-2 lg:w-44">
-                <p className="text-right font-display text-base font-black text-brass-300">{formatNaira(p.nightlyRate)}<span className="text-[10px] text-ink-500">/night</span></p>
+                <p className="text-left font-display text-base font-black tabular-nums text-brass-300 lg:text-right">{formatNaira(p.nightlyRate)}<span className="text-[10px] text-ink-500">/night</span></p>
                 {p.status === 'approved' && (
-                  <button onClick={() => openDecision(p.id, 'suspend')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><PauseCircle size={14} /> Suspend</button>
+                  <button onClick={() => openDecision(p.id, 'suspend')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950 [&>svg]:shrink-0"><PauseCircle size={14} /> Suspend</button>
                 )}
                 {p.status === 'suspended' && (
-                  <button onClick={() => openDecision(p.id, 'reinstate')} className="flex items-center justify-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2.5 text-[11px] font-bold text-jade-300 transition hover:bg-jade-950"><RotateCcw size={14} /> Reinstate</button>
+                  <button onClick={() => openDecision(p.id, 'reinstate')} className="flex items-center justify-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2.5 text-[11px] font-bold text-jade-300 transition hover:bg-jade-950 [&>svg]:shrink-0"><RotateCcw size={14} /> Reinstate</button>
                 )}
                 {(p.status === 'submitted' || p.status === 'needs_correction') && (<>
-                  <button onClick={() => openDecision(p.id, 'approve')} className="flex items-center justify-center gap-1.5 rounded-xl bg-jade-600 px-3 py-2.5 text-[11px] font-bold text-white transition hover:bg-jade-500"><CheckCircle2 size={14} /> Approve</button>
-                  <button onClick={() => openDecision(p.id, 'needs_correction')} className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-600 bg-amber-950/40 px-3 py-2.5 text-[11px] font-bold text-amber-300 transition hover:bg-amber-950"><FileWarning size={14} /> Needs correction</button>
-                  <button onClick={() => openDecision(p.id, 'reject')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950"><XCircle size={14} /> Reject</button>
+                  <button onClick={() => openDecision(p.id, 'approve')} className="flex items-center justify-center gap-1.5 rounded-xl bg-jade-600 px-3 py-2.5 text-[11px] font-bold text-white transition hover:bg-jade-500 [&>svg]:shrink-0"><CheckCircle2 size={14} /> Approve</button>
+                  <button onClick={() => openDecision(p.id, 'needs_correction')} className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-600 bg-amber-950/40 px-3 py-2.5 text-[11px] font-bold text-amber-300 transition hover:bg-amber-950 [&>svg]:shrink-0"><FileWarning size={14} /> Needs correction</button>
+                  <button onClick={() => openDecision(p.id, 'reject')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950 [&>svg]:shrink-0"><XCircle size={14} /> Reject</button>
                 </>)}
                 {p.status === 'rejected' && <p className="text-center text-[10px] font-semibold text-ink-500">Applicant may reapply with complete evidence.</p>}
               </div>
             </div>
             <div className="border-t border-ink-800">
-              <button onClick={() => setOpen(open === p.id ? null : p.id)} className="flex w-full items-center justify-between px-5 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400 hover:text-ink-100">Documentation evidence ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)<span>{open === p.id ? '−' : '+'}</span></button>
+              <button onClick={() => setOpen(open === p.id ? null : p.id)} className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400 hover:text-ink-100 sm:px-5"><span>Documentation evidence ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)</span><span className="shrink-0">{open === p.id ? '−' : '+'}</span></button>
               {open === p.id && (
-                <ul className="grid gap-1.5 px-5 pb-4 sm:grid-cols-2">
+                <ul className="grid gap-1.5 px-4 pb-4 sm:grid-cols-2 sm:px-5">
                   {p.docs.map(d => (
                     <li key={d.label} className="flex items-center justify-between gap-2 rounded-xl border border-ink-800 bg-ink-850 px-3 py-2">
-                      <span className="text-[11px] font-medium leading-snug text-ink-100">{d.label}{d.note && <span className="block text-[9.5px] font-normal text-ink-500">{d.note}</span>}</span>
+                      <span className="min-w-0 break-words text-[11px] font-medium leading-snug text-ink-100">{d.label}{d.note && <span className="block text-[9.5px] font-normal text-ink-500">{d.note}</span>}</span>
                       <DocStatusBadge status={d.status} />
                     </li>
                   ))}
@@ -173,10 +173,10 @@ export default function AdminProperties() {
         {noteFor && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { if (!saving) setNoteFor(null); }} />
-            <motion.div initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} className="relative w-full max-w-md rounded-2xl border border-ink-800 bg-ink-900 p-6 shadow-2xl">
-              <h2 className="flex items-center gap-2 font-display text-lg font-black text-ink-50"><ShieldCheck size={19} className="text-brass-400" />{actionLabel[noteFor.action]} — documented decision</h2>
+            <motion.div initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-4 shadow-2xl sm:p-6">
+              <h2 className="flex items-center gap-2 font-display text-lg font-black text-ink-50"><ShieldCheck size={19} className="shrink-0 text-brass-400" />{actionLabel[noteFor.action]} — documented decision</h2>
               <p className="mt-1 text-[11px] font-medium text-ink-400">For approval, confirm each item was verified from evidence. Declarations alone are not proof. This decision and its verification outcomes are audit-logged.</p>
-              {selectedProperty && verificationDraft && <div className="mt-4 grid grid-cols-2 gap-2">
+              {selectedProperty && verificationDraft && <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {([
                   ['ownership', 'Ownership'],
                   ['identity', 'Identity'],
@@ -193,9 +193,9 @@ export default function AdminProperties() {
               <label className="mt-4 block"><span className="label-dark">Reviewer note (required, min 10 chars)</span>
                 <textarea autoFocus className="input-dark min-h-[90px]" placeholder={noteFor.action === 'needs_correction' ? 'What must the submitter fix?…' : noteFor.action === 'suspend' ? 'Grounds for suspension…' : 'Reasoning…'} value={note} onChange={e => setNote(e.target.value)} />
               </label>
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="mt-4 flex flex-wrap justify-end gap-2">
                 <button onClick={() => setNoteFor(null)} disabled={saving} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
-                <button onClick={() => void act()} disabled={saving} className={`btn !py-2.5 text-[12px] disabled:opacity-50 ${noteFor.action === 'approve' || noteFor.action === 'reinstate' ? 'bg-jade-600 text-white hover:bg-jade-500' : 'bg-red-600 text-white hover:bg-red-500'}`}><Ban size={14} /> {saving ? 'Saving…' : `Confirm ${actionLabel[noteFor.action].toLowerCase()}`}</button>
+                <button onClick={() => void act()} disabled={saving} className={`btn !px-4 !py-2.5 text-[12px] disabled:opacity-50 ${noteFor.action === 'approve' || noteFor.action === 'reinstate' ? 'bg-jade-600 text-white hover:bg-jade-500' : 'bg-red-600 text-white hover:bg-red-500'}`}><Ban size={14} /> {saving ? 'Saving…' : `Confirm ${actionLabel[noteFor.action].toLowerCase()}`}</button>
               </div>
             </motion.div>
           </motion.div>
