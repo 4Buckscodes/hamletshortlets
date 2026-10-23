@@ -11,8 +11,18 @@ interface DenoRuntime {
 
 const denoRuntime = (globalThis as unknown as { Deno?: DenoRuntime }).Deno;
 
+const CORS_HEADERS: Record<string, string> = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'POST, OPTIONS',
+  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 if (denoRuntime) {
   denoRuntime.serve(async (req: Request) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
     const supabaseUrl = denoRuntime.env.get('SUPABASE_URL');
     const serviceRoleKey = denoRuntime.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const paystackSecretKey = denoRuntime.env.get('PAYSTACK_SECRET_KEY');
@@ -23,7 +33,7 @@ if (denoRuntime) {
         {
           status: 503,
           headers: {
-            'access-control-allow-origin': '*',
+            ...CORS_HEADERS,
             'content-type': 'application/json; charset=utf-8',
           },
         },
@@ -51,26 +61,44 @@ if (denoRuntime) {
         if (bookingError) return { data: null, error: { message: bookingError.message } };
         if (!bookingRow) return { data: null, error: null };
 
-        const [{ data: propRow, error: propError }, { data: conflicts, error: conflictError }] =
-          await Promise.all([
-            serviceClient
-              .from('properties')
-              .select('status')
-              .eq('id', bookingRow.property_id)
-              .maybeSingle(),
-            serviceClient
-              .from('bookings')
-              .select('id')
-              .eq('property_id', bookingRow.property_id)
-              .eq('status', 'confirmed')
-              .neq('id', bookingRow.id)
-              .lt('check_in', bookingRow.check_out)
-              .gt('check_out', bookingRow.check_in)
-              .limit(1),
-          ]);
+        const [
+          { data: propRow, error: propError },
+          { data: guestProfileRow, error: guestProfileError },
+          { data: conflicts, error: conflictError },
+        ] = await Promise.all([
+          serviceClient
+            .from('properties')
+            .select('status')
+            .eq('id', bookingRow.property_id)
+            .maybeSingle(),
+          serviceClient
+            .from('profiles')
+            .select('account_status')
+            .eq('id', bookingRow.guest_id)
+            .maybeSingle(),
+          serviceClient
+            .from('bookings')
+            .select('id,status,payment_deadline')
+            .eq('property_id', bookingRow.property_id)
+            .in('status', ['confirmed', 'awaiting_payment'])
+            .neq('id', bookingRow.id)
+            .lt('check_in', bookingRow.check_out)
+            .gt('check_out', bookingRow.check_in),
+        ]);
 
         if (propError) return { data: null, error: { message: propError.message } };
+        if (guestProfileError) return { data: null, error: { message: guestProfileError.message } };
         if (conflictError) return { data: null, error: { message: conflictError.message } };
+
+        const nowMs = Date.now();
+        const hasActiveHoldOrConfirmed = (conflicts ?? []).some(row => {
+          if (row.status === 'confirmed') return true;
+          if (row.status === 'awaiting_payment') {
+            if (!row.payment_deadline) return true;
+            return new Date(String(row.payment_deadline)).getTime() > nowMs;
+          }
+          return false;
+        });
 
         const snapshot: CheckoutBookingSnapshot = {
           id: bookingRow.id as string,
@@ -81,7 +109,9 @@ if (denoRuntime) {
           status: bookingRow.status as string,
           guest_total: bookingRow.guest_total as number,
           payment_deadline: (bookingRow.payment_deadline as string | null) ?? null,
-          has_confirmed_conflict: (conflicts?.length ?? 0) > 0,
+          has_confirmed_conflict: hasActiveHoldOrConfirmed,
+          check_in: String(bookingRow.check_in),
+          guest_account_status: (guestProfileRow?.account_status as string | undefined) ?? 'active',
         };
         return { data: snapshot, error: null };
       },

@@ -13,6 +13,8 @@ export interface CheckoutBookingSnapshot {
   guest_total: number;
   payment_deadline: string | null;
   has_confirmed_conflict: boolean;
+  check_in?: string;
+  guest_account_status?: string;
 }
 
 export interface PaystackInitializeGatewayParams {
@@ -79,23 +81,43 @@ export async function defaultInitializePaystackTransaction(
   data: PaystackInitializeGatewayResult | null;
   error: { message: string } | null;
 }> {
-  const response = await fetch('https://api.paystack.co/transaction/initialize', {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${params.secretKey}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: params.email,
-      amount: params.amountKobo,
-      currency: 'NGN',
-      ...(params.callbackUrl ? { callback_url: params.callbackUrl } : {}),
-      metadata: {
-        booking_id: params.bookingId,
-        booking_reference: params.bookingReference,
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12_000);
+
+  let response: Response;
+  try {
+    response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${params.secretKey}`,
+        'content-type': 'application/json',
       },
-    }),
-  });
+      body: JSON.stringify({
+        email: params.email,
+        amount: params.amountKobo,
+        currency: 'NGN',
+        ...(params.callbackUrl ? { callback_url: params.callbackUrl } : {}),
+        metadata: {
+          booking_id: params.bookingId,
+          booking_reference: params.bookingReference,
+        },
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    const isAbort = err instanceof Error && err.name === 'AbortError';
+    return {
+      data: null,
+      error: {
+        message: isAbort
+          ? 'Paystack checkout gateway timed out. Please try again shortly.'
+          : 'Could not reach Paystack checkout gateway. Please check your connection and retry.',
+      },
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 
   let payload: {
     status?: boolean;
@@ -134,6 +156,15 @@ export async function defaultInitializePaystackTransaction(
   };
 }
 
+function formatLagosIsoDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Lagos',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 export async function handlePaystackInitialize(
   req: Request,
   deps: PaystackInitializeDeps,
@@ -147,7 +178,7 @@ export async function handlePaystackInitialize(
   }
 
   const secret = deps.paystackSecretKey?.trim();
-  if (!secret) {
+  if (!secret || secret.toLowerCase().includes('replace_with_')) {
     return jsonResponse(
       {
         ok: false,
@@ -172,13 +203,18 @@ export async function handlePaystackInitialize(
     return jsonResponse({ ok: false, error: 'Invalid or expired guest session.' }, 401);
   }
 
-  let body: { booking_id?: unknown; callback_url?: unknown };
+  let parsedBody: unknown;
   try {
-    body = (await req.json()) as typeof body;
+    parsedBody = await req.json();
   } catch {
     return jsonResponse({ ok: false, error: 'Malformed JSON request body.' }, 400);
   }
 
+  if (!parsedBody || typeof parsedBody !== 'object' || Array.isArray(parsedBody)) {
+    return jsonResponse({ ok: false, error: 'JSON request body must be an object.' }, 400);
+  }
+
+  const body = parsedBody as { booking_id?: unknown; callback_url?: unknown };
   const bookingId = typeof body.booking_id === 'string' ? body.booking_id.trim() : '';
   if (!bookingId) {
     return jsonResponse({ ok: false, error: 'booking_id is required.' }, 400);
@@ -190,6 +226,13 @@ export async function handlePaystackInitialize(
   }
   if (!booking || booking.guest_id !== user.id) {
     return jsonResponse({ ok: false, error: 'Booking not found for your guest account.' }, 403);
+  }
+
+  if (booking.guest_account_status && booking.guest_account_status !== 'active') {
+    return jsonResponse(
+      { ok: false, error: 'Your account is currently suspended. Contact HAMLET operations.' },
+      403,
+    );
   }
 
   if (booking.status !== 'awaiting_payment') {
@@ -208,6 +251,16 @@ export async function handlePaystackInitialize(
       { ok: false, error: 'The 48-hour payment deadline has expired. Submit a fresh booking request.' },
       409,
     );
+  }
+
+  if (booking.check_in && /^\d{4}-\d{2}-\d{2}$/.test(booking.check_in)) {
+    const todayLagos = formatLagosIsoDate(currentNow);
+    if (booking.check_in < todayLagos) {
+      return jsonResponse(
+        { ok: false, error: 'This booking check-in date has already passed. Submit a fresh booking request.' },
+        409,
+      );
+    }
   }
 
   if (booking.property_status !== 'approved') {

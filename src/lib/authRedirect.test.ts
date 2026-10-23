@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAuthPath,
   buildWorkspaceSignInPath,
+  normalizeDirectPathnameToHash,
   resolvePostSignInRedirect,
   resolvePostSignUpRedirect,
   sanitizeGuestRedirect,
   sanitizeInternalRedirect,
 } from './authRedirect';
+import { extractEdgeFunctionError } from './supabase';
 
 describe('authRedirect helpers', () => {
   it('redirects newly registered guests to /stays (Explore stays) by default', () => {
@@ -78,5 +80,49 @@ describe('authRedirect helpers', () => {
       '/signin?redirect=%2Fstays%2Fprop-1',
     );
     expect(buildAuthPath({ signup: true, redirect: 'https://evil.example' })).toBe('/signin?mode=signup');
+  });
+
+  it('normalizes direct non-hash SPA route URLs into HashRouter URLs while preserving static assets and existing hashes', () => {
+    expect(normalizeDirectPathnameToHash('/', '', '')).toBeNull();
+    expect(normalizeDirectPathnameToHash('/index.html', '', '')).toBeNull();
+    expect(normalizeDirectPathnameToHash('/', '', '#/stays')).toBeNull();
+    expect(normalizeDirectPathnameToHash('/images/lagos-hero.jpg', '', '')).toBeNull();
+    expect(normalizeDirectPathnameToHash('/stays', '', '')).toBe('/#/stays');
+    expect(normalizeDirectPathnameToHash('/partner/bookings/bkg-001', '', '')).toBe(
+      '/#/partner/bookings/bkg-001',
+    );
+    expect(normalizeDirectPathnameToHash('/signin', '?mode=signup', '')).toBe(
+      '/#/signin?mode=signup',
+    );
+  });
+
+  it('extracts structured JSON error messages from Edge Function non-2xx HTTP responses', async () => {
+    const httpError = Object.assign(new Error('Edge Function returned a non-2xx status code'), {
+      context: new Response(
+        JSON.stringify({
+          ok: false,
+          error: 'The 48-hour payment deadline has expired. Submit a fresh booking request.',
+        }),
+        { status: 409, headers: { 'content-type': 'application/json' } },
+      ),
+    });
+
+    await expect(
+      extractEdgeFunctionError(httpError, 'Fallback checkout error'),
+    ).resolves.toBe('The 48-hour payment deadline has expired. Submit a fresh booking request.');
+
+    const genericHttpError = Object.assign(
+      new Error('Edge Function returned a non-2xx status code'),
+      {
+        context: new Response('Bad gateway upstream', {
+          status: 502,
+          headers: { 'content-type': 'text/plain' },
+        }),
+      },
+    );
+
+    await expect(
+      extractEdgeFunctionError(genericHttpError, 'Fallback checkout error'),
+    ).resolves.toBe('Fallback checkout error');
   });
 });

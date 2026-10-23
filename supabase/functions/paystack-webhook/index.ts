@@ -14,6 +14,17 @@ const denoRuntime = (globalThis as unknown as { Deno?: DenoRuntime }).Deno;
 
 if (denoRuntime) {
   denoRuntime.serve(async (req: Request) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'access-control-allow-origin': '*',
+          'access-control-allow-methods': 'POST, OPTIONS',
+          'access-control-allow-headers': 'content-type, x-paystack-signature',
+        },
+      });
+    }
+
     const supabaseUrl = denoRuntime.env.get('SUPABASE_URL');
     const serviceRoleKey = denoRuntime.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const paystackSecretKey = denoRuntime.env.get('PAYSTACK_SECRET_KEY');

@@ -263,7 +263,11 @@ export async function handleBookingNotifications(
   try {
     const rawText = await req.text();
     if (rawText.trim()) {
-      body = JSON.parse(rawText) as typeof body;
+      const parsed = JSON.parse(rawText) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return jsonResponse({ ok: false, error: 'JSON request body must be an object.' }, 400);
+      }
+      body = parsed as typeof body;
     }
   } catch {
     return jsonResponse({ ok: false, error: 'Invalid JSON request body.' }, 400);
