@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { LayoutDashboard, Home, CalendarDays, Receipt, LifeBuoy, UsersRound, KeyRound, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Home, CalendarDays, Receipt, LifeBuoy, UsersRound, KeyRound, ScrollText, UserCog } from 'lucide-react';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import { WorkspaceGuard } from '../Account';
 import { useHamlet } from '../../lib/store';
@@ -21,6 +21,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { to: '/admin/issues', label: 'Issues', icon: <LifeBuoy size={17} />, badge: openIssues },
     { to: '/admin/applications', label: 'Partners & Applications', icon: <UsersRound size={17} />, badge: pendingApps },
     { to: '/admin/assignments', label: 'Assignments', icon: <KeyRound size={17} /> },
+    { to: '/admin/users', label: 'Users & Admin Access', icon: <UserCog size={17} /> },
     { to: '/admin/audit', label: 'Audit Log', icon: <ScrollText size={17} /> },
   ];
 

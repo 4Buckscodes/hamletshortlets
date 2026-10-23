@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   CreditCard, X, ChevronDown, ChevronUp, MessageSquarePlus, ShieldCheck,
   Star, BedDouble, CalendarDays, AlertCircle, Loader2, Lock, Receipt, LifeBuoy, RefreshCcw,
+  UserCog, Building2, Printer, Paperclip, CheckCircle2,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
-import { BookingStatusPill } from '../components/Badges';
+import { BookingStatusPill, IssueStatusPill, SeverityPill, ApplicationStatusPill } from '../components/Badges';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { buildWorkspaceSignInPath } from '../lib/authRedirect';
@@ -123,20 +124,31 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
   const { reportIssue } = useHamlet();
   const { toast } = useToast();
   const [category, setCategory] = useState<Parameters<typeof reportIssue>[0]['category']>('Property condition');
+  const [severity, setSeverity] = useState<Parameters<typeof reportIssue>[0]['severity']>('medium');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
+  const [evidenceNote, setEvidenceNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
-    if (!subject.trim() || !description.trim()) { toast('Please describe the issue.', 'error'); return; }
+    if (subject.trim().length < 4 || description.trim().length < 10) {
+      toast('Enter a clear subject (min 4 chars) and description (min 10 chars).', 'error');
+      return;
+    }
     setSubmitting(true);
     try {
       const issue = await reportIssue({
-        bookingRef: booking.ref, propertyTitle: booking.propertyTitle,
-        category, severity: 'medium', subject: subject.trim(), description: description.trim(),
-        reporter: 'Guest', reporterType: 'guest',
+        bookingRef: booking.ref,
+        propertyTitle: booking.propertyTitle,
+        category,
+        severity,
+        subject: subject.trim(),
+        description: description.trim(),
+        reporter: 'Guest',
+        reporterType: 'guest',
+        evidence: evidenceNote.trim() ? [evidenceNote.trim()] : [],
       });
-      toast(`Issue ${issue.ref} reported. HAMLET support will respond within the SLA.`);
+      toast(`Issue ${issue.ref} reported. Track updates under Support Issues.`);
       onClose();
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not report the issue.', 'error');
@@ -154,13 +166,21 @@ function IssueModal({ booking, onClose }: { booking: Booking; onClose: () => voi
           <button onClick={onClose} className="shrink-0" aria-label="Close"><X size={20} className="text-ink-400" /></button>
         </div>
         <p className="mt-1 break-words text-[11px] font-semibold text-ink-500">Booking {booking.ref} · {booking.propertyTitle}</p>
-        <label className="mt-4 block"><span className="label">Category</span>
-          <select className="input" value={category} onChange={e => setCategory(e.target.value as typeof category)}>
-            {['Property condition', 'Access & check-in', 'Payment & billing', 'Booking conflict', 'Safety & security', 'Host conduct', 'Damages', 'Other'].map(c => <option key={c}>{c}</option>)}
-          </select>
-        </label>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block"><span className="label">Category</span>
+            <select className="input" value={category} onChange={e => setCategory(e.target.value as typeof category)}>
+              {['Property condition', 'Access & check-in', 'Payment & billing', 'Booking conflict', 'Safety & security', 'Host conduct', 'Damages', 'Other'].map(c => <option key={c}>{c}</option>)}
+            </select>
+          </label>
+          <label className="block"><span className="label">Urgency</span>
+            <select className="input" value={severity} onChange={e => setSeverity(e.target.value as typeof severity)}>
+              {(['low', 'medium', 'high', 'critical'] as const).map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+            </select>
+          </label>
+        </div>
         <label className="mt-3 block"><span className="label">Subject</span><input className="input" value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. AC not cooling on arrival" /></label>
-        <label className="mt-3 block"><span className="label">What happened?</span><textarea className="input min-h-[80px] resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the issue, when it happened and what you need…" /></label>
+        <label className="mt-3 block"><span className="label">What happened?</span><textarea className="input min-h-[80px] resize-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the issue, when it happened and what support you need…" /></label>
+        <label className="mt-3 block"><span className="label">Initial evidence reference (optional)</span><input className="input" value={evidenceNote} onChange={e => setEvidenceNote(e.target.value)} placeholder="e.g. Arrival video taken 3:15 PM / gate pass ref…" /></label>
         <button disabled={submitting} onClick={() => void submit()} className="btn-jade mt-4 w-full disabled:opacity-50">{submitting ? 'Submitting…' : 'Submit issue to HAMLET support'}</button>
       </motion.div>
     </motion.div>
@@ -173,6 +193,9 @@ export default function Account() {
     bookingTransition,
     submitBookingFeedback,
     initializeBookingCheckout,
+    appendIssueEvidence,
+    updateProfile,
+    updatePassword,
     refreshState,
     backendConfigured,
     backendReady,
@@ -183,6 +206,8 @@ export default function Account() {
   const location = useLocation();
   const session = state.session;
   const focusedBookingParam = searchParams.get('booking')?.trim() || null;
+
+  const [activeTab, setActiveTab] = useState<'bookings' | 'issues' | 'profile'>('bookings');
   const [expanded, setExpanded] = useState<string | null>(focusedBookingParam);
   const [payFor, setPayFor] = useState<Booking | null>(null);
   const [issueFor, setIssueFor] = useState<Booking | null>(null);
@@ -193,6 +218,22 @@ export default function Account() {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [checkoutBusyId, setCheckoutBusyId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Evidence attachment state
+  const [evidenceDrafts, setEvidenceDrafts] = useState<Record<string, string>>({});
+  const [savingEvidenceId, setSavingEvidenceId] = useState<string | null>(null);
+
+  // Profile & password settings state
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const [draftPhone, setDraftPhone] = useState<string | null>(null);
+  const profileName = draftName ?? session?.name ?? '';
+  const profilePhone = draftPhone ?? session?.phone ?? '';
+  const setProfileName = (v: string) => setDraftName(v);
+  const setProfilePhone = (v: string) => setDraftPhone(v);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const returnedFromPayment = searchParams.get('payment') === 'returned';
 
@@ -205,6 +246,21 @@ export default function Account() {
     () => state.bookings.filter(b => b.guestId === session?.userId).sort((a, b) => +new Date(b.requestedAt) - +new Date(a.requestedAt)),
     [state.bookings, session],
   );
+
+  const myBookingRefs = useMemo(() => new Set(myBookings.map(b => b.ref)), [myBookings]);
+  const myIssues = useMemo(
+    () => state.issues.filter(i => i.bookingRef && myBookingRefs.has(i.bookingRef)),
+    [state.issues, myBookingRefs],
+  );
+
+  const myPartnerApplication = useMemo(() => {
+    if (!session) return undefined;
+    return state.applications.find(
+      a =>
+        a.applicantId === session.userId ||
+        a.email.toLowerCase() === session.email.toLowerCase(),
+    );
+  }, [state.applications, session]);
 
   const resolvedExpanded = useMemo(() => {
     if (expanded) {
@@ -230,7 +286,7 @@ export default function Account() {
           <p className="mt-2 text-sm text-ink-500">Track requests, complete payment and report issues from one place.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2.5">
             <Link to={signInReturnPath} className="btn-jade">Sign in</Link>
-            <Link to="/signin?mode=signup" className="btn-outline">Guest sign up</Link>
+            <Link to="/signin?mode=signup" className="btn-outline">Create account</Link>
           </div>
         </div>
       </GuestLayout>
@@ -240,8 +296,8 @@ export default function Account() {
     return (
       <GuestLayout>
         <div className="mx-auto max-w-md px-4 py-24 text-center">
-          <h1 className="font-display text-2xl font-black text-ink-900">This area is for guests</h1>
-          <p className="mt-2 text-sm text-ink-500">Your {session.role} workspace lives at {session.role === 'admin' ? '/admin' : '/partner'}.</p>
+          <h1 className="font-display text-2xl font-black text-ink-900">Your {session.role} workspace is active</h1>
+          <p className="mt-2 text-sm text-ink-500">Open your {session.role === 'admin' ? 'Admin Console' : 'Partner Workspace'} directly.</p>
           <Link to={session.role === 'admin' ? '/admin' : '/partner'} className="btn-jade mt-6">Go to workspace</Link>
         </div>
       </GuestLayout>
@@ -286,11 +342,53 @@ export default function Account() {
     setRefreshing(true);
     try {
       await refreshState();
-      toast('Booking status refreshed.');
+      toast('Account & booking status refreshed.');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not refresh status.', 'error');
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      const res = await updateProfile({ name: profileName, phone: profilePhone });
+      if (!res.ok) {
+        toast(res.error ?? 'Could not save profile changes.', 'error');
+        return;
+      }
+      setDraftName(null);
+      setDraftPhone(null);
+      toast('Profile details updated.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast('New password must be at least 6 characters.', 'error');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast('Passwords do not match.', 'error');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const res = await updatePassword(newPassword);
+      if (!res.ok) {
+        toast(res.error ?? 'Could not update password.', 'error');
+        return;
+      }
+      setNewPassword('');
+      setConfirmNewPassword('');
+      toast('Password updated.');
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -299,12 +397,55 @@ export default function Account() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Guest account</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Client account</p>
             <h1 className="mt-1 font-display text-3xl font-black text-ink-900">Good to see you, {session.name.split(' ')[0]}</h1>
-            <p className="mt-1 text-[12px] font-medium text-ink-500">{session.email} · Bookings tracked end-to-end</p>
+            <p className="mt-1 text-[12px] font-medium text-ink-500">
+              {session.email}{session.phone ? ` · ${session.phone}` : ''} · Bookings, support & profile managed in one place
+            </p>
           </div>
-          <Link to="/stays" className="btn-outline !py-2.5 text-[12px]">Book another stay</Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {backendConfigured && (
+              <button
+                type="button"
+                disabled={refreshing}
+                onClick={() => void handleRefresh()}
+                className="btn-outline !px-3.5 !py-2.5 text-[12px] disabled:opacity-50"
+              >
+                <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} /> Refresh
+              </button>
+            )}
+            <Link to="/stays" className="btn-jade !py-2.5 text-[12px]">Explore stays</Link>
+          </div>
         </div>
+
+        {/* Partner Application Status Banner (if this guest applied to become a HAMLET partner) */}
+        {myPartnerApplication && (
+          <div className="mt-5 rounded-2xl border border-ink-200 bg-white p-4 shadow-xs sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Building2 size={17} className="shrink-0 text-jade-700" />
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-500">Partner application</span>
+                <ApplicationStatusPill status={myPartnerApplication.status} />
+              </div>
+              {myPartnerApplication.status === 'needs_correction' && (
+                <Link to="/partner/register" className="btn-jade !px-3.5 !py-2 text-[11.5px]">
+                  Fix & resubmit application
+                </Link>
+              )}
+            </div>
+            <p className="mt-2 font-display text-base font-bold text-ink-900">
+              {myPartnerApplication.company} · {myPartnerApplication.role}
+            </p>
+            <p className="mt-0.5 text-[11.5px] font-medium text-ink-500">
+              Submitted {formatDateTime(myPartnerApplication.submittedAt)} · {myPartnerApplication.areas.join(', ')}
+            </p>
+            {myPartnerApplication.reviewNote && (
+              <p className="mt-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] font-semibold text-amber-950">
+                Reviewer note: {myPartnerApplication.reviewNote}
+              </p>
+            )}
+          </div>
+        )}
 
         {returnedFromPayment && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-300 bg-sky-50 px-4 py-3.5 text-[12px] font-semibold text-sky-950">
@@ -323,160 +464,342 @@ export default function Account() {
           </div>
         )}
 
-        {/* Pilot notice: private feedback, no public reviews yet */}
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-brass-400/40 bg-brass-200/30 px-4 py-3 text-[12px] font-semibold leading-relaxed text-ink-800">
-          <AlertCircle size={17} className="mt-0.5 shrink-0 text-brass-700" />
-          <span><strong>Pilot phase:</strong> Public reviews are not live yet. Feedback you leave after a stay is private and reviewed by HAMLET operations only — it shapes listings, never public ratings.</span>
+        {/* Navigation tabs */}
+        <div role="tablist" aria-label="Account sections" className="mt-6 flex flex-wrap gap-2 border-b border-ink-200 pb-3">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'bookings'}
+            onClick={() => setActiveTab('bookings')}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-bold transition ${
+              activeTab === 'bookings' ? 'bg-ink-900 text-white' : 'bg-white text-ink-600 hover:bg-ink-100'
+            }`}
+          >
+            <BedDouble size={14} /> My bookings ({myBookings.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'issues'}
+            onClick={() => setActiveTab('issues')}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-bold transition ${
+              activeTab === 'issues' ? 'bg-ink-900 text-white' : 'bg-white text-ink-600 hover:bg-ink-100'
+            }`}
+          >
+            <LifeBuoy size={14} /> Support issues ({myIssues.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'profile'}
+            onClick={() => setActiveTab('profile')}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-bold transition ${
+              activeTab === 'profile' ? 'bg-ink-900 text-white' : 'bg-white text-ink-600 hover:bg-ink-100'
+            }`}
+          >
+            <UserCog size={14} /> Profile & security
+          </button>
         </div>
 
-        <div className="mt-6 grid gap-5">
-          {myBookings.length === 0 && (
-            <div className="card px-6 py-16 text-center">
-              <BedDouble size={36} className="mx-auto text-ink-300" />
-              <h2 className="mt-3 font-display text-xl font-black text-ink-900">No bookings yet</h2>
-              <p className="mt-1 text-sm text-ink-500">Explore approved Lagos homes and send your first request.</p>
-              <Link to="/stays" className="btn-jade mt-5">Explore stays</Link>
+        {/* ── TAB 1: BOOKINGS ── */}
+        {activeTab === 'bookings' && (
+          <>
+            <div className="mt-5 flex items-start gap-3 rounded-2xl border border-brass-400/40 bg-brass-200/30 px-4 py-3 text-[12px] font-semibold leading-relaxed text-ink-800">
+              <AlertCircle size={17} className="mt-0.5 shrink-0 text-brass-700" />
+              <span><strong>Pilot phase:</strong> Public reviews are not live yet. Feedback you leave after a stay is private and reviewed by HAMLET operations only — it shapes listings, never public ratings.</span>
             </div>
-          )}
 
-          {myBookings.map(b => {
-            const open = resolvedExpanded === b.id;
-            const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
-            const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
-            const canFeedback = ['completed', 'disputed'].includes(b.status);
-            const existingFeedback = state.feedback.find(f => f.bookingRef === b.ref);
-
-            return (
-              <article key={b.id} className="card overflow-hidden">
-                <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[10.5px] font-bold text-ink-400">{b.ref}</span>
-                      <BookingStatusPill status={b.status} />
-                    </div>
-                    <h2 className="mt-1.5 break-words font-display text-[17px] font-bold leading-snug text-ink-900">{b.propertyTitle}</h2>
-                    <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] font-semibold text-ink-500">
-                      <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights} nights</span>
-                      <span>{b.guests} guest{b.guests > 1 ? 's' : ''}</span>
-                    </p>
-                    <BookingStepper status={b.status} />
-                  </div>
-                  <div className="flex items-baseline justify-between gap-2 border-t border-ink-50 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
-                    <div>
-                      <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatNaira(b.guestTotal)}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">total incl. 3% fee</p>
-                    </div>
-                    <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
-                      Details {open ? <ChevronUp size={13} className="shrink-0" /> : <ChevronDown size={13} className="shrink-0" />}
-                    </button>
-                  </div>
-                </div>
-
-                {b.status === 'awaiting_payment' && (
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
-                    <p className="max-w-xl text-[12px] font-bold text-amber-900">
-                      Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (screenshots or off-platform transfers never confirm a stay).
-                    </p>
-                    {backendConfigured ? (
-                      <button
-                        disabled={checkoutBusyId === b.id}
-                        onClick={() => void startConnectedCheckout(b)}
-                        className="btn-brass !px-4 !py-2.5 text-[12px] disabled:opacity-50"
-                      >
-                        <CreditCard size={15} /> {checkoutBusyId === b.id ? 'Starting checkout…' : `Pay ${formatNaira(b.guestTotal)}`}
-                      </button>
-                    ) : (
-                      <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(b.guestTotal)}</button>
+            <div className="mt-5 grid gap-5">
+              {myBookings.length === 0 && (
+                <div className="card px-6 py-16 text-center">
+                  <BedDouble size={36} className="mx-auto text-ink-300" />
+                  <h2 className="mt-3 font-display text-xl font-black text-ink-900">No bookings yet</h2>
+                  <p className="mt-1 text-sm text-ink-500">Explore approved Lagos homes and send your first request.</p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+                    <Link to="/stays" className="btn-jade">Explore stays</Link>
+                    {!myPartnerApplication && (
+                      <Link to="/partner/register" className="btn-outline">Own a property? Apply as partner</Link>
                     )}
                   </div>
-                )}
+                </div>
+              )}
 
-                <AnimatePresence>
-                  {open && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-100">
-                      <div className="grid gap-6 p-5 md:grid-cols-2">
-                        <div>
-                          <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price breakdown</h3>
-                          <dl className="mt-2 space-y-1 text-[12px] font-medium text-ink-700">
-                            <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
-                            {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                            <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
-                            <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                            <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
-                          </dl>
-                          {b.paymentRef && <p className="mt-3 break-all font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
-                          {b.cancelReason && <p className="mt-2 break-words text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
-                          {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {canCancel && <button
-                              disabled={cancelingId === b.id}
-                              onClick={async () => {
-                                setCancelingId(b.id);
-                                try {
-                                  await bookingTransition(b.id, 'cancelled', { reason: 'Cancelled by guest before confirmation' });
-                                  toast('Booking cancelled.', 'info');
-                                } catch (error) {
-                                  toast(error instanceof Error ? error.message : 'Could not cancel this booking.', 'error');
-                                } finally {
-                                  setCancelingId(null);
-                                }
-                              }}
-                              className="btn-outline !px-3.5 !py-2 text-[11px] text-red-700 hover:border-red-300 hover:bg-red-50 disabled:opacity-50"
-                            ><X size={13} />{cancelingId === b.id ? 'Cancelling…' : 'Cancel booking'}</button>}
-                            {canReport && <button onClick={() => setIssueFor(b)} className="btn-outline !px-3.5 !py-2 text-[11px]"><LifeBuoy size={13} />Report issue</button>}
-                          </div>
+              {myBookings.map(b => {
+                const open = resolvedExpanded === b.id;
+                const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
+                const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
+                const canFeedback = ['completed', 'disputed'].includes(b.status);
+                const isConfirmedOrCompleted = ['confirmed', 'completed'].includes(b.status);
+                const existingFeedback = state.feedback.find(f => f.bookingRef === b.ref);
+                const linkedProperty = state.properties.find(p => p.id === b.propertyId);
+
+                return (
+                  <article key={b.id} className="card overflow-hidden">
+                    <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-[10.5px] font-bold text-ink-400">{b.ref}</span>
+                          <BookingStatusPill status={b.status} />
                         </div>
-                        <div>
-                          <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Timeline</h3>
-                          <ol className="mt-2 space-y-0 border-l-2 border-ink-100 pl-4">
-                            {b.timeline.map((t, i) => (
-                              <li key={i} className="relative pb-3 text-[11.5px]">
-                                <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-jade-600" />
-                                <p className="font-bold text-ink-800">{t.label}</p>
-                                <p className="text-[10.5px] font-medium text-ink-400">{formatDateTime(t.at)} · {t.actor}{t.detail ? ` · ${t.detail}` : ''}</p>
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
+                        <h2 className="mt-1.5 break-words font-display text-[17px] font-bold leading-snug text-ink-900">
+                          <Link to={`/stays/${b.propertyId}`} className="hover:underline">{b.propertyTitle}</Link>
+                        </h2>
+                        <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] font-semibold text-ink-500">
+                          <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights} nights</span>
+                          <span>{b.guests} guest{b.guests > 1 ? 's' : ''}</span>
+                          {b.area && <span>{b.area}, Lagos</span>}
+                        </p>
+                        <BookingStepper status={b.status} />
                       </div>
-                      {canFeedback && (
-                        <div className="border-t border-ink-100 bg-clay/50 p-4 sm:p-5">
-                          <h3 className="flex items-start gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} className="mt-0.5 shrink-0" /> Private pilot feedback — reviewed by HAMLET operations only</h3>
-                          {existingFeedback ? (
-                            <div className="mt-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-[12px] font-medium text-ink-800">
-                              <p className="font-bold text-jade-800">{existingFeedback.rating}/5 · {existingFeedback.category}</p>
-                              <p className="mt-1 break-words">“{existingFeedback.text}”</p>
-                              <p className="mt-1 text-[10px] font-semibold text-ink-400">Submitted privately on {formatDateTime(existingFeedback.at)}</p>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                {[1, 2, 3, 4, 5].map(n => (
-                                  <button key={n} type="button" onClick={() => setFbRating(n)} aria-label={`${n} stars`}>
-                                    <Star size={22} className={`shrink-0 ${n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'}`} strokeWidth={1.5} />
-                                  </button>
-                                ))}
-                                <select className="input w-full !py-1.5 text-[11px] sm:ml-3 sm:!w-auto" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
-                                  {['Stay experience', 'Property condition', 'Check-in & access', 'Value for money', 'Host communication'].map(c => <option key={c}>{c}</option>)}
-                                </select>
-                              </div>
-                              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                                <input className="input flex-1" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
-                                <button disabled={submittingFbId === b.id} className="btn-dark shrink-0 !px-4 !py-2 text-[12px] disabled:opacity-50" onClick={() => void submitFeedback(b)}>
-                                  {submittingFbId === b.id ? 'Sending…' : 'Send'}
-                                </button>
-                              </div>
-                            </>
-                          )}
+                      <div className="flex items-baseline justify-between gap-2 border-t border-ink-50 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
+                        <div>
+                          <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatNaira(b.guestTotal)}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">total incl. 3% fee</p>
                         </div>
+                        <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
+                          Details {open ? <ChevronUp size={13} className="shrink-0" /> : <ChevronDown size={13} className="shrink-0" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {b.status === 'awaiting_payment' && (
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
+                        <p className="max-w-xl text-[12px] font-bold text-amber-900">
+                          Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (screenshots or off-platform transfers never confirm a stay).
+                        </p>
+                        {backendConfigured ? (
+                          <button
+                            disabled={checkoutBusyId === b.id}
+                            onClick={() => void startConnectedCheckout(b)}
+                            className="btn-brass !px-4 !py-2.5 text-[12px] disabled:opacity-50"
+                          >
+                            <CreditCard size={15} /> {checkoutBusyId === b.id ? 'Starting checkout…' : `Pay ${formatNaira(b.guestTotal)}`}
+                          </button>
+                        ) : (
+                          <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(b.guestTotal)}</button>
+                        )}
+                      </div>
+                    )}
+
+                    {isConfirmedOrCompleted && (
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-jade-200 bg-jade-50/70 px-5 py-3 text-[12px] font-semibold text-jade-900">
+                        <span className="inline-flex items-center gap-1.5">
+                          <CheckCircle2 size={15} className="shrink-0 text-jade-700" />
+                          Verified stay{linkedProperty ? ` · ${linkedProperty.address}, ${linkedProperty.area}` : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => window.print()}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-jade-800 hover:underline"
+                        >
+                          <Printer size={13} /> Print booking summary
+                        </button>
+                      </div>
+                    )}
+
+                    <AnimatePresence>
+                      {open && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-100">
+                          <div className="grid gap-6 p-5 md:grid-cols-2">
+                            <div>
+                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price breakdown</h3>
+                              <dl className="mt-2 space-y-1 text-[12px] font-medium text-ink-700">
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
+                                {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                                <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                              </dl>
+                              {b.paymentRef && <p className="mt-3 break-all font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
+                              {b.cancelReason && <p className="mt-2 break-words text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
+                              {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                {canCancel && <button
+                                  disabled={cancelingId === b.id}
+                                  onClick={async () => {
+                                    setCancelingId(b.id);
+                                    try {
+                                      await bookingTransition(b.id, 'cancelled', { reason: 'Cancelled by guest before confirmation' });
+                                      toast('Booking cancelled.', 'info');
+                                    } catch (error) {
+                                      toast(error instanceof Error ? error.message : 'Could not cancel this booking.', 'error');
+                                    } finally {
+                                      setCancelingId(null);
+                                    }
+                                  }}
+                                  className="btn-outline !px-3.5 !py-2 text-[11px] text-red-700 hover:border-red-300 hover:bg-red-50 disabled:opacity-50"
+                                ><X size={13} />{cancelingId === b.id ? 'Cancelling…' : 'Cancel booking'}</button>}
+                                {canReport && <button onClick={() => setIssueFor(b)} className="btn-outline !px-3.5 !py-2 text-[11px]"><LifeBuoy size={13} />Report issue</button>}
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Timeline</h3>
+                              <ol className="mt-2 space-y-0 border-l-2 border-ink-100 pl-4">
+                                {b.timeline.map((t, i) => (
+                                  <li key={i} className="relative pb-3 text-[11.5px]">
+                                    <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-jade-600" />
+                                    <p className="font-bold text-ink-800">{t.label}</p>
+                                    <p className="text-[10.5px] font-medium text-ink-400">{formatDateTime(t.at)} · {t.actor}{t.detail ? ` · ${t.detail}` : ''}</p>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          </div>
+                          {canFeedback && (
+                            <div className="border-t border-ink-100 bg-clay/50 p-4 sm:p-5">
+                              <h3 className="flex items-start gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500"><MessageSquarePlus size={14} className="mt-0.5 shrink-0" /> Private pilot feedback — reviewed by HAMLET operations only</h3>
+                              {existingFeedback ? (
+                                <div className="mt-2 rounded-xl border border-ink-200 bg-white px-4 py-3 text-[12px] font-medium text-ink-800">
+                                  <p className="font-bold text-jade-800">{existingFeedback.rating}/5 · {existingFeedback.category}</p>
+                                  <p className="mt-1 break-words">“{existingFeedback.text}”</p>
+                                  <p className="mt-1 text-[10px] font-semibold text-ink-400">Submitted privately on {formatDateTime(existingFeedback.at)}</p>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                    {[1, 2, 3, 4, 5].map(n => (
+                                      <button key={n} type="button" onClick={() => setFbRating(n)} aria-label={`${n} stars`}>
+                                        <Star size={22} className={`shrink-0 ${n <= fbRating ? 'fill-brass-400 text-brass-500' : 'text-ink-200'}`} strokeWidth={1.5} />
+                                      </button>
+                                    ))}
+                                    <select className="input w-full !py-1.5 text-[11px] sm:ml-3 sm:!w-auto" value={fbCategory} onChange={e => setFbCategory(e.target.value)}>
+                                      {['Stay experience', 'Property condition', 'Check-in & access', 'Value for money', 'Host communication'].map(c => <option key={c}>{c}</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                                    <input className="input flex-1" placeholder="How was your stay? (private, reviewed by HAMLET only)" value={fbText} onChange={e => setFbText(e.target.value)} />
+                                    <button disabled={submittingFbId === b.id} className="btn-dark shrink-0 !px-4 !py-2 text-[12px] disabled:opacity-50" onClick={() => void submitFeedback(b)}>
+                                      {submittingFbId === b.id ? 'Sending…' : 'Send'}
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </motion.div>
                       )}
-                    </motion.div>
+                    </AnimatePresence>
+                  </article>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ── TAB 2: SUPPORT ISSUES ── */}
+        {activeTab === 'issues' && (
+          <div className="mt-5 grid gap-4">
+            {myIssues.length === 0 ? (
+              <div className="card px-6 py-14 text-center">
+                <LifeBuoy size={36} className="mx-auto text-ink-300" />
+                <h2 className="mt-3 font-display text-xl font-black text-ink-900">No support issues reported</h2>
+                <p className="mt-1 text-sm text-ink-500">If anything needs attention during a confirmed stay, open the booking card and click “Report issue”.</p>
+              </div>
+            ) : (
+              myIssues.map(issue => (
+                <article key={issue.id} className="card p-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[10.5px] font-bold text-ink-500">{issue.ref}</span>
+                    <SeverityPill severity={issue.severity} />
+                    <IssueStatusPill status={issue.status} />
+                    <span className="chip border border-ink-200 bg-ink-50 text-ink-700">{issue.category}</span>
+                    {issue.bookingRef && <span className="font-mono text-[10.5px] font-semibold text-jade-800">Booking {issue.bookingRef}</span>}
+                  </div>
+                  <h3 className="mt-2 font-display text-lg font-black text-ink-900">{issue.subject}</h3>
+                  <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-ink-600">{issue.description}</p>
+                  {issue.assignee && (
+                    <p className="mt-2 text-[11px] font-semibold text-ink-500">Assigned operator: <strong className="text-ink-800">{issue.assignee}</strong></p>
                   )}
-                </AnimatePresence>
-              </article>
-            );
-          })}
-        </div>
+                  {issue.evidence.length > 0 && (
+                    <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50/70 p-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">Recorded evidence ({issue.evidence.length})</p>
+                      <ul className="mt-1 space-y-1 text-[11.5px] font-medium text-ink-700">
+                        {issue.evidence.map((ev, idx) => <li key={idx}>• {ev}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {issue.resolution && (
+                    <div className="mt-3 rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-2.5 text-[12px] font-semibold text-jade-900">
+                      Resolution summary: {issue.resolution}
+                    </div>
+                  )}
+                  {!['resolved', 'closed'].includes(issue.status) && (
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                      <input
+                        className="input flex-1 !py-2 text-[12px]"
+                        placeholder="Add supporting detail, timestamp or photo/receipt reference…"
+                        value={evidenceDrafts[issue.id] ?? ''}
+                        onChange={e => setEvidenceDrafts(prev => ({ ...prev, [issue.id]: e.target.value }))}
+                      />
+                      <button
+                        type="button"
+                        disabled={savingEvidenceId === issue.id}
+                        onClick={async () => {
+                          const draft = (evidenceDrafts[issue.id] ?? '').trim();
+                          if (draft.length < 4) { toast('Enter at least 4 characters.', 'error'); return; }
+                          setSavingEvidenceId(issue.id);
+                          try {
+                            await appendIssueEvidence(issue.id, draft);
+                            setEvidenceDrafts(prev => ({ ...prev, [issue.id]: '' }));
+                            toast('Evidence note attached to issue.');
+                          } catch (err) {
+                            toast(err instanceof Error ? err.message : 'Could not attach evidence.', 'error');
+                          } finally {
+                            setSavingEvidenceId(null);
+                          }
+                        }}
+                        className="btn-outline shrink-0 !px-3.5 !py-2 text-[11.5px] disabled:opacity-50"
+                      >
+                        <Paperclip size={13} /> {savingEvidenceId === issue.id ? 'Saving…' : 'Add evidence'}
+                      </button>
+                    </div>
+                  )}
+                </article>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* ── TAB 3: PROFILE & SECURITY ── */}
+        {activeTab === 'profile' && (
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <form onSubmit={handleSaveProfile} className="card p-5 sm:p-6">
+              <h2 className="font-display text-lg font-black text-ink-900">Contact & profile details</h2>
+              <p className="mt-1 text-[12px] font-medium text-ink-500">Keep your full name and reachable Nigerian/international mobile number updated for estate gate passes and check-in coordination.</p>
+              <label className="mt-4 block">
+                <span className="label">Email (verified sign-in address)</span>
+                <input className="input bg-ink-50 text-ink-500" value={session.email} disabled />
+              </label>
+              <label className="mt-3 block">
+                <span className="label">Full name</span>
+                <input className="input" required minLength={2} value={profileName} onChange={e => setProfileName(e.target.value)} />
+              </label>
+              <label className="mt-3 block">
+                <span className="label">Phone number</span>
+                <input className="input" type="tel" value={profilePhone} onChange={e => setProfilePhone(e.target.value)} placeholder="+234 800 000 0000" />
+              </label>
+              <button type="submit" disabled={savingProfile} className="btn-jade mt-4 w-full !py-2.5 text-[12.5px] disabled:opacity-50">
+                {savingProfile ? 'Saving…' : 'Save profile changes'}
+              </button>
+            </form>
+
+            <form onSubmit={handleChangePassword} className="card p-5 sm:p-6">
+              <h2 className="font-display text-lg font-black text-ink-900">Account password</h2>
+              <p className="mt-1 text-[12px] font-medium text-ink-500">Update the password used to sign in to HAMLET.</p>
+              <label className="mt-4 block">
+                <span className="label">New password</span>
+                <input type="password" required minLength={6} className="input" value={newPassword} onChange={e => setNewPassword(e.target.value)} autoComplete="new-password" placeholder="At least 6 characters" />
+              </label>
+              <label className="mt-3 block">
+                <span className="label">Confirm new password</span>
+                <input type="password" required minLength={6} className="input" value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} autoComplete="new-password" placeholder="Re-enter new password" />
+              </label>
+              <button type="submit" disabled={savingPassword} className="btn-dark mt-4 w-full !py-2.5 text-[12.5px] disabled:opacity-50">
+                {savingPassword ? 'Updating…' : 'Update password'}
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>{payFor && !backendConfigured && <PaymentModal booking={payFor} onClose={() => setPayFor(null)} />}</AnimatePresence>

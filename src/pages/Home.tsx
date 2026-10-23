@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, BadgeCheck, Banknote, BedDouble, Building2, CalendarDays,
-  ChevronRight, ClipboardCheck, FileText, LifeBuoy, MapPin, Search, Users,
+  ChevronRight, ClipboardCheck, FileText, LifeBuoy, MapPin, Search, ShieldCheck, Users,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
@@ -184,10 +184,18 @@ export default function Home() {
             </p>
           </>
         ) : (
-          <div className="mt-7 rounded-2xl border border-ink-100 bg-white px-6 py-10 text-center">
-            <h3 className="font-display text-xl font-bold text-ink-900">New stays are on the way.</h3>
-            <p className="mt-2 text-sm text-ink-500">There are no approved listings to show right now. Explore stays again soon.</p>
-            <Link to="/stays" className="btn-jade mt-5">Explore stays <ArrowRight size={15} /></Link>
+          <div className="mt-7 rounded-3xl border border-ink-100 bg-white px-6 py-12 text-center shadow-xs sm:px-10">
+            <span className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-jade-200 bg-jade-50 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-800">
+              <ShieldCheck size={13} className="shrink-0" /> Verified Lagos supply onboarding
+            </span>
+            <h3 className="mt-3 font-display text-2xl font-black text-ink-900">Verified homes are currently in manual review.</h3>
+            <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-500">
+              HAMLET never displays sample listings or unverified properties as bookable inventory. Every apartment goes live only after ownership, identity, authority to list, and inspection checks are completed.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link to="/partner/register" className="btn-jade">List a Lagos property <ArrowRight size={15} /></Link>
+              <Link to="/signin?mode=signup" className="btn-outline">Create client account</Link>
+            </div>
           </div>
         )}
       </section>

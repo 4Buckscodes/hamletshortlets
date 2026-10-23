@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, CheckCircle2, XCircle, Users, ChevronDown, ChevronUp, AlertTriangle, LifeBuoy, SearchCheck, AlertOctagon, ArrowUpRight } from 'lucide-react';
+import { CalendarDays, CheckCircle2, XCircle, Users, ChevronDown, ChevronUp, AlertTriangle, LifeBuoy, SearchCheck, AlertOctagon, ArrowUpRight, Flag, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { BookingStatusPill, IssueStatusPill, SeverityDot } from '../../components/Badges';
 import { propertyIdsOf } from '../../lib/partnerUtils';
 import { formatNaira, formatDate, formatDateTime } from '../../lib/pricing';
-import type { Issue } from '../../lib/types';
+import type { Booking, Issue } from '../../lib/types';
 
 export default function PartnerBookings() {
-  const { state, bookingTransition, updateIssue } = useHamlet();
+  const { state, bookingTransition, updateIssue, reportIssue } = useHamlet();
   const { toast } = useToast();
   const userId = state.session!.userId;
   const isSuspended = state.session?.accountStatus === 'suspended';
@@ -21,6 +21,15 @@ export default function PartnerBookings() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [issueNoteById, setIssueNoteById] = useState<Record<string, string>>({});
   const [busyIssueId, setBusyIssueId] = useState<string | null>(null);
+
+  // Partner-initiated incident / damage report modal state
+  const [reportingBooking, setReportingBooking] = useState<Booking | null>(null);
+  const [reportCategory, setReportCategory] = useState<Issue['category']>('Damages');
+  const [reportSeverity, setReportSeverity] = useState<Issue['severity']>('medium');
+  const [reportSubject, setReportSubject] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportEvidence, setReportEvidence] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   const myBookings = state.bookings.filter(b => propIds.has(b.propertyId));
   const myBookingRefs = useMemo(() => new Set(myBookings.map(b => b.ref)), [myBookings]);
@@ -70,6 +79,7 @@ export default function PartnerBookings() {
   const renderCard = (b: (typeof myBookings)[number]) => {
     const open = expanded === b.id;
     const needsAction = !isSuspended && (b.status === 'requested' || b.status === 'checking');
+    const canReportIncident = !isSuspended && ['confirmed', 'completed', 'disputed', 'no_show'].includes(b.status);
     return (
       <article key={b.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
@@ -91,6 +101,20 @@ export default function PartnerBookings() {
               <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">your proceeds · 0% fee</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
+              {canReportIncident && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReportingBooking(b);
+                    setReportSubject('');
+                    setReportDescription('');
+                    setReportEvidence('');
+                  }}
+                  className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-orange-300 hover:text-orange-200"
+                >
+                  <Flag size={11} className="shrink-0" /> Report incident
+                </button>
+              )}
               <Link
                 to={`/partner/bookings/${b.id}`}
                 className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-brass-300 hover:text-brass-200"
@@ -211,6 +235,85 @@ export default function PartnerBookings() {
           </div>
         </section>
       )}
+
+      {/* Partner Incident / Damage Report Modal */}
+      <AnimatePresence>
+        {reportingBooking && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => { if (!submittingReport) setReportingBooking(null); }} />
+            <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-5 shadow-2xl sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Partner incident report</p>
+                  <h2 className="mt-1 font-display text-xl font-black text-ink-50">Booking {reportingBooking.ref}</h2>
+                </div>
+                <button disabled={submittingReport} onClick={() => setReportingBooking(null)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label>
+                  <span className="label-dark">Category</span>
+                  <select className="input-dark" value={reportCategory} onChange={e => setReportCategory(e.target.value as Issue['category'])}>
+                    {(['Damages', 'Guest conduct', 'Access & check-in', 'Property condition', 'Safety & security', 'Payment & billing', 'Other'] as Issue['category'][]).map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span className="label-dark">Severity</span>
+                  <select className="input-dark" value={reportSeverity} onChange={e => setReportSeverity(e.target.value as Issue['severity'])}>
+                    {(['low', 'medium', 'high', 'critical'] as Issue['severity'][]).map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+                  </select>
+                </label>
+              </div>
+              <label className="mt-3 block">
+                <span className="label-dark">Subject</span>
+                <input className="input-dark" value={reportSubject} onChange={e => setReportSubject(e.target.value)} placeholder="e.g. Post-checkout damage to living room upholstery" />
+              </label>
+              <label className="mt-3 block">
+                <span className="label-dark">Description & timeline</span>
+                <textarea className="input-dark min-h-[84px]" value={reportDescription} onChange={e => setReportDescription(e.target.value)} placeholder="Detail what happened, turnover inspection findings, and deposit/support action requested…" />
+              </label>
+              <label className="mt-3 block">
+                <span className="label-dark">Evidence reference (optional)</span>
+                <input className="input-dark" value={reportEvidence} onChange={e => setReportEvidence(e.target.value)} placeholder="e.g. Timestamped turnover photos shared with HAMLET ops" />
+              </label>
+              <div className="mt-5 flex justify-end gap-2">
+                <button disabled={submittingReport} onClick={() => setReportingBooking(null)} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
+                <button
+                  disabled={submittingReport}
+                  onClick={async () => {
+                    if (reportSubject.trim().length < 4 || reportDescription.trim().length < 10) {
+                      toast('Provide a subject (min 4 chars) and description (min 10 chars).', 'error');
+                      return;
+                    }
+                    setSubmittingReport(true);
+                    try {
+                      const created = await reportIssue({
+                        bookingRef: reportingBooking.ref,
+                        propertyTitle: reportingBooking.propertyTitle,
+                        category: reportCategory,
+                        severity: reportSeverity,
+                        subject: reportSubject.trim(),
+                        description: reportDescription.trim(),
+                        reporter: state.session?.name ?? 'Partner',
+                        reporterType: 'partner',
+                        evidence: reportEvidence.trim() ? [reportEvidence.trim()] : [],
+                      });
+                      toast(`Incident ${created.ref} logged for HAMLET operations.`);
+                      setReportingBooking(null);
+                    } catch (err) {
+                      toast(err instanceof Error ? err.message : 'Could not log incident.', 'error');
+                    } finally {
+                      setSubmittingReport(false);
+                    }
+                  }}
+                  className="btn-brass !py-2.5 text-[12px] disabled:opacity-50"
+                >
+                  {submittingReport ? 'Submitting…' : 'Submit incident report'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

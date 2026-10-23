@@ -9,7 +9,7 @@ import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
-import { priceStay, nightsBetween, formatNaira } from '../lib/pricing';
+import { priceStay, nightsBetween, formatNaira, lagosIsoDateOffset, addDaysToIsoDate } from '../lib/pricing';
 import { buildAuthPath } from '../lib/authRedirect';
 
 export default function PropertyDetail() {
@@ -19,16 +19,13 @@ export default function PropertyDetail() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const todayIso = useMemo(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  }, []);
+  const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
 
   const property = state.properties.find(p => p.id === id);
   const [gallery, setGallery] = useState({ propertyId: id, imageIndex: 0 });
   const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
-  const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') ?? '2026-11-13');
-  const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') ?? '2026-11-16');
+  const [checkIn, setCheckIn] = useState(() => searchParams.get('checkIn') ?? lagosIsoDateOffset(2));
+  const [checkOut, setCheckOut] = useState(() => searchParams.get('checkOut') ?? lagosIsoDateOffset(5));
   const [guests, setGuests] = useState(() => {
     const parsed = Number(searchParams.get('guests') ?? '2');
     return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
@@ -229,11 +226,29 @@ export default function PropertyDetail() {
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <label className="min-w-0">
                     <span className="label">Check in</span>
-                    <input type="date" className="input min-w-0" value={checkIn} min={todayIso} onChange={e => setCheckIn(e.target.value)} />
+                    <input
+                      type="date"
+                      className="input min-w-0"
+                      value={checkIn}
+                      min={todayIso}
+                      onChange={e => {
+                        const nextIn = e.target.value;
+                        setCheckIn(nextIn);
+                        if (nextIn && checkOut <= nextIn) {
+                          setCheckOut(addDaysToIsoDate(nextIn, 2));
+                        }
+                      }}
+                    />
                   </label>
                   <label className="min-w-0">
                     <span className="label">Check out</span>
-                    <input type="date" className="input min-w-0" value={checkOut} min={checkIn || todayIso} onChange={e => setCheckOut(e.target.value)} />
+                    <input
+                      type="date"
+                      className="input min-w-0"
+                      value={checkOut}
+                      min={checkIn ? addDaysToIsoDate(checkIn, 1) : addDaysToIsoDate(todayIso, 1)}
+                      onChange={e => setCheckOut(e.target.value)}
+                    />
                   </label>
                 </div>
                 <label className="mt-3 block">

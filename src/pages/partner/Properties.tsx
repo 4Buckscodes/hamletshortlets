@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useMemo, useState } from 'react';
-import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck, ImagePlus, Loader2, UploadCloud } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
@@ -11,10 +11,12 @@ import { AREAS } from '../../lib/seed';
 import type { Property } from '../../lib/types';
 
 const PROPERTY_TYPES = ['Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa', 'Terrace'];
+const AMENITIES = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'TV', 'Air Conditioning', 'Generator', 'Concierge', 'Garden', 'Balcony'];
 
 export default function PartnerProperties() {
-  const { state, reviewProperty, updateAndResubmitProperty } = useHamlet();
+  const { state, reviewProperty, updateAndResubmitProperty, uploadPropertyImage } = useHamlet();
   const { toast } = useToast();
+  const editFileRef = useRef<HTMLInputElement | null>(null);
   const userId = state.session!.userId;
   const isSuspended = state.session?.accountStatus === 'suspended';
   const myProps = useMemo(() => myPartnerProperties(state, userId), [state, userId]);
@@ -33,6 +35,10 @@ export default function PartnerProperties() {
   const [bathrooms, setBathrooms] = useState(1);
   const [capacity, setCapacity] = useState(2);
   const [bedSetup, setBedSetup] = useState('');
+  const [editAmenities, setEditAmenities] = useState<string[]>([]);
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [editImageUrl, setEditImageUrl] = useState('');
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
   const [authorityBasis, setAuthorityBasis] = useState('');
   const [houseRulesText, setHouseRulesText] = useState('');
   const [correctionSummary, setCorrectionSummary] = useState('');
@@ -51,9 +57,36 @@ export default function PartnerProperties() {
     setBathrooms(p.bathrooms);
     setCapacity(p.capacity);
     setBedSetup(p.bedSetup);
+    setEditAmenities(p.amenities);
+    setEditImages(p.images);
+    setEditImageUrl('');
     setAuthorityBasis(p.authorityBasis);
     setHouseRulesText(p.houseRules.join('\n'));
     setCorrectionSummary('');
+  };
+
+  const handleEditPhotoFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    if (selected.length === 0) return;
+    const remainingSlots = Math.max(0, 12 - editImages.length);
+    if (remainingSlots === 0) {
+      toast('Maximum 12 photos per listing.', 'error');
+      return;
+    }
+    setUploadingEditPhotos(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of selected.slice(0, remainingSlots)) {
+        uploaded.push(await uploadPropertyImage(file));
+      }
+      setEditImages(prev => [...prev, ...uploaded]);
+      toast(`${uploaded.length} photo${uploaded.length === 1 ? '' : 's'} uploaded.`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not upload photo.', 'error');
+    } finally {
+      setUploadingEditPhotos(false);
+    }
   };
 
   const submitCorrections = async () => {
@@ -68,6 +101,10 @@ export default function PartnerProperties() {
     }
     if (nightlyRate < 20_000) {
       toast('Nightly rate must be at least ₦20,000.', 'error');
+      return;
+    }
+    if (editImages.length < 1) {
+      toast('Attach at least 1 property photo before resubmitting.', 'error');
       return;
     }
     setSaving(true);
@@ -87,8 +124,8 @@ export default function PartnerProperties() {
           bathrooms,
           capacity,
           bedSetup: bedSetup.trim(),
-          amenities: editing.amenities,
-          images: editing.images,
+          amenities: editAmenities,
+          images: editImages,
           houseRules: houseRulesText.split('\n').map(s => s.trim()).filter(Boolean),
           submittedRole: editing.submittedRole,
           authorityBasis: authorityBasis.trim(),
@@ -270,6 +307,75 @@ export default function PartnerProperties() {
                   <span className="label-dark">Authority to list (basis & mandate reference)</span>
                   <textarea className="input-dark min-h-[64px]" value={authorityBasis} onChange={e => setAuthorityBasis(e.target.value)} />
                 </label>
+                <div className="sm:col-span-2">
+                  <span className="label-dark">Amenities</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {AMENITIES.map(a => (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => setEditAmenities(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a])}
+                        className={`rounded-full border px-2.5 py-1 text-[10.5px] font-bold transition ${editAmenities.includes(a) ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-700 text-ink-300'}`}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <span className="label-dark">Property photos ({editImages.length}/12)</span>
+                  <input
+                    ref={editFileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    onChange={e => void handleEditPhotoFiles(e)}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      disabled={uploadingEditPhotos || editImages.length >= 12}
+                      onClick={() => editFileRef.current?.click()}
+                      className="btn-brass shrink-0 !px-3.5 !py-2 text-[11px] disabled:opacity-50"
+                    >
+                      {uploadingEditPhotos ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+                      Upload photo
+                    </button>
+                    <input
+                      className="input-dark flex-1 !py-2 text-[12px]"
+                      placeholder="Or paste https:// image URL…"
+                      value={editImageUrl}
+                      onChange={e => setEditImageUrl(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = editImageUrl.trim();
+                        if (!url || editImages.length >= 12) return;
+                        setEditImages(prev => [...prev, url]);
+                        setEditImageUrl('');
+                      }}
+                      className="btn-ghost-dark shrink-0 !border !border-ink-700 !px-3 !py-2 text-[11px]"
+                    >
+                      <UploadCloud size={14} /> Add URL
+                    </button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {editImages.map((src, idx) => (
+                      <span key={idx} className="relative">
+                        <img src={src} alt="" className="h-14 w-18 rounded-lg border border-ink-800 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setEditImages(prev => prev.filter((_, j) => j !== idx))}
+                          className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-600 text-[9px] font-black text-white"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
                 <label className="sm:col-span-2">
                   <span className="label-dark">House rules (one per line)</span>
                   <textarea className="input-dark min-h-[64px]" value={houseRulesText} onChange={e => setHouseRulesText(e.target.value)} />

@@ -27,6 +27,7 @@ import AdminLedger from './pages/admin/Ledger';
 import AdminIssues from './pages/admin/Issues';
 import AdminApplications from './pages/admin/Applications';
 import AdminAssignments from './pages/admin/Assignments';
+import AdminUsers from './pages/admin/Users';
 import AdminAudit from './pages/admin/Audit';
 
 function ScrollToTop() {
@@ -76,6 +77,7 @@ export default function App() {
             <Route path="/admin/issues" element={<AdminLayout><AdminIssues /></AdminLayout>} />
             <Route path="/admin/applications" element={<AdminLayout><AdminApplications /></AdminLayout>} />
             <Route path="/admin/assignments" element={<AdminLayout><AdminAssignments /></AdminLayout>} />
+            <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
             <Route path="/admin/audit" element={<AdminLayout><AdminAudit /></AdminLayout>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />

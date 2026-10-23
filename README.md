@@ -161,17 +161,24 @@ Supabase stack (`npx supabase start`) are available,
 `npm run test:pgtap`.
 
 When Supabase is configured, sign-in/session restoration, guest account
-creation, public approved-listing reads (with privacy-safe date conflict
-filtering), partner applications and partner account suspension/reinstatement,
-partner property submissions and structured correction edits (with Lagos-only
-and normalized duplicate checks), guest booking requests and cancellations,
-partner availability decisions, server-initialized Paystack checkouts and
-verified webhook confirmations, controlled ledger reconciliation, manual
-adjustments & refunds, partner property assignments/revocations, issue
-workflows, and private post-stay pilot feedback all run against Supabase with
-database policies and server-side transition checks. Property evidence
-declarations are stored as self-reported and require manual review; binary file
-uploads and live Paystack merchant onboarding remain open launch dependencies.
+creation, password reset & password rotation, profile management, public
+approved-listing reads (with privacy-safe date conflict filtering and honest
+zero-inventory launch states), single-step partner account creation +
+application submission (`resubmit_partner_application` for reviewer
+corrections), partner account and client account suspension/reinstatement,
+Supabase Storage (`property-media`) property photo uploads, partner property
+submissions and structured correction edits (with Lagos-only and normalized
+duplicate checks), guest booking requests and cancellations, partner
+availability decisions, server-initialized Paystack checkouts and verified
+webhook confirmations, controlled ledger reconciliation + CSV exports, manual
+adjustments & refunds, partner property assignments/revocations, multi-role
+issue reporting & evidence attachment (`guest`, `partner`, `ops`), server-side
+admin provisioning (`public.admin_bootstrap_emails` + `authorize_admin_email` at
+`/#/admin/users`), and private post-stay pilot feedback all run against Supabase
+with database policies and server-side transition checks. Property evidence
+declarations are stored as self-reported and require manual review; live
+Paystack merchant onboarding and verified Resend sender DNS remain explicit
+commercial launch dependencies.
 Without Supabase configuration, the app continues to use its local demo store.
 The demo payment flow is disabled in Supabase mode and browser redirects are
 never treated as proof of payment.

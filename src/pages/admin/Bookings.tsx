@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ChevronDown, ChevronUp, CalendarDays, Users, ShieldCheck, Ban, Clock3,
-  RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign, AlertTriangle, Mail,
+  RefreshCcw, CheckCircle2, XOctagon, CircleDollarSign, AlertTriangle, Mail, Search, Download,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { BookingStatusPill } from '../../components/Badges';
 import type { Booking, BookingStatus } from '../../lib/types';
-import { formatNaira, formatDate, formatDateTime } from '../../lib/pricing';
+import { formatNaira, formatDate, formatDateTime, lagosIsoDateOffset } from '../../lib/pricing';
+import { downloadCsvFile } from '../../lib/csv';
 
 const FILTERS: { key: BookingStatus | 'all' | 'needs_action'; label: string }[] = [
   { key: 'needs_action', label: 'Needs action' },
@@ -41,6 +42,7 @@ export default function AdminBookings() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(() =>
     deepLinkedBooking ? 'all' : 'needs_action',
   );
+  const [query, setQuery] = useState('');
   const [open, setOpen] = useState<string | null>(deepLinkedBooking);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [retryingNotifId, setRetryingNotifId] = useState<string | null>(null);
@@ -64,10 +66,44 @@ export default function AdminBookings() {
   }, [open, state.bookings]);
 
   const filtered = state.bookings.filter(b => {
-    if (filter === 'all') return true;
-    if (filter === 'needs_action') return ['requested', 'checking'].includes(b.status);
-    return b.status === filter;
+    const matchesStatus = filter === 'all'
+      ? true
+      : filter === 'needs_action'
+        ? ['requested', 'checking'].includes(b.status)
+        : b.status === filter;
+    if (!matchesStatus) return false;
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return [b.ref, b.guestName, b.guestEmail, b.propertyTitle, b.area, b.paymentRef ?? '']
+      .some(field => field.toLowerCase().includes(q));
   });
+
+  const exportBookingsCsv = () => {
+    downloadCsvFile(
+      `hamlet-bookings-${lagosIsoDateOffset(0)}.csv`,
+      ['Ref', 'Status', 'Property', 'Area', 'Guest Name', 'Guest Email', 'Check-in', 'Check-out', 'Nights', 'Guests', 'Accommodation', 'Mandatory Charges', 'HAMLET Fee (3%)', 'Guest Total', 'Deposit', 'Payment Ref', 'Refund Status'],
+      filtered.map(b => [
+        b.ref,
+        b.status,
+        b.propertyTitle,
+        b.area,
+        b.guestName,
+        b.guestEmail,
+        b.checkIn,
+        b.checkOut,
+        b.nights,
+        b.guests,
+        b.accommodationSubtotal,
+        b.mandatoryTotal,
+        b.hamletGuestFee,
+        b.guestTotal,
+        b.deposit,
+        b.paymentRef ?? '',
+        b.refundStatus ?? 'none',
+      ]),
+    );
+    toast(`Exported ${filtered.length} booking row(s) to CSV.`);
+  };
 
   const overlapping = (b: Booking) =>
     state.bookings.filter(
@@ -145,14 +181,32 @@ export default function AdminBookings() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Lifecycle control</p>
-      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Booking operations</h1>
-      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every booking is request-to-book: requested → checking → accepted (awaiting payment, 48h deadline) → confirmed only after webhook-verified payment → completed / cancelled / expired / refunded / disputed. Overlaps on confirmed dates are prevented.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Lifecycle control</p>
+          <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Booking operations</h1>
+          <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every booking is request-to-book: requested → checking → accepted (awaiting payment, 48h deadline) → confirmed only after webhook-verified payment → completed / cancelled / expired / refunded / disputed. Overlaps on confirmed dates are prevented.</p>
+        </div>
+        <button onClick={exportBookingsCsv} disabled={filtered.length === 0} className="btn-ghost-dark !border !border-ink-700 !py-2.5 text-[12px] disabled:opacity-40">
+          <Download size={14} /> Export CSV ({filtered.length})
+        </button>
+      </div>
 
-      <div className="mt-5 flex flex-wrap gap-1.5">
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)} className={`rounded-xl border px-3 py-2 text-[11px] font-bold transition ${filter === f.key ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{f.label}</button>
-        ))}
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {FILTERS.map(f => (
+            <button key={f.key} onClick={() => setFilter(f.key)} className={`rounded-xl border px-3 py-2 text-[11px] font-bold transition ${filter === f.key ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}>{f.label}</button>
+          ))}
+        </div>
+        <div className="relative w-full sm:max-w-xs">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
+          <input
+            className="input-dark !py-2 !pl-9 text-[12px]"
+            placeholder="Search ref, guest, email, property…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="mt-5 grid gap-4">
@@ -182,7 +236,7 @@ export default function AdminBookings() {
                   <h2 className="mt-1.5 break-words font-display text-[16px] font-bold text-ink-50">{b.propertyTitle}</h2>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] font-semibold text-ink-300">
                     <span className="inline-flex items-center gap-1"><CalendarDays size={12} className="shrink-0" />{formatDate(b.checkIn)} → {formatDate(b.checkOut)} · {b.nights}n</span>
-                    <span className="inline-flex items-center gap-1"><Users size={12} className="shrink-0" />{b.guestName} · {b.guests} guest(s)</span>
+                    <span className="inline-flex items-center gap-1"><Users size={12} className="shrink-0" />{b.guestName}{b.guestEmail ? ` (${b.guestEmail})` : ''} · {b.guests} guest(s)</span>
                     <span className="inline-flex items-center gap-1 tabular-nums"><CircleDollarSign size={12} className="shrink-0" />{formatNaira(b.guestTotal)} total</span>
                   </p>
                 </div>

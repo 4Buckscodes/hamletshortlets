@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff, UserPlus, LogIn, Home,
+  ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff, UserPlus, LogIn, Home, MailCheck,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
@@ -19,12 +19,33 @@ const DEMO_ACCOUNTS = [
   { role: 'Admin', email: 'admin@hamlet.ng', desc: 'HAMLET operations — reviews, ledger, issues, audit log', Icon: KeyRound, color: 'text-red-800 bg-red-50 border-red-200' },
 ];
 
+type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
+
 export default function SignIn() {
-  const { signIn, signUpGuest, backendConfigured } = useHamlet();
+  const {
+    state,
+    signIn,
+    signUpGuest,
+    requestPasswordReset,
+    updatePassword,
+    passwordRecoveryPending,
+    clearPasswordRecovery,
+    backendConfigured,
+  } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const creatingAccount = searchParams.get('mode') === 'signup';
+  const rawMode = searchParams.get('mode');
+  const activeMode: AuthMode = passwordRecoveryPending
+    ? 'reset'
+    : rawMode === 'signup'
+      ? 'signup'
+      : rawMode === 'forgot'
+        ? 'forgot'
+        : rawMode === 'reset'
+          ? 'reset'
+          : 'signin';
+  const creatingAccount = activeMode === 'signup';
   const redirectParam = searchParams.get('redirect');
   const safeGuestRedirect = sanitizeGuestRedirect(redirectParam);
   const safeInternalRedirect = sanitizeInternalRedirect(redirectParam);
@@ -50,32 +71,33 @@ export default function SignIn() {
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const updateAuthParams = (signup: boolean, nextRedirect?: string | null) => {
+  const updateAuthParams = (mode: AuthMode, nextRedirect?: string | null) => {
     const resolvedRedirect =
       nextRedirect !== undefined
         ? nextRedirect
-        : signup
+        : mode === 'signup'
           ? safeGuestRedirect
           : safeInternalRedirect;
     const next = new URLSearchParams();
-    if (signup) next.set('mode', 'signup');
+    if (mode !== 'signin') next.set('mode', mode);
     if (resolvedRedirect) next.set('redirect', resolvedRedirect);
     setSearchParams(next, { replace: true });
   };
 
-  const switchMode = (signup: boolean) => {
+  const switchMode = (mode: AuthMode) => {
     setError('');
     setInfoMessage('');
-    if (signup) {
+    if (mode !== 'reset') clearPasswordRecovery();
+    if (mode === 'signup') {
       if (DEMO_ACCOUNTS.some(acc => acc.email === email)) {
         setEmail('');
         setPassword('');
       }
       setConfirmPassword('');
-      updateAuthParams(true);
+      updateAuthParams('signup');
     } else {
       setConfirmPassword('');
-      updateAuthParams(false);
+      updateAuthParams(mode);
     }
   };
 
@@ -83,6 +105,52 @@ export default function SignIn() {
     e.preventDefault();
     setError('');
     setInfoMessage('');
+
+    if (activeMode === 'forgot') {
+      setLoading(true);
+      try {
+        const res = await requestPasswordReset(email);
+        if (!res.ok) {
+          setError(res.error ?? 'Could not send password reset instructions.');
+          return;
+        }
+        setInfoMessage(
+          backendConfigured
+            ? `If an account exists for ${email.trim()}, a password recovery link has been sent to that inbox.`
+            : 'In local demo mode, all sample accounts sign in with demo1234.',
+        );
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (activeMode === 'reset') {
+      if (password.length < 6) {
+        setError('New password must be at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await updatePassword(password);
+        if (!res.ok) {
+          setError(res.error ?? 'Could not update your password.');
+          return;
+        }
+        toast('Your password has been updated.');
+        setPassword('');
+        setConfirmPassword('');
+        const target = resolvePostSignInRedirect(state.session?.role, redirectParam);
+        navigate(target, { replace: true });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (creatingAccount) {
       if (password.length < 6) {
@@ -103,18 +171,25 @@ export default function SignIn() {
           setError(res.error ?? 'Account creation failed.');
           return;
         }
-        const postSignUpDestination = resolvePostSignUpRedirect(redirectParam);
+        const postSignUpDestination =
+          res.role === 'admin'
+            ? '/admin'
+            : res.role === 'partner'
+              ? '/partner'
+              : resolvePostSignUpRedirect(redirectParam);
         if (res.needsEmailConfirmation) {
-          updateAuthParams(false, postSignUpDestination);
+          updateAuthParams('signin', postSignUpDestination);
           setPassword('');
           setConfirmPassword('');
-          setInfoMessage('Guest account created. Check your email to confirm your address, then sign in below.');
+          setInfoMessage('Account created. Check your email to confirm your address, then sign in below.');
           return;
         }
         toast(
-          returningToProperty
-            ? 'Welcome to HAMLET — returning you to complete your booking request.'
-            : 'Welcome to HAMLET — explore verified Lagos stays.',
+          res.role === 'admin'
+            ? 'Welcome to HAMLET — your Administrator Console is ready.'
+            : returningToProperty
+              ? 'Welcome to HAMLET — returning you to complete your booking request.'
+              : 'Welcome to HAMLET — explore verified Lagos stays.',
         );
         navigate(postSignUpDestination, { replace: true });
         return;
@@ -135,7 +210,7 @@ export default function SignIn() {
   };
 
   const quick = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
-    if (creatingAccount) updateAuthParams(false);
+    if (activeMode !== 'signin') updateAuthParams('signin');
     setEmail(acc.email);
     setPassword('demo1234');
     setError('');
@@ -159,7 +234,7 @@ export default function SignIn() {
               ))}
             </div>
           </div>
-          <p className="text-[11px] font-semibold text-ink-400">Lagos pilot · v1.0 · Decision date 11 Oct 2026</p>
+          <p className="text-[11px] font-semibold text-ink-400">Lagos pilot · v1.0 · Verified short-stay operations</p>
         </div>
       </div>
 
@@ -173,10 +248,10 @@ export default function SignIn() {
             <button
               type="button"
               role="tab"
-              aria-selected={!creatingAccount}
-              onClick={() => switchMode(false)}
+              aria-selected={activeMode === 'signin'}
+              onClick={() => switchMode('signin')}
               className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-bold transition ${
-                !creatingAccount
+                activeMode === 'signin'
                   ? 'bg-ink-900 text-ink-50 shadow-xs'
                   : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900'
               }`}
@@ -187,14 +262,14 @@ export default function SignIn() {
               type="button"
               role="tab"
               aria-selected={creatingAccount}
-              onClick={() => switchMode(true)}
+              onClick={() => switchMode('signup')}
               className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-bold transition ${
                 creatingAccount
                   ? 'bg-jade-700 text-white shadow-xs'
                   : 'text-jade-800 hover:bg-jade-50'
               }`}
             >
-              <UserPlus size={15} /> Guest sign up
+              <UserPlus size={15} /> Create account
             </button>
           </div>
 
@@ -202,11 +277,11 @@ export default function SignIn() {
             <p className="mb-4 flex items-center gap-2 rounded-xl border border-jade-200 bg-jade-50 px-3 py-2.5 text-[11.5px] font-semibold text-jade-900">
               <Home size={14} className="shrink-0 text-jade-700" />
               <span>
-                You’ll return directly to your selected stay after {creatingAccount ? 'creating your guest account' : 'signing in'}.
+                You’ll return directly to your selected stay after {creatingAccount ? 'creating your account' : 'signing in'}.
               </span>
             </p>
           )}
-          {!creatingAccount && returningToPartnerWorkspace && (
+          {activeMode === 'signin' && returningToPartnerWorkspace && (
             <p className="mb-4 flex items-center gap-2 rounded-xl border border-brass-400/50 bg-brass-200/30 px-3 py-2.5 text-[11.5px] font-semibold text-ink-900">
               <Building2 size={14} className="shrink-0 text-brass-700" />
               <span>
@@ -214,7 +289,7 @@ export default function SignIn() {
               </span>
             </p>
           )}
-          {!creatingAccount && returningToAdminWorkspace && (
+          {activeMode === 'signin' && returningToAdminWorkspace && (
             <p className="mb-4 flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-[11.5px] font-semibold text-ink-800">
               <KeyRound size={14} className="shrink-0 text-ink-700" />
               <span>
@@ -224,18 +299,34 @@ export default function SignIn() {
           )}
 
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
-            {creatingAccount ? 'New guest account' : 'Welcome back'}
+            {activeMode === 'signup'
+              ? 'New HAMLET account'
+              : activeMode === 'forgot'
+                ? 'Password recovery'
+                : activeMode === 'reset'
+                  ? 'Choose new password'
+                  : 'Welcome back'}
           </p>
           <h2 className="mt-1 font-display text-3xl font-black text-ink-900">
-            {creatingAccount ? 'Create guest account' : 'Sign in'}
+            {activeMode === 'signup'
+              ? 'Create your account'
+              : activeMode === 'forgot'
+                ? 'Reset your password'
+                : activeMode === 'reset'
+                  ? 'Set a new password'
+                  : 'Sign in'}
           </h2>
           <p className="mt-1 text-[12.5px] font-medium text-ink-500">
-            {creatingAccount
-              ? 'Create a guest account to request verified Lagos stays, track booking status, complete payment and contact support.'
-              : 'One account experience for guests, partners and HAMLET operations — access is role-based.'}
+            {activeMode === 'signup'
+              ? 'Request verified Lagos stays, track booking status, complete checkout and contact support. Pre-authorised HAMLET operators are routed directly to the Admin Console.'
+              : activeMode === 'forgot'
+                ? 'Enter the email address on your HAMLET account to receive a secure password reset link.'
+                : activeMode === 'reset'
+                  ? 'Enter and confirm your new password (at least 6 characters) to finish securing your account.'
+                  : 'One account experience for clients, partners and HAMLET operations — access is role-based.'}
           </p>
 
-          {!creatingAccount && !backendConfigured && (
+          {activeMode === 'signin' && !backendConfigured && (
             <div className="mt-5">
               <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
                 <ChevronDown size={12} /> Demo accounts (password: demo1234)
@@ -261,8 +352,9 @@ export default function SignIn() {
           )}
 
           {infoMessage && (
-            <p role="status" className="mt-4 rounded-xl border border-jade-200 bg-jade-50 px-3 py-2.5 text-[12px] font-semibold text-jade-900">
-              {infoMessage}
+            <p role="status" className="mt-4 flex items-start gap-2 rounded-xl border border-jade-200 bg-jade-50 px-3 py-2.5 text-[12px] font-semibold text-jade-900">
+              <MailCheck size={16} className="mt-0.5 shrink-0 text-jade-700" />
+              <span>{infoMessage}</span>
             </p>
           )}
 
@@ -282,21 +374,23 @@ export default function SignIn() {
                 />
               </label>
             )}
-            <label className="block">
-              <span className="label">Email</span>
-              <input
-                type="email"
-                required
-                className="input"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                autoComplete="email"
-                placeholder="you@example.com"
-              />
-            </label>
+            {activeMode !== 'reset' && (
+              <label className="block">
+                <span className="label">Email</span>
+                <input
+                  type="email"
+                  required
+                  className="input"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                />
+              </label>
+            )}
             {creatingAccount && (
               <label className="block">
-                <span className="label">Phone number (optional)</span>
+                <span className="label">Phone number (recommended for check-in coordination)</span>
                 <input
                   type="tel"
                   className="input"
@@ -307,30 +401,43 @@ export default function SignIn() {
                 />
               </label>
             )}
-            <label className="block">
-              <span className="label">Password</span>
-              <span className="relative block">
-                <input
-                  type={show ? 'text' : 'password'}
-                  required
-                  minLength={creatingAccount ? 6 : undefined}
-                  className="input pr-11"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  autoComplete={creatingAccount ? 'new-password' : 'current-password'}
-                  placeholder={creatingAccount ? 'At least 6 characters' : '••••••••'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShow(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
-                  aria-label={show ? 'Hide password' : 'Show password'}
-                >
-                  {show ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </span>
-            </label>
-            {creatingAccount && (
+            {activeMode !== 'forgot' && (
+              <label className="block">
+                <span className="flex items-center justify-between">
+                  <span className="label !mb-0">{activeMode === 'reset' ? 'New password' : 'Password'}</span>
+                  {activeMode === 'signin' && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode('forgot')}
+                      className="text-[11px] font-bold text-jade-800 hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </span>
+                <span className="relative mt-1.5 block">
+                  <input
+                    type={show ? 'text' : 'password'}
+                    required
+                    minLength={creatingAccount || activeMode === 'reset' ? 6 : undefined}
+                    className="input pr-11"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete={creatingAccount || activeMode === 'reset' ? 'new-password' : 'current-password'}
+                    placeholder={creatingAccount || activeMode === 'reset' ? 'At least 6 characters' : '••••••••'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShow(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"
+                    aria-label={show ? 'Hide password' : 'Show password'}
+                  >
+                    {show ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
+              </label>
+            )}
+            {(creatingAccount || activeMode === 'reset') && (
               <label className="block">
                 <span className="label">Confirm password</span>
                 <input
@@ -353,39 +460,43 @@ export default function SignIn() {
             <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">
               {loading ? 'Please wait…' : (
                 <>
-                  {creatingAccount
-                    ? (returningToProperty ? 'Create guest account & continue' : 'Create guest account')
-                    : 'Sign in'}{' '}
+                  {activeMode === 'signup'
+                    ? (returningToProperty ? 'Create account & continue' : 'Create account')
+                    : activeMode === 'forgot'
+                      ? 'Send recovery link'
+                      : activeMode === 'reset'
+                        ? 'Save new password'
+                        : 'Sign in'}{' '}
                   <ArrowRight size={16} />
                 </>
               )}
             </button>
           </form>
 
-          {/* Secondary button so Guest Sign Up / Sign In is always one click away */}
+          {/* Secondary mode button */}
           <div className="mt-4">
-            {creatingAccount ? (
+            {activeMode === 'signin' ? (
               <button
                 type="button"
-                onClick={() => switchMode(false)}
+                onClick={() => switchMode('signup')}
                 className="btn-outline w-full !py-3 text-[13px]"
               >
-                <LogIn size={15} /> Already have an account? Sign in
+                <UserPlus size={15} /> New to HAMLET? Create account
               </button>
             ) : (
               <button
                 type="button"
-                onClick={() => switchMode(true)}
+                onClick={() => switchMode('signin')}
                 className="btn-outline w-full !py-3 text-[13px]"
               >
-                <UserPlus size={15} /> New to HAMLET? Create guest account
+                <LogIn size={15} /> Back to sign in
               </button>
             )}
           </div>
 
           <p className="mt-6 text-center text-[12.5px] font-medium text-ink-500">
-            Own or manage a property?{' '}
-            <Link to="/partner/register" className="font-bold text-jade-800 hover:underline">Apply as a HAMLET partner</Link>
+            Own or manage a Lagos property?{' '}
+            <Link to="/partner/register" className="font-bold text-jade-800 hover:underline">Register & apply as a HAMLET partner</Link>
           </p>
         </div>
       </div>

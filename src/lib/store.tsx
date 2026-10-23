@@ -5,6 +5,7 @@ import type {
   Account, Session, Property, Booking, LedgerEntry, Issue, IssueStatus,
   PartnerApplication, PartnerAssignment, AuditEntry, AccountRole, TimelineEvent,
   BookingNotificationRecord, NotificationEventType, NotificationRecipientType,
+  AdminBootstrapEmail,
 } from './types';
 import {
   seedAccounts, seedProperties, seedBookings, seedLedger, seedIssues,
@@ -30,12 +31,14 @@ export interface DBState {
   audit: AuditEntry[];
   feedback: FeedbackItem[];
   notifications: BookingNotificationRecord[];
+  adminBootstrapEmails: AdminBootstrapEmail[];
   session: Session | null;
 }
 
 const emptyState = (): DBState => ({
   accounts: [], properties: [], bookings: [], ledger: [], issues: [],
-  applications: [], assignments: [], audit: [], feedback: [], notifications: [], session: null,
+  applications: [], assignments: [], audit: [], feedback: [], notifications: [],
+  adminBootstrapEmails: [], session: null,
 });
 
 const DB_KEY = 'hamlet-db-v1';
@@ -52,6 +55,7 @@ function initialState(): DBState {
         ...emptyState(),
         ...parsed,
         notifications: parsed.notifications ?? [],
+        adminBootstrapEmails: parsed.adminBootstrapEmails ?? [],
         accounts: parsed.accounts.map(a => ({ ...a, password: 'demo1234' })),
         session: sessionRaw ? JSON.parse(sessionRaw) : null,
       };
@@ -60,7 +64,9 @@ function initialState(): DBState {
   return {
     accounts: seedAccounts, properties: seedProperties, bookings: seedBookings,
     ledger: seedLedger, issues: seedIssues, applications: seedApplications,
-    assignments: seedAssignments, audit: seedAudit, feedback: [], notifications: [], session: null,
+    assignments: seedAssignments, audit: seedAudit, feedback: [], notifications: [],
+    adminBootstrapEmails: [{ email: 'admin@hamlet.ng', note: 'Pilot demo administrator', createdAt: new Date().toISOString() }],
+    session: null,
   };
 }
 
@@ -69,12 +75,16 @@ type Action =
   | { type: 'HYDRATE'; state: DBState }
   | { type: 'SIGN_IN'; session: Session }
   | { type: 'SIGN_OUT' }
+  | { type: 'UPDATE_PROFILE'; name: string; phone?: string; company?: string }
   | { type: 'REGISTER_GUEST'; account: Account; session: Session }
   | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication }
+  | { type: 'RESUBMIT_PARTNER_APPLICATION'; id: string; patch: Pick<PartnerApplication, 'name' | 'phone' | 'company' | 'role' | 'areas' | 'propertiesCount' | 'motivation'>; actor: Session }
   | { type: 'ADD_PROPERTY'; property: Property }
   | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string }
   | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; verification?: Property['verification']; actor: Session }
   | { type: 'SET_PARTNER_STATUS'; partnerId: string; status: 'active' | 'suspended'; reason: string; cascadeSuspend: boolean; actor: Session }
+  | { type: 'SET_GUEST_STATUS'; guestId: string; status: 'active' | 'suspended'; reason: string; actor: Session }
+  | { type: 'AUTHORIZE_ADMIN_EMAIL'; email: string; note: string; actor: Session }
   | { type: 'ADD_BOOKING'; booking: Booking }
   | { type: 'BOOKING_TRANSITION'; id: string; to: Booking['status']; actor: Session; note?: string; reason?: string }
   | { type: 'VERIFY_PAYMENT'; id: string; actor: Session; providerRef: string; provider: string }
@@ -82,6 +92,7 @@ type Action =
   | { type: 'ADD_LEDGER'; entries: LedgerEntry[] }
   | { type: 'RECONCILE_LEDGER'; id: string; actor: Session; status: LedgerEntry['status']; variance: number; note?: string }
   | { type: 'ADD_ISSUE'; issue: Issue }
+  | { type: 'APPEND_ISSUE_EVIDENCE'; id: string; evidenceNote: string; actor: Session }
   | { type: 'ISSUE_UPDATE'; id: string; status: IssueStatus; actor: Session; note?: string; assignee?: string; resolution?: string }
   | { type: 'REVIEW_APPLICATION'; id: string; status: PartnerApplication['status']; actor: Session; note?: string }
   | { type: 'CREATE_PARTNER_FROM_APPLICATION'; applicationId: string; actor: Session }
@@ -130,10 +141,31 @@ type RemoteFeedback = {
 };
 
 type RemoteIssue = {
-  id: string; reference: string; booking_id: string; reporter_id: string; category: Issue['category'];
+  id: string; reference: string; booking_id: string; reporter_id: string;
+  reporter_type?: Issue['reporterType']; category: Issue['category'];
   severity: Issue['severity']; subject: string; description: string; status: IssueStatus;
   assignee_id?: string; assignee_name?: string; resolution?: string; evidence: string[];
   timeline?: TimelineEvent[]; created_at: string; updated_at: string;
+};
+
+type RemoteAdminDirectoryRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  role: AccountRole;
+  partner_role: string;
+  company: string;
+  account_status: 'active' | 'suspended';
+  suspension_reason: string;
+  created_at: string;
+};
+
+type RemoteAdminBootstrapEmailRow = {
+  email: string;
+  note: string;
+  added_by?: string | null;
+  created_at: string;
 };
 
 type RemoteLedgerRow = {
@@ -269,8 +301,10 @@ function toRemoteBooking(
   property: Property | undefined,
   session: Session,
   profileById?: Map<string, RemoteProfile>,
+  adminDirectoryById?: Map<string, RemoteAdminDirectoryRow>,
 ): Booking {
   const guestProfile = profileById?.get(row.guest_id);
+  const adminDirGuest = adminDirectoryById?.get(row.guest_id);
   return {
     id: row.id,
     ref: row.reference,
@@ -278,8 +312,8 @@ function toRemoteBooking(
     propertyTitle: property?.title ?? 'Stay',
     area: property?.area ?? '',
     guestId: row.guest_id,
-    guestName: row.guest_id === session.userId ? session.name : (guestProfile?.full_name || 'Guest'),
-    guestEmail: row.guest_id === session.userId ? session.email : '',
+    guestName: row.guest_id === session.userId ? session.name : (guestProfile?.full_name || adminDirGuest?.full_name || 'Guest'),
+    guestEmail: row.guest_id === session.userId ? session.email : (adminDirGuest?.email ?? ''),
     checkIn: row.check_in,
     checkOut: row.check_out,
     nights: nightsBetween(row.check_in, row.check_out),
@@ -327,6 +361,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     role: profile.role as AccountRole,
     name: profile.full_name || user.user_metadata.full_name || user.email || 'HAMLET user',
     email: user.email ?? '',
+    phone: (profile.phone as string | undefined) || (user.user_metadata.phone as string | undefined) || undefined,
     partnerRole: profile.partner_role ?? undefined,
     company: profile.company ?? undefined,
     accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
@@ -348,6 +383,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     feedbackResult,
     auditResult,
     notificationResult,
+    adminDirectoryResult,
+    adminBootstrapResult,
   ] = await Promise.all([
     supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,account_status,suspension_reason,created_at').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -361,6 +398,12 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     supabase.from('admin_audit_log').select('*').order('created_at', { ascending: false }).limit(100),
     session.role === 'admin'
       ? supabase.from('booking_notifications').select('*').order('created_at', { ascending: false }).limit(250)
+      : Promise.resolve({ data: [], error: null }),
+    session.role === 'admin'
+      ? supabase.rpc('get_admin_directory')
+      : Promise.resolve({ data: [], error: null }),
+    session.role === 'admin'
+      ? supabase.from('admin_bootstrap_emails').select('*').order('created_at', { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
 
@@ -376,12 +419,16 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     feedbackResult,
     auditResult,
     notificationResult,
+    adminDirectoryResult,
+    adminBootstrapResult,
   ]) {
     if (result.error) throw new Error(`Could not load HAMLET data: ${result.error.message}`);
   }
 
   const profileRows = (profilesResult.data ?? []) as unknown as RemoteProfile[];
   const profileById = new Map(profileRows.map(item => [item.id, item]));
+  const adminDirectoryRows = (adminDirectoryResult.data ?? []) as unknown as RemoteAdminDirectoryRow[];
+  const adminDirectoryById = new Map(adminDirectoryRows.map(item => [item.id, item]));
   const propertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
   const accesses = (accessResult.data ?? []) as unknown as Array<{
     property_id: string; user_id: string; access_role: string; scope: string;
@@ -397,7 +444,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id), profileById));
   const propertyById = new Map(properties.map(property => [property.id, property]));
   const bookings = ((bookingResult.data ?? []) as unknown as RemoteBooking[])
-    .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session, profileById));
+    .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session, profileById, adminDirectoryById));
   const applications = ((applicationResult.data ?? []) as unknown as RemoteApplication[]).map(application => ({
     id: application.id,
     applicantId: application.applicant_id,
@@ -445,7 +492,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       subject: issue.subject,
       description: issue.description,
       reporter: issue.reporter_id === user.id ? session.name : (reporterProfile?.full_name || 'HAMLET user'),
-      reporterType: (reporterProfile?.role === 'partner' ? 'partner' : reporterProfile?.role === 'admin' ? 'internal' : 'guest') as Issue['reporterType'],
+      reporterType: (issue.reporter_type ?? (reporterProfile?.role === 'partner' ? 'partner' : reporterProfile?.role === 'admin' ? 'internal' : 'guest')) as Issue['reporterType'],
       status: issue.status,
       assignee: issue.assignee_name ?? assigneeProfile?.full_name ?? issue.assignee_id,
       createdAt: issue.created_at,
@@ -473,19 +520,22 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     };
   });
   const accounts: Account[] = profileRows.length > 0
-    ? profileRows.map(row => ({
-        id: row.id,
-        name: row.id === user.id ? session.name : (row.full_name || 'HAMLET user'),
-        email: row.id === user.id ? session.email : '',
-        password: '',
-        role: row.role,
-        partnerRole: row.partner_role ?? undefined,
-        company: row.company ?? undefined,
-        phone: row.phone ?? undefined,
-        accountStatus: row.account_status ?? 'active',
-        suspensionReason: row.suspension_reason ?? undefined,
-        createdAt: row.created_at,
-      }))
+    ? profileRows.map(row => {
+        const dirEntry = adminDirectoryById.get(row.id);
+        return {
+          id: row.id,
+          name: row.id === user.id ? session.name : (row.full_name || dirEntry?.full_name || 'HAMLET user'),
+          email: row.id === user.id ? session.email : (dirEntry?.email ?? ''),
+          password: '',
+          role: row.role,
+          partnerRole: row.partner_role || dirEntry?.partner_role || undefined,
+          company: row.company || dirEntry?.company || undefined,
+          phone: row.phone || dirEntry?.phone || undefined,
+          accountStatus: row.account_status ?? dirEntry?.account_status ?? 'active',
+          suspensionReason: row.suspension_reason || dirEntry?.suspension_reason || undefined,
+          createdAt: row.created_at,
+        };
+      })
     : [{
         id: user.id,
         name: session.name,
@@ -550,6 +600,15 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     updatedAt: row.updated_at,
   }));
 
+  const adminBootstrapEmails: AdminBootstrapEmail[] = (
+    (adminBootstrapResult.data ?? []) as unknown as RemoteAdminBootstrapEmailRow[]
+  ).map(row => ({
+    email: row.email,
+    note: row.note,
+    addedBy: row.added_by ?? undefined,
+    createdAt: row.created_at,
+  }));
+
   return {
     ...emptyState(),
     accounts,
@@ -562,6 +621,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     audit,
     feedback,
     notifications,
+    adminBootstrapEmails,
     session,
   };
 }
@@ -609,6 +669,25 @@ function reducer(state: DBState, action: Action): DBState {
     case 'SIGN_OUT':
       localStorage.removeItem(SESSION_KEY);
       return { ...state, session: null };
+    case 'UPDATE_PROFILE': {
+      if (!state.session) return state;
+      const nextSession: Session = {
+        ...state.session,
+        name: action.name,
+        phone: action.phone || undefined,
+        company: action.company ?? state.session.company,
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+      return {
+        ...state,
+        session: nextSession,
+        accounts: state.accounts.map(a =>
+          a.id === nextSession.userId
+            ? { ...a, name: action.name, phone: action.phone || undefined, company: action.company ?? a.company }
+            : a,
+        ),
+      };
+    }
     case 'REGISTER_GUEST':
       localStorage.setItem(SESSION_KEY, JSON.stringify(action.session));
       return {
@@ -626,6 +705,30 @@ function reducer(state: DBState, action: Action): DBState {
         accounts: [...state.accounts, action.account],
         applications: [action.application, ...state.applications],
         audit: [auditEntry(action.account.name, 'partner', 'partner_application_submitted', action.application.company, `Role: ${action.application.role} · ${action.application.areas.join(', ')}`), ...state.audit],
+      };
+    case 'RESUBMIT_PARTNER_APPLICATION':
+      return {
+        ...state,
+        applications: state.applications.map(a =>
+          a.id === action.id
+            ? {
+                ...a,
+                ...action.patch,
+                status: 'pending' as const,
+                submittedAt: nowIso(),
+              }
+            : a,
+        ),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            'partner_application_resubmitted',
+            action.patch.company,
+            'Applicant updated details and resubmitted partner application for review.',
+          ),
+          ...state.audit,
+        ],
       };
     case 'ADD_PROPERTY':
       return {
@@ -887,6 +990,92 @@ function reducer(state: DBState, action: Action): DBState {
     }
     case 'ADD_ISSUE':
       return { ...state, issues: [action.issue, ...state.issues] };
+    case 'APPEND_ISSUE_EVIDENCE': {
+      const targetIssue = state.issues.find(x => x.id === action.id);
+      if (!targetIssue) return state;
+      const at = nowIso();
+      const updatedIssue: Issue = {
+        ...targetIssue,
+        evidence: [...targetIssue.evidence, action.evidenceNote],
+        updatedAt: at,
+        timeline: [
+          ...targetIssue.timeline,
+          { at, label: 'Evidence recorded', actor: action.actor.name, detail: action.evidenceNote },
+        ],
+      };
+      return {
+        ...state,
+        issues: state.issues.map(x => (x.id === action.id ? updatedIssue : x)),
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, 'issue_evidence_added', targetIssue.ref, `Evidence added: ${action.evidenceNote}`),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'SET_GUEST_STATUS': {
+      const guest = state.accounts.find(a => a.id === action.guestId);
+      if (!guest) return state;
+      return {
+        ...state,
+        accounts: state.accounts.map(a =>
+          a.id === action.guestId
+            ? {
+                ...a,
+                accountStatus: action.status,
+                suspensionReason: action.status === 'suspended' ? action.reason : undefined,
+              }
+            : a,
+        ),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            action.status === 'suspended' ? 'guest_suspended' : 'guest_reinstated',
+            guest.name,
+            action.status === 'suspended'
+              ? `Guest account suspended. Reason: ${action.reason}`
+              : `Guest account reinstated to active. Note: ${action.reason}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'AUTHORIZE_ADMIN_EMAIL': {
+      const normalized = action.email.trim().toLowerCase();
+      const matched = state.accounts.find(a => a.email.toLowerCase() === normalized);
+      const nextBootstrap: AdminBootstrapEmail = {
+        email: normalized,
+        note: action.note,
+        addedBy: action.actor.userId,
+        createdAt: nowIso(),
+      };
+      return {
+        ...state,
+        adminBootstrapEmails: [
+          nextBootstrap,
+          ...state.adminBootstrapEmails.filter(item => item.email !== normalized),
+        ],
+        accounts: matched
+          ? state.accounts.map(a =>
+              a.id === matched.id
+                ? { ...a, role: 'admin' as const, accountStatus: 'active' as const, suspensionReason: undefined, company: a.company || 'HAMLET' }
+                : a,
+            )
+          : state.accounts,
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            matched ? 'admin_role_granted' : 'admin_email_preauthorized',
+            normalized,
+            matched
+              ? `Existing account promoted to HAMLET admin. Reason: ${action.note}`
+              : `Email pre-authorized for HAMLET admin access on sign-up. Reason: ${action.note}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
     case 'ISSUE_UPDATE': {
       const i = state.issues.find(x => x.id === action.id);
       if (!i) return state;
@@ -955,14 +1144,23 @@ interface Store {
   backendConfigured: boolean;
   backendReady: boolean;
   backendError: string | null;
+  passwordRecoveryPending: boolean;
+  clearPasswordRecovery: () => void;
   signIn: (email: string, password: string) => Promise<{ ok: boolean; role?: AccountRole; error?: string }>;
-  signUpGuest: (input: { name: string; email: string; password: string; phone?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
+  signUpGuest: (input: { name: string; email: string; password: string; phone?: string }) => Promise<{ ok: boolean; role?: AccountRole; needsEmailConfirmation?: boolean; error?: string }>;
   signOut: () => Promise<void>;
-  registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<{ ok: boolean; error?: string }>;
+  requestPasswordReset: (email: string) => Promise<{ ok: boolean; error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ ok: boolean; error?: string }>;
+  updateProfile: (input: { name: string; phone?: string; company?: string }) => Promise<{ ok: boolean; error?: string }>;
+  registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string; password?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
+  resubmitPartnerApplication: (id: string, input: { name: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<void>;
+  uploadPropertyImage: (file: File) => Promise<string>;
   submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
   updateAndResubmitProperty: (id: string, input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>, correctionNote?: string) => Promise<void>;
   reviewProperty: (id: string, status: Property['status'], note?: string, verification?: Property['verification']) => Promise<void>;
   setPartnerAccountStatus: (partnerId: string, status: 'active' | 'suspended', reason: string, cascadeSuspendProperties?: boolean) => Promise<void>;
+  setGuestAccountStatus: (guestId: string, status: 'active' | 'suspended', reason: string) => Promise<void>;
+  authorizeAdminEmail: (email: string, note: string) => Promise<{ promotedExisting: boolean }>;
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   retryBookingNotifications: (bookingId: string) => Promise<{ ok: boolean; sent: number; failed: number; error?: string }>;
@@ -971,7 +1169,8 @@ interface Store {
   recordBookingRefund: (id: string, input: { amount: number; providerRef?: string; note: string }) => Promise<void>;
   reconcileLedgerEntry: (id: string, input: { status: LedgerEntry['status']; variance?: number; note?: string }) => Promise<void>;
   recordLedgerAdjustment: (input: { bookingId: string; type: LedgerEntry['type']; amount: number; status: LedgerEntry['status']; description: string; providerRef?: string; variance?: number; note?: string }) => Promise<void>;
-  reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType'] }) => Promise<Issue>;
+  reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType']; evidence?: string[] }) => Promise<Issue>;
+  appendIssueEvidence: (issueId: string, evidenceNote: string) => Promise<void>;
   updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; assigneeId?: string; resolution?: string }) => Promise<void>;
   reviewApplication: (id: string, status: PartnerApplication['status'], note?: string) => Promise<void>;
   approvePartner: (applicationId: string, note?: string) => Promise<void>;
@@ -990,6 +1189,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined as unknown as DBState, initialState);
   const [backendReady, setBackendReady] = useState(!isSupabaseConfigured);
   const [backendError, setBackendError] = useState<string | null>(null);
+  const [passwordRecoveryPending, setPasswordRecoveryPending] = useState(false);
 
   useEffect(() => {
     const client = supabase;
@@ -1017,7 +1217,10 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       void load(data.session?.user ?? null);
     });
-    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecoveryPending(true);
+      }
       window.setTimeout(() => { void load(session?.user ?? null); }, 0);
     });
     const expiryTimer = window.setInterval(() => {
@@ -1096,6 +1299,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     backendConfigured: isSupabaseConfigured,
     backendReady,
     backendError,
+    passwordRecoveryPending,
+    clearPasswordRecovery: () => setPasswordRecoveryPending(false),
     signIn: async (email, password) => {
       if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -1114,7 +1319,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (!account) return { ok: false, error: 'No account found for that email.' };
       if (account.accountStatus === 'suspended') return { ok: false, error: 'This account has been suspended by HAMLET operations.' };
       if (account.password !== password) return { ok: false, error: 'Incorrect password. Try demo1234 for demo accounts.' };
-      dispatch({ type: 'SIGN_IN', session: { userId: account.id, role: account.role, name: account.name, email: account.email, partnerRole: account.partnerRole, company: account.company, accountStatus: account.accountStatus ?? 'active', suspensionReason: account.suspensionReason } });
+      dispatch({ type: 'SIGN_IN', session: { userId: account.id, role: account.role, name: account.name, email: account.email, phone: account.phone, partnerRole: account.partnerRole, company: account.company, accountStatus: account.accountStatus ?? 'active', suspensionReason: account.suspensionReason } });
       return { ok: true, role: account.role };
     },
     signUpGuest: async ({ name, email, password, phone }) => {
@@ -1141,34 +1346,39 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         try {
           const remote = await loadSupabaseState(data.user);
           dispatch({ type: 'HYDRATE', state: remote });
-          return { ok: true };
+          return { ok: true, role: remote.session?.role };
         } catch (loadError) {
           return { ok: false, error: loadError instanceof Error ? loadError.message : 'Account was created but its profile could not be loaded.' };
         }
       }
 
+      const preauthorizedAdmin = state.adminBootstrapEmails.some(item => item.email === normalizedEmail);
       if (state.accounts.some(a => a.email.toLowerCase() === normalizedEmail)) {
         return { ok: false, error: 'An account with that email already exists. Sign in instead.' };
       }
+      const assignedRole: AccountRole = preauthorizedAdmin ? 'admin' : 'guest';
       const account: Account = {
         id: uid(),
         name: trimmedName,
         email: normalizedEmail,
         password,
-        role: 'guest',
+        role: assignedRole,
+        company: preauthorizedAdmin ? 'HAMLET' : undefined,
         phone: trimmedPhone || undefined,
         accountStatus: 'active',
         createdAt: nowIso(),
       };
       const session: Session = {
         userId: account.id,
-        role: 'guest',
+        role: assignedRole,
         name: account.name,
         email: account.email,
+        phone: account.phone,
+        company: account.company,
         accountStatus: 'active',
       };
       dispatch({ type: 'REGISTER_GUEST', account, session });
-      return { ok: true };
+      return { ok: true, role: assignedRole };
     },
     signOut: async () => {
       if (supabase) {
@@ -1179,15 +1389,100 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       dispatch({ type: 'SIGN_OUT' });
     },
+    requestPasswordReset: async (email) => {
+      const normalized = email.trim().toLowerCase();
+      if (!/^\S+@\S+\.\S+$/.test(normalized)) {
+        return { ok: false, error: 'Enter a valid email address.' };
+      }
+      if (supabase) {
+        const redirectTo = `${window.location.origin}${window.location.pathname}#/signin?mode=reset`;
+        const { error } = await supabase.auth.resetPasswordForEmail(normalized, { redirectTo });
+        if (error) return { ok: false, error: error.message };
+        return { ok: true };
+      }
+      return { ok: true };
+    },
+    updatePassword: async (newPassword) => {
+      if (newPassword.length < 6) {
+        return { ok: false, error: 'New password must be at least 6 characters.' };
+      }
+      if (supabase) {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) return { ok: false, error: error.message };
+        setPasswordRecoveryPending(false);
+        return { ok: true };
+      }
+      setPasswordRecoveryPending(false);
+      return { ok: true };
+    },
+    updateProfile: async ({ name, phone, company }) => {
+      const cleanName = name.trim();
+      const cleanPhone = phone?.trim() ?? '';
+      const cleanCompany = company?.trim();
+      if (cleanName.length < 2) {
+        return { ok: false, error: 'Enter your full name (at least 2 characters).' };
+      }
+      if (!state.session) {
+        return { ok: false, error: 'Sign in before updating your profile.' };
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('update_own_profile', {
+          next_full_name: cleanName,
+          next_phone: cleanPhone || null,
+          next_company: cleanCompany ?? null,
+        });
+        if (error) return { ok: false, error: error.message };
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) return { ok: false, error: authError.message };
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return { ok: true };
+      }
+      dispatch({ type: 'UPDATE_PROFILE', name: cleanName, phone: cleanPhone, company: cleanCompany });
+      return { ok: true };
+    },
     registerPartner: async (input) => {
       if (supabase) {
-        const session = state.session;
-        if (!session) return { ok: false, error: 'Create a guest account and sign in before submitting a partner application.' };
-        if (session.role !== 'guest') return { ok: false, error: 'Only guest accounts can submit a partner application.' };
+        let applicantUserId = state.session?.userId;
+        let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
+
+        if (!state.session) {
+          if (!input.password || input.password.length < 6) {
+            return { ok: false, error: 'Choose a password of at least 6 characters to create your HAMLET account.' };
+          }
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: applicantEmail,
+            password: input.password,
+            options: {
+              data: {
+                full_name: input.name.trim(),
+                phone: input.phone.trim(),
+              },
+            },
+          });
+          if (signUpError) return { ok: false, error: signUpError.message };
+          if (!signUpData.session || !signUpData.user) {
+            return { ok: true, needsEmailConfirmation: true };
+          }
+          applicantUserId = signUpData.user.id;
+          applicantEmail = signUpData.user.email ?? applicantEmail;
+        } else if (state.session.role !== 'guest') {
+          return {
+            ok: false,
+            error:
+              state.session.role === 'partner'
+                ? 'Your account is already an approved HAMLET Partner. Open your Partner Workspace instead.'
+                : 'Sign in with a non-admin account to submit a partner application.',
+          };
+        }
+
+        if (state.applications.some(a => a.applicantId === applicantUserId && a.status === 'pending')) {
+          return { ok: false, error: 'You already have a pending partner application under review.' };
+        }
+
         const { error } = await supabase.from('partner_applications').insert({
-          applicant_id: session.userId,
+          applicant_id: applicantUserId!,
           full_name: input.name.trim(),
-          email: input.email.trim(),
+          email: applicantEmail,
           phone: input.phone.trim(),
           company: input.company.trim(),
           role: input.role,
@@ -1206,14 +1501,81 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
       const account: Account = {
-        id: uid(), name: input.name, email: input.email, password: 'demo1234', role: 'partner',
+        id: uid(), name: input.name, email: input.email, password: input.password || 'demo1234', role: 'partner',
         partnerRole: input.role, company: input.company, phone: input.phone, createdAt: nowIso(),
       };
       const application: PartnerApplication = {
-        id: uid(), ...input, submittedAt: nowIso(), status: 'pending',
+        id: uid(), applicantId: account.id, ...input, submittedAt: nowIso(), status: 'pending',
       };
       dispatch({ type: 'REGISTER_PARTNER', account, application });
       return { ok: true };
+    },
+    resubmitPartnerApplication: async (id, input) => {
+      if (!state.session) throw new Error('Sign in before updating your partner application.');
+      if (supabase) {
+        const { error } = await supabase.rpc('resubmit_partner_application', {
+          target_application_id: id,
+          application_data: {
+            full_name: input.name.trim(),
+            phone: input.phone.trim(),
+            company: input.company.trim(),
+            role: input.role,
+            areas: input.areas,
+            properties_count: input.propertiesCount,
+            motivation: input.motivation.trim(),
+          },
+        });
+        if (error) throw new Error(`Could not resubmit application: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Application updated, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'RESUBMIT_PARTNER_APPLICATION',
+        id,
+        patch: {
+          name: input.name.trim(),
+          phone: input.phone.trim(),
+          company: input.company.trim(),
+          role: input.role,
+          areas: input.areas,
+          propertiesCount: input.propertiesCount,
+          motivation: input.motivation.trim(),
+        },
+        actor: state.session,
+      });
+    },
+    uploadPropertyImage: async (file) => {
+      if (!state.session) throw new Error('Sign in before uploading property photos.');
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Only JPEG, PNG, and WebP property photos are supported.');
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Each photo must be 5 MB or smaller.');
+      }
+      if (supabase) {
+        const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const objectPath = `${state.session.userId}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('property-media')
+          .upload(objectPath, file, { contentType: file.type, upsert: false });
+        if (uploadError) {
+          throw new Error(`Could not upload photo: ${uploadError.message}`);
+        }
+        const { data } = supabase.storage.from('property-media').getPublicUrl(objectPath);
+        return data.publicUrl;
+      }
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Could not read selected image.'));
+        };
+        reader.onerror = () => reject(new Error('Could not read selected image.'));
+        reader.readAsDataURL(file);
+      });
     },
     submitProperty: async (input) => {
       const s = state.session;
@@ -1518,39 +1880,51 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     reportIssue: async (input) => {
       if (supabase) {
         if (!state.session) throw new Error('Sign in before reporting a booking issue.');
-        const booking = state.bookings.find(item => item.ref === input.bookingRef);
+        const booking = state.bookings.find(item => item.ref === input.bookingRef || item.id === input.bookingRef);
         if (!booking) throw new Error('Could not find that booking. Refresh your bookings and try again.');
-        const { data, error } = await supabase.from('booking_issues').insert({
-          reference: `HML-IS-${crypto.randomUUID().slice(0, 12).toUpperCase()}`,
-          booking_id: booking.id,
-          reporter_id: state.session.userId,
-          category: input.category,
-          severity: input.severity,
-          subject: input.subject,
-          description: input.description,
-        }).select('*').single();
+        const { data: createdId, error } = await supabase.rpc('report_booking_issue', {
+          target_booking_id: booking.id,
+          issue_category: input.category,
+          issue_severity: input.severity,
+          issue_subject: input.subject.trim(),
+          issue_description: input.description.trim(),
+          evidence_items: input.evidence ?? [],
+        });
         if (error) throw new Error(`Could not report the issue: ${error.message}`);
-        const issue: Issue = {
-          id: data.id, ref: data.reference, bookingRef: booking.ref,
-          propertyTitle: booking.propertyTitle, category: data.category,
-          severity: data.severity, subject: data.subject, description: data.description,
-          reporter: state.session.name, reporterType: 'guest', status: data.status,
-          createdAt: data.created_at, updatedAt: data.updated_at,
-          evidence: data.evidence ?? [], resolution: data.resolution,
-          timeline: (data.timeline as TimelineEvent[] | undefined) ?? [],
-        };
-        dispatch({ type: 'HYDRATE', state: { ...state, issues: [issue, ...state.issues] } });
-        return issue;
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Issue saved, but refresh failed: ${authError.message}`);
+        const fresh = await loadSupabaseState(authData.user);
+        dispatch({ type: 'HYDRATE', state: fresh });
+        const created = fresh.issues.find(i => i.id === createdId) ?? fresh.issues[0];
+        if (!created) throw new Error('Issue reported, but could not load updated issue record.');
+        return created;
       }
       const seq = 7 + state.issues.length;
       const issue: Issue = {
         id: uid(), ref: `HML-IS-${String(seq).padStart(4, '0')}`, ...input,
         status: 'open', createdAt: nowIso(), updatedAt: nowIso(),
-        evidence: [],
-        timeline: [{ at: nowIso(), label: 'Issue reported', actor: input.reporter }],
+        evidence: input.evidence ?? [],
+        timeline: [{ at: nowIso(), label: `Issue reported (${input.reporterType})`, actor: input.reporter }],
       };
       dispatch({ type: 'ADD_ISSUE', issue });
       return issue;
+    },
+    appendIssueEvidence: async (issueId, evidenceNote) => {
+      if (!state.session) throw new Error('Sign in before attaching issue evidence.');
+      const cleanNote = evidenceNote.trim();
+      if (cleanNote.length < 4) throw new Error('Provide an evidence description of at least 4 characters.');
+      if (supabase) {
+        const { error } = await supabase.rpc('append_issue_evidence', {
+          target_issue_id: issueId,
+          evidence_note: cleanNote,
+        });
+        if (error) throw new Error(`Could not record evidence: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Evidence recorded, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({ type: 'APPEND_ISSUE_EVIDENCE', id: issueId, evidenceNote: cleanNote, actor: state.session });
     },
     updateIssue: async (id, status, opts) => {
       if (!state.session) throw new Error('Sign in before updating an issue.');
@@ -1700,6 +2074,62 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         cascadeSuspend: cascadeSuspendProperties,
         actor: state.session,
       });
+    },
+    setGuestAccountStatus: async (guestId, status, reason) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can suspend or reinstate guest accounts.');
+      }
+      const trimmedReason = reason.trim();
+      if (trimmedReason.length < 10) {
+        throw new Error('A documented reason of at least 10 characters is required.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('set_guest_account_status', {
+          target_guest_id: guestId,
+          next_status: status,
+          reason_note: trimmedReason,
+        });
+        if (error) throw new Error(`Could not update guest account status: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Guest status updated, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'SET_GUEST_STATUS',
+        guestId,
+        status,
+        reason: trimmedReason,
+        actor: state.session,
+      });
+    },
+    authorizeAdminEmail: async (email, note) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can authorize admin operators.');
+      }
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanNote = note.trim();
+      if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+        throw new Error('Enter a valid operator email address.');
+      }
+      if (cleanNote.length < 10) {
+        throw new Error('Provide a documented reason of at least 10 characters.');
+      }
+      if (supabase) {
+        const { data, error } = await supabase.rpc('authorize_admin_email', {
+          target_email: cleanEmail,
+          reason_note: cleanNote,
+        });
+        if (error) throw new Error(`Could not authorize admin email: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Admin authorization saved, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        const payload = (data ?? {}) as { promoted_existing?: boolean };
+        return { promotedExisting: Boolean(payload.promoted_existing) };
+      }
+      const promotedExisting = state.accounts.some(a => a.email.toLowerCase() === cleanEmail);
+      dispatch({ type: 'AUTHORIZE_ADMIN_EMAIL', email: cleanEmail, note: cleanNote, actor: state.session });
+      return { promotedExisting };
     },
     initializeBookingCheckout: async (bookingId, callbackUrl) => {
       if (!supabase) {
@@ -1861,7 +2291,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),
-  }), [state, backendReady, backendError, handleApplicationReview]);
+  }), [state, backendReady, backendError, passwordRecoveryPending, handleApplicationReview]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }

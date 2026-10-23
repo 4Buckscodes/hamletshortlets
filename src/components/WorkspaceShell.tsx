@@ -4,6 +4,7 @@ import { Menu, X, LogOut, RotateCcw, ExternalLink } from 'lucide-react';
 import { HamletMark } from './Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
+import { formatLagosHeadlineDate } from '../lib/pricing';
 
 export interface NavItem {
   to: string;
@@ -98,7 +99,7 @@ export function WorkspaceShell({
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
           <p className="hidden truncate text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-500 lg:block">HAMLET · {title} · Lagos pilot</p>
-          <p className="truncate text-[10.5px] font-semibold text-ink-500">Thursday, 22 Oct 2026</p>
+          <p className="truncate text-[10.5px] font-semibold text-ink-500">{formatLagosHeadlineDate()} · WAT</p>
         </div>
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain dark-scroll">{children}</main>
       </div>

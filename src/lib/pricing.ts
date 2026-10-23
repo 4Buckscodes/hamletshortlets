@@ -133,3 +133,45 @@ export function timeAgo(iso: string): string {
 export function datesOverlap(aIn: string, aOut: string, bIn: string, bOut: string): boolean {
   return new Date(aIn) < new Date(bOut) && new Date(aOut) > new Date(bIn);
 }
+
+/** Returns YYYY-MM-DD in Africa/Lagos offset by daysAhead calendar days. */
+export function lagosIsoDateOffset(daysAhead = 0): string {
+  const todayLagos = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Lagos',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const d = new Date(`${todayLagos}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + daysAhead);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Adds days to a YYYY-MM-DD ISO date string. */
+export function addDaysToIsoDate(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return lagosIsoDateOffset(Math.max(1, days));
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Formats the current date in Africa/Lagos (e.g. "Friday, 23 Oct 2026"). */
+export function formatLagosHeadlineDate(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Africa/Lagos',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(now);
+}
+
+/** Computes whole days remaining from today in Africa/Lagos until targetIsoDate (YYYY-MM-DD). */
+export function daysUntilLagosDate(targetIsoDate: string): number {
+  const todayIso = lagosIsoDateOffset(0);
+  const start = new Date(`${todayIso}T00:00:00Z`);
+  const end = new Date(`${targetIsoDate}T00:00:00Z`);
+  return Math.round((end.getTime() - start.getTime()) / 86400000);
+}
+
+

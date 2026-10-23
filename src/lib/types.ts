@@ -21,6 +21,7 @@ export interface Session {
   role: AccountRole;
   name: string;
   email: string;
+  phone?: string;
   partnerRole?: string;
   company?: string;
   accountStatus?: 'active' | 'suspended';
@@ -276,4 +277,12 @@ export interface BookingNotificationRecord {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AdminBootstrapEmail {
+  email: string;
+  note: string;
+  addedBy?: string;
+  createdAt: string;
+}
+
 
