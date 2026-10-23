@@ -3,17 +3,18 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BedDouble, Bath, Users, MapPin, ShieldCheck, X, Check, ChevronLeft, ChevronRight,
-  AlertTriangle, Info, ListChecks, Banknote, ArrowRight,
+  AlertTriangle, Info, ListChecks, Banknote, ArrowRight, UserPlus, LogIn,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { priceStay, nightsBetween, formatNaira } from '../lib/pricing';
+import { buildAuthPath } from '../lib/authRedirect';
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -28,9 +29,12 @@ export default function PropertyDetail() {
   const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
   const [checkIn, setCheckIn] = useState(searchParams.get('checkIn') ?? '2026-11-13');
   const [checkOut, setCheckOut] = useState(searchParams.get('checkOut') ?? '2026-11-16');
-  const [guests, setGuests] = useState(Number(searchParams.get('guests') ?? '2'));
-  const [showModal, setShowModal] = useState(false);
-  const [note, setNote] = useState('');
+  const [guests, setGuests] = useState(() => {
+    const parsed = Number(searchParams.get('guests') ?? '2');
+    return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
+  });
+  const [showModal, setShowModal] = useState(() => searchParams.get('book') === '1');
+  const [note, setNote] = useState(() => searchParams.get('note') ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [datesUnavailable, setDatesUnavailable] = useState(false);
 
@@ -80,12 +84,31 @@ export default function PropertyDetail() {
     );
   }
 
+  const bookingParams = new URLSearchParams({
+    checkIn,
+    checkOut,
+    guests: String(guests),
+    book: '1',
+  });
+  if (note.trim()) bookingParams.set('note', note.trim());
+  const bookingReturnPath = `/stays/${property.id}?${bookingParams.toString()}`;
+
+  const closeModal = () => {
+    setShowModal(false);
+    if (searchParams.has('book') || searchParams.has('note')) {
+      const cleaned = new URLSearchParams(searchParams);
+      cleaned.delete('book');
+      cleaned.delete('note');
+      setSearchParams(cleaned, { replace: true });
+    }
+  };
+
   const guestCanBook = property.status === 'approved';
   const warning = property.status === 'approved' && nights > 0 && guests > property.capacity
     ? `This home sleeps ${property.capacity} — please reduce guests to ${property.capacity} or fewer.` : '';
 
   const submitRequest = async () => {
-    if (!session) { navigate('/signin'); return; }
+    if (!session) { navigate(buildAuthPath({ signup: true, redirect: bookingReturnPath })); return; }
     if (session.role !== 'guest') { toast('Partner and admin accounts cannot book stays. Use a guest account.', 'error'); return; }
     setSubmitting(true);
     try {
@@ -94,7 +117,7 @@ export default function PropertyDetail() {
         checkIn, checkOut, guests, specialRequests: note.trim() || undefined,
       });
       if (!res.ok) { toast(res.error ?? 'Could not submit request.', 'error'); return; }
-      setShowModal(false);
+      closeModal();
       toast(`Booking request ${res.booking?.ref ?? ''} sent to the host.`);
       navigate('/account');
     } catch (error) {
@@ -260,7 +283,7 @@ export default function PropertyDetail() {
       <AnimatePresence>
         {showModal && pricing && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+            <div className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm" onClick={closeModal} />
             <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 320 }}
               className="relative max-h-[94vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
               <div className="flex items-start justify-between">
@@ -268,7 +291,7 @@ export default function PropertyDetail() {
                   <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Confirm your request</p>
                   <h2 className="mt-1 font-display text-xl font-black text-ink-900">{property.title}</h2>
                 </div>
-                <button onClick={() => setShowModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-50"><X size={20} /></button>
+                <button onClick={closeModal} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-50"><X size={20} /></button>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl bg-ink-50 p-3 text-center">
                 <div><p className="text-[10px] font-extrabold uppercase text-ink-400">Dates</p><p className="text-[12.5px] font-bold text-ink-900">{checkIn.slice(5)} → {checkOut.slice(5)}</p></div>
@@ -291,7 +314,20 @@ export default function PropertyDetail() {
                   {submitting ? 'Sending…' : <>Send booking request <ArrowRight size={16} /></>}
                 </button>
               ) : (
-                <Link to="/signin" className="btn-jade mt-4 w-full !py-4">Sign in to send request <ArrowRight size={16} /></Link>
+                <div className="mt-4 space-y-2">
+                  <Link
+                    to={buildAuthPath({ signup: true, redirect: bookingReturnPath })}
+                    className="btn-jade w-full !py-4"
+                  >
+                    <UserPlus size={16} /> Create guest account to book <ArrowRight size={16} />
+                  </Link>
+                  <Link
+                    to={buildAuthPath({ signup: false, redirect: bookingReturnPath })}
+                    className="btn-outline w-full !py-3 text-[13px]"
+                  >
+                    <LogIn size={15} /> Already have an account? Sign in
+                  </Link>
+                </div>
               )}
               <p className="mt-2 text-center text-[10.5px] font-medium text-ink-400">Request → host checks availability & terms → accepted with a payment deadline → confirmed only after verified provider payment.</p>
             </motion.div>

@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff, UserPlus, LogIn,
+  ShieldCheck, ArrowRight, User, Building2, KeyRound, ChevronDown, Eye, EyeOff, UserPlus, LogIn, Home,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
+import {
+  resolvePostSignInRedirect,
+  resolvePostSignUpRedirect,
+  sanitizeGuestRedirect,
+} from '../lib/authRedirect';
 
 const DEMO_ACCOUNTS = [
   { role: 'Guest', email: 'guest@hamlet.ng', desc: 'Book stays, track lifecycle, pay, report issues', Icon: User, color: 'text-jade-700 bg-jade-50 border-jade-200' },
@@ -19,6 +24,9 @@ export default function SignIn() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const creatingAccount = searchParams.get('mode') === 'signup';
+  const redirectParam = searchParams.get('redirect');
+  const safeRedirect = sanitizeGuestRedirect(redirectParam);
+  const returningToProperty = Boolean(safeRedirect && safeRedirect.startsWith('/stays/'));
 
   const [email, setEmail] = useState(() => (backendConfigured || creatingAccount ? '' : 'guest@hamlet.ng'));
   const [password, setPassword] = useState(() => (backendConfigured || creatingAccount ? '' : 'demo1234'));
@@ -30,6 +38,13 @@ export default function SignIn() {
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const updateAuthParams = (signup: boolean, nextRedirect: string | null = safeRedirect) => {
+    const next = new URLSearchParams();
+    if (signup) next.set('mode', 'signup');
+    if (nextRedirect) next.set('redirect', nextRedirect);
+    setSearchParams(next, { replace: true });
+  };
+
   const switchMode = (signup: boolean) => {
     setError('');
     setInfoMessage('');
@@ -39,10 +54,10 @@ export default function SignIn() {
         setPassword('');
       }
       setConfirmPassword('');
-      setSearchParams({ mode: 'signup' }, { replace: true });
+      updateAuthParams(true);
     } else {
       setConfirmPassword('');
-      setSearchParams({}, { replace: true });
+      updateAuthParams(false);
     }
   };
 
@@ -70,15 +85,20 @@ export default function SignIn() {
           setError(res.error ?? 'Account creation failed.');
           return;
         }
+        const postSignUpDestination = resolvePostSignUpRedirect(redirectParam);
         if (res.needsEmailConfirmation) {
-          setSearchParams({}, { replace: true });
+          updateAuthParams(false, postSignUpDestination);
           setPassword('');
           setConfirmPassword('');
           setInfoMessage('Guest account created. Check your email to confirm your address, then sign in below.');
           return;
         }
-        toast('Welcome to HAMLET — your guest account is ready.');
-        navigate('/account');
+        toast(
+          returningToProperty
+            ? 'Welcome to HAMLET — returning you to complete your booking request.'
+            : 'Welcome to HAMLET — explore verified Lagos stays.',
+        );
+        navigate(postSignUpDestination, { replace: true });
         return;
       }
 
@@ -88,7 +108,7 @@ export default function SignIn() {
         return;
       }
       toast('Welcome back.');
-      navigate(res.role === 'admin' ? '/admin' : res.role === 'partner' ? '/partner' : '/account');
+      navigate(resolvePostSignInRedirect(res.role, redirectParam), { replace: true });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Could not complete your request.');
     } finally {
@@ -97,7 +117,7 @@ export default function SignIn() {
   };
 
   const quick = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
-    if (creatingAccount) setSearchParams({}, { replace: true });
+    if (creatingAccount) updateAuthParams(false);
     setEmail(acc.email);
     setPassword('demo1234');
     setError('');
@@ -159,6 +179,15 @@ export default function SignIn() {
               <UserPlus size={15} /> Guest sign up
             </button>
           </div>
+
+          {returningToProperty && (
+            <p className="mb-4 flex items-center gap-2 rounded-xl border border-jade-200 bg-jade-50 px-3 py-2.5 text-[11.5px] font-semibold text-jade-900">
+              <Home size={14} className="shrink-0 text-jade-700" />
+              <span>
+                You’ll return directly to your selected stay after {creatingAccount ? 'creating your guest account' : 'signing in'}.
+              </span>
+            </p>
+          )}
 
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
             {creatingAccount ? 'New guest account' : 'Welcome back'}
@@ -288,7 +317,10 @@ export default function SignIn() {
             <button type="submit" disabled={loading} className="btn-jade w-full !py-4 text-[15px]">
               {loading ? 'Please wait…' : (
                 <>
-                  {creatingAccount ? 'Create guest account' : 'Sign in'} <ArrowRight size={16} />
+                  {creatingAccount
+                    ? (returningToProperty ? 'Create guest account & continue' : 'Create guest account')
+                    : 'Sign in'}{' '}
+                  <ArrowRight size={16} />
                 </>
               )}
             </button>

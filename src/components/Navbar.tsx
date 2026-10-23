@@ -1,10 +1,11 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { HamletWordmark } from './Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { HAMLET_TAGLINE } from '../lib/brand';
+import { buildAuthPath } from '../lib/authRedirect';
 
 export function GuestNavbar() {
   const { state, signOut } = useHamlet();
@@ -12,8 +13,14 @@ export function GuestNavbar() {
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const s = state.session;
   const dashboardPath = s?.role === 'admin' ? '/admin' : s?.role === 'partner' ? '/partner' : '/account';
+  const propertyRedirect = location.pathname.startsWith('/stays/')
+    ? `${location.pathname}${location.search}`
+    : null;
+  const signUpHref = buildAuthPath({ signup: true, redirect: propertyRedirect });
+  const signInHref = buildAuthPath({ signup: false, redirect: propertyRedirect });
 
   const nav = [
     { to: '/stays', label: 'Explore stays' },
@@ -66,10 +73,10 @@ export function GuestNavbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/signin?mode=signup" className="hidden rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-2 text-[12px] font-bold text-jade-800 transition hover:border-jade-400 hover:bg-jade-100 sm:inline-flex">
+              <Link to={signUpHref} className="hidden rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-2 text-[12px] font-bold text-jade-800 transition hover:border-jade-400 hover:bg-jade-100 sm:inline-flex">
                 Guest sign up
               </Link>
-              <Link to="/signin" className="btn-dark !px-4 !py-2 text-[12px]">Sign in</Link>
+              <Link to={signInHref} className="btn-dark !px-4 !py-2 text-[12px]">Sign in</Link>
             </div>
           )}
           <button className="rounded-xl border border-ink-200 p-2 md:hidden" onClick={() => setOpen(v => !v)} aria-label="Menu">
@@ -82,8 +89,8 @@ export function GuestNavbar() {
           <div className="flex flex-col gap-1">
             {nav.map(n => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">{n.label}</Link>)}
             <Link to="/partner/register" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50"><LayoutDashboard size={15} /> List your property</Link>
-            {!s && <Link to="/signin?mode=signup" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50">Guest sign up</Link>}
-            {!s && <Link to="/signin" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">Sign in</Link>}
+            {!s && <Link to={signUpHref} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-jade-800 hover:bg-jade-50">Guest sign up</Link>}
+            {!s && <Link to={signInHref} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-50">Sign in</Link>}
           </div>
         </div>
       )}

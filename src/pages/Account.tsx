@@ -208,7 +208,10 @@ export default function Account() {
           <ShieldCheck size={40} className="mx-auto text-jade-600" />
           <h1 className="mt-4 font-display text-2xl font-black text-ink-900">Sign in to see your bookings</h1>
           <p className="mt-2 text-sm text-ink-500">Track requests, complete payment and report issues from one place.</p>
-          <Link to="/signin" className="btn-jade mt-6">Sign in</Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+            <Link to="/signin?redirect=%2Faccount" className="btn-jade">Sign in</Link>
+            <Link to="/signin?mode=signup" className="btn-outline">Guest sign up</Link>
+          </div>
         </div>
       </GuestLayout>
     );
