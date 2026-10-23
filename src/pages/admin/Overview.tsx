@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target,
+  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star,
 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { formatNaira, formatDateTime } from '../../lib/pricing';
@@ -145,6 +145,46 @@ export default function AdminOverview() {
           </div>
         </section>
       </div>
+
+      {/* Private Pilot Guest Feedback */}
+      <section className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50">
+              <MessageSquareQuote size={17} className="text-brass-400" /> Private pilot guest feedback ({state.feedback.length})
+            </h2>
+            <p className="mt-0.5 text-[11px] font-medium text-ink-400">
+              Public reviews are deferred in Release 1. Post-stay guest feedback is visible strictly to HAMLET operations and the submitting guest.
+            </p>
+          </div>
+        </div>
+        {state.feedback.length === 0 ? (
+          <p className="mt-4 rounded-xl border border-dashed border-ink-800 py-8 text-center text-[12px] font-semibold text-ink-500">
+            No private stay feedback submitted yet.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {state.feedback.map(fb => (
+              <article key={fb.id} className="rounded-xl border border-ink-800 bg-ink-850/60 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10.5px] font-bold text-brass-300">{fb.bookingRef}</span>
+                    <span className="chip border border-ink-700 bg-ink-900 text-ink-200">{fb.category}</span>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <Star key={n} size={13} className={n <= fb.rating ? 'fill-brass-400 text-brass-400' : 'text-ink-700'} />
+                    ))}
+                  </div>
+                </div>
+                {fb.propertyTitle && <p className="mt-1 text-[11.5px] font-bold text-ink-100">{fb.propertyTitle}</p>}
+                <p className="mt-1 text-[12px] font-medium leading-relaxed text-ink-200">“{fb.text}”</p>
+                <p className="mt-1.5 text-[10px] font-semibold text-ink-500">{fb.guestName} · {formatDateTime(fb.at)}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

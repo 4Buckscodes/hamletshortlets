@@ -14,7 +14,7 @@ import { isSupabaseConfigured, supabase } from './supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface FeedbackItem {
-  id: string; at: string; bookingRef: string; guestName: string;
+  id: string; at: string; bookingRef: string; propertyTitle?: string; guestName: string;
   rating: number; text: string; category: string;
 }
 
@@ -63,7 +63,9 @@ type Action =
   | { type: 'SIGN_OUT' }
   | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication }
   | { type: 'ADD_PROPERTY'; property: Property }
+  | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string }
   | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; verification?: Property['verification']; actor: Session }
+  | { type: 'SET_PARTNER_STATUS'; partnerId: string; status: 'active' | 'suspended'; reason: string; cascadeSuspend: boolean; actor: Session }
   | { type: 'ADD_BOOKING'; booking: Booking }
   | { type: 'BOOKING_TRANSITION'; id: string; to: Booking['status']; actor: Session; note?: string; reason?: string }
   | { type: 'VERIFY_PAYMENT'; id: string; actor: Session; providerRef: string; provider: string }
@@ -108,9 +110,14 @@ type RemoteBooking = {
 };
 
 type RemoteApplication = {
-  id: string; full_name: string; email: string; phone: string; company: string; role: string;
+  id: string; applicant_id: string; full_name: string; email: string; phone: string; company: string; role: string;
   areas: string[]; properties_count: number; motivation: string; status: PartnerApplication['status'];
   review_note?: string; submitted_at: string;
+};
+
+type RemoteFeedback = {
+  id: string; booking_id: string; guest_id: string; rating: number;
+  category: string; feedback_text: string; created_at: string;
 };
 
 type RemoteIssue = {
@@ -128,7 +135,8 @@ type RemoteLedgerRow = {
 
 type RemoteProfile = {
   id: string; full_name: string; role: AccountRole; phone?: string;
-  company?: string; partner_role?: string; created_at: string;
+  company?: string; partner_role?: string; account_status?: 'active' | 'suspended';
+  suspension_reason?: string; created_at: string;
 };
 
 type RemoteAuditEntry = {
@@ -138,10 +146,14 @@ type RemoteAuditEntry = {
 function toRemoteProperty(
   row: RemoteProperty,
   userId: string,
-  accesses: { property_id: string; user_id: string }[],
+  accesses: { property_id: string; user_id: string; access_role?: string }[],
   submission?: RemotePropertySubmission,
+  profileById?: Map<string, RemoteProfile>,
 ): Property {
   const propertyAccess = accesses.filter(access => access.property_id === row.id);
+  const submitterAccess = propertyAccess.find(access => access.access_role === 'submitter') ?? propertyAccess[0];
+  const submitterProfile = submitterAccess ? profileById?.get(submitterAccess.user_id) : undefined;
+  const resolvedPartnerName = submitterProfile?.full_name || 'HAMLET partner';
   return {
     id: row.id,
     title: row.title,
@@ -162,9 +174,9 @@ function toRemoteProperty(
     status: row.status,
     verification: row.verification ?? { ownership: 'pending_review', identity: 'pending_review', authority: 'pending_review', inspection: 'missing' },
     trustLabel: row.trust_label,
-    ownerName: 'HAMLET partner',
-    ownerId: propertyAccess.find(access => access.user_id === userId)?.user_id ?? '',
-    submittedBy: 'HAMLET partner',
+    ownerName: resolvedPartnerName,
+    ownerId: propertyAccess.find(access => access.user_id === userId)?.user_id ?? submitterAccess?.user_id ?? '',
+    submittedBy: resolvedPartnerName,
     submittedRole: submission?.submitted_role ?? 'Property partner',
     authorityBasis: submission?.authority_basis ?? 'Verification details are recorded on this listing.',
     docs: submission?.docs ?? [],
@@ -239,6 +251,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     email: user.email ?? '',
     partnerRole: profile.partner_role ?? undefined,
     company: profile.company ?? undefined,
+    accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
+    suspensionReason: (profile.suspension_reason as string | undefined) ?? undefined,
   };
 
   const { error: expiryError } = await supabase.rpc('expire_overdue_bookings');
@@ -253,9 +267,10 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     ledgerResult,
     applicationResult,
     issueResult,
+    feedbackResult,
     auditResult,
   ] = await Promise.all([
-    supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,created_at').order('created_at', { ascending: false }),
+    supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,account_status,suspension_reason,created_at').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
     supabase.from('property_access').select('property_id,user_id,access_role,scope,commission_rate,commission_note,status,granted_at,revoked_at'),
     supabase.from('property_private_records').select('property_id,record_type,record_data').eq('record_type', 'partner_submission'),
@@ -263,6 +278,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     supabase.from('booking_payment_records').select('*').order('created_at', { ascending: false }),
     supabase.from('partner_applications').select('*').order('submitted_at', { ascending: false }),
     supabase.from('booking_issues').select('*').order('created_at', { ascending: false }),
+    supabase.from('booking_feedback').select('*').order('created_at', { ascending: false }),
     supabase.from('admin_audit_log').select('*').order('created_at', { ascending: false }).limit(100),
   ]);
 
@@ -275,6 +291,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     ledgerResult,
     applicationResult,
     issueResult,
+    feedbackResult,
     auditResult,
   ]) {
     if (result.error) throw new Error(`Could not load HAMLET data: ${result.error.message}`);
@@ -294,12 +311,13 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       record.record_data as RemotePropertySubmission,
     ]),
   );
-  const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id)));
+  const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id), profileById));
   const propertyById = new Map(properties.map(property => [property.id, property]));
   const bookings = ((bookingResult.data ?? []) as unknown as RemoteBooking[])
     .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session, profileById));
   const applications = ((applicationResult.data ?? []) as unknown as RemoteApplication[]).map(application => ({
     id: application.id,
+    applicantId: application.applicant_id,
     name: application.full_name,
     email: application.email,
     phone: application.phone,
@@ -381,6 +399,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
         partnerRole: row.partner_role ?? undefined,
         company: row.company ?? undefined,
         phone: row.phone ?? undefined,
+        accountStatus: row.account_status ?? 'active',
+        suspensionReason: row.suspension_reason ?? undefined,
         createdAt: row.created_at,
       }))
     : [{
@@ -392,8 +412,24 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
         partnerRole: session.partnerRole,
         company: session.company,
         phone: profile.phone ?? undefined,
+        accountStatus: session.accountStatus ?? 'active',
+        suspensionReason: session.suspensionReason,
         createdAt: profile.created_at,
       }];
+  const feedback: FeedbackItem[] = ((feedbackResult.data ?? []) as unknown as RemoteFeedback[]).map(row => {
+    const booking = bookingById.get(row.booking_id);
+    const guestProfile = profileById.get(row.guest_id);
+    return {
+      id: row.id,
+      at: row.created_at,
+      bookingRef: booking?.ref ?? row.booking_id,
+      propertyTitle: booking?.propertyTitle,
+      guestName: row.guest_id === user.id ? session.name : (guestProfile?.full_name || 'Guest'),
+      rating: row.rating,
+      text: row.feedback_text,
+      category: row.category,
+    };
+  });
   const audit: AuditEntry[] = ((auditResult.data ?? []) as unknown as RemoteAuditEntry[]).map(entry => {
     const actorProfile = profileById.get(entry.actor_id);
     return {
@@ -419,6 +455,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     applications,
     assignments,
     audit,
+    feedback,
     session,
   };
 }
@@ -460,6 +497,80 @@ function reducer(state: DBState, action: Action): DBState {
         }, ...state.assignments],
         audit: [auditEntry(action.property.submittedBy, action.property.submittedRole, 'property_submitted', action.property.title, 'Property submitted for review'), ...state.audit],
       };
+    case 'UPDATE_AND_RESUBMIT_PROPERTY': {
+      const p = state.properties.find(x => x.id === action.id);
+      if (!p) return state;
+      const updatedDocs = action.patch.docs.map(d => {
+        const existingVerified = p.docs.find(ed => ed.label === d.label && ed.status === 'verified');
+        return existingVerified ? existingVerified : { ...d, status: d.status === 'missing' ? ('missing' as const) : ('self_reported' as const) };
+      });
+      const updatedProperty: Property = {
+        ...p,
+        ...action.patch,
+        docs: updatedDocs,
+        status: 'submitted',
+        trustLabel: 'Under review',
+        verification: {
+          ownership: p.verification.ownership === 'verified' ? 'verified' : 'pending_review',
+          identity: p.verification.identity === 'verified' ? 'verified' : 'pending_review',
+          authority: p.verification.authority === 'verified' ? 'verified' : 'pending_review',
+          inspection: p.verification.inspection === 'verified' ? 'verified' : 'missing',
+        },
+      };
+      return {
+        ...state,
+        properties: state.properties.map(x => (x.id === action.id ? updatedProperty : x)),
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, 'property_resubmitted', updatedProperty.title, action.note ?? 'Listing details and authority declarations updated and resubmitted for review.'),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'SET_PARTNER_STATUS': {
+      const partner = state.accounts.find(a => a.id === action.partnerId);
+      if (!partner) return state;
+      const nextAccounts = state.accounts.map(a =>
+        a.id === action.partnerId
+          ? {
+              ...a,
+              accountStatus: action.status,
+              suspensionReason: action.status === 'suspended' ? action.reason : undefined,
+            }
+          : a,
+      );
+      let cascadedCount = 0;
+      const nextProperties = action.status === 'suspended' && action.cascadeSuspend
+        ? state.properties.map(prop => {
+            if (prop.status === 'approved' && prop.ownerId === action.partnerId) {
+              cascadedCount += 1;
+              return {
+                ...prop,
+                status: 'suspended' as const,
+                trustLabel: 'Under review',
+                reviewNote: `Listing suspended following partner account suspension: ${action.reason}`,
+              };
+            }
+            return prop;
+          })
+        : state.properties;
+      return {
+        ...state,
+        accounts: nextAccounts,
+        properties: nextProperties,
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            action.status === 'suspended' ? 'partner_suspended' : 'partner_reinstated',
+            partner.name,
+            action.status === 'suspended'
+              ? `Partner account suspended (${cascadedCount} approved listing(s) suspended). Reason: ${action.reason}`
+              : `Partner account reinstated to active. Note: ${action.reason}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
     case 'PROPERTY_REVIEW': {
       const p = state.properties.find(x => x.id === action.id);
       if (!p) return state;
@@ -693,19 +804,26 @@ interface Store {
   signOut: () => Promise<void>;
   registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<{ ok: boolean; error?: string }>;
   submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
+  updateAndResubmitProperty: (id: string, input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>, correctionNote?: string) => Promise<void>;
   reviewProperty: (id: string, status: Property['status'], note?: string, verification?: Property['verification']) => Promise<void>;
+  setPartnerAccountStatus: (partnerId: string, status: 'active' | 'suspended', reason: string, cascadeSuspendProperties?: boolean) => Promise<void>;
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   verifyPayment: (id: string) => void;
+  initializeBookingCheckout: (bookingId: string, callbackUrl?: string) => Promise<{ authorizationUrl: string; reference: string }>;
   recordBookingRefund: (id: string, input: { amount: number; providerRef?: string; note: string }) => Promise<void>;
   reconcileLedgerEntry: (id: string, input: { status: LedgerEntry['status']; variance?: number; note?: string }) => Promise<void>;
+  recordLedgerAdjustment: (input: { bookingId: string; type: LedgerEntry['type']; amount: number; status: LedgerEntry['status']; description: string; providerRef?: string; variance?: number; note?: string }) => Promise<void>;
   reportIssue: (input: { bookingRef?: string; propertyTitle?: string; category: Issue['category']; severity: Issue['severity']; subject: string; description: string; reporter: string; reporterType: Issue['reporterType'] }) => Promise<Issue>;
   updateIssue: (id: string, status: IssueStatus, opts?: { note?: string; assignee?: string; assigneeId?: string; resolution?: string }) => Promise<void>;
   reviewApplication: (id: string, status: PartnerApplication['status'], note?: string) => Promise<void>;
   approvePartner: (applicationId: string, note?: string) => Promise<void>;
   grantAssignment: (input: Omit<PartnerAssignment, 'id' | 'grantedAt' | 'status'>) => Promise<void>;
   revokeAssignment: (id: string, note?: string) => Promise<void>;
+  submitBookingFeedback: (input: { bookingId: string; bookingRef: string; propertyTitle?: string; rating: number; category: string; text: string }) => Promise<void>;
   addFeedback: (item: Omit<FeedbackItem, 'id' | 'at'>) => void;
+  getUnavailablePropertyIds: (checkIn: string, checkOut: string) => Promise<string[]>;
+  refreshState: () => Promise<void>;
   resetDemo: () => void;
 }
 
@@ -1260,6 +1378,253 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         return;
       }
       dispatch({ type: 'REVOKE_ASSIGNMENT', id, actor: state.session });
+    },
+    updateAndResubmitProperty: async (id, input, correctionNote) => {
+      if (!state.session) throw new Error('Sign in before editing a property.');
+      if (state.session.accountStatus === 'suspended') {
+        throw new Error('Your partner account is currently suspended. Contact HAMLET operations.');
+      }
+      const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+      const duplicate = state.properties.find(
+        other =>
+          other.id !== id &&
+          other.status !== 'rejected' &&
+          normalize(other.area) === normalize(input.area) &&
+          normalize(other.address) === normalize(input.address) &&
+          normalize(other.title) === normalize(input.title),
+      );
+      if (duplicate) {
+        throw new Error('A listing with this title and address already exists in this area.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('update_and_resubmit_partner_property', {
+          target_property_id: id,
+          listing_data: {
+            title: input.title,
+            property_type: input.type,
+            area: input.area,
+            public_address: input.address,
+            nightly_rate: input.nightlyRate,
+            cleaning_fee: input.cleaningFee,
+            mandatory_charges: input.mandatoryCharges,
+            refundable_deposit: input.deposit,
+            bedrooms: input.bedrooms,
+            bathrooms: input.bathrooms,
+            capacity: input.capacity,
+            bed_setup: input.bedSetup,
+            amenities: input.amenities,
+            image_urls: input.images,
+            house_rules: input.houseRules,
+          },
+          submission_data: {
+            authority_basis: input.authorityBasis,
+            submitted_role: input.submittedRole || state.session.partnerRole || 'Property partner',
+            docs: input.docs.map(doc => ({
+              label: doc.label,
+              status: doc.status === 'missing' ? 'missing' : 'self_reported',
+            })),
+          },
+          correction_note: correctionNote?.trim() || null,
+        });
+        if (error) throw new Error(`Could not save corrections: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Corrections saved, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'UPDATE_AND_RESUBMIT_PROPERTY',
+        id,
+        patch: input,
+        actor: state.session,
+        note: correctionNote?.trim() || undefined,
+      });
+    },
+    setPartnerAccountStatus: async (partnerId, status, reason, cascadeSuspendProperties = true) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can suspend or reinstate partner accounts.');
+      }
+      const trimmedReason = reason.trim();
+      if (trimmedReason.length < 10) {
+        throw new Error('A documented reason of at least 10 characters is required.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('set_partner_account_status', {
+          target_partner_id: partnerId,
+          next_status: status,
+          reason_note: trimmedReason,
+          cascade_suspend_properties: cascadeSuspendProperties,
+        });
+        if (error) throw new Error(`Could not update partner status: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Partner status updated, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'SET_PARTNER_STATUS',
+        partnerId,
+        status,
+        reason: trimmedReason,
+        cascadeSuspend: cascadeSuspendProperties,
+        actor: state.session,
+      });
+    },
+    initializeBookingCheckout: async (bookingId, callbackUrl) => {
+      if (!supabase) {
+        throw new Error('Server checkout initialization is only used in connected Supabase mode.');
+      }
+      const { data, error } = await supabase.functions.invoke<{
+        ok?: boolean;
+        authorization_url?: string;
+        reference?: string;
+        error?: string;
+      }>('paystack-initialize', {
+        body: {
+          booking_id: bookingId,
+          callback_url: callbackUrl ?? `${window.location.origin}${window.location.pathname}#/account?payment=returned`,
+        },
+      });
+      if (error) {
+        throw new Error(
+          error.message || 'Online checkout is awaiting live Paystack merchant configuration. Do not pay outside HAMLET.',
+        );
+      }
+      if (!data?.ok || !data.authorization_url || !data.reference) {
+        throw new Error(
+          data?.error ?? 'Online checkout is awaiting live Paystack merchant configuration. Do not pay outside HAMLET.',
+        );
+      }
+      return { authorizationUrl: data.authorization_url, reference: data.reference };
+    },
+    recordLedgerAdjustment: async (input) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can record manual ledger adjustments.');
+      }
+      const desc = input.description.trim();
+      if (desc.length < 8) throw new Error('Provide a description of at least 8 characters.');
+      const amount = Math.round(input.amount);
+      if (!Number.isFinite(amount) || amount < 0) throw new Error('Amount must be a non-negative Naira value.');
+      const variance = Math.round(input.variance ?? 0);
+      const note = input.note?.trim() || undefined;
+      if (supabase) {
+        const { error } = await supabase.rpc('record_ledger_adjustment', {
+          target_booking_id: input.bookingId,
+          entry_type: input.type,
+          entry_amount: amount,
+          entry_status: input.status,
+          entry_description: desc,
+          provider_ref: input.providerRef?.trim() || null,
+          entry_variance: variance,
+          entry_note: note ?? null,
+        });
+        if (error) throw new Error(`Could not record ledger adjustment: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Ledger entry recorded, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      const booking = state.bookings.find(b => b.id === input.bookingId || b.ref === input.bookingId);
+      if (!booking) throw new Error('Booking not found for ledger adjustment.');
+      const entry: LedgerEntry = {
+        id: uid(),
+        at: nowIso(),
+        bookingRef: booking.ref,
+        propertyTitle: booking.propertyTitle,
+        type: input.type,
+        description: desc,
+        amount,
+        status: input.status,
+        providerRef: input.providerRef?.trim() || undefined,
+        operator: state.session.name,
+        variance,
+        note,
+      };
+      dispatch({ type: 'ADD_LEDGER', entries: [entry] });
+      dispatch({
+        type: 'AUDIT',
+        actor: state.session,
+        action: 'ledger_manual_adjustment',
+        target: booking.ref,
+        detail: `Recorded ${input.type} (${formatNaira(amount)}, status=${input.status}): ${desc}`,
+      });
+    },
+    submitBookingFeedback: async (input) => {
+      if (!state.session || state.session.role !== 'guest') {
+        throw new Error('Sign in as the booking guest to submit private feedback.');
+      }
+      const cleanText = input.text.trim();
+      if (cleanText.length < 5) {
+        throw new Error('Please write at least 5 characters of private feedback.');
+      }
+      if (state.feedback.some(f => f.bookingRef === input.bookingRef)) {
+        throw new Error('Private feedback has already been submitted for this stay.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('submit_booking_feedback', {
+          target_booking_id: input.bookingId,
+          feedback_rating: input.rating,
+          feedback_category: input.category,
+          feedback_comment: cleanText,
+        });
+        if (error) throw new Error(`Could not submit feedback: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(`Feedback saved, but refresh failed: ${authError.message}`);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'ADD_FEEDBACK',
+        item: {
+          id: uid(),
+          at: nowIso(),
+          bookingRef: input.bookingRef,
+          propertyTitle: input.propertyTitle,
+          guestName: state.session.name,
+          rating: input.rating,
+          category: input.category,
+          text: cleanText,
+        },
+      });
+      dispatch({
+        type: 'AUDIT',
+        actor: state.session,
+        action: 'guest_feedback_submitted',
+        target: input.bookingRef,
+        detail: `Private pilot feedback (${input.rating}/5 · ${input.category}) recorded.`,
+      });
+    },
+    getUnavailablePropertyIds: async (checkIn, checkOut) => {
+      if (!checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) return [];
+      if (supabase) {
+        const { data, error } = await supabase.rpc('get_unavailable_property_ids', {
+          requested_check_in: checkIn,
+          requested_check_out: checkOut,
+        });
+        if (error) throw new Error(`Could not check stay availability: ${error.message}`);
+        return (data as string[] | null) ?? [];
+      }
+      const now = Date.now();
+      return [
+        ...new Set(
+          state.bookings
+            .filter(
+              b =>
+                new Date(b.checkIn) < new Date(checkOut) &&
+                new Date(b.checkOut) > new Date(checkIn) &&
+                (b.status === 'confirmed' ||
+                  (b.status === 'awaiting_payment' &&
+                    (!b.paymentDeadline || new Date(b.paymentDeadline).getTime() > now))),
+            )
+            .map(b => b.propertyId),
+        ),
+      ];
+    },
+    refreshState: async () => {
+      if (!supabase) return;
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError) throw new Error(authError.message);
+      dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),

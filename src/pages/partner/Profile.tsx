@@ -6,7 +6,7 @@ import { formatDateTime } from '../../lib/pricing';
 export default function PartnerProfile() {
   const { state } = useHamlet();
   const s = state.session!;
-  const application = state.applications.find(a => a.email === s.email);
+  const application = state.applications.find(a => a.applicantId === s.userId || a.email === s.email);
 
   const statusIcon = {
     pending: <Clock3 size={18} className="text-amber-400" />,

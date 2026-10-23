@@ -11,6 +11,8 @@ export interface Account {
   partnerRole?: string; // owner | agent | property_manager | shortlet_operator | cohost | referral
   company?: string;
   phone?: string;
+  accountStatus?: 'active' | 'suspended';
+  suspensionReason?: string;
   createdAt: string;
 }
 
@@ -21,6 +23,8 @@ export interface Session {
   email: string;
   partnerRole?: string;
   company?: string;
+  accountStatus?: 'active' | 'suspended';
+  suspensionReason?: string;
 }
 
 export type PropertyStatus =
@@ -195,6 +199,7 @@ export type ApplicationStatus = 'pending' | 'approved' | 'needs_correction' | 'r
 
 export interface PartnerApplication {
   id: string;
+  applicantId?: string;
   name: string;
   email: string;
   phone: string;
