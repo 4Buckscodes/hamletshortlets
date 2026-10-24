@@ -17,6 +17,7 @@ import SignIn from './pages/SignIn';
 import PartnerRegister from './pages/PartnerRegister';
 import Legal from './pages/Legal';
 
+const Wayfinder = lazy(() => import('./pages/Wayfinder'));
 const PartnerLayout = lazy(() => import('./pages/partner/PartnerLayout'));
 const PartnerOverview = lazy(() => import('./pages/partner/Overview'));
 const PartnerProperties = lazy(() => import('./pages/partner/Properties'));
@@ -94,6 +95,7 @@ export default function App() {
                 <Route path="/safety" element={<Safety />} />
                 <Route path="/faqs" element={<Faqs />} />
                 <Route path="/account" element={<Account />} />
+                <Route path="/wayfinder/:bookingId" element={<Wayfinder />} />
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignupRedirect />} />
                 <Route path="/partner/register" element={<PartnerRegister />} />

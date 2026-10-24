@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BedDouble, Bath, Users, MapPin, ShieldCheck, X, Check, ChevronLeft, ChevronRight,
-  AlertTriangle, Info, ListChecks, Banknote, ArrowRight, UserPlus, LogIn, CalendarClock, Tag,
+  AlertTriangle, Info, ListChecks, Banknote, ArrowRight, UserPlus, LogIn, CalendarClock, Tag, Compass, Lock,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { TrustBadge } from '../components/Badges';
@@ -107,6 +107,16 @@ export default function PropertyDetail() {
   const nights = nightsBetween(checkIn, checkOut);
   const pricing = property ? priceStay(property, checkIn, checkOut) : null;
   const session = state.session;
+
+  const activeConfirmedGuestBooking = useMemo(() => {
+    if (!property || !session) return undefined;
+    return state.bookings.find(
+      b =>
+        b.propertyId === property.id &&
+        b.guestId === session.userId &&
+        b.status === 'confirmed',
+    );
+  }, [property, session, state.bookings]);
 
   const availabilitySummary = useMemo(() => {
     if (!property) return null;
@@ -456,6 +466,93 @@ export default function PropertyDetail() {
             <ul className="mt-2.5 grid gap-2 sm:grid-cols-2">
               {property.houseRules.map(r => <li key={r} className="flex items-start gap-2 text-[13px] font-medium text-ink-700"><ListChecks size={15} className="mt-0.5 shrink-0 text-jade-600" />{r}</li>)}
             </ul>
+
+            {/* Location & Wayfinder Arrival Overview */}
+            <div className="mt-7 rounded-2xl border border-ink-200 bg-white p-4 sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+                    <Compass size={13} className="shrink-0" /> HAMLET Wayfinder · Location & arrival
+                  </span>
+                  <h2 className="mt-1 font-display text-base font-black text-ink-900">
+                    {property.area}, Lagos
+                  </h2>
+                </div>
+                {property.wayfinderStatus === 'guide_ready' ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-jade-200 bg-jade-50 px-2.5 py-1 text-[10.5px] font-bold text-jade-800">
+                    <ShieldCheck size={12} className="shrink-0 text-jade-700" /> Door-to-door arrival guide ready
+                  </span>
+                ) : property.locationAccuracy === 'verified_entrance' ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10.5px] font-bold text-sky-900">
+                    <MapPin size={12} className="shrink-0 text-sky-700" /> Entrance pin verified · Guide partial
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2.5 py-1 text-[10.5px] font-bold text-ink-600">
+                    Street address on file
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-2 text-[13px] font-semibold text-ink-800">
+                {property.address}
+              </p>
+
+              {property.publicLocationSummary && (
+                <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-ink-600">
+                  {property.publicLocationSummary}
+                </p>
+              )}
+
+              {property.publicLandmarks && property.publicLandmarks.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                    Nearby public landmarks
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {property.publicLandmarks.map(lm => (
+                      <span key={lm} className="rounded-lg border border-ink-100 bg-ink-50/70 px-2.5 py-1 text-[11.5px] font-semibold text-ink-700">
+                        {lm}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { step: '1. Area', desc: `${property.area} neighbourhood` },
+                  { step: '2. Entrance', desc: 'Google Maps gate pin' },
+                  { step: '3. Building', desc: 'Compound & block turns' },
+                  { step: '4. Door', desc: 'Floor & check-in access' },
+                ].map(item => (
+                  <div key={item.step} className="rounded-xl border border-ink-100 bg-ink-50/50 px-3 py-2">
+                    <p className="text-[10.5px] font-extrabold text-jade-800">{item.step}</p>
+                    <p className="mt-0.5 text-[11px] font-medium text-ink-600">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {activeConfirmedGuestBooking ? (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-jade-200 bg-jade-50 px-3.5 py-3">
+                  <p className="text-[12px] font-bold text-jade-900">
+                    You have a confirmed stay here ({activeConfirmedGuestBooking.ref}).
+                  </p>
+                  <Link
+                    to={`/wayfinder/${activeConfirmedGuestBooking.id}`}
+                    className="btn-jade !px-3.5 !py-2 text-[12px]"
+                  >
+                    <Compass size={14} /> Open Wayfinder
+                  </Link>
+                </div>
+              ) : (
+                <p className="mt-3 flex items-start gap-1.5 text-[11px] font-medium leading-relaxed text-ink-500">
+                  <Lock size={13} className="mt-0.5 shrink-0 text-ink-400" />
+                  <span>
+                    For resident safety, exact entrance coordinates, internal compound directions, apartment numbers, and check-in codes are shared exclusively after your booking is confirmed.
+                  </span>
+                </p>
+              )}
+            </div>
 
             {/* Deposit & charges */}
             <div className="mt-7 rounded-2xl border border-ink-100 bg-white p-4 sm:p-5">

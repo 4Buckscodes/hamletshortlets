@@ -52,6 +52,8 @@ export function isNoIndexPath(pathname: string): boolean {
     clean === '/signin' ||
     clean === '/signup' ||
     clean === '/account' ||
+    clean === '/wayfinder' ||
+    clean.startsWith('/wayfinder/') ||
     clean === '/admin' ||
     clean.startsWith('/admin/') ||
     clean === '/partner' ||

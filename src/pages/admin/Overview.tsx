@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star,
+  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star, Compass,
 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { formatNaira, formatDateTime, daysUntilLagosDate } from '../../lib/pricing';
+import { computeWayfinderReadiness } from '../../lib/wayfinder';
 
 export default function AdminOverview() {
   const { state } = useHamlet();
@@ -22,6 +23,17 @@ export default function AdminOverview() {
   const critical = openIssues.filter(i => i.severity === 'critical' || i.status === 'escalated');
   const varianceTotal = state.ledger.reduce((s, l) => s + Math.abs(l.variance), 0);
   const confirmedCompleted = state.bookings.filter(b => ['confirmed', 'completed'].includes(b.status)).length;
+  const approvedWithVerifiedCoords = approved.filter(p => {
+    const g = state.wayfinderGuides.find(item => item.propertyId === p.id);
+    return computeWayfinderReadiness(p, g ?? null).hasValidCoordinates;
+  });
+  const approvedWithCompleteGuides = approved.filter(p => {
+    const g = state.wayfinderGuides.find(item => item.propertyId === p.id);
+    return computeWayfinderReadiness(p, g ?? null).isCompleteDoorToDoor;
+  });
+  const arrivalIssueReports = state.issues.filter(i => Boolean(i.arrivalIssueType));
+  const easeFeedbackEvents = state.wayfinderEvents.filter(ev => ev.eventType === 'ease_of_arrival_feedback');
+  const easyArrivalCount = easeFeedbackEvents.filter(ev => ev.metadata?.ease === 'easy').length;
   const kpis = [
     { label: 'Approved properties', value: `${approved.length}/50`, sub: inReview.length > 0 ? `${inReview.length} in review pipeline` : 'Supply target met or in pipeline', Icon: Home, tone: approved.length >= 50 ? 'text-jade-400' : 'text-brass-400' },
     { label: 'Confirmed + completed stays', value: String(confirmedCompleted), sub: 'Pilot success = completed bookings', Icon: BadgeCheck, tone: 'text-jade-400' },
@@ -150,6 +162,75 @@ export default function AdminOverview() {
           </div>
         </section>
       </div>
+
+      {/* HAMLET Wayfinder Operational Coverage & Learning */}
+      <section className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50">
+              <Compass size={17} className="shrink-0 text-brass-400" /> HAMLET Wayfinder · Arrival readiness & operational telemetry
+            </h2>
+            <p className="mt-0.5 text-[11px] font-medium text-ink-400">
+              Tracks entrance coordinate verification, door-to-door arrival guide coverage on live listings, and guest arrival support signals.
+            </p>
+          </div>
+          <Link to="/admin/properties" className="text-[11px] font-extrabold uppercase tracking-wider text-brass-400 hover:text-brass-300">
+            Review incomplete guides →
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-ink-800 bg-ink-850/70 p-3.5">
+            <p className="font-display text-xl font-black tabular-nums text-jade-400">
+              {approved.length === 0 ? '0%' : `${Math.round((approvedWithVerifiedCoords.length / approved.length) * 100)}%`}
+            </p>
+            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+              Verified entrance pins
+            </p>
+            <p className="text-[10.5px] font-medium text-ink-500">
+              {approvedWithVerifiedCoords.length}/{approved.length} approved listings
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-ink-800 bg-ink-850/70 p-3.5">
+            <p className="font-display text-xl font-black tabular-nums text-brass-300">
+              {approved.length === 0 ? '0%' : `${Math.round((approvedWithCompleteGuides.length / approved.length) * 100)}%`}
+            </p>
+            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+              Complete door-to-door guides
+            </p>
+            <p className="text-[10.5px] font-medium text-ink-500">
+              {approvedWithCompleteGuides.length}/{approved.length} approved listings
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-ink-800 bg-ink-850/70 p-3.5">
+            <p className="font-display text-xl font-black tabular-nums text-sky-400">
+              {arrivalIssueReports.length}
+            </p>
+            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+              Arrival issue reports
+            </p>
+            <p className="text-[10.5px] font-medium text-ink-500">
+              {state.wayfinderEvents.filter(e => e.eventType === 'directions_clicked').length} Maps launches logged
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-ink-800 bg-ink-850/70 p-3.5">
+            <p className="font-display text-xl font-black tabular-nums text-ink-50">
+              {easeFeedbackEvents.length === 0
+                ? '—'
+                : `${Math.round((easyArrivalCount / easeFeedbackEvents.length) * 100)}%`}
+            </p>
+            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+              Straight-to-door ease
+            </p>
+            <p className="text-[10.5px] font-medium text-ink-500">
+              {easeFeedbackEvents.length} post-stay response{easeFeedbackEvents.length === 1 ? '' : 's'}
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Private Pilot Guest Feedback */}
       <section className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">

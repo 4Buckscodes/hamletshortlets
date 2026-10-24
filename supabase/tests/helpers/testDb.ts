@@ -83,6 +83,12 @@ export async function createMigratedTestDb(): Promise<PGlite> {
 export async function resetTestData(db: PGlite): Promise<void> {
   await db.exec(`
     truncate table
+      public.wayfinder_events,
+      public.property_wayfinder_verifications,
+      public.property_wayfinder_secrets,
+      public.property_wayfinder_steps,
+      public.property_wayfinder_waypoints,
+      public.property_wayfinder_guides,
       public.admin_bootstrap_emails,
       public.booking_notifications,
       public.booking_feedback,

@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useMemo, useRef, useState } from 'react';
-import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck, ImagePlus, Loader2, UploadCloud, CalendarClock, PauseCircle, PlayCircle, Plus, Trash2 } from 'lucide-react';
+import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck, ImagePlus, Loader2, UploadCloud, CalendarClock, PauseCircle, PlayCircle, Plus, Trash2, Compass } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { PropertyStatusPill, DocStatusBadge } from '../../components/Badges';
+import { WayfinderEditorModal } from '../../components/WayfinderEditorModal';
 import { myPartnerProperties } from '../../lib/partnerUtils';
 import { formatNaira, formatDate } from '../../lib/pricing';
 import { computePropertyAvailabilitySummary, formatBlockTypeLabel } from '../../lib/availability';
+import { computeWayfinderReadiness } from '../../lib/wayfinder';
 import { AREAS } from '../../lib/seed';
 import type { Property, AvailabilityBlockType, AvailabilityConfirmationStatus } from '../../lib/types';
 
@@ -41,6 +43,7 @@ export default function PartnerProperties() {
   const [blockNote, setBlockNote] = useState('');
   const [savingCal, setSavingCal] = useState(false);
   const [editing, setEditing] = useState<Property | null>(null);
+  const [wayfinderEditing, setWayfinderEditing] = useState<Property | null>(null);
 
   // Edit & resubmit modal state
   const [title, setTitle] = useState('');
@@ -209,6 +212,8 @@ export default function PartnerProperties() {
             publicCalendarSpans: state.publicCalendarSpans,
           });
           const calendarOpen = openCalendarId === p.id;
+          const wfGuide = state.wayfinderGuides.find(g => g.propertyId === p.id);
+          const wfReadiness = computeWayfinderReadiness(p, wfGuide ?? null);
           return (
           <article key={p.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
             <div className="flex flex-col gap-4 p-5 sm:flex-row">
@@ -232,6 +237,18 @@ export default function PartnerProperties() {
                     {avail.nextAvailableLabel && avail.primaryBadgeLabel !== avail.nextAvailableLabel ? ` · ${avail.nextAvailableLabel}` : ''}
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{p.type} · {p.area}</span>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
+                      wfReadiness.tone === 'jade'
+                        ? 'border-jade-500/40 bg-jade-500/10 text-jade-300'
+                        : wfReadiness.tone === 'sky'
+                          ? 'border-sky-500/40 bg-sky-500/10 text-sky-300'
+                          : 'border-ink-700 bg-ink-850 text-ink-300'
+                    }`}
+                  >
+                    <Compass size={11} />
+                    {wfReadiness.badgeLabel}
+                  </span>
                 </div>
                 <h2 className="mt-1.5 font-display text-lg font-bold text-ink-50">{p.title}</h2>
                 <p className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-semibold text-ink-300">
@@ -270,6 +287,15 @@ export default function PartnerProperties() {
                       className="btn-brass !px-3 !py-1.5 text-[11px]"
                     >
                       <CalendarClock size={13} /> Manage calendar
+                    </button>
+                  )}
+                  {!isSuspended && (
+                    <button
+                      type="button"
+                      onClick={() => setWayfinderEditing(p)}
+                      className="btn-ghost-dark !border !border-brass-500/40 !px-3 !py-1.5 text-[11px] !text-brass-300"
+                    >
+                      <Compass size={13} /> Wayfinder guide
                     </button>
                   )}
                   <button onClick={() => setOpenDocs(openDocs === p.id ? null : p.id)} className="btn-ghost-dark !px-3 !py-1.5 text-[11px]">
@@ -630,6 +656,17 @@ export default function PartnerProperties() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {wayfinderEditing && (
+          <WayfinderEditorModal
+            property={wayfinderEditing}
+            existingGuide={state.wayfinderGuides.find(g => g.propertyId === wayfinderEditing.id)}
+            existingSecrets={state.wayfinderSecrets.find(s => s.propertyId === wayfinderEditing.id)}
+            onClose={() => setWayfinderEditing(null)}
+          />
         )}
       </AnimatePresence>
     </div>

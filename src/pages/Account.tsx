@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   CreditCard, X, ChevronDown, ChevronUp, MessageSquarePlus, ShieldCheck,
   Star, BedDouble, CalendarDays, AlertCircle, Loader2, Lock, Receipt, LifeBuoy, RefreshCcw,
-  UserCog, Building2, Printer, Paperclip, CheckCircle2,
+  UserCog, Building2, Printer, Paperclip, CheckCircle2, Compass, Navigation, ExternalLink,
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { CurrencyToggle } from '../components/CurrencyToggle';
@@ -16,6 +16,7 @@ import { useToast } from '../lib/toast';
 import { buildWorkspaceSignInPath } from '../lib/authRedirect';
 import type { Booking } from '../lib/types';
 import { formatNaira, formatDate, formatDateTime, isQuoteExpired } from '../lib/pricing';
+import { buildGoogleMapsDirectionsUrl, computeWayfinderReadiness } from '../lib/wayfinder';
 
 const STAGES = ['Requested', 'Checking', 'Accepted', 'Confirmed', 'Completed'] as const;
 const STAGE_STATUS: Record<string, number> = {
@@ -216,6 +217,7 @@ export default function Account() {
     appendIssueEvidence,
     updateProfile,
     updatePassword,
+    recordWayfinderEvent,
     refreshState,
     backendConfigured,
     backendReady,
@@ -239,6 +241,7 @@ export default function Account() {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [checkoutBusyId, setCheckoutBusyId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [arrivalEaseRecorded, setArrivalEaseRecorded] = useState<Record<string, 'easy' | 'difficult'>>({});
 
   // Evidence attachment state
   const [evidenceDrafts, setEvidenceDrafts] = useState<Record<string, string>>({});
@@ -551,9 +554,28 @@ export default function Account() {
                 const canCancel = ['requested', 'checking', 'awaiting_payment'].includes(b.status);
                 const canReport = ['confirmed', 'completed', 'disputed'].includes(b.status);
                 const canFeedback = ['completed', 'disputed'].includes(b.status);
-                const isConfirmedOrCompleted = ['confirmed', 'completed'].includes(b.status);
+                const isConfirmed = b.status === 'confirmed';
+                const isCompleted = b.status === 'completed';
                 const existingFeedback = state.feedback.find(f => f.bookingRef === b.ref);
                 const linkedProperty = state.properties.find(p => p.id === b.propertyId);
+                const linkedGuide = state.wayfinderGuides.find(
+                  g => g.propertyId === b.propertyId && g.publicationStatus === 'approved',
+                );
+                const wayfinderReadiness = linkedProperty
+                  ? computeWayfinderReadiness(linkedProperty, linkedGuide ?? b.wayfinderSnapshot ?? null)
+                  : null;
+                const bookingDirectionsUrl = buildGoogleMapsDirectionsUrl({
+                  latitude: b.wayfinderSnapshot?.destinationLatitude ?? linkedGuide?.destinationLatitude,
+                  longitude: b.wayfinderSnapshot?.destinationLongitude ?? linkedGuide?.destinationLongitude,
+                });
+                const existingEaseEvent = state.wayfinderEvents.find(
+                  ev => ev.bookingId === b.id && ev.eventType === 'ease_of_arrival_feedback',
+                );
+                const recordedEase =
+                  arrivalEaseRecorded[b.id] ??
+                  (existingEaseEvent?.metadata?.ease === 'easy' || existingEaseEvent?.metadata?.ease === 'difficult'
+                    ? (existingEaseEvent.metadata.ease as 'easy' | 'difficult')
+                    : undefined);
                 const cautionRecord = state.cautionDeposits.find(cd => cd.bookingId === b.id);
                 const quoteExpired = b.status === 'awaiting_payment' && b.quoteCurrency && b.quoteCurrency !== 'NGN' && isQuoteExpired(b.quoteExpiresAt ?? null);
                 const payableTotalNgn = b.settlementTotalNgn ?? b.guestTotal;
@@ -648,22 +670,137 @@ export default function Account() {
                       </div>
                     )}
 
-                    {isConfirmedOrCompleted && (
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-jade-200 bg-jade-50/70 px-5 py-3 text-[12px] font-semibold text-jade-900">
-                        <span className="inline-flex items-center gap-1.5">
-                          <CheckCircle2 size={15} className="shrink-0 text-jade-700" />
+                    {isConfirmed && (
+                      <div className="border-t border-jade-200 bg-gradient-to-r from-jade-50/90 to-white px-4 py-4 sm:px-5">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.15em] text-jade-800">
+                                <Compass size={13} className="shrink-0 text-jade-700" /> Find your stay
+                              </span>
+                              {wayfinderReadiness && (
+                                <span
+                                  className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                                    wayfinderReadiness.tone === 'jade'
+                                      ? 'border-jade-200 bg-white text-jade-800'
+                                      : wayfinderReadiness.tone === 'sky'
+                                        ? 'border-sky-200 bg-sky-50 text-sky-900'
+                                        : 'border-amber-200 bg-amber-50 text-amber-900'
+                                  }`}
+                                >
+                                  {wayfinderReadiness.badgeLabel}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-[12.5px] font-semibold text-ink-800">
+                              {wayfinderReadiness && !wayfinderReadiness.hasValidCoordinates
+                                ? 'Your arrival guide is being prepared. Contact support if you need help planning your arrival.'
+                                : 'Get directions to your property and follow your arrival guide to the apartment door.'}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                              to={`/wayfinder/${b.id}`}
+                              className="btn-jade !px-4 !py-2.5 text-[12px]"
+                            >
+                              <Compass size={14} /> Open Wayfinder
+                            </Link>
+                            {bookingDirectionsUrl && (
+                              <a
+                                href={bookingDirectionsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => void recordWayfinderEvent(b.id, 'directions_clicked', { source: 'account_card' })}
+                                className="btn-outline !px-3.5 !py-2.5 text-[12px]"
+                              >
+                                <Navigation size={13} /> Get Directions <ExternalLink size={11} />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setExpanded(open ? null : b.id)}
+                              className="btn-outline !px-3 !py-2.5 text-[11.5px]"
+                            >
+                              {open ? 'Hide details' : 'View booking details'}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-jade-100 pt-2 text-[11px] font-semibold text-jade-900">
                           <span>
-                            <strong>Your stay is {b.status === 'completed' ? 'completed' : 'confirmed'}.</strong>{' '}
-                            {linkedProperty ? `${linkedProperty.address}, ${linkedProperty.area} · ` : ''}Check your booking details for arrival instructions, check-in timing, and contact information.
+                            {linkedProperty ? `${linkedProperty.address}, ${linkedProperty.area}` : `${b.area ?? 'Lagos'}`}
                           </span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => window.print()}
-                          className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-jade-800 hover:underline"
-                        >
-                          <Printer size={13} /> Print booking summary
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="inline-flex items-center gap-1 font-extrabold text-jade-800 hover:underline"
+                          >
+                            <Printer size={12} /> Print booking summary
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {isCompleted && (
+                      <div className="border-t border-ink-100 bg-ink-50/70 px-4 py-3 sm:px-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] font-semibold text-ink-800">
+                          <span className="inline-flex items-center gap-1.5">
+                            <CheckCircle2 size={15} className="shrink-0 text-jade-700" />
+                            <span>
+                              <strong>Stay completed.</strong> Active entry codes are retired after check-out.
+                            </span>
+                          </span>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Link
+                              to={`/wayfinder/${b.id}`}
+                              className="inline-flex items-center gap-1 text-[11px] font-extrabold text-jade-800 hover:underline"
+                            >
+                              <Compass size={12} /> Archived arrival summary
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => window.print()}
+                              className="inline-flex items-center gap-1 text-[11px] font-extrabold text-ink-700 hover:underline"
+                            >
+                              <Printer size={12} /> Print receipt
+                            </button>
+                          </div>
+                        </div>
+                        {/* Lightweight operational arrival learning */}
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-ink-200/70 pt-2.5 text-[11.5px]">
+                          <span className="font-semibold text-ink-700">
+                            Did you find the apartment easily with HAMLET Wayfinder?
+                          </span>
+                          {recordedEase ? (
+                            <span className="rounded-full border border-jade-200 bg-white px-2.5 py-0.5 text-[11px] font-bold text-jade-800">
+                              Recorded: {recordedEase === 'easy' ? 'Straight to the door' : 'Reported difficulty'} · Thank you
+                            </span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setArrivalEaseRecorded(prev => ({ ...prev, [b.id]: 'easy' }));
+                                  await recordWayfinderEvent(b.id, 'ease_of_arrival_feedback', { ease: 'easy' });
+                                  toast('Arrival feedback recorded — thank you.');
+                                }}
+                                className="rounded-lg border border-jade-200 bg-white px-2.5 py-1 text-[11px] font-bold text-jade-800 hover:bg-jade-50"
+                              >
+                                Yes, straight to the door
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setArrivalEaseRecorded(prev => ({ ...prev, [b.id]: 'difficult' }));
+                                  await recordWayfinderEvent(b.id, 'ease_of_arrival_feedback', { ease: 'difficult' });
+                                  toast('Logged for operations review — you can also report details via Report issue.');
+                                }}
+                                className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 hover:bg-amber-50"
+                              >
+                                Had some difficulty
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
 
