@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star, Compass,
+  Home, BadgeCheck, Receipt, LifeBuoy, TrendingUp, ArrowRight, ShieldAlert, Gauge, Target, MessageSquareQuote, Star, Compass, Sparkles,
 } from 'lucide-react';
+import { useHoratio } from '../../components/HoratioDrawer';
 import { useHamlet } from '../../lib/store';
 import { formatNaira, formatDateTime, daysUntilLagosDate } from '../../lib/pricing';
 import { computeWayfinderReadiness } from '../../lib/wayfinder';
 
 export default function AdminOverview() {
   const { state } = useHamlet();
+  const { openHoratio } = useHoratio();
   const pilotDaysRemaining = daysUntilLagosDate('2026-10-31');
 
   const approved = state.properties.filter(p => p.status === 'approved');
@@ -44,12 +46,19 @@ export default function AdminOverview() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Pilot command header */}
-      <div className="rounded-2xl border border-brass-500/25 bg-gradient-to-br from-brass-500/10 via-ink-900 to-ink-900 p-5 sm:p-6">
+      <div className="rounded-3xl border border-brass-500/25 bg-gradient-to-br from-brass-500/10 via-ink-900 to-ink-900 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400"><Gauge size={13} className="shrink-0" /> Lagos launch · pilot scoreboard</p>
-            <h1 className="mt-1.5 font-display text-2xl font-black text-paper sm:text-3xl">Launch operations, live</h1>
+            <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400"><Gauge size={13} className="shrink-0" /> Elsinore · Lagos launch scoreboard</p>
+            <h1 className="mt-1.5 font-display text-2xl font-bold text-paper sm:text-3xl">Launch operations, live</h1>
             <p className="mt-1 max-w-md text-[12px] font-medium text-ink-300">Success is measured by completed bookings, trustworthy supply, reconciled transactions, resolved issues and repeat demand — not registrations.</p>
+            <button
+              type="button"
+              onClick={() => openHoratio('Summarize open ops queues')}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-brass-500/35 bg-brass-500/12 px-3.5 py-1.5 text-[11px] font-bold text-brass-300 transition hover:bg-brass-500/20"
+            >
+              <Sparkles size={13} /> Ask Horatio for queue summary
+            </button>
           </div>
           <div className="flex items-center gap-5">
             <div className="text-right">
@@ -88,7 +97,7 @@ export default function AdminOverview() {
         {/* Attention queue */}
         <section className="rounded-2xl border border-ink-800 bg-ink-900 xl:col-span-3">
           <div className="flex items-center justify-between border-b border-ink-800 px-4 py-4 sm:px-5">
-            <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50"><ShieldAlert size={17} className="shrink-0 text-brass-400" /> Needs attention now</h2>
+            <h2 className="flex items-center gap-2 font-display text-base font-bold text-ink-50"><ShieldAlert size={17} className="shrink-0 text-brass-400" /> Needs attention now · The Watch</h2>
           </div>
           <div className="divide-y divide-ink-800">
             {inReview.map(p => (

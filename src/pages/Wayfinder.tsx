@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { ArrivalPhoto } from '../components/ArrivalPhoto';
+import { useHoratio } from '../components/HoratioDrawer';
 import { useHamlet } from '../lib/store';
 import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
@@ -37,6 +38,7 @@ export default function Wayfinder() {
     recordWayfinderEvent,
   } = useHamlet();
   const { toast } = useToast();
+  const { openHoratio } = useHoratio();
 
   const [loadState, setLoadState] = useState<{
     targetId: string;
@@ -304,17 +306,26 @@ export default function Wayfinder() {
             <ArrowLeft size={15} className="shrink-0" />
             <span>My booking ({view.bookingReference})</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setHelpOpen(true);
-              handleHelpAction('open_trouble_drawer');
-            }}
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11.5px] font-extrabold text-amber-950 transition hover:bg-amber-100"
-          >
-            <HelpCircle size={14} className="shrink-0 text-amber-700" />
-            <span>Trouble finding stay?</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => openHoratio(`How do I arrive and check in for booking ${view.bookingReference}?`)}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[11.5px] font-bold text-ink-800 transition hover:border-ink-400"
+            >
+              <span>Ask Horatio</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHelpOpen(true);
+                handleHelpAction('open_trouble_drawer');
+              }}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11.5px] font-extrabold text-amber-950 transition hover:bg-amber-100"
+            >
+              <HelpCircle size={14} className="shrink-0 text-amber-700" />
+              <span>Trouble finding stay?</span>
+            </button>
+          </div>
         </div>
       </div>
 

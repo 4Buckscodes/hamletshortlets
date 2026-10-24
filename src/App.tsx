@@ -3,8 +3,10 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { HamletProvider, useHamlet, captureUrlAttributionParams } from './lib/store';
 import { CurrencyProvider } from './lib/currency';
 import { ToastProvider } from './lib/toast';
+import { WishlistProvider } from './lib/wishlist';
 import { buildAuthPath } from './lib/authRedirect';
 import { HamletWordmark } from './components/Logo';
+import { HoratioProvider } from './components/HoratioDrawer';
 import Home from './pages/Home';
 import Lagos from './pages/Lagos';
 import About from './pages/About';
@@ -81,10 +83,12 @@ export default function App() {
   return (
     <HamletProvider>
       <StoreBackedCurrencyProvider>
-        <ToastProvider>
-          <HashRouter>
-            <ScrollToTop />
-            <Suspense fallback={<WorkspaceFallback />}>
+        <WishlistProvider>
+          <ToastProvider>
+            <HashRouter>
+              <HoratioProvider>
+                <ScrollToTop />
+                <Suspense fallback={<WorkspaceFallback />}>
               <Routes>
                 {/* Guest marketplace */}
                 <Route path="/" element={<Home />} />
@@ -127,9 +131,11 @@ export default function App() {
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </Suspense>
-          </HashRouter>
-        </ToastProvider>
+                </Suspense>
+              </HoratioProvider>
+            </HashRouter>
+          </ToastProvider>
+        </WishlistProvider>
       </StoreBackedCurrencyProvider>
     </HamletProvider>
   );

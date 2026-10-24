@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Home, CalendarDays, Banknote, PlusCircle, Clock3, ArrowRight, Inbox, CheckCircle2 } from 'lucide-react';
+import { Home, CalendarDays, Banknote, PlusCircle, Clock3, ArrowRight, Inbox, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
 import { useMemo } from 'react';
+import { useHoratio } from '../../components/HoratioDrawer';
 import { useHamlet } from '../../lib/store';
 import { PropertyStatusPill, BookingStatusPill } from '../../components/Badges';
 import { myPartnerProperties, propertyIdsOf } from '../../lib/partnerUtils';
@@ -8,6 +9,7 @@ import { formatNaira, formatDate, ownerProceeds } from '../../lib/pricing';
 
 export default function PartnerOverview() {
   const { state } = useHamlet();
+  const { openHoratio } = useHoratio();
   const userId = state.session!.userId;
   const myProps = useMemo(() => myPartnerProperties(state, userId), [state, userId]);
   const propIds = useMemo(() => new Set(propertyIdsOf(state, userId)), [state, userId]);
@@ -34,10 +36,29 @@ export default function PartnerOverview() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner workspace</p>
-          <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Welcome, {state.session!.name.split(' ')[0]}</h1>
+          <h1 className="mt-1.5 font-display text-2xl font-bold text-ink-50 sm:text-3xl">Welcome, {state.session!.name.split(' ')[0]}</h1>
           <p className="mt-1 text-[12px] font-medium text-ink-300">{state.session!.partnerRole} · {state.session!.company} · Role-based access — you see only your own profile, authorised properties and permitted booking data.</p>
         </div>
-        <Link to="/partner/properties/new" className="btn-brass !py-3"><PlusCircle size={17} /> List a new property</Link>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => openHoratio('Summarize my partner workspace')}
+            className="btn-ghost-dark !rounded-full !border !border-ink-700 !py-2.5 text-xs"
+          >
+            <Sparkles size={15} className="text-brass-400" /> Ask Horatio
+          </button>
+          <Link to="/partner/properties/new" className="btn-brass !rounded-full !py-2.5 text-xs">
+            <PlusCircle size={16} /> List a new property
+          </Link>
+        </div>
+      </div>
+
+      {/* Commercial terms & duplicate protection strip */}
+      <div className="mt-5 flex flex-wrap items-start gap-2.5 rounded-2xl border border-ink-800 bg-ink-900/80 px-4 py-3 text-[11.5px] font-medium text-ink-300">
+        <ShieldCheck size={16} className="mt-0.5 shrink-0 text-emerald-400" />
+        <span>
+          <strong className="text-ink-100">Commercial &amp; canonical listing protection:</strong> Owners receive 100% of their listed rate (<code className="font-mono text-brass-300">B</code>, 0% owner fee). Property-specific agent/manager sharing mandates are recorded under Assignments &amp; Mandates, caution deposits are inspected post-checkout, and duplicate-address screening prevents duplicate public listings for the same unit.
+        </span>
       </div>
 
       {/* KPI cards */}

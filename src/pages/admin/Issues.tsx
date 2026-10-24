@@ -133,8 +133,8 @@ export default function AdminIssues() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Issue resolution</p>
-          <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Issues & accountability</h1>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">The Watch · Live Operations &amp; Safety</p>
+          <h1 className="mt-1.5 font-display text-2xl font-bold text-ink-50 sm:text-3xl">Issues &amp; accountability</h1>
           <p className="mt-1 max-w-xl text-[12px] font-medium text-ink-300">Report → assign → investigate → escalate → resolve → close. Every action, note and evidence artefact is recorded against the issue and audit-logged.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

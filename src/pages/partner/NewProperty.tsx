@@ -104,6 +104,17 @@ export default function NewProperty() {
 
   const canSaveDraft = title.trim().length >= 8 && address.trim().length >= 10 && nightlyRate >= 20_000;
 
+  const normalizedAddr = address.trim().toLowerCase().replace(/\s+/g, ' ');
+  const normalizedArea = area.trim().toLowerCase().replace(/\s+/g, ' ');
+  const potentialAddressMatch =
+    normalizedAddr.length >= 10 &&
+    state.properties.some(
+      other =>
+        other.status !== 'rejected' &&
+        other.area.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedArea &&
+        other.address.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedAddr,
+    );
+
   const submit = async (saveAsDraft = false) => {
     if (saveAsDraft && !canSaveDraft) {
       toast('Enter a property title (min 8 chars), Lagos address (min 10 chars), and nightly rate (min ₦20,000) to save a draft.', 'error');
@@ -235,6 +246,14 @@ export default function NewProperty() {
               </label>
               <label className="sm:col-span-2"><span className="label-dark">Full address</span><input className="input-dark" placeholder="Street, landmark, area, Lagos" value={address} onChange={e => setAddress(e.target.value)} /></label>
             </div>
+            {potentialAddressMatch && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-200">
+                <CircleAlert size={16} className="mt-0.5 shrink-0 text-amber-400" />
+                <span>
+                  Another HAMLET listing already matches this Lagos area and street address. If this is a separate unit in the same building, specify the block/unit clearly — duplicate public listings for the same physical apartment are blocked during review.
+                </span>
+              </div>
+            )}
             <div className="rounded-xl border border-ink-800 bg-ink-950/60 p-4">
               <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
                 <Compass size={12} /> Optional · HAMLET Wayfinder location basics

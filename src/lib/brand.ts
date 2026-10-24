@@ -3,6 +3,11 @@ import { applyDocumentSeo, type PageMetaOptions } from './seo';
 
 export const HAMLET_TAGLINE = 'Your stay, sorted.';
 export const HAMLET_PROMISE = 'A better way to find, book, and enjoy shortlets in Lagos.';
+export const HAMLET_BRAND_NAME = 'HAMLET for Your Shortlets';
+export const HAMLET_USP = 'Shortlets, with accountability.';
+export const HAMLET_PARENT_COMPANY = 'Abundance Abodes';
+export const HAMLET_POSITIONING = 'The Operating System for African Shortlets';
+export const HAMLET_MANTRA = 'Make it easy. Make it trustworthy. Make it accountable.';
 
 /**
  * Updates browser document title, description, canonical link, robots directives,
