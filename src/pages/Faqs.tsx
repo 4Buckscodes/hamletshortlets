@@ -19,7 +19,7 @@ const FAQ_ITEMS = [
   },
   {
     q: '4. Are there hidden fees?',
-    a: 'No — review the full price breakdown before submitting a booking request. Charges clearly show the accommodation rate, the 3% HAMLET guest service fee, any disclosed mandatory charges (such as cleaning), and any refundable security deposit held separately. You can also toggle between Naira (₦), US Dollars ($), and British Pounds (£) to compare stay costs.',
+    a: 'No — review the full price breakdown before submitting a booking request. Charges clearly show the owner’s listed accommodation rate, HAMLET’s 20% domestic accommodation markup, any disclosed mandatory charges (such as cleaning), and any refundable caution deposit itemised separately. International USD ($) and GBP (£) quotes include a single 10% currency buffer on stay pricing (never on the refundable caution deposit) and display the exact Naira settlement total upfront.',
   },
   {
     q: '5. How does check-in work?',

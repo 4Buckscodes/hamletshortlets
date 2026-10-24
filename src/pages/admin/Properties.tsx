@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  CheckCircle2, XCircle, FileWarning, PauseCircle, ShieldCheck, Search, Ban, RotateCcw, FileText,
+  CheckCircle2, XCircle, FileWarning, PauseCircle, ShieldCheck, Search, Ban, RotateCcw, FileText, CalendarClock,
 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { PropertyStatusPill, DocStatusBadge } from '../../components/Badges';
 import type { Property, PropertyStatus } from '../../lib/types';
-import { formatNaira, formatDateTime } from '../../lib/pricing';
+import { formatNaira, formatDateTime, guestFacingNightlyNgn } from '../../lib/pricing';
+import { computePropertyAvailabilitySummary } from '../../lib/availability';
 
 const TABS: { key: PropertyStatus | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'submitted', label: 'Submitted' },
   { key: 'needs_correction', label: 'Needs correction' },
   { key: 'approved', label: 'Approved (live)' },
+  { key: 'paused', label: 'Paused' },
   { key: 'rejected', label: 'Rejected' },
   { key: 'suspended', label: 'Suspended' },
 ];
@@ -84,9 +86,9 @@ export default function AdminProperties() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Verification workflow</p>
-      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Property review</h1>
-      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">States: submitted → needs correction → approved / rejected / suspended. Only approved, non-suspended listings are publicly discoverable. Every decision is audit-logged with your name.</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Verification & decoupled availability workflow</p>
+      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Property review & calendar visibility</h1>
+      <p className="mt-1 max-w-3xl text-[12px] font-medium text-ink-300">Publication status (submitted → needs correction → approved / paused / rejected / suspended) is independent of calendar occupancy. Occupied homes with verified documents can be approved so guests can discover and book future open dates.</p>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap gap-1.5">
@@ -106,13 +108,28 @@ export default function AdminProperties() {
       </div>
 
       <div className="mt-5 grid gap-4">
-        {filtered.map(p => (
+        {filtered.map(p => {
+          const avail = computePropertyAvailabilitySummary({
+            property: p,
+            bookings: state.bookings,
+            publicCalendarSpans: state.publicCalendarSpans,
+          });
+          return (
           <article key={p.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
             <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row">
               <img src={p.images[0]} alt="" className="h-36 w-full shrink-0 rounded-xl object-cover lg:w-48" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <PropertyStatusPill status={p.status} />
+                  <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
+                    avail.currentStatus === 'available_now'
+                      ? 'border-jade-500/40 bg-jade-500/10 text-jade-300'
+                      : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                  }`}>
+                    <CalendarClock size={11} />
+                    {avail.primaryBadgeLabel}
+                    {avail.nextAvailableLabel && avail.primaryBadgeLabel !== avail.nextAvailableLabel ? ` · ${avail.nextAvailableLabel}` : ''}
+                  </span>
                   {getDuplicateStatus(p) === 'exact' && (
                     <span className="chip border border-red-400/60 bg-red-400/15 text-red-300">Duplicate title & address</span>
                   )}
@@ -131,18 +148,25 @@ export default function AdminProperties() {
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-[10.5px] font-semibold text-ink-500">Submitter: {p.submittedBy} — {p.submittedRole} · <span className="text-ink-400">{p.authorityBasis}</span></p>
+                <p className="mt-2 text-[10.5px] font-semibold text-ink-500">
+                  Submitter: {p.submittedBy} — {p.submittedRole} · <span className="text-ink-400">{p.authorityBasis}</span>
+                  {p.calendarResponsiblePerson ? ` · Calendar: ${p.calendarResponsiblePerson}` : ''}
+                  {p.unavailableBlocks && p.unavailableBlocks.length > 0 ? ` · ${p.unavailableBlocks.length} blocked window(s)` : ''}
+                </p>
                 {p.reviewNote && <p className="mt-1.5 rounded-lg border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><FileText size={11} className="mr-1 inline" />Last review note: {p.reviewNote}</p>}
               </div>
-              <div className="flex shrink-0 flex-col items-stretch justify-center gap-2 lg:w-44">
-                <p className="text-left font-display text-base font-black tabular-nums text-brass-300 lg:text-right">{formatNaira(p.nightlyRate)}<span className="text-[10px] text-ink-500">/night</span></p>
-                {p.status === 'approved' && (
+              <div className="flex shrink-0 flex-col items-stretch justify-center gap-2 lg:w-48">
+                <div className="text-left lg:text-right">
+                  <p className="font-display text-base font-black tabular-nums text-brass-300">{formatNaira(p.nightlyRate)}<span className="text-[10px] text-ink-500">/night (B)</span></p>
+                  <p className="text-[10.5px] font-semibold tabular-nums text-ink-400">Guest: {formatNaira(guestFacingNightlyNgn(p.nightlyRate))}/night</p>
+                </div>
+                {(p.status === 'approved' || p.status === 'paused') && (
                   <button onClick={() => openDecision(p.id, 'suspend')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950 [&>svg]:shrink-0"><PauseCircle size={14} /> Suspend</button>
                 )}
-                {p.status === 'suspended' && (
+                {(p.status === 'suspended' || p.status === 'paused') && (
                   <button onClick={() => openDecision(p.id, 'reinstate')} className="flex items-center justify-center gap-1.5 rounded-xl border border-jade-700 bg-jade-950/40 px-3 py-2.5 text-[11px] font-bold text-jade-300 transition hover:bg-jade-950 [&>svg]:shrink-0"><RotateCcw size={14} /> Reinstate</button>
                 )}
-                {(p.status === 'submitted' || p.status === 'needs_correction') && (<>
+                {(p.status === 'submitted' || p.status === 'pending_review' || p.status === 'needs_correction') && (<>
                   <button onClick={() => openDecision(p.id, 'approve')} className="flex items-center justify-center gap-1.5 rounded-xl bg-jade-600 px-3 py-2.5 text-[11px] font-bold text-white transition hover:bg-jade-500 [&>svg]:shrink-0"><CheckCircle2 size={14} /> Approve</button>
                   <button onClick={() => openDecision(p.id, 'needs_correction')} className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-600 bg-amber-950/40 px-3 py-2.5 text-[11px] font-bold text-amber-300 transition hover:bg-amber-950 [&>svg]:shrink-0"><FileWarning size={14} /> Needs correction</button>
                   <button onClick={() => openDecision(p.id, 'reject')} className="flex items-center justify-center gap-1.5 rounded-xl border border-red-800 bg-red-950/40 px-3 py-2.5 text-[11px] font-bold text-red-300 transition hover:bg-red-950 [&>svg]:shrink-0"><XCircle size={14} /> Reject</button>
@@ -164,7 +188,8 @@ export default function AdminProperties() {
               )}
             </div>
           </article>
-        ))}
+        );
+        })}
         {filtered.length === 0 && <p className="rounded-2xl border border-dashed border-ink-700 py-14 text-center text-[12.5px] font-semibold text-ink-400">Nothing in this queue.</p>}
       </div>
 

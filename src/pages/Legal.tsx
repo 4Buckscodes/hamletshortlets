@@ -43,12 +43,12 @@ const CONTENT: Record<string, { title: string; intro: string; sections: { h: str
   },
   pricing: {
     title: 'Fees & settlement',
-    intro: 'One shared pricing engine computes every guest-facing total on HAMLET — the same number on the listing, in your cart, at payment and in the ledger.',
+    intro: 'One shared pricing engine computes every guest-facing total on HAMLET — the same number on the listing, in your booking request, at payment and in the ledger.',
     sections: [
-      { h: 'Guest service fee', b: '3% of the accommodation subtotal after any applicable accommodation discount. Paid by guests. Owners pay 0% — owner proceeds are never reduced by the guest-facing fee.' },
-      { h: 'Worked example', b: '₦100,000 accommodation subtotal → ₦3,000 HAMLET guest fee → ₦103,000 guest-facing total before any later-approved processing-fee policy or other separately disclosed mandatory charges.' },
-      { h: 'Excluded from the fee base', b: 'Refundable deposits. Separately disclosed mandatory charges (e.g. cleaning). Provider processing-fee charges are excluded until a written policy is decided and approved — they are never collected from guests by default.' },
-      { h: 'Pilot settlement', b: 'Transactions are recorded in a controlled ledger with booking reference, amounts, statuses, provider references, fee calculations, refunds, reconciliation variances and the responsible operator. Settlements during the pilot are manual and reconciled. Automated commission splitting and payouts are deferred.' },
+      { h: '20% domestic accommodation markup & allocation', b: 'Owners pay 0% — owners receive 100% of their listed NGN accommodation rate (B). Domestic guest accommodation price is B × 1.20. The 20% markup on B is allocated across closing agent commission (10%), direct partner referral reward during an active 90-day window (2.5%, when eligible), HAMLET allocation (5% with referrer or 7.5% without), and an internal payment & settlement cost reserve (2.5%).' },
+      { h: 'Worked example (B = ₦200,000)', b: 'Owner listed accommodation rate: ₦200,000 → Domestic guest accommodation price: ₦240,000 (₦40,000 markup: ₦20,000 closing agent, ₦5,000 direct referrer when eligible, ₦10,000 or ₦15,000 HAMLET allocation, and ₦5,000 internal payment reserve).' },
+      { h: 'International USD & GBP quotes (10% currency buffer)', b: 'When quoted in USD or GBP using an active configured FX rate, the domestic guest price is converted at the quoted rate and a single 10% international currency buffer is added to cover cross-border FX and card conversion costs (e.g., $200 converted base → $220 international quote). Paystack checkout settles transparently in NGN.' },
+      { h: 'Refundable caution deposit & settlement ledger', b: 'Refundable caution deposits are itemised and tracked separately from accommodation revenue, are never included in HAMLET’s 20% markup or 10% FX buffer, and follow an auditable post-checkout inspection and refund lifecycle. Actual Paystack processing fees are recorded separately in the ledger.' },
     ],
   },
 };

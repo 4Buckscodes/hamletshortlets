@@ -27,7 +27,7 @@ import { formatDate, formatDateTime, formatNaira } from '../../lib/pricing';
 
 export default function PartnerBookingReview() {
   const { bookingId } = useParams<{ bookingId: string }>();
-  const { state, bookingTransition, refreshState, backendConfigured, signOut } = useHamlet();
+  const { state, bookingTransition, transitionCautionDeposit, refreshState, backendConfigured, signOut } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +41,8 @@ export default function PartnerBookingReview() {
   const [showDeclineBox, setShowDeclineBox] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
   const [busyAction, setBusyAction] = useState<'checking' | 'awaiting_payment' | 'declined' | null>(null);
+  const [inspectionNote, setInspectionNote] = useState('');
+  const [savingCaution, setSavingCaution] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const authorizedPropertyIds = useMemo(
@@ -483,18 +485,89 @@ export default function PartnerBookingReview() {
                     <dd className="shrink-0 tabular-nums">{formatNaira(partnerProceeds)}</dd>
                   </div>
                   <div className="flex justify-between gap-3 pt-1 text-[11px] text-ink-400">
-                    <dt className="min-w-0">HAMLET guest service fee (3% paid by guest)</dt>
+                    <dt className="min-w-0">HAMLET domestic accommodation markup (20% paid by guest)</dt>
                     <dd className="shrink-0 tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd>
                   </div>
                   <div className="flex justify-between gap-3 text-[11px] font-semibold text-ink-300">
-                    <dt className="min-w-0">Total billed to guest at checkout</dt>
+                    <dt className="min-w-0">Guest stay total (before caution deposit)</dt>
                     <dd className="shrink-0 tabular-nums">{formatNaira(booking.guestTotal)}</dd>
                   </div>
                   <div className="flex justify-between gap-3 text-[11px] text-ink-400">
-                    <dt className="min-w-0">Refundable security deposit (held separately)</dt>
+                    <dt className="min-w-0">Refundable caution deposit (held separately, unbuffered)</dt>
                     <dd className="shrink-0 tabular-nums">{formatNaira(booking.deposit)}</dd>
                   </div>
                 </dl>
+                {(() => {
+                  const caution = state.cautionDeposits.find(cd => cd.bookingId === booking.id);
+                  if (!caution) return null;
+                  return (
+                    <div className="mt-3 rounded-xl border border-ink-800 bg-ink-900 p-3 text-[11.5px] text-ink-200">
+                      <p className="font-bold text-brass-300">
+                        Caution deposit: {formatNaira(caution.amountNgn)} · <span className="uppercase">{caution.status.replace(/_/g, ' ')}</span>
+                      </p>
+                      {caution.inspectionNotes && <p className="mt-1 text-ink-400">Inspection note: {caution.inspectionNotes}</p>}
+                      {!isSuspended && ['confirmed', 'completed'].includes(booking.status) && ['received', 'inspection_pending'].includes(caution.status) && (
+                        <div className="mt-2.5 space-y-2 border-t border-ink-800 pt-2.5">
+                          <input
+                            className="input-dark !py-1.5 text-[11.5px]"
+                            placeholder="Post-checkout inspection notes / evidence ref…"
+                            value={inspectionNote}
+                            onChange={e => setInspectionNote(e.target.value)}
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={savingCaution}
+                              onClick={async () => {
+                                setSavingCaution(true);
+                                try {
+                                  await transitionCautionDeposit(booking.id, 'refund_approved', {
+                                    refundedAmountNgn: caution.amountNgn,
+                                    deductedAmountNgn: 0,
+                                    inspectionNotes: inspectionNote.trim() || 'Post-checkout inspection clear — full refund approved by host.',
+                                  });
+                                  toast('Full caution deposit refund approved.');
+                                } catch (err) {
+                                  toast(err instanceof Error ? err.message : 'Could not update deposit.', 'error');
+                                } finally {
+                                  setSavingCaution(false);
+                                }
+                              }}
+                              className="btn-brass !px-3 !py-1.5 text-[11px]"
+                            >
+                              Approve full deposit refund
+                            </button>
+                            <button
+                              type="button"
+                              disabled={savingCaution}
+                              onClick={async () => {
+                                if (inspectionNote.trim().length < 8) {
+                                  toast('Enter damage/evidence notes (min 8 chars) to request HAMLET admin review.', 'error');
+                                  return;
+                                }
+                                setSavingCaution(true);
+                                try {
+                                  await transitionCautionDeposit(booking.id, 'refund_disputed', {
+                                    inspectionNotes: inspectionNote.trim(),
+                                    evidence: [inspectionNote.trim()],
+                                  });
+                                  toast('Inspection evidence logged — escalated to HAMLET operations for deduction review.', 'info');
+                                } catch (err) {
+                                  toast(err instanceof Error ? err.message : 'Could not update deposit.', 'error');
+                                } finally {
+                                  setSavingCaution(false);
+                                }
+                              }}
+                              className="btn-ghost-dark !border !border-amber-500/40 !px-3 !py-1.5 text-[11px] text-amber-300"
+                            >
+                              Flag damage for admin deduction review
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </section>

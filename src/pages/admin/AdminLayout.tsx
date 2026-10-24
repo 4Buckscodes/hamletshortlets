@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { LayoutDashboard, Home, CalendarDays, Receipt, LifeBuoy, UsersRound, KeyRound, ScrollText, UserCog } from 'lucide-react';
+import { LayoutDashboard, Home, CalendarDays, Receipt, LifeBuoy, UsersRound, KeyRound, ScrollText, UserCog, Gift } from 'lucide-react';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import { WorkspaceGuard } from '../Account';
 import { useHamlet } from '../../lib/store';
@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { to: '/admin/properties', label: 'Property Review', icon: <Home size={17} />, badge: pendingReviews },
     { to: '/admin/bookings', label: 'Bookings', icon: <CalendarDays size={17} />, badge: actionBookings },
     { to: '/admin/ledger', label: 'Ledger & Settlement', icon: <Receipt size={17} />, badge: flaggedLedger },
+    { to: '/admin/referrals', label: 'Referrals & FX Config', icon: <Gift size={17} /> },
     { to: '/admin/issues', label: 'Issues', icon: <LifeBuoy size={17} />, badge: openIssues },
     { to: '/admin/applications', label: 'Partners & Applications', icon: <UsersRound size={17} />, badge: pendingApps },
     { to: '/admin/assignments', label: 'Assignments', icon: <KeyRound size={17} /> },

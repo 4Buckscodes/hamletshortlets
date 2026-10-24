@@ -273,7 +273,7 @@ export default function Lagos() {
             { Icon: Zap, title: 'Power backup', body: 'Confirm whether 24/7 estate power, inverter, or generator backup is included.' },
             { Icon: Wifi, title: 'Internet', body: 'Check whether Wi-Fi or workspace arrangements suit remote work.' },
             { Icon: Lock, title: 'Access & security', body: 'Review gated street/estate entry procedures and security.' },
-            { Icon: Banknote, title: 'Total price', body: 'Review cleaning charges, the 3% guest fee, and refundable deposit upfront.' },
+            { Icon: Banknote, title: 'Total price', body: 'Review cleaning charges, the 20% domestic stay markup, and refundable caution deposit upfront.' },
             { Icon: KeyRound, title: 'Check-in window', body: 'Confirm arrival hours and host or manager contact arrangements.' },
           ].map(({ Icon, title, body }) => (
             <div key={title} className="rounded-2xl border border-ink-100 bg-white p-5">

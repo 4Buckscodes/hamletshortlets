@@ -10,12 +10,12 @@ import { GuestLayout } from '../components/Navbar';
 import { CurrencyToggle } from '../components/CurrencyToggle';
 import { BookingStatusPill, IssueStatusPill, SeverityPill, ApplicationStatusPill } from '../components/Badges';
 import { useHamlet } from '../lib/store';
-import { useCurrency } from '../lib/currency';
+import { useCurrency, formatMinorCurrency } from '../lib/currency';
 import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { buildWorkspaceSignInPath } from '../lib/authRedirect';
 import type { Booking } from '../lib/types';
-import { formatNaira, formatDate, formatDateTime } from '../lib/pricing';
+import { formatNaira, formatDate, formatDateTime, isQuoteExpired } from '../lib/pricing';
 
 const STAGES = ['Requested', 'Checking', 'Accepted', 'Confirmed', 'Completed'] as const;
 const STAGE_STATUS: Record<string, number> = {
@@ -93,19 +93,30 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
                 <span className="text-[12px] font-bold text-ink-500">Paying HAMLET for booking</span>
                 <span className="shrink-0 rounded-md bg-ink-100 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-600">{booking.ref}</span>
               </div>
-              <p className="mt-2 font-display text-3xl font-black tracking-tight tabular-nums text-ink-900 sm:text-4xl">{formatNaira(booking.guestTotal)}</p>
+              <p className="mt-2 font-display text-3xl font-black tracking-tight tabular-nums text-ink-900 sm:text-4xl">{formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}</p>
+              {booking.quoteCurrency && booking.quoteCurrency !== 'NGN' && booking.quotedStayTotalMinor && (
+                <p className="mt-1 text-[11.5px] font-semibold text-sky-900">
+                  Quoted stay: {formatMinorCurrency(booking.quotedStayTotalMinor, booking.quoteCurrency)} (incl. 10% buffer @ ₦{booking.fxRate?.toLocaleString('en-NG')}) · Settled in NGN
+                </p>
+              )}
               <dl className="mt-4 space-y-1.5 rounded-2xl border border-ink-100 p-4 text-[12px] font-medium text-ink-700">
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Accommodation ({booking.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.accommodationSubtotal)}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Owner accommodation ({booking.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.accommodationSubtotal)}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET domestic markup (20%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd></div>
                 {booking.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
-                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd></div>
-                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.guestTotal)}</dd></div>
+                {(booking.internationalBufferNgnEquiv ?? 0) > 0 && (
+                  <div className="flex justify-between gap-3"><dt className="min-w-0">International currency buffer (10%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.internationalBufferNgnEquiv ?? 0)}</dd></div>
+                )}
+                {booking.deposit > 0 && (
+                  <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.deposit)}</dd></div>
+                )}
+                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Paystack NGN Settlement Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}</dd></div>
               </dl>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <div className="rounded-xl border-2 border-[#0BA4DB] bg-sky-50 p-3 text-center"><CreditCard size={18} className="mx-auto shrink-0 text-[#0BA4DB]" /><p className="mt-1 text-[11px] font-black text-ink-800">Card</p><p className="text-[9px] font-semibold text-ink-400">4084 •••• 4081</p></div>
                 <div className="rounded-xl border border-ink-200 p-3 text-center"><Receipt size={18} className="mx-auto shrink-0 text-ink-500" /><p className="mt-1 text-[11px] font-black text-ink-800">Bank transfer</p><p className="text-[9px] font-semibold text-ink-400">pay with your bank app</p></div>
               </div>
               <button onClick={pay} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0BA4DB] py-4 font-display text-[15px] font-black text-white transition hover:bg-[#0993c3] [&>svg]:shrink-0">
-                <Lock size={15} /> Pay {formatNaira(booking.guestTotal)}
+                <Lock size={15} /> Pay {formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}
               </button>
               <p className="mt-2 text-center text-[10px] font-medium leading-snug text-ink-400">Confirmation is issued only after Paystack's webhook is verified server-side. A redirect or screenshot is never accepted as proof of payment.</p>
             </>
@@ -201,6 +212,7 @@ export default function Account() {
     bookingTransition,
     submitBookingFeedback,
     initializeBookingCheckout,
+    refreshBookingFxQuote,
     appendIssueEvidence,
     updateProfile,
     updatePassword,
@@ -542,6 +554,9 @@ export default function Account() {
                 const isConfirmedOrCompleted = ['confirmed', 'completed'].includes(b.status);
                 const existingFeedback = state.feedback.find(f => f.bookingRef === b.ref);
                 const linkedProperty = state.properties.find(p => p.id === b.propertyId);
+                const cautionRecord = state.cautionDeposits.find(cd => cd.bookingId === b.id);
+                const quoteExpired = b.status === 'awaiting_payment' && b.quoteCurrency && b.quoteCurrency !== 'NGN' && isQuoteExpired(b.quoteExpiresAt ?? null);
+                const payableTotalNgn = b.settlementTotalNgn ?? (b.guestTotal + b.deposit);
 
                 return (
                   <article key={b.id} className="card overflow-hidden">
@@ -550,6 +565,16 @@ export default function Account() {
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-[10.5px] font-bold text-ink-400">{b.ref}</span>
                           <BookingStatusPill status={b.status} />
+                          {b.quoteCurrency && b.quoteCurrency !== 'NGN' && (
+                            <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-900">
+                              {b.quoteCurrency} quote
+                            </span>
+                          )}
+                          {cautionRecord && (
+                            <span className="rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[10px] font-bold text-ink-700">
+                              Caution: {cautionRecord.status.replace(/_/g, ' ')}
+                            </span>
+                          )}
                         </div>
                         <h2 className="mt-1.5 break-words font-display text-[17px] font-bold leading-snug text-ink-900">
                           <Link to={`/stays/${b.propertyId}`} className="hover:underline">{b.propertyTitle}</Link>
@@ -565,7 +590,7 @@ export default function Account() {
                         <div>
                           <p className="font-display text-xl font-black tabular-nums text-ink-900 sm:text-right">{formatMoney(b.guestTotal)}</p>
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">
-                            total incl. 3% fee{currency !== 'NGN' ? ` · ${formatNaira(b.guestTotal)}` : ''}
+                            stay total incl. 20% markup{currency !== 'NGN' ? ` · ${formatNaira(b.guestTotal)}` : ''}
                           </p>
                         </div>
                         <button onClick={() => setExpanded(open ? null : b.id)} className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-900">
@@ -582,20 +607,44 @@ export default function Account() {
 
                     {b.status === 'awaiting_payment' && (
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3">
-                        <p className="max-w-xl text-[12px] font-bold text-amber-900">
-                          Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (screenshots or off-platform transfers never confirm a stay).
-                        </p>
-                        {backendConfigured ? (
-                          <button
-                            disabled={checkoutBusyId === b.id}
-                            onClick={() => void startConnectedCheckout(b)}
-                            className="btn-brass !px-4 !py-2.5 text-[12px] disabled:opacity-50"
-                          >
-                            <CreditCard size={15} /> {checkoutBusyId === b.id ? 'Starting checkout…' : `Pay ${formatNaira(b.guestTotal)}`}
-                          </button>
-                        ) : (
-                          <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(b.guestTotal)}</button>
-                        )}
+                        <div className="max-w-xl">
+                          <p className="text-[12px] font-bold text-amber-900">
+                            Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (NGN settlement).
+                          </p>
+                          {quoteExpired && (
+                            <p className="mt-1 text-[11px] font-semibold text-red-800">
+                              Your {b.quoteCurrency} FX quote expired ({b.quoteExpiresAt ? formatDateTime(b.quoteExpiresAt) : ''}). Refresh your quote before proceeding to checkout.
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {quoteExpired ? (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await refreshBookingFxQuote(b.id, b.quoteCurrency ?? 'NGN');
+                                  toast(`${b.quoteCurrency} FX quote refreshed.`);
+                                } catch (err) {
+                                  toast(err instanceof Error ? err.message : 'Could not refresh quote.', 'error');
+                                }
+                              }}
+                              className="btn-outline !px-3.5 !py-2 text-[12px]"
+                            >
+                              <RefreshCcw size={14} /> Refresh {b.quoteCurrency} quote
+                            </button>
+                          ) : backendConfigured ? (
+                            <button
+                              disabled={checkoutBusyId === b.id}
+                              onClick={() => void startConnectedCheckout(b)}
+                              className="btn-brass !px-4 !py-2.5 text-[12px] disabled:opacity-50"
+                            >
+                              <CreditCard size={15} /> {checkoutBusyId === b.id ? 'Starting checkout…' : `Pay ${formatNaira(payableTotalNgn)}`}
+                            </button>
+                          ) : (
+                            <button onClick={() => setPayFor(b)} className="btn-brass !px-4 !py-2.5 text-[12px]"><CreditCard size={15} /> Pay {formatNaira(payableTotalNgn)}</button>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -623,14 +672,32 @@ export default function Account() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-100">
                           <div className="grid gap-6 p-5 md:grid-cols-2">
                             <div>
-                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price breakdown</h3>
+                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">Price & settlement breakdown</h3>
                               <dl className="mt-2 space-y-1 text-[12px] font-medium text-ink-700">
-                                <div className="flex justify-between gap-3"><dt className="min-w-0">Subtotal ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.accommodationSubtotal)}</dd></div>
-                                {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatMoney(c.amount)}</dd></div>)}
-                                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.hamletGuestFee)}</dd></div>
-                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Total</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.guestTotal)}</dd></div>
-                                <div className="flex justify-between gap-3 text-ink-400"><dt className="min-w-0">Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatMoney(b.deposit)}</dd></div>
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">Owner accommodation ({b.nights} nights)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
+                                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET domestic markup (20%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
+                                {b.mandatoryCharges.map(c => <div key={c.label} className="flex justify-between gap-3"><dt className="min-w-0">{c.label}</dt><dd className="shrink-0 tabular-nums">{formatNaira(c.amount)}</dd></div>)}
+                                {b.quoteCurrency && b.quoteCurrency !== 'NGN' && b.quotedStayTotalMinor && (
+                                  <div className="flex justify-between gap-3 text-sky-900"><dt className="min-w-0">Quoted international stay ({b.quoteCurrency} incl. 10% buffer)</dt><dd className="shrink-0 tabular-nums font-bold">{formatMinorCurrency(b.quotedStayTotalMinor, b.quoteCurrency)}</dd></div>
+                                )}
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Stay total (NGN)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                                <div className="flex justify-between gap-3 text-ink-500"><dt className="min-w-0">Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-jade-800"><dt>Paystack NGN settlement total</dt><dd className="shrink-0 tabular-nums">{formatNaira(payableTotalNgn)}</dd></div>
                               </dl>
+                              {cautionRecord && (
+                                <div className="mt-3 rounded-xl border border-ink-200 bg-ink-50/70 p-3 text-[11.5px]">
+                                  <p className="font-bold text-ink-900">
+                                    Caution deposit status: <span className="uppercase text-jade-800">{cautionRecord.status.replace(/_/g, ' ')}</span>
+                                  </p>
+                                  <p className="mt-0.5 text-ink-600">
+                                    Amount: {formatNaira(cautionRecord.amountNgn)}
+                                    {cautionRecord.deductedAmountNgn > 0 ? ` · Deducted: ${formatNaira(cautionRecord.deductedAmountNgn)}` : ''}
+                                    {cautionRecord.refundedAmountNgn > 0 ? ` · Refunded: ${formatNaira(cautionRecord.refundedAmountNgn)}` : ''}
+                                  </p>
+                                  {cautionRecord.inspectionNotes && <p className="mt-1 text-ink-500">Inspection note: {cautionRecord.inspectionNotes}</p>}
+                                  {cautionRecord.deductionReason && <p className="mt-0.5 font-semibold text-amber-900">Deduction reason: {cautionRecord.deductionReason}</p>}
+                                </div>
+                              )}
                               {b.paymentRef && <p className="mt-3 break-all font-mono text-[10px] font-bold text-ink-400">Provider ref: {b.paymentRef} · {b.paymentProvider}</p>}
                               {b.cancelReason && <p className="mt-2 break-words text-[11.5px] font-semibold text-red-700">Reason: {b.cancelReason}</p>}
                               {b.refundStatus === 'processed' && <p className="mt-1 text-[11.5px] font-bold text-teal-800">Refund processed: {formatNaira(b.refundAmount ?? b.guestTotal)}</p>}

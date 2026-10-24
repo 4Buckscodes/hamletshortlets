@@ -54,7 +54,9 @@ if (denoRuntime) {
       loadBookingSnapshot: async (bookingId: string) => {
         const { data: bookingRow, error: bookingError } = await serviceClient
           .from('bookings')
-          .select('id,reference,guest_id,property_id,check_in,check_out,status,guest_total,payment_deadline')
+          .select(
+            'id,reference,guest_id,property_id,check_in,check_out,status,guest_total,settlement_total_ngn,quote_currency,quoted_guest_total,exchange_rate_ngn_per_unit,international_buffer_amount,quote_expires_at,payment_deadline',
+          )
           .eq('id', bookingId)
           .maybeSingle();
 
@@ -65,10 +67,11 @@ if (denoRuntime) {
           { data: propRow, error: propError },
           { data: guestProfileRow, error: guestProfileError },
           { data: conflicts, error: conflictError },
+          { data: blockConflicts, error: blockError },
         ] = await Promise.all([
           serviceClient
             .from('properties')
-            .select('status')
+            .select('status,first_available_date')
             .eq('id', bookingRow.property_id)
             .maybeSingle(),
           serviceClient
@@ -84,21 +87,35 @@ if (denoRuntime) {
             .neq('id', bookingRow.id)
             .lt('check_in', bookingRow.check_out)
             .gt('check_out', bookingRow.check_in),
+          serviceClient
+            .from('property_availability_blocks')
+            .select('id')
+            .eq('property_id', bookingRow.property_id)
+            .lt('start_date', bookingRow.check_out)
+            .gt('end_date', bookingRow.check_in),
         ]);
 
         if (propError) return { data: null, error: { message: propError.message } };
         if (guestProfileError) return { data: null, error: { message: guestProfileError.message } };
         if (conflictError) return { data: null, error: { message: conflictError.message } };
+        if (blockError) return { data: null, error: { message: blockError.message } };
 
         const nowMs = Date.now();
-        const hasActiveHoldOrConfirmed = (conflicts ?? []).some(row => {
-          if (row.status === 'confirmed') return true;
-          if (row.status === 'awaiting_payment') {
-            if (!row.payment_deadline) return true;
-            return new Date(String(row.payment_deadline)).getTime() > nowMs;
-          }
-          return false;
-        });
+        const beforeFirstAvailable = Boolean(
+          propRow?.first_available_date &&
+            String(bookingRow.check_in) < String(propRow.first_available_date),
+        );
+        const hasActiveHoldOrConfirmed =
+          beforeFirstAvailable ||
+          (blockConflicts ?? []).length > 0 ||
+          (conflicts ?? []).some(row => {
+            if (row.status === 'confirmed') return true;
+            if (row.status === 'awaiting_payment') {
+              if (!row.payment_deadline) return true;
+              return new Date(String(row.payment_deadline)).getTime() > nowMs;
+            }
+            return false;
+          });
 
         const snapshot: CheckoutBookingSnapshot = {
           id: bookingRow.id as string,
@@ -108,6 +125,12 @@ if (denoRuntime) {
           property_status: (propRow?.status as string | undefined) ?? 'suspended',
           status: bookingRow.status as string,
           guest_total: bookingRow.guest_total as number,
+          settlement_total_ngn: Number(bookingRow.settlement_total_ngn ?? bookingRow.guest_total),
+          quote_currency: (bookingRow.quote_currency as string | undefined) ?? 'NGN',
+          quoted_guest_total: Number(bookingRow.quoted_guest_total ?? bookingRow.guest_total),
+          exchange_rate_ngn_per_unit: Number(bookingRow.exchange_rate_ngn_per_unit ?? 1),
+          international_buffer_amount: Number(bookingRow.international_buffer_amount ?? 0),
+          quote_expires_at: (bookingRow.quote_expires_at as string | null) ?? null,
           payment_deadline: (bookingRow.payment_deadline as string | null) ?? null,
           has_confirmed_conflict: hasActiveHoldOrConfirmed,
           check_in: String(bookingRow.check_in),

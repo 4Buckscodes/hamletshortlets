@@ -11,6 +11,12 @@ export interface CheckoutBookingSnapshot {
   property_status: string;
   status: string;
   guest_total: number;
+  settlement_total_ngn?: number;
+  quote_currency?: string;
+  quoted_guest_total?: number;
+  exchange_rate_ngn_per_unit?: number;
+  international_buffer_amount?: number;
+  quote_expires_at?: string | null;
   payment_deadline: string | null;
   has_confirmed_conflict: boolean;
   check_in?: string;
@@ -281,9 +287,31 @@ export async function handlePaystackInitialize(
     return jsonResponse({ ok: false, error: 'Invalid authoritative booking total.' }, 422);
   }
 
-  // Authoritative stay total from PostgreSQL in kobo; never accept client-sent amounts
-  // and never add undecided processing fees.
-  const amountKobo = booking.guest_total * 100;
+  const quoteCurrency = (booking.quote_currency ?? 'NGN').toUpperCase();
+  if (
+    (quoteCurrency === 'USD' || quoteCurrency === 'GBP') &&
+    booking.quote_expires_at &&
+    new Date(booking.quote_expires_at).getTime() <= currentNow.getTime()
+  ) {
+    return jsonResponse(
+      {
+        ok: false,
+        code: 'quote_expired',
+        error: `Your ${quoteCurrency} exchange-rate quote has expired. Refresh the quote or switch to NGN before checkout.`,
+      },
+      409,
+    );
+  }
+
+  const authoritativeNgnAmount =
+    typeof booking.settlement_total_ngn === 'number' &&
+    Number.isInteger(booking.settlement_total_ngn) &&
+    booking.settlement_total_ngn > 0
+      ? booking.settlement_total_ngn
+      : booking.guest_total;
+
+  // Authoritative stay settlement total from PostgreSQL in kobo; never accept client-sent amounts.
+  const amountKobo = authoritativeNgnAmount * 100;
   const callbackUrl = sanitizeCallbackUrl(body.callback_url);
   const initFn = deps.initializeTransaction ?? defaultInitializePaystackTransaction;
 
@@ -309,7 +337,12 @@ export async function handlePaystackInitialize(
       authorization_url: initialized.authorization_url,
       access_code: initialized.access_code,
       reference: initialized.reference,
-      amount_naira: booking.guest_total,
+      amount_naira: authoritativeNgnAmount,
+      settlement_currency: 'NGN',
+      quote_currency: quoteCurrency,
+      quoted_guest_total: booking.quoted_guest_total ?? authoritativeNgnAmount,
+      exchange_rate_ngn_per_unit: booking.exchange_rate_ngn_per_unit ?? 1,
+      international_buffer_amount: booking.international_buffer_amount ?? 0,
     },
     200,
   );

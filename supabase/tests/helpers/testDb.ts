@@ -86,6 +86,10 @@ export async function resetTestData(db: PGlite): Promise<void> {
       public.admin_bootstrap_emails,
       public.booking_notifications,
       public.booking_feedback,
+      public.booking_caution_deposits,
+      public.partner_referral_rewards,
+      public.partner_referrals,
+      public.property_availability_blocks,
       public.booking_payment_records,
       public.booking_issues,
       public.bookings,
@@ -97,6 +101,20 @@ export async function resetTestData(db: PGlite): Promise<void> {
       public.profiles,
       auth.users
     restart identity cascade;
+
+    insert into public.currency_exchange_rates (
+      currency, currency_pair, ngn_per_unit, buffer_rate, source, effective_at, expires_at, is_active
+    )
+    values
+      ('USD', 'NGN/USD', 1600.0000, 0.1000, 'hamlet_configured_reference', now(), null, true),
+      ('GBP', 'NGN/GBP', 2000.0000, 0.1000, 'hamlet_configured_reference', now(), null, true)
+    on conflict (currency) do update
+      set ngn_per_unit = excluded.ngn_per_unit,
+          buffer_rate = excluded.buffer_rate,
+          source = excluded.source,
+          effective_at = now(),
+          expires_at = null,
+          is_active = true;
   `);
 }
 

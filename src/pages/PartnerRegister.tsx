@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, Users, BadgePercent, ShieldCheck, ArrowRight, CheckCircle2, ChevronLeft, CircleAlert,
-  RefreshCcw, Eye, EyeOff, LogIn, AlertTriangle, Clock3,
+  RefreshCcw, Eye, EyeOff, LogIn, AlertTriangle, Clock3, Gift,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
-import { useHamlet } from '../lib/store';
+import { useHamlet, getPersistedPartnerRefCode } from '../lib/store';
 import { usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { AREAS } from '../lib/seed';
@@ -30,6 +30,7 @@ export default function PartnerRegister() {
   const {
     registerPartner,
     resubmitPartnerApplication,
+    resolveReferralCode,
     refreshState,
     signIn,
     state,
@@ -37,6 +38,7 @@ export default function PartnerRegister() {
   } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const session = state.session;
 
   const existingApplication = useMemo(() => {
@@ -67,8 +69,25 @@ export default function PartnerRegister() {
     motivation: existingApplication?.motivation ?? '',
   }));
   const [areas, setAreas] = useState<string[]>(() => existingApplication?.areas ?? []);
+  const [referralCode, setReferralCode] = useState<string>(
+    () => searchParams.get('ref') ?? existingApplication?.referredByCode ?? getPersistedPartnerRefCode(),
+  );
+  const [resolvedReferrer, setResolvedReferrer] = useState<{ valid: boolean; referrerName?: string; referrerCompany?: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const trimmed = referralCode.trim();
+    if (!trimmed) {
+      Promise.resolve().then(() => { if (active) setResolvedReferrer(null); });
+      return () => { active = false; };
+    }
+    void resolveReferralCode(trimmed).then(res => {
+      if (active) setResolvedReferrer(res);
+    });
+    return () => { active = false; };
+  }, [referralCode, resolveReferralCode]);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: k === 'propertiesCount' ? Number(e.target.value) : e.target.value }));
@@ -96,7 +115,12 @@ export default function PartnerRegister() {
     if (!/^\S+@\S+\.\S+$/.test(effectiveEmail)) errs.email = 'Enter a valid email address.';
     if (form.phone.trim().length < 7) errs.phone = 'Enter a reachable phone number.';
     if (form.company.trim().length < 2) errs.company = 'Enter your company or trading name.';
-    if (form.propertiesCount < 1) errs.propertiesCount = 'Enter at least one property.';
+    const isNonListingAgentRole = form.role === 'Closing Agent' || form.role === 'Referral Partner';
+    if (form.propertiesCount < (isNonListingAgentRole ? 0 : 1)) {
+      errs.propertiesCount = isNonListingAgentRole
+        ? 'Properties count cannot be negative.'
+        : 'Enter at least one property.';
+    }
     if (areas.length === 0) errs.areas = 'Select at least one Lagos area.';
     if (form.motivation.trim().length < 20) {
       errs.motivation = 'Briefly describe your portfolio & authority basis (at least 20 characters).';
@@ -135,6 +159,7 @@ export default function PartnerRegister() {
         email: effectiveEmail,
         areas,
         password: password || undefined,
+        referralCode: referralCode.trim() || undefined,
       });
       if (!result.ok) {
         setErrors({ account: result.error ?? 'Could not submit your application.' });
@@ -174,10 +199,10 @@ export default function PartnerRegister() {
             <p className="mt-4 max-w-sm text-[13px] font-medium leading-relaxed text-ink-100">Own or manage a shortlet in Lagos? HAMLET helps property owners, managers, and hospitality partners showcase their spaces clearly, connect with serious guests, and manage bookings in one organised place.</p>
             <ul className="mt-6 space-y-3 text-[12px] font-semibold text-ink-100">
               {[
-                { Icon: BadgePercent, t: '0% owner fee — guests pay HAMLET’s 3%, you never do' },
-                { Icon: ShieldCheck, t: 'Present your property with clear details, photos, amenities, and house rules' },
-                { Icon: Users, t: 'Role-based access: manage availability and booking requests from one dashboard' },
-                { Icon: Building2, t: 'Commissions recorded only when specifically agreed in writing' },
+                { Icon: BadgePercent, t: '0% owner fee — owners receive 100% of their listed rate; guests pay HAMLET’s 20% domestic markup' },
+                { Icon: ShieldCheck, t: 'List even if currently occupied — publish now for future available dates' },
+                { Icon: Users, t: 'Closing agents earn 10% · Direct partner referrers earn 2.5% for 90 days after activation' },
+                { Icon: Building2, t: 'All attributions & commissions recorded independently in the controlled ledger' },
               ].map(({ Icon, t }) => (
                 <li key={t} className="flex items-start gap-2.5"><Icon size={16} className="mt-0.5 shrink-0 text-brass-400" />{t}</li>
               ))}
@@ -414,8 +439,8 @@ export default function PartnerRegister() {
                 </div>
 
                 <label>
-                  <span className="label-dark">Properties to list (count)</span>
-                  <input type="number" min={1} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />
+                  <span className="label-dark">Properties to list (0 if closing/referral only)</span>
+                  <input type="number" min={0} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />
                   {errors.propertiesCount && <Err msg={errors.propertiesCount} />}
                 </label>
 
@@ -434,6 +459,23 @@ export default function PartnerRegister() {
                     ))}
                   </div>
                 </div>
+
+                <label className="sm:col-span-2">
+                  <span className="label-dark flex items-center gap-1.5"><Gift size={12} className="text-brass-400" /> Partner referral code (optional)</span>
+                  <input
+                    className="input-dark font-mono uppercase"
+                    value={referralCode}
+                    onChange={e => setReferralCode(e.target.value)}
+                    placeholder="e.g. HML-ADEWALE-1A2B"
+                  />
+                  {referralCode.trim() && resolvedReferrer && (
+                    <span className={`mt-1 block text-[10.5px] font-bold ${resolvedReferrer.valid ? 'text-jade-400' : 'text-amber-300'}`}>
+                      {resolvedReferrer.valid
+                        ? `Referred by ${resolvedReferrer.referrerName}${resolvedReferrer.referrerCompany ? ` (${resolvedReferrer.referrerCompany})` : ''} — verified server-side on approval.`
+                        : 'Code not matched to an active approved partner (self-referrals and unrecognised codes are ignored).'}
+                    </span>
+                  )}
+                </label>
 
                 <label className="sm:col-span-2">
                   <span className="label-dark">Portfolio, authority basis & operational experience</span>

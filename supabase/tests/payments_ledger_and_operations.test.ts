@@ -302,13 +302,13 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
         ),
       );
 
-      // 2 nights × 100,000 = 200,000 subtotal
+      // 2 nights × 100,000 = 200,000 subtotal (B)
       // mandatory cleaning = 20,000
-      // 3% guest fee = 6,000
-      // guestTotal = 226,000; refundable deposit = 80,000
+      // 20% domestic markup on B = 40,000
+      // guestTotal = 260,000; refundable deposit = 80,000
       const booking = await createAcceptedBooking('HML-PAY-1001', 2);
       expect(booking.subtotal).toBe(200_000);
-      expect(booking.guestTotal).toBe(226_000);
+      expect(booking.guestTotal).toBe(260_000);
       expect(booking.deposit).toBe(80_000);
 
       const webhookBody = {
@@ -316,7 +316,7 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
         data: {
           status: 'success',
           reference: 'PSK_TX_20261023_001',
-          amount: 226_000 * 100, // kobo
+          amount: 260_000 * 100, // kobo
           fees: 2_000 * 100, // ₦2,000 Paystack fee in kobo
           currency: 'NGN',
           metadata: {
@@ -368,16 +368,18 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
       );
 
       const byType = new Map(ledgerRows.map(r => [r.record_type, r]));
-      expect(ledgerRows).toHaveLength(7);
-      expect(byType.get('guest_charge')?.amount).toBe(226_000);
+      expect(ledgerRows).toHaveLength(9);
+      expect(byType.get('guest_charge')?.amount).toBe(260_000);
       expect(byType.get('guest_charge')?.status).toBe('reconciled');
       // Owner revenue is full 200,000 + 20,000 mandatory — 0% HAMLET owner fee!
       expect(byType.get('accommodation_revenue')?.amount).toBe(200_000);
       expect(byType.get('mandatory_charges')?.amount).toBe(20_000);
-      expect(byType.get('guest_service_fee')?.amount).toBe(6_000);
+      expect(byType.get('guest_service_fee')?.amount).toBe(40_000);
+      expect(byType.get('payment_reserve')?.amount).toBe(5_000);
+      expect(byType.get('hamlet_allocation')?.amount).toBe(35_000);
       expect(byType.get('deposit_hold')?.amount).toBe(80_000);
       expect(byType.get('provider_charge')?.amount).toBe(2_000);
-      expect(byType.get('provider_charge')?.note).toContain('policy undecided');
+      expect(byType.get('provider_charge')?.note).toContain('internal reserve');
       expect(byType.get('partner_commission')?.amount).toBe(20_000); // 10% × 200,000
       expect(byType.get('partner_commission')?.note).toBe('Mandate #CM-2026-088 signed 12 Oct 2026');
 
@@ -391,18 +393,18 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
         `select count(*)::text as count from public.booking_payment_records where booking_id = $1`,
         [booking.id],
       );
-      expect(Number(afterReplayRows[0].count)).toBe(7);
+      expect(Number(afterReplayRows[0].count)).toBe(9);
     });
 
     it('flags underpaid webhook callbacks with negative variance without confirming the booking, and allows admin ledger reconciliation', async () => {
-      const booking = await createAcceptedBooking('HML-PAY-UNDER', 2); // expects 226,000 NGN
+      const booking = await createAcceptedBooking('HML-PAY-UNDER', 2); // expects 260,000 NGN
 
       const underpaidRes = await sendWebhookRequest({
         event: 'charge.success',
         data: {
           status: 'success',
           reference: 'PSK_TX_UNDERPAID_01',
-          amount: 200_000 * 100, // 26,000 NGN short
+          amount: 200_000 * 100, // 60,000 NGN short
           currency: 'NGN',
           metadata: { booking_id: booking.id },
         },
@@ -411,7 +413,7 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
       expect(underpaidRes.status).toBe(200);
       const body = (await underpaidRes.json()) as { ok: boolean; result: ConfirmWebhookResult };
       expect(body.result.status).toBe('flagged_underpayment');
-      expect(body.result.variance).toBe(-26_000);
+      expect(body.result.variance).toBe(-60_000);
 
       // Booking remains awaiting_payment — never prematurely confirmed!
       const bookingCheck = await db.query<{ status: string }>(
@@ -431,7 +433,7 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
       );
       expect(flagged).toHaveLength(1);
       expect(flagged[0].status).toBe('flagged');
-      expect(flagged[0].variance).toBe(-26_000);
+      expect(flagged[0].variance).toBe(-60_000);
 
       // Admin cannot flag/keep non-zero variance without an 8+ char reconciliation note
       await expect(

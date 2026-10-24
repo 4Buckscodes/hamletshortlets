@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { LayoutDashboard, Home, CalendarDays, Banknote, KeyRound, UserRound, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Home, CalendarDays, Banknote, KeyRound, UserRound, ShieldAlert, Gift } from 'lucide-react';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import { WorkspaceGuard } from '../Account';
 import { useHamlet } from '../../lib/store';
@@ -19,8 +19,9 @@ export default function PartnerLayout({ children }: { children: ReactNode }) {
     { to: '/partner', label: 'Overview', icon: <LayoutDashboard size={17} />, end: true },
     { to: '/partner/properties', label: 'My Properties', icon: <Home size={17} />, badge: pendingListings },
     { to: '/partner/bookings', label: 'Bookings & Issues', icon: <CalendarDays size={17} />, badge: pendingBookings },
-    { to: '/partner/earnings', label: 'Earnings (0% fee)', icon: <Banknote size={17} /> },
-    { to: '/partner/assignments', label: 'Assignments & Commissions', icon: <KeyRound size={17} /> },
+    { to: '/partner/earnings', label: 'Earnings & Commissions', icon: <Banknote size={17} /> },
+    { to: '/partner/referrals', label: 'Partner Referrals', icon: <Gift size={17} /> },
+    { to: '/partner/assignments', label: 'Assignments & Mandates', icon: <KeyRound size={17} /> },
     { to: '/partner/profile', label: 'Profile & Application', icon: <UserRound size={17} /> },
   ];
 

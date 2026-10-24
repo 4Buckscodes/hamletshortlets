@@ -236,7 +236,7 @@ export default function SignIn() {
             <h1 className="mt-2 font-display text-5xl font-black leading-[1.05] text-paper">Shortlet stays,<br /><span className="italic text-brass-400">sorted before you arrive.</span></h1>
             <p className="mt-5 max-w-md text-[14px] font-medium leading-relaxed text-ink-100">Compare locations, amenities, house rules, and total pricing before you commit — with clear booking status and support from request to check-out.</p>
             <div className="mt-6 space-y-2 text-[12.5px] font-semibold text-ink-200">
-              {['Manual, evidence-based verification before any listing goes live', 'Total price visible before you commit — 3% guest fee, 0% owner fee', 'Payment confirmed only by server-side provider webhook'].map(t => (
+              {['Manual, evidence-based verification before any listing goes live', 'Total price visible before you commit — 20% domestic markup, 0% owner fee', 'Payment confirmed only by server-side provider webhook'].map(t => (
                 <p key={t} className="flex items-start gap-2"><ShieldCheck size={15} className="mt-0.5 shrink-0 text-brass-400" />{t}</p>
               ))}
             </div>
