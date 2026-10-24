@@ -189,17 +189,15 @@ export default function Home() {
     navigate(`/stays${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
-  const activeSlide = HERO_SLIDES[heroSlide] ?? HERO_SLIDES[0];
-
   return (
     <GuestLayout>
-      {/* ── Hero Interior Slideshow + Search ───────────────────────── */}
+      {/* ── Full-Clarity Sample Interior Hero Slideshow ────────────── */}
       <section
-        className="relative overflow-hidden bg-ink-950 text-paper"
+        className="relative flex min-h-[430px] flex-col justify-end overflow-hidden bg-ink-950 text-paper sm:min-h-[530px] lg:min-h-[610px]"
         onMouseEnter={() => setSlideshowPaused(true)}
         onMouseLeave={() => setSlideshowPaused(false)}
       >
-        {/* Crossfading sample apartment interior slides */}
+        {/* Crossfading sample apartment interior slides — 100% full brightness */}
         <div className="absolute inset-0" aria-hidden="true">
           {HERO_SLIDES.map((slide, index) => {
             const isCurrent = index === heroSlide;
@@ -208,97 +206,103 @@ export default function Home() {
                 key={slide.src}
                 src={slide.src}
                 alt={slide.alt}
-                loading={index === 0 ? 'eager' : 'lazy'}
-                className={`absolute inset-0 h-full w-full object-cover object-center transition-all duration-1000 ease-out ${
-                  isCurrent ? 'scale-100 opacity-85' : 'scale-105 opacity-0'
+                loading="eager"
+                decoding="async"
+                className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] transition-all duration-1000 ease-out ${
+                  isCurrent ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
                 }`}
               />
             );
           })}
         </div>
 
-        {/* Directional editorial scrim: legible copy on left, clear interior view across frame */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-ink-950/20" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/92 via-ink-950/20 to-ink-950/35" />
+        {/* Localized bottom/left vignette only — leaves the furnished room bright & unobstructed */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink-950/80 via-ink-950/25 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-ink-950/55 via-ink-950/15 to-transparent lg:w-3/5" />
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-20">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/45 bg-ink-950/65 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-14 pt-24 sm:px-6 sm:pb-20 sm:pt-32">
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-ink-950/70 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
                 <ShieldCheck size={13} className="shrink-0 text-brass-400" />
                 <span>
                   {HAMLET_BRAND_NAME} · {HAMLET_USP}
                 </span>
               </div>
 
-              <h1 className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-xs sm:text-5xl lg:text-6xl">
+              <h1 className="mt-3.5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(8,15,30,0.65)] sm:text-5xl lg:text-6xl">
                 Lagos is big.{' '}
                 <span className="italic text-brass-300">Your stay, sorted.</span>
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm font-medium text-ink-100 sm:text-base">
+              <p className="mt-2.5 max-w-lg text-sm font-semibold text-white/95 drop-shadow-[0_1px_10px_rgba(8,15,30,0.7)] sm:text-base">
                 Verified shortlets across Lagos Mainland &amp; Island. Pay only after availability is confirmed.
               </p>
             </div>
 
-            {/* Sample interior slideshow caption + controls */}
-            <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-end">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-ink-950/65 px-3.5 py-1.5 text-xs font-semibold text-paper backdrop-blur-md">
-                <span className="font-mono text-[10.5px] font-bold text-brass-300">
-                  0{heroSlide + 1}/0{HERO_SLIDES.length}
+            {/* Sample interior room switcher + prev/next controls */}
+            <div className="flex flex-wrap items-center gap-2 self-start lg:self-end">
+              <div
+                className="flex flex-wrap items-center gap-1 rounded-2xl border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md sm:rounded-full"
+                role="tablist"
+                aria-label="Sample apartment rooms"
+              >
+                <span className="px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-brass-300">
+                  Sample interior
                 </span>
-                <span className="h-3 w-px bg-white/20" />
-                <span>Sample interior · {activeSlide.room}</span>
+                {HERO_SLIDES.map((slide, index) => {
+                  const active = index === heroSlide;
+                  return (
+                    <button
+                      key={slide.src}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      aria-label={`Show ${slide.room}`}
+                      onClick={() => setHeroSlide(index)}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition ${
+                        active
+                          ? 'bg-brass-400 text-ink-950 shadow-2xs'
+                          : 'text-white/85 hover:bg-white/15 hover:text-white'
+                      }`}
+                    >
+                      {slide.room}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-ink-950/65 p-1 backdrop-blur-md">
+              <div className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md">
                 <button
                   type="button"
                   aria-label="Previous interior photo"
                   onClick={() =>
                     setHeroSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
                   }
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/85 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
                 >
                   <ChevronLeft size={15} />
                 </button>
-
-                <div className="flex items-center gap-1 px-1" role="tablist" aria-label="Sample apartment rooms">
-                  {HERO_SLIDES.map((slide, index) => {
-                    const active = index === heroSlide;
-                    return (
-                      <button
-                        key={slide.src}
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        aria-label={`Show ${slide.room}`}
-                        onClick={() => setHeroSlide(index)}
-                        className={`h-1.5 rounded-full transition-all ${
-                          active ? 'w-5 bg-brass-400' : 'w-1.5 bg-white/45 hover:bg-white/75'
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
-
                 <button
                   type="button"
                   aria-label="Next interior photo"
                   onClick={() => setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length)}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/85 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
                 >
                   <ChevronRight size={15} />
                 </button>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Search Card */}
-          <form
-            onSubmit={onSearch}
-            className="mt-7 rounded-3xl border border-white/15 bg-white p-3.5 text-ink-900 shadow-[0_28px_70px_-24px_rgba(0,0,0,0.65)] sm:p-5"
-          >
+      {/* ── Search Dock (below hero so interior photos stay unobstructed) ── */}
+      <div className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-11 sm:px-6">
+        <form
+          onSubmit={onSearch}
+          className="rounded-3xl border border-ink-100 bg-white p-3.5 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
+        >
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
               <div className="flex flex-wrap items-center gap-1.5">
                 {(
@@ -453,8 +457,7 @@ export default function Home() {
               </div>
             </div>
           </form>
-        </div>
-      </section>
+      </div>
 
       {/* ── Available Stays ────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
@@ -593,18 +596,18 @@ export default function Home() {
                   to={card.to}
                   className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
                 >
-                  <div className="relative h-36 overflow-hidden bg-clay">
+                  <div className="relative h-44 overflow-hidden bg-clay">
                     <img
                       src={card.img}
                       alt={card.name}
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 via-ink-950/15 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/70 to-transparent" />
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
                       {card.corridor}
                     </span>
-                    <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white">
+                    <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white drop-shadow-xs">
                       {card.name}
                     </h3>
                   </div>

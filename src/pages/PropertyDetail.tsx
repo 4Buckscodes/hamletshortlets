@@ -470,7 +470,7 @@ export default function PropertyDetail() {
                 className={`overflow-hidden rounded-3xl border-2 transition ${
                   i === imgIndex
                     ? 'border-brass-500 ring-2 ring-brass-500/30'
-                    : 'border-transparent opacity-80 hover:opacity-100'
+                    : 'border-transparent hover:border-ink-300'
                 }`}
               >
                 <img

@@ -214,11 +214,11 @@ export default function PartnerRegister() {
       {/* Value & Economics Panel */}
       <div className="relative overflow-hidden border-b border-ink-800 p-6 sm:p-10 lg:col-span-5 lg:border-b-0 lg:border-r">
         <img
-          src="/images/prop/penthouse.jpg"
+          src="/images/hero-sample-kitchen.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          className="absolute inset-0 h-full w-full object-cover opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-ink-950/92 via-ink-950/80 to-ink-950" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/60 to-ink-950/65" />
         <div className="relative flex h-full flex-col justify-between gap-10">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2.5">

@@ -245,11 +245,11 @@ export default function SignIn() {
       {/* Midnight Navy Brand Showcase */}
       <div className="relative hidden overflow-hidden bg-ink-950 lg:block">
         <img
-          src="/images/lagos-hero.jpg"
+          src="/images/hero-sample-living.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-35"
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-ink-950/90 via-ink-950/75 to-ink-950/95" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/88 via-ink-950/45 to-ink-950/60" />
         <div className="relative flex h-full flex-col justify-between p-12">
           <Link to="/" className="inline-flex items-center gap-3">
             <HamletMark size={40} light />

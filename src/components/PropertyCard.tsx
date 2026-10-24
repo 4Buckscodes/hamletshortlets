@@ -82,7 +82,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 via-ink-950/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/65 to-transparent" />
 
         {/* Top badges + Save toggle */}
         <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">

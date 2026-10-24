@@ -123,9 +123,9 @@ export default function Lagos() {
         <img
           src="/images/lagos-hero.jpg"
           alt="Lagos cityscape"
-          className="absolute inset-0 h-full w-full object-cover opacity-38"
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/80 to-ink-950/45" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/82 via-ink-950/45 to-ink-950/10" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
           <p className="eyebrow-light">Lagos area guide</p>
           <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
@@ -184,14 +184,14 @@ export default function Lagos() {
                   key={n.name}
                   className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition hover:-translate-y-1 hover:shadow-md"
                 >
-                  <div className="relative h-38 overflow-hidden bg-clay">
+                  <div className="relative h-44 overflow-hidden bg-clay">
                     <img
                       src={n.img}
                       alt={n.name}
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/65 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/65 to-transparent" />
                     <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
                       Mainland
                     </span>
@@ -238,14 +238,14 @@ export default function Lagos() {
                   key={n.name}
                   className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-paper/55 shadow-2xs transition hover:-translate-y-1 hover:bg-white hover:shadow-md"
                 >
-                  <div className="relative h-38 overflow-hidden bg-clay">
+                  <div className="relative h-44 overflow-hidden bg-clay">
                     <img
                       src={n.img}
                       alt={n.name}
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/65 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/65 to-transparent" />
                     <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
                       Island
                     </span>

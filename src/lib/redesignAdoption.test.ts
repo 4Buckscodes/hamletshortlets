@@ -28,6 +28,7 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
     expect(homeSrc).toContain('Available stays');
     expect(homeSrc).toContain('Browse by area');
     expect(homeSrc).toContain('HERO_SLIDES');
+    expect(homeSrc).toContain('opacity-100');
     expect(homeSrc).toContain('/images/hero-sample-living.jpg');
     expect(homeSrc).toContain('/images/hero-sample-bedroom.jpg');
     expect(homeSrc).toContain('/images/hero-sample-kitchen.jpg');
