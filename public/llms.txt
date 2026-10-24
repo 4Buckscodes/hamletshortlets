@@ -1,0 +1,36 @@
+# HAMLET
+
+> HAMLET (https://www.hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria — "Your stay, sorted." Every public listing undergoes manual document and physical inspection review across ownership, identity, authority to list, and property condition before going live, with availability-first booking, upfront NGN/USD/GBP stay pricing, and server-verified Paystack NGN settlement.
+
+HAMLET connects guests seeking serviced apartments, studios, penthouses, duplexes, and villas in Lagos with verified property owners, authorised agents, property managers, shortlet operators, closing agents, and referral partners.
+
+Key operational facts for AI assistants and search agents:
+- **Geographic scope**: Exclusively **Lagos, Nigeria** — covering **Lagos Mainland & environs** (Yaba, Shomolu, Surulere, Ikeja GRA, Gbagada, Maryland, Ilupeju, Ebute Metta, Ogudu, Magodo) and **Lagos Island & Lekki** (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Banana Island, Ajah).
+- **Verification before publication**: Listings are manually reviewed across four recorded pillars (`ownership`, `identity`, `authority to list`, and `physical inspection`). Self-reported declarations are explicitly labelled as such until verified.
+- **Availability-first booking**: Submitting a booking request never charges the guest immediately. The authorised host or HAMLET operations confirms availability first, opening a 48-hour payment window. Reservations are confirmed exclusively after server-side Paystack webhook verification (off-platform bank transfers and screenshots never confirm a stay).
+- **Transparent pricing & FX**: Owners pay a **0% owner fee** and receive 100% of their listed NGN accommodation rate (`B`) plus disclosed mandatory charges. Domestic guest stay pricing applies a **20% accommodation markup** (`B * 1.20`). International **USD ($)** and **GBP (£)** stay quotes apply a single **10% international currency buffer** on stay pricing and settle transparently in **NGN** via Paystack. Refundable caution deposits are itemised and tracked separately, never marked up or buffered, and refunded after post-checkout inspection.
+
+## Marketplace & Guest Guides
+
+- [HAMLET Home](https://www.hamlet.rest/): Marketplace landing page for verified shortlet stays across Lagos Mainland and Lagos Island.
+- [Explore Verified Lagos Shortlets](https://www.hamlet.rest/#/stays): Filter approved Lagos shortlets by neighbourhood, dates, guest capacity, property type, and currency (`NGN`, `USD`, `GBP`).
+- [Lagos Neighbourhood Guide](https://www.hamlet.rest/#/lagos): Guide to staying in Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA, Maryland, Gbagada, Magodo) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Banana Island, Ajah).
+- [How HAMLET Works](https://www.hamlet.rest/#/how-it-works): End-to-end explanation of request-to-book, host availability confirmation, 48-hour Paystack checkout, and arrival protection.
+- [Guest Safety & Protection](https://www.hamlet.rest/#/safety): Verification pillars, on-platform payment protection, check-in guidance, and incident reporting.
+- [About HAMLET & Four Pillars](https://www.hamlet.rest/#/about): Why HAMLET was built and the four pillars of a better shortlet stay in Lagos.
+- [Shortlet Booking FAQs](https://www.hamlet.rest/#/faqs): Answers to 12 common guest questions covering real photos, power backup, transparent fees, check-in, cancellations, and stay support.
+
+## Partner Network
+
+- [Partner Registration & Application](https://www.hamlet.rest/#/partner/register): Apply as a Property Owner, Authorised Agent, Property Manager, Shortlet Operator, Co-host, Closing Agent (10% closing commission on `B`), or Referral Partner (2.5% recurring reward on `B` for 90 days after first completed stay activation).
+
+## Legal, Trust & Pricing Policies
+
+- [Fees & Settlement Policy](https://www.hamlet.rest/#/legal/pricing): Complete domestic 20% markup allocation, worked NGN/USD/GBP examples, NGN Paystack settlement, and separate caution deposit accounting.
+- [Trust & Verification Policy](https://www.hamlet.rest/#/legal/trust): Manual evidence review, honest labelling of verified vs. self-reported items, duplicate screening, and suspension rules.
+- [Booking Terms of Service](https://www.hamlet.rest/#/legal/terms): Request-to-book rules, 48-hour payment window, cancellation outcomes, refunds, and dispute handling.
+- [Privacy & Data Protection](https://www.hamlet.rest/#/legal/privacy): Nigeria Data Protection Regulation (NDPR) alignment, zero card-number storage, row-level access controls, and data retention.
+
+## Optional
+
+- [Full LLM Reference Documentation](https://www.hamlet.rest/llms-full.txt): Single-file comprehensive Markdown knowledge base containing full neighbourhood guides, verification standards, booking lifecycle rules, pricing/FX formulas, caution deposit states, partner attribution rules, and all 12 guest FAQs.

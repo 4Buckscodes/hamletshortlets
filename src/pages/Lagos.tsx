@@ -5,6 +5,7 @@ import { PropertyCard } from '../components/PropertyCard';
 import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
 import { usePageMeta } from '../lib/brand';
+import { buildLagosGuideStructuredData } from '../lib/seo';
 
 const MAINLAND_GUIDES = [
   {
@@ -78,10 +79,16 @@ const MAINLAND_ENVIRONS_CHIPS = [
   { label: 'Ikeja GRA', to: '/stays?area=Ikeja+GRA' },
 ];
 
+const LAGOS_GUIDE_SCHEMA = buildLagosGuideStructuredData([
+  ...MAINLAND_GUIDES,
+  ...ISLAND_GUIDES,
+]);
+
 export default function Lagos() {
   usePageMeta(
     'Shortlets in Lagos | Mainland (Yaba, Shomolu, Surulere) & Island — HAMLET',
     'Explore shortlets across Lagos Mainland — Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja & environs — and Lagos Island (Lekki, Victoria Island, Ikoyi, Ajah) on HAMLET.',
+    { canonicalPath: '/lagos', structuredData: LAGOS_GUIDE_SCHEMA },
   );
 
   const { state, backendReady, backendError } = useHamlet();
