@@ -80,11 +80,27 @@ export interface FeedbackItem {
   rating: number; text: string; category: string;
 }
 
+export interface ClosedAgentBookingSummary {
+  bookingId: string;
+  bookingRef: string;
+  propertyId: string;
+  propertyTitle: string;
+  area?: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  status: Booking['status'];
+  ownerListedPriceNgn: number;
+  closingAgentCommissionNgn: number;
+  createdAt: string;
+}
+
 export interface DBState {
   accounts: Account[];
   properties: Property[];
   publicCalendarSpans: PublicCalendarSpan[];
   bookings: Booking[];
+  closedAgentBookings?: ClosedAgentBookingSummary[];
   ledger: LedgerEntry[];
   issues: Issue[];
   applications: PartnerApplication[];
@@ -101,7 +117,7 @@ export interface DBState {
 }
 
 const emptyState = (): DBState => ({
-  accounts: [], properties: [], publicCalendarSpans: [], bookings: [], ledger: [], issues: [],
+  accounts: [], properties: [], publicCalendarSpans: [], bookings: [], closedAgentBookings: [], ledger: [], issues: [],
   applications: [], assignments: [], partnerReferrals: [], partnerReferralRewards: [],
   cautionDeposits: [], exchangeRates: buildDefaultExchangeRates(),
   audit: [], feedback: [], notifications: [],
@@ -155,9 +171,9 @@ type Action =
   | { type: 'UPDATE_PROFILE'; name: string; phone?: string; company?: string }
   | { type: 'REGISTER_GUEST'; account: Account; session: Session }
   | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication; referral?: PartnerReferral }
-  | { type: 'RESUBMIT_PARTNER_APPLICATION'; id: string; patch: Pick<PartnerApplication, 'name' | 'phone' | 'company' | 'role' | 'areas' | 'propertiesCount' | 'motivation'>; actor: Session }
+  | { type: 'RESUBMIT_PARTNER_APPLICATION'; id: string; patch: Pick<PartnerApplication, 'name' | 'phone' | 'company' | 'role' | 'areas' | 'propertiesCount' | 'motivation' | 'referredByCode'>; actor: Session }
   | { type: 'ADD_PROPERTY'; property: Property }
-  | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string }
+  | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string; saveAsDraft?: boolean }
   | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; verification?: Property['verification']; actor: Session }
   | { type: 'UPDATE_PROPERTY_AVAILABILITY'; id: string; firstAvailableDate?: string | null; availabilityConfirmationStatus: 'confirmed' | 'needs_confirmation'; calendarResponsiblePerson?: string; actor: Session }
   | { type: 'ADD_AVAILABILITY_BLOCK'; propertyId: string; block: PropertyAvailabilityBlock; actor: Session }
@@ -465,6 +481,16 @@ function toRemoteBooking(
 ): Booking {
   const guestProfile = profileById?.get(row.guest_id);
   const adminDirGuest = adminDirectoryById?.get(row.guest_id);
+  const closingAgentProfile = row.closing_agent_id ? profileById?.get(row.closing_agent_id) : undefined;
+  const closingAgentDir = row.closing_agent_id ? adminDirectoryById?.get(row.closing_agent_id) : undefined;
+  const referrerProfile = row.direct_referrer_id ? profileById?.get(row.direct_referrer_id) : undefined;
+  const referrerDir = row.direct_referrer_id ? adminDirectoryById?.get(row.direct_referrer_id) : undefined;
+  const quoteCurr = row.quote_currency ?? 'NGN';
+  const fxRateVal = row.exchange_rate_ngn_per_unit !== undefined ? Number(row.exchange_rate_ngn_per_unit) : 1;
+  const convBaseVal = row.converted_base_amount !== undefined ? Number(row.converted_base_amount) : row.guest_total;
+  const intlBufVal = row.international_buffer_amount !== undefined ? Number(row.international_buffer_amount) : 0;
+  const quotedTotalVal = row.quoted_guest_total !== undefined ? Number(row.quoted_guest_total) : row.guest_total;
+  const isForeign = quoteCurr === 'USD' || quoteCurr === 'GBP';
   return {
     id: row.id,
     ref: row.reference,
@@ -489,25 +515,35 @@ function toRemoteBooking(
     guestTotal: row.guest_total,
     deposit: row.refundable_deposit,
     propertyIntroducerId: row.property_introducer_id ?? null,
+    propertyManagerId: row.authorised_manager_id ?? null,
     authorisedManagerId: row.authorised_manager_id ?? null,
     closingAgentId: row.closing_agent_id ?? null,
+    closingAgentName: closingAgentProfile?.full_name || closingAgentDir?.full_name || undefined,
     directReferrerId: row.direct_referrer_id ?? null,
+    directReferrerName: referrerProfile?.full_name || referrerDir?.full_name || undefined,
     guestReferralSource: row.guest_referral_source ?? null,
     closingAgentCommissionNgn: row.closing_agent_commission_ngn ?? 0,
     directReferrerRewardNgn: row.direct_referrer_reward_ngn ?? 0,
     hamletAllocationNgn: row.hamlet_allocation_ngn ?? 0,
     paymentReserveNgn: row.payment_reserve_ngn ?? 0,
     actualPaymentFeeNgn: row.actual_payment_fee_ngn ?? 0,
-    quoteCurrency: row.quote_currency ?? 'NGN',
+    quoteCurrency: quoteCurr,
     currencyPair: row.currency_pair ?? 'NGN/NGN',
-    exchangeRateNgnPerUnit: row.exchange_rate_ngn_per_unit !== undefined ? Number(row.exchange_rate_ngn_per_unit) : 1,
+    fxRatePair: isForeign ? (row.currency_pair ?? `NGN/${quoteCurr}`) : undefined,
+    exchangeRateNgnPerUnit: fxRateVal,
+    fxRate: isForeign ? fxRateVal : undefined,
     exchangeRateSource: row.exchange_rate_source ?? 'domestic_ngn',
+    fxRateSource: isForeign ? (row.exchange_rate_source ?? 'HAMLET Treasury Reference Rate') : undefined,
     exchangeRateTimestamp: row.exchange_rate_timestamp ?? row.created_at,
+    fxQuotedAt: isForeign ? (row.exchange_rate_timestamp ?? row.created_at) : undefined,
     internationalBufferRate: row.international_buffer_rate !== undefined ? Number(row.international_buffer_rate) : 0,
-    convertedBaseAmount: row.converted_base_amount !== undefined ? Number(row.converted_base_amount) : row.guest_total,
-    internationalBufferAmount: row.international_buffer_amount !== undefined ? Number(row.international_buffer_amount) : 0,
+    convertedBaseAmount: convBaseVal,
+    internationalConvertedBaseMinor: isForeign ? Math.round(convBaseVal * 100) : undefined,
+    internationalBufferAmount: intlBufVal,
+    internationalBufferMinor: isForeign ? Math.round(intlBufVal * 100) : undefined,
     internationalBufferNgnEquiv: row.international_buffer_ngn_equiv ?? 0,
-    quotedGuestTotal: row.quoted_guest_total !== undefined ? Number(row.quoted_guest_total) : row.guest_total,
+    quotedGuestTotal: quotedTotalVal,
+    quotedStayTotalMinor: isForeign ? Math.round(quotedTotalVal * 100) : row.guest_total,
     settlementTotalNgn: row.settlement_total_ngn ?? row.guest_total,
     quoteExpiresAt: row.quote_expires_at ?? null,
     pricingRulesVersion: row.pricing_rules_version ?? undefined,
@@ -718,14 +754,66 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     status: application.status,
     reviewNote: application.review_note,
   }));
+  // Safe partner attribution summary for referred partner names & closing-agent bookings (no guest PII)
+  let partnerSummary: {
+    referred_partners?: Array<{ referral_id: string; referred_partner_id: string; referred_name: string; referred_company?: string | null }>;
+    referred_rewards?: Array<{ reward_id: string; referred_agent_name: string }>;
+    closed_bookings?: Array<{
+      booking_id: string;
+      booking_reference: string;
+      property_id: string;
+      property_title: string;
+      area?: string;
+      check_in: string;
+      check_out: string;
+      nights: number;
+      status: Booking['status'];
+      owner_listed_price_ngn: number;
+      closing_agent_commission_ngn: number;
+      created_at: string;
+    }>;
+  } = {};
+  if (session.role === 'partner') {
+    try {
+      const { data: summaryData } = await supabase.rpc('get_my_partner_attribution_summary');
+      if (summaryData && typeof summaryData === 'object') {
+        partnerSummary = summaryData as typeof partnerSummary;
+      }
+    } catch {
+      // Gracefully fall back if migration is not yet applied
+    }
+  }
+  const referredNameByReferralId = new Map(
+    (partnerSummary.referred_partners ?? []).map(item => [item.referral_id, item]),
+  );
+  const rewardAgentNameById = new Map(
+    (partnerSummary.referred_rewards ?? []).map(item => [item.reward_id, item.referred_agent_name]),
+  );
+  const closedAgentBookings: ClosedAgentBookingSummary[] = (partnerSummary.closed_bookings ?? []).map(cb => ({
+    bookingId: cb.booking_id,
+    bookingRef: cb.booking_reference,
+    propertyId: cb.property_id,
+    propertyTitle: cb.property_title,
+    area: cb.area ?? '',
+    checkIn: cb.check_in,
+    checkOut: cb.check_out,
+    nights: cb.nights,
+    status: cb.status,
+    ownerListedPriceNgn: cb.owner_listed_price_ngn,
+    closingAgentCommissionNgn: cb.closing_agent_commission_ngn,
+    createdAt: cb.created_at,
+  }));
+  const closedBookingById = new Map(closedAgentBookings.map(cb => [cb.bookingId, cb]));
+
   const bookingById = new Map(bookings.map(booking => [booking.id, booking]));
   const ledger: LedgerEntry[] = ((ledgerResult.data ?? []) as unknown as RemoteLedgerRow[]).map(row => {
     const booking = bookingById.get(row.booking_id);
+    const closedBooking = closedBookingById.get(row.booking_id);
     return {
       id: row.id,
       at: row.created_at,
-      bookingRef: booking?.ref ?? row.booking_id,
-      propertyTitle: booking?.propertyTitle,
+      bookingRef: booking?.ref ?? closedBooking?.bookingRef ?? row.booking_id,
+      propertyTitle: booking?.propertyTitle ?? closedBooking?.propertyTitle,
       type: row.record_type,
       description: row.description || row.record_type.replace(/_/g, ' '),
       amount: row.amount,
@@ -826,13 +914,14 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const partnerReferrals: PartnerReferral[] = referralsRaw.map(r => {
     const referrerProf = profileById.get(r.referrer_partner_id);
     const referredProf = profileById.get(r.referred_partner_id);
+    const summaryRef = referredNameByReferralId.get(r.id);
     return {
       id: r.id,
       referrerPartnerId: r.referrer_partner_id,
       referrerName: referrerProf?.full_name || 'HAMLET partner',
       referredPartnerId: r.referred_partner_id,
-      referredName: referredProf?.full_name || 'Referred partner',
-      referredCompany: referredProf?.company ?? undefined,
+      referredName: referredProf?.full_name || summaryRef?.referred_name || 'Referred partner',
+      referredCompany: referredProf?.company ?? summaryRef?.referred_company ?? undefined,
       referralCode: r.referral_code,
       status: r.status,
       earningWindowDays: r.earning_window_days,
@@ -854,7 +943,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       referralId: rw.referral_id,
       referrerPartnerId: rw.referrer_partner_id,
       referredClosingAgentId: rw.referred_closing_agent_id,
-      referredAgentName: agentProf?.full_name || 'Closing agent',
+      referredAgentName: agentProf?.full_name || rewardAgentNameById.get(rw.id) || 'Closing agent',
       bookingId: rw.booking_id,
       bookingRef: rw.booking_reference,
       ownerListedPriceNgn: rw.owner_listed_price_ngn,
@@ -958,6 +1047,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     properties,
     publicCalendarSpans,
     bookings,
+    closedAgentBookings,
     ledger,
     issues,
     applications,
@@ -1091,11 +1181,12 @@ function reducer(state: DBState, action: Action): DBState {
           partnerRole: action.property.submittedRole, scope: 'Submitter — pending review',
           commissionRate: null, commissionNote: 'No commission agreed', status: 'active', grantedAt: nowIso(),
         }, ...state.assignments],
-        audit: [auditEntry(action.property.submittedBy, action.property.submittedRole, 'property_submitted', action.property.title, 'Property submitted for review'), ...state.audit],
+        audit: [auditEntry(action.property.submittedBy, action.property.submittedRole, action.property.status === 'draft' ? 'property_draft_saved' : 'property_submitted', action.property.title, action.property.status === 'draft' ? 'Property saved as draft' : 'Property submitted for review'), ...state.audit],
       };
     case 'UPDATE_AND_RESUBMIT_PROPERTY': {
       const p = state.properties.find(x => x.id === action.id);
       if (!p) return state;
+      const keepDraft = p.status === 'draft' && Boolean(action.saveAsDraft);
       const updatedDocs = action.patch.docs.map(d => {
         const existingVerified = p.docs.find(ed => ed.label === d.label && ed.status === 'verified');
         return existingVerified ? existingVerified : { ...d, status: d.status === 'missing' ? ('missing' as const) : ('self_reported' as const) };
@@ -1104,8 +1195,8 @@ function reducer(state: DBState, action: Action): DBState {
         ...p,
         ...action.patch,
         docs: updatedDocs,
-        status: 'submitted',
-        trustLabel: 'Under review',
+        status: keepDraft ? 'draft' : 'submitted',
+        trustLabel: keepDraft ? 'Draft' : 'Under review',
         verification: {
           ownership: p.verification.ownership === 'verified' ? 'verified' : 'pending_review',
           identity: p.verification.identity === 'verified' ? 'verified' : 'pending_review',
@@ -1117,7 +1208,13 @@ function reducer(state: DBState, action: Action): DBState {
         ...state,
         properties: state.properties.map(x => (x.id === action.id ? updatedProperty : x)),
         audit: [
-          auditEntry(action.actor.name, action.actor.role, 'property_resubmitted', updatedProperty.title, action.note ?? 'Listing details and authority declarations updated and resubmitted for review.'),
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            keepDraft ? 'property_draft_updated' : p.status === 'draft' ? 'property_submitted' : 'property_resubmitted',
+            updatedProperty.title,
+            action.note ?? (keepDraft ? 'Draft listing updated.' : 'Listing details and authority declarations updated and resubmitted for review.'),
+          ),
           ...state.audit,
         ],
       };
@@ -1644,6 +1741,36 @@ function reducer(state: DBState, action: Action): DBState {
           },
         ],
       };
+      const refundReversals: LedgerEntry[] = [];
+      const reversedLedger = state.ledger.map(le => {
+        if (
+          le.bookingRef === b.ref &&
+          (le.type === 'closing_agent_commission' || le.type === 'referral_reward' || le.type === 'partner_commission') &&
+          (le.payoutStatus === 'pending' || le.payoutStatus === 'approved')
+        ) {
+          refundReversals.push({
+            id: uid(),
+            at,
+            bookingRef: b.ref,
+            propertyTitle: b.propertyTitle,
+            type: le.type === 'referral_reward' ? 'referral_reversal' : 'commission_reversal',
+            description: `Reversed due to refund (${action.note})`,
+            amount: le.amount,
+            status: 'reconciled',
+            operator: action.actor.name,
+            variance: 0,
+            beneficiaryUserId: le.beneficiaryUserId,
+            payoutStatus: 'reversed',
+          });
+          return { ...le, payoutStatus: 'reversed' as const };
+        }
+        return le;
+      });
+      const nextRewards = state.partnerReferralRewards.map(rw =>
+        rw.bookingId === b.id && rw.payoutStatus !== 'paid' && rw.payoutStatus !== 'reversed'
+          ? { ...rw, payoutStatus: 'reversed' as const, reversalReason: `refunded (${action.note})` }
+          : rw,
+      );
       const refundEntry: LedgerEntry = {
         id: uid(),
         at,
@@ -1661,7 +1788,8 @@ function reducer(state: DBState, action: Action): DBState {
       return {
         ...state,
         bookings: state.bookings.map(x => (x.id === action.id ? updated : x)),
-        ledger: [refundEntry, ...state.ledger],
+        partnerReferralRewards: nextRewards,
+        ledger: [refundEntry, ...refundReversals, ...reversedLedger],
         audit: [
           auditEntry(action.actor.name, action.actor.role, 'booking_refunded', b.ref, `Refunded ${formatNaira(action.amount)}: ${action.note}`),
           ...state.audit,
@@ -1854,10 +1982,10 @@ interface Store {
   updatePassword: (newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (input: { name: string; phone?: string; company?: string }) => Promise<{ ok: boolean; error?: string }>;
   registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string; password?: string; referralCode?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
-  resubmitPartnerApplication: (id: string, input: { name: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<void>;
+  resubmitPartnerApplication: (id: string, input: { name: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string; referralCode?: string }) => Promise<void>;
   uploadPropertyImage: (file: File) => Promise<string>;
-  submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
-  updateAndResubmitProperty: (id: string, input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>, correctionNote?: string) => Promise<void>;
+  submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>> & { saveAsDraft?: boolean }) => Promise<{ ok: boolean; error?: string; property?: Property }>;
+  updateAndResubmitProperty: (id: string, input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'> & { saveAsDraft?: boolean }, correctionNote?: string) => Promise<void>;
   updatePropertyAvailabilitySettings: (propertyId: string, input: { firstAvailableDate: string | null; availabilityConfirmationStatus: AvailabilityConfirmationStatus; calendarResponsiblePerson?: string }) => Promise<void>;
   addPropertyAvailabilityBlock: (propertyId: string, input: { startDate: string; endDate: string; blockType: AvailabilityBlockType; note?: string }) => Promise<void>;
   removePropertyAvailabilityBlock: (propertyId: string, blockId: string) => Promise<void>;
@@ -2272,18 +2400,23 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     resubmitPartnerApplication: async (id, input) => {
       if (!state.session) throw new Error('Sign in before updating your partner application.');
+      const normalizedRef = input.referralCode !== undefined ? (normalizeReferralCode(input.referralCode) || null) : undefined;
       if (supabase) {
+        const payload: Record<string, unknown> = {
+          full_name: input.name.trim(),
+          phone: input.phone.trim(),
+          company: input.company.trim(),
+          role: input.role,
+          areas: input.areas,
+          properties_count: input.propertiesCount,
+          motivation: input.motivation.trim(),
+        };
+        if (normalizedRef !== undefined) {
+          payload.referred_by_code = normalizedRef;
+        }
         const { error } = await supabase.rpc('resubmit_partner_application', {
           target_application_id: id,
-          application_data: {
-            full_name: input.name.trim(),
-            phone: input.phone.trim(),
-            company: input.company.trim(),
-            role: input.role,
-            areas: input.areas,
-            properties_count: input.propertiesCount,
-            motivation: input.motivation.trim(),
-          },
+          application_data: payload,
         });
         if (error) throw new Error(`Could not resubmit application: ${error.message}`);
         const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -2302,6 +2435,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           areas: input.areas,
           propertiesCount: input.propertiesCount,
           motivation: input.motivation.trim(),
+          ...(normalizedRef !== undefined ? { referredByCode: normalizedRef } : {}),
         },
         actor: state.session,
       });
@@ -2339,12 +2473,18 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     submitProperty: async (input) => {
       const s = state.session;
+      const isDraft = Boolean(input.saveAsDraft);
+      const effectiveAuthority =
+        isDraft && (!input.authorityBasis || input.authorityBasis.trim().length < 9)
+          ? 'Draft authority declaration pending completion'
+          : input.authorityBasis;
       if (supabase) {
         if (!s || s.role !== 'partner') {
           return { ok: false, error: 'Only approved partner accounts can submit properties.' };
         }
         const { data: propertyId, error } = await supabase.rpc('submit_partner_property', {
           listing_data: {
+            status: isDraft ? 'draft' : 'submitted',
             title: input.title,
             property_type: input.type,
             area: input.area,
@@ -2376,7 +2516,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
             })),
           },
           submission_data: {
-            authority_basis: input.authorityBasis,
+            authority_basis: effectiveAuthority,
             submitted_role: input.submittedRole ?? s.partnerRole ?? 'Property partner',
             docs: input.docs,
           },
@@ -2398,10 +2538,10 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       const property: Property = {
         ...input,
         id: `p-${uid().slice(0, 8)}`,
-        status: 'submitted',
-        trustLabel: 'Under review',
+        status: isDraft ? 'draft' : 'submitted',
+        trustLabel: isDraft ? 'Draft' : 'Under review',
         verification: { ownership: 'pending_review', identity: 'pending_review', authority: 'pending_review', inspection: 'missing' },
-        docs: [
+        docs: input.docs && input.docs.length > 0 ? input.docs : [
           { label: 'Certificate of occupancy / title deed', status: 'pending_review' },
           { label: 'Government-issued ID of owner', status: 'pending_review' },
           { label: 'Proof of authority / management mandate', status: 'pending_review' },
@@ -2411,8 +2551,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         ownerId: s?.userId ?? 'unknown',
         ownerName: s?.name ?? 'Partner',
         submittedBy: s?.name ?? 'Partner',
-        submittedRole: s?.partnerRole ?? 'Partner',
-        authorityBasis: input.authorityBasis ?? 'Submitted via partner portal — evidence under review',
+        submittedRole: input.submittedRole ?? s?.partnerRole ?? 'Partner',
+        authorityBasis: effectiveAuthority ?? 'Submitted via partner portal — evidence under review',
         introducerPartnerId: s?.userId,
         managerPartnerId: s?.userId,
         availabilityConfirmationStatus: input.availabilityConfirmationStatus ?? 'manual_confirmation',
@@ -2974,6 +3114,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         other =>
           other.id !== id &&
           other.status !== 'rejected' &&
+          other.status !== 'archived' &&
           normalize(other.area) === normalize(input.area) &&
           normalize(other.address) === normalize(input.address) &&
           normalize(other.title) === normalize(input.title),
@@ -2985,6 +3126,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.rpc('update_and_resubmit_partner_property', {
           target_property_id: id,
           listing_data: {
+            save_as_draft: Boolean(input.saveAsDraft),
             title: input.title,
             property_type: input.type,
             area: input.area,
@@ -3026,6 +3168,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         patch: input,
         actor: state.session,
         note: correctionNote?.trim() || undefined,
+        saveAsDraft: Boolean(input.saveAsDraft),
       });
     },
     setPartnerAccountStatus: async (partnerId, status, reason, cascadeSuspendProperties = true) => {

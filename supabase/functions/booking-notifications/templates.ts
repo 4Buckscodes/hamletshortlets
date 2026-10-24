@@ -26,10 +26,19 @@ export interface BookingNotificationPayload {
   nights?: number;
   guest_count?: number;
   accommodation_subtotal?: number;
+  owner_listed_price_ngn?: number;
+  domestic_markup_ngn?: number;
   mandatory_total?: number;
   hamlet_guest_fee?: number;
   guest_total?: number;
   refundable_deposit?: number;
+  quote_currency?: string;
+  currency_pair?: string;
+  exchange_rate_ngn_per_unit?: number;
+  quoted_guest_total?: number;
+  international_buffer_amount?: number;
+  international_buffer_ngn_equiv?: number;
+  settlement_total_ngn?: number;
   status?: string;
   payment_deadline?: string | null;
   special_requests?: string | null;
@@ -113,6 +122,12 @@ export function buildExploreStaysUrl(appBaseUrl: string): string {
 function formatNairaEmail(amount: number | undefined | null): string {
   const safe = typeof amount === 'number' && Number.isFinite(amount) ? Math.round(amount) : 0;
   return `₦${safe.toLocaleString('en-NG')}`;
+}
+
+function formatForeignCurrencyEmail(amount: number | undefined | null, currency: 'USD' | 'GBP'): string {
+  const safe = typeof amount === 'number' && Number.isFinite(amount) ? amount : 0;
+  const symbol = currency === 'USD' ? '$' : '£';
+  return `${symbol}${safe.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function formatDateReadable(isoDate: string | undefined): string {
@@ -301,7 +316,29 @@ export function renderBookingNotificationEmail(input: {
   const guests = typeof payload.guest_count === 'number' && payload.guest_count > 0 ? payload.guest_count : 1;
   const datesSummary = `${checkInFmt} → ${checkOutFmt} (${nights} night${nights === 1 ? '' : 's'})`;
   const guestsSummary = `${guests} guest${guests === 1 ? '' : 's'}`;
-  const guestTotalFmt = formatNairaEmail(payload.guest_total);
+  const rawQuoteCurrency = (payload.quote_currency ?? 'NGN').toUpperCase();
+  const isForeignQuote =
+    (rawQuoteCurrency === 'USD' || rawQuoteCurrency === 'GBP') &&
+    typeof payload.quoted_guest_total === 'number' &&
+    payload.quoted_guest_total > 0;
+  const settlementNgn =
+    typeof payload.settlement_total_ngn === 'number' && payload.settlement_total_ngn > 0
+      ? payload.settlement_total_ngn
+      : payload.guest_total ?? 0;
+  const settlementTotalFmt = formatNairaEmail(settlementNgn);
+  const guestTotalFmt = isForeignQuote
+    ? `${formatForeignCurrencyEmail(payload.quoted_guest_total, rawQuoteCurrency as 'USD' | 'GBP')} (incl. 10% FX buffer @ 1 ${rawQuoteCurrency} = ${formatNairaEmail(payload.exchange_rate_ngn_per_unit)})`
+    : settlementTotalFmt;
+  const cautionDepositAmount =
+    typeof payload.refundable_deposit === 'number' && payload.refundable_deposit > 0
+      ? payload.refundable_deposit
+      : 0;
+  const cautionDepositRow = cautionDepositAmount > 0
+    ? [{ label: 'Refundable caution deposit (held separately)', value: formatNairaEmail(cautionDepositAmount) }]
+    : [];
+  const foreignSettlementRow = isForeignQuote
+    ? [{ label: 'Paystack NGN settlement amount', value: settlementTotalFmt }]
+    : [];
   const partnerProceedsFmt = formatNairaEmail(
     (payload.accommodation_subtotal ?? 0) + (payload.mandatory_total ?? 0),
   );
@@ -324,6 +361,8 @@ export function renderBookingNotificationEmail(input: {
         { label: 'Check-in / Check-out', value: datesSummary },
         { label: 'Guests', value: guestsSummary },
         { label: 'Quoted stay total', value: guestTotalFmt },
+        ...foreignSettlementRow,
+        ...cautionDepositRow,
         { label: 'Current status', value: 'Requested — awaiting availability confirmation' },
       ];
       return {
@@ -411,6 +450,8 @@ export function renderBookingNotificationEmail(input: {
       { label: 'Requested dates', value: datesSummary },
       { label: 'Guests', value: guestsSummary },
       { label: 'Quoted guest total', value: guestTotalFmt },
+      ...foreignSettlementRow,
+      ...cautionDepositRow,
       { label: 'Current status', value: 'requested' },
       ...(specialRequests ? [{ label: 'Guest note', value: specialRequests }] : []),
     ];
@@ -452,6 +493,8 @@ export function renderBookingNotificationEmail(input: {
         { label: 'Check-in / Check-out', value: datesSummary },
         { label: 'Guests', value: guestsSummary },
         { label: 'Amount due', value: guestTotalFmt },
+        ...foreignSettlementRow,
+        ...cautionDepositRow,
         { label: 'Payment deadline', value: deadlineFmt },
         { label: 'Current status', value: 'Awaiting payment (not yet confirmed)' },
         ...(decisionNote ? [{ label: 'Partner note', value: decisionNote }] : []),
@@ -653,6 +696,12 @@ export function renderBookingNotificationEmail(input: {
     { label: 'Property', value: propertyLabel },
     { label: 'Dates', value: datesSummary },
     { label: 'Guests', value: guestsSummary },
+    ...(eventType === 'booking_payment_confirmed'
+      ? [
+          { label: 'Settled stay amount (NGN)', value: settlementTotalFmt },
+          ...cautionDepositRow,
+        ]
+      : []),
     { label: 'Current status', value: payload.status ?? eventType.replace('booking_', '') },
   ];
 

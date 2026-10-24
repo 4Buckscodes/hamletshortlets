@@ -96,10 +96,17 @@ export default function NewProperty() {
     true,
   ][step];
 
-  const submit = async () => {
+  const canSaveDraft = title.trim().length >= 8 && address.trim().length >= 10 && nightlyRate >= 20_000;
+
+  const submit = async (saveAsDraft = false) => {
+    if (saveAsDraft && !canSaveDraft) {
+      toast('Enter a property title (min 8 chars), Lagos address (min 10 chars), and nightly rate (min ₦20,000) to save a draft.', 'error');
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await submitProperty({
+        saveAsDraft,
         title: title.trim(), type, area, address: address.trim(),
         nightlyRate, cleaningFee,
         mandatoryCharges: cleaningFee > 0 ? [{ label: 'Cleaning & turnover (mandatory)', amount: cleaningFee }] : [],
@@ -122,7 +129,12 @@ export default function NewProperty() {
         toast(result.error ?? 'Could not submit property.', 'error');
         return;
       }
-      toast('Property submitted. HAMLET will review documentation before it can go live.', 'info');
+      toast(
+        saveAsDraft
+          ? 'Draft saved. You can finish photos, calendar, and authority details anytime from My properties.'
+          : 'Property submitted. HAMLET will review documentation before it can go live.',
+        'info',
+      );
       navigate('/partner/properties');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not submit property.', 'error');
@@ -387,13 +399,24 @@ export default function NewProperty() {
       </div>
 
       {/* Footer controls */}
-      <div className="mt-5 flex items-center justify-between">
-        <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} className="btn-ghost-dark !py-3 text-[12px] disabled:opacity-30"><ChevronLeft size={16} /> Back</button>
-        {step < STEPS.length - 1 ? (
-          <button onClick={() => setStep(s => s + 1)} disabled={!stepValid || submitting} className="btn-brass !py-3 text-[12px]">Continue <ChevronRight size={16} /></button>
-        ) : (
-          <button onClick={submit} disabled={submitting} className="btn-brass !py-3 text-[13px] disabled:opacity-50"><ShieldCheck size={16} /> {submitting ? 'Submitting…' : 'Submit for review'}</button>
-        )}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
+        <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0 || submitting} className="btn-ghost-dark !py-3 text-[12px] disabled:opacity-30"><ChevronLeft size={16} /> Back</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void submit(true)}
+            disabled={!canSaveDraft || submitting}
+            title={canSaveDraft ? 'Save progress as draft to continue later' : 'Enter title, Lagos address, and nightly rate first'}
+            className="btn-ghost-dark !border !border-ink-700 !px-4 !py-3 text-[12px] disabled:opacity-40"
+          >
+            Save as draft
+          </button>
+          {step < STEPS.length - 1 ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={!stepValid || submitting} className="btn-brass !py-3 text-[12px]">Continue <ChevronRight size={16} /></button>
+          ) : (
+            <button onClick={() => void submit(false)} disabled={submitting} className="btn-brass !py-3 text-[13px] disabled:opacity-50"><ShieldCheck size={16} /> {submitting ? 'Submitting…' : 'Submit for review'}</button>
+          )}
+        </div>
       </div>
     </div>
   );

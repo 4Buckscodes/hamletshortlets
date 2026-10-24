@@ -28,7 +28,7 @@ import { buildAuthPath } from '../lib/authRedirect';
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { state, requestBooking, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
+  const { state, requestBooking, resolveReferralCode, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
   const {
     currency,
     currencySymbol,
@@ -41,6 +41,7 @@ export default function PropertyDetail() {
   const navigate = useNavigate();
 
   const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
+  const defaultFutureCheckIn = useMemo(() => lagosIsoDateOffset(2), []);
 
   const property = state.properties.find(p => p.id === id);
 
@@ -51,10 +52,30 @@ export default function PropertyDetail() {
       : undefined,
   );
 
+  const baseAvailabilitySummary = useMemo(() => {
+    if (!property) return null;
+    return computePropertyAvailabilitySummary({
+      property,
+      bookings: state.bookings,
+      publicCalendarSpans: state.publicCalendarSpans,
+    });
+  }, [property, state.bookings, state.publicCalendarSpans]);
+
+  const smartInitialCheckIn = useMemo(() => {
+    const nextOpen = baseAvailabilitySummary?.nextAvailableDate;
+    if (nextOpen && nextOpen > defaultFutureCheckIn) return nextOpen;
+    return defaultFutureCheckIn;
+  }, [baseAvailabilitySummary, defaultFutureCheckIn]);
+
   const [gallery, setGallery] = useState({ propertyId: id, imageIndex: 0 });
   const imgIndex = gallery.propertyId === id ? gallery.imageIndex : 0;
-  const [checkIn, setCheckIn] = useState(() => searchParams.get('checkIn') ?? lagosIsoDateOffset(2));
-  const [checkOut, setCheckOut] = useState(() => searchParams.get('checkOut') ?? lagosIsoDateOffset(5));
+  const [userCheckIn, setUserCheckIn] = useState<string | null>(() => searchParams.get('checkIn'));
+  const [userCheckOut, setUserCheckOut] = useState<string | null>(() => searchParams.get('checkOut'));
+  const checkIn = userCheckIn ?? smartInitialCheckIn;
+  const checkOut = userCheckOut ?? addDaysToIsoDate(checkIn, 3);
+  const setCheckIn = (next: string) => setUserCheckIn(next);
+  const setCheckOut = (next: string) => setUserCheckOut(next);
+
   const [guests, setGuests] = useState(() => {
     const parsed = Number(searchParams.get('guests') ?? '2');
     return Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
@@ -65,6 +86,7 @@ export default function PropertyDetail() {
   const [closingAgentCode, setClosingAgentCode] = useState(
     () => searchParams.get('agent') ?? getPersistedClosingAgentCode(),
   );
+  const [resolvedAgent, setResolvedAgent] = useState<{ valid: boolean; referrerName?: string; referrerCompany?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [datesUnavailable, setDatesUnavailable] = useState(false);
 
@@ -82,6 +104,35 @@ export default function PropertyDetail() {
       requestedCheckOut: checkOut,
     });
   }, [property, state.bookings, state.publicCalendarSpans, checkIn, checkOut]);
+
+  const upcomingDays = useMemo(() => {
+    if (!property || !availabilitySummary) return [];
+    const spans = availabilitySummary.occupiedSpans;
+    const firstAvail = property.firstAvailableDate;
+    return Array.from({ length: 21 }, (_, idx) => {
+      const iso = addDaysToIsoDate(todayIso, idx);
+      const beforeFirstAvail = Boolean(firstAvail && iso < firstAvail);
+      const inSpan = spans.some(s => iso >= s.startDate && iso < s.endDate);
+      const occupied = beforeFirstAvail || inSpan;
+      const d = new Date(`${iso}T00:00:00Z`);
+      const weekday = d.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
+      const dayNum = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+      return { iso, weekday, dayNum, occupied };
+    });
+  }, [property, availabilitySummary, todayIso]);
+
+  useEffect(() => {
+    let active = true;
+    const trimmed = closingAgentCode.trim();
+    if (!trimmed) {
+      Promise.resolve().then(() => { if (active) setResolvedAgent(null); });
+      return () => { active = false; };
+    }
+    void resolveReferralCode(trimmed).then(res => {
+      if (active) setResolvedAgent(res);
+    });
+    return () => { active = false; };
+  }, [closingAgentCode, resolveReferralCode]);
 
   const fxQuote = useMemo(() => {
     if (!pricing) return null;
@@ -285,8 +336,55 @@ export default function PropertyDetail() {
                     ? `Currently booked on a confirmed HAMLET stay. ${availabilitySummary.nextAvailableLabel ?? ''}${availabilitySummary.relativeDaysUntilAvailable ? ` (${availabilitySummary.relativeDaysUntilAvailable})` : ''}.`
                     : availabilitySummary.currentStatus === 'currently_unavailable'
                       ? `Currently unavailable due to an owner/external calendar block. ${availabilitySummary.nextAvailableLabel ?? ''}${availabilitySummary.relativeDaysUntilAvailable ? ` (${availabilitySummary.relativeDaysUntilAvailable})` : ''}.`
-                      : 'Available now for upcoming dates — select your check-in and check-out dates to request a stay.'}
+                      : 'Available now for upcoming dates — select a day below or choose your check-in and check-out dates to request a stay.'}
                 </p>
+                {upcomingDays.length > 0 && (
+                  <div className="mt-3.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">Next 21 days — tap an open date to set check-in</p>
+                      <div className="flex items-center gap-3 text-[10px] font-bold text-ink-500">
+                        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-jade-600" /> Open</span>
+                        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-ink-900" /> Selected</span>
+                        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" /> Occupied</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 grid grid-cols-7 gap-1.5">
+                      {upcomingDays.map(day => {
+                        const inSelectedStay = Boolean(checkIn && checkOut && day.iso >= checkIn && day.iso < checkOut);
+                        return (
+                          <button
+                            key={day.iso}
+                            type="button"
+                            disabled={day.occupied}
+                            onClick={() => {
+                              setCheckIn(day.iso);
+                              if (!checkOut || checkOut <= day.iso) {
+                                setCheckOut(addDaysToIsoDate(day.iso, 3));
+                              }
+                            }}
+                            title={
+                              day.occupied
+                                ? `${day.dayNum}: Occupied / blocked`
+                                : inSelectedStay
+                                  ? `${day.dayNum}: Selected in stay`
+                                  : `${day.dayNum}: Available — click to set check-in`
+                            }
+                            className={`rounded-xl border px-1.5 py-1.5 text-center transition ${
+                              day.occupied
+                                ? 'cursor-not-allowed border-amber-200 bg-amber-50/70 text-amber-800 line-through opacity-75'
+                                : inSelectedStay
+                                  ? 'border-ink-900 bg-ink-900 text-paper shadow-2xs'
+                                  : 'border-jade-200 bg-jade-50/60 text-jade-900 hover:border-jade-500 hover:bg-jade-100/70'
+                            }`}
+                          >
+                            <span className="block text-[9.5px] font-bold uppercase opacity-75">{day.weekday}</span>
+                            <span className="block text-[11px] font-extrabold tabular-nums">{day.dayNum}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {availabilitySummary.occupiedSpans.length > 0 && (
                   <div className="mt-3">
                     <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">Upcoming unavailable windows</p>
@@ -480,25 +578,19 @@ export default function PropertyDetail() {
                           </div>
                         )}
                         <p className="pt-1 text-[11px] font-semibold text-jade-800">
-                          FX rate: 1 {fxQuote.quoteCurrency} = ₦{fxQuote.fxRate?.toLocaleString('en-NG')} ({fxQuote.fxRateSource}). Paystack checkout settles in NGN: {formatNaira(fxQuote.settlementTotalNgn)}.
+                          FX rate: 1 {fxQuote.quoteCurrency} = ₦{fxQuote.fxRate?.toLocaleString('en-NG')} ({fxQuote.fxRateSource}). Paystack stay checkout settles in NGN: {formatNaira(fxQuote.settlementTotalNgn)}.
                         </p>
                       </>
                     ) : (
                       <>
                         <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2.5 font-display text-[15px] font-black text-ink-900">
-                          <dt className="min-w-0">Stay total (NGN, before deposit)</dt>
-                          <dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(pricing.guestTotal)}</dd>
+                          <dt className="min-w-0">Stay checkout total (Paystack NGN)</dt>
+                          <dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(fxQuote.settlementTotalNgn)}</dd>
                         </div>
                         {pricing.refundableDeposit > 0 && (
                           <div className="flex justify-between gap-3 text-[11.5px] text-ink-500">
-                            <dt className="min-w-0">Refundable caution deposit (itemised separately)</dt>
+                            <dt className="min-w-0">Refundable caution deposit (tracked separately, refunded post-inspection)</dt>
                             <dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd>
-                          </div>
-                        )}
-                        {pricing.refundableDeposit > 0 && (
-                          <div className="flex justify-between gap-3 text-[12px] font-bold text-ink-700">
-                            <dt className="min-w-0">Total payable on acceptance (incl. caution deposit)</dt>
-                            <dd className="shrink-0 tabular-nums">{formatNaira(fxQuote.settlementTotalNgn)}</dd>
                           </div>
                         )}
                       </>
@@ -565,13 +657,16 @@ export default function PropertyDetail() {
                     <dd className="shrink-0 tabular-nums font-bold">{formatMinorCurrency(fxQuote.quotedStayTotalMinor, fxQuote.quoteCurrency)}</dd>
                   </div>
                 )}
-                {pricing.refundableDeposit > 0 && (
-                  <div className="flex justify-between gap-3 text-[12px] text-ink-600"><dt className="min-w-0">Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd></div>
-                )}
                 <div className="flex justify-between gap-3 border-t-2 border-ink-900 pt-2 font-display text-[15px] font-black">
-                  <dt className="min-w-0">Total payable on acceptance (NGN settlement)</dt>
+                  <dt className="min-w-0">Paystack stay settlement on acceptance (NGN)</dt>
                   <dd className="shrink-0 tabular-nums text-jade-800">{formatNaira(fxQuote.settlementTotalNgn)}</dd>
                 </div>
+                {pricing.refundableDeposit > 0 && (
+                  <div className="flex justify-between gap-3 text-[11.5px] text-ink-500">
+                    <dt className="min-w-0">Separate refundable caution deposit (post-inspection refund)</dt>
+                    <dd className="shrink-0 tabular-nums">{formatNaira(pricing.refundableDeposit)}</dd>
+                  </div>
+                )}
               </dl>
               <label className="mt-4 block">
                 <span className="label flex items-center gap-1"><Tag size={12} /> Closing agent / partner code (optional)</span>
@@ -581,6 +676,13 @@ export default function PropertyDetail() {
                   value={closingAgentCode}
                   onChange={e => setClosingAgentCode(e.target.value)}
                 />
+                {closingAgentCode.trim() && resolvedAgent && (
+                  <p className={`mt-1 text-[11px] font-semibold ${resolvedAgent.valid ? 'text-jade-700' : 'text-amber-700'}`}>
+                    {resolvedAgent.valid
+                      ? `Closing agent verified: ${resolvedAgent.referrerName}${resolvedAgent.referrerCompany ? ` (${resolvedAgent.referrerCompany})` : ''}`
+                      : 'Code not recognised as an active HAMLET partner — booking will still submit normally.'}
+                  </p>
+                )}
               </label>
               <label className="mt-3 block">
                 <span className="label">Note for the host (optional)</span>
