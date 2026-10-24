@@ -47,7 +47,7 @@ export function WorkspaceShell({
       <div className="border-b border-ink-800 px-5 py-4">
         <Link to="/" className="flex items-center gap-2.5">
           <HamletMark size={28} light />
-          <span className="font-display text-xl font-black text-ink-50">HAMLET<span className="text-brass-500">.</span></span>
+          <span className="font-display text-xl font-bold tracking-[0.06em] text-white">HAMLET<span className="text-brass-500">.</span></span>
         </Link>
         <p className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.18em] ${accent}`}>{title}</p>
       </div>

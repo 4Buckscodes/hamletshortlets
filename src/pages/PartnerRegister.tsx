@@ -194,7 +194,7 @@ export default function PartnerRegister() {
         <img src="/images/prop/penthouse.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-br from-ink-950/85 via-ink-950/60 to-ink-950" />
         <div className="relative flex h-full flex-col justify-between p-10">
-          <Link to="/" className="flex items-center gap-2.5"><HamletMark size={30} light /><span className="font-display text-xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></Link>
+          <Link to="/" className="flex items-center gap-2.5"><HamletMark size={30} light /><span className="font-display text-xl font-bold tracking-[0.06em] text-white">HAMLET<span className="text-brass-500">.</span></span></Link>
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">HAMLET Partner Network</p>
             <h1 className="mt-3 font-display text-4xl font-black leading-[1.06] text-paper">Bring your property<br />to the right guests.</h1>

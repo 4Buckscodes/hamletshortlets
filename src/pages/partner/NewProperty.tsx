@@ -452,7 +452,7 @@ export default function NewProperty() {
                 { v: selfDeclaration, set: setSelfDeclaration, label: 'I declare the information is accurate and I consent to a HAMLET inspection and document review' },
               ].map(({ v, set, label }) => (
                 <label key={label} className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-800 bg-ink-850 p-3.5 transition hover:border-ink-600">
-                  <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A227]" checked={v} onChange={e => set(e.target.checked)} />
+                  <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A44A]" checked={v} onChange={e => set(e.target.checked)} />
                   <span className="text-[12px] font-medium leading-snug text-ink-100">{label}</span>
                 </label>
               ))}
