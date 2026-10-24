@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   ArrowUpRight,
   Building2,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   Search,
   ShieldCheck,
@@ -35,6 +37,29 @@ const QUICK_AREAS = [
   'Victoria Island',
   'Ikoyi',
   'Lekki Phase 1',
+] as const;
+
+const HERO_SLIDES = [
+  {
+    src: '/images/hero-sample-living.jpg',
+    room: 'Living room',
+    alt: 'Thoughtfully furnished sample apartment living room with bouclé sofa, warm brass floor lamp, and balcony palms',
+  },
+  {
+    src: '/images/hero-sample-bedroom.jpg',
+    room: 'Primary bedroom',
+    alt: 'Thoughtfully furnished sample apartment primary bedroom with upholstered linen king bed and walnut joinery',
+  },
+  {
+    src: '/images/hero-sample-kitchen.jpg',
+    room: 'Kitchen & dining',
+    alt: 'Thoughtfully furnished sample apartment open-plan marble kitchen island and walnut dining table',
+  },
+  {
+    src: '/images/hero-sample-lounge.jpg',
+    room: 'Study & terrace',
+    alt: 'Thoughtfully furnished sample apartment walnut workspace and twilight terrace lounge',
+  },
 ] as const;
 
 const NEIGHBOURHOOD_CARDS = [
@@ -124,6 +149,16 @@ export default function Home() {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
+  const [heroSlide, setHeroSlide] = useState(0);
+  const [slideshowPaused, setSlideshowPaused] = useState(false);
+
+  useEffect(() => {
+    if (slideshowPaused) return;
+    const timer = window.setInterval(() => {
+      setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
+    }, 5500);
+    return () => window.clearInterval(timer);
+  }, [heroSlide, slideshowPaused]);
 
   const minDate = lagosIsoDateOffset(0);
   const approved = state.properties.filter(p => p.status === 'approved');
@@ -154,34 +189,109 @@ export default function Home() {
     navigate(`/stays${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
+  const activeSlide = HERO_SLIDES[heroSlide] ?? HERO_SLIDES[0];
+
   return (
     <GuestLayout>
-      {/* ── Hero + Search ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-ink-950 text-paper">
-        <img
-          src="/images/lagos-hero.jpg"
-          alt="Lagos skyline at dusk"
-          className="absolute inset-0 h-full w-full object-cover opacity-32"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink-950/90 via-ink-950/85 to-ink-950" />
+      {/* ── Hero Interior Slideshow + Search ───────────────────────── */}
+      <section
+        className="relative overflow-hidden bg-ink-950 text-paper"
+        onMouseEnter={() => setSlideshowPaused(true)}
+        onMouseLeave={() => setSlideshowPaused(false)}
+      >
+        {/* Crossfading sample apartment interior slides */}
+        <div className="absolute inset-0" aria-hidden="true">
+          {HERO_SLIDES.map((slide, index) => {
+            const isCurrent = index === heroSlide;
+            return (
+              <img
+                key={slide.src}
+                src={slide.src}
+                alt={slide.alt}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                className={`absolute inset-0 h-full w-full object-cover object-center transition-all duration-1000 ease-out ${
+                  isCurrent ? 'scale-100 opacity-85' : 'scale-105 opacity-0'
+                }`}
+              />
+            );
+          })}
+        </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brass-500/35 bg-brass-500/12 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300">
-              <ShieldCheck size={13} className="shrink-0 text-brass-400" />
-              <span>
-                {HAMLET_BRAND_NAME} · {HAMLET_USP}
-              </span>
+        {/* Directional editorial scrim: legible copy on left, clear interior view across frame */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-ink-950/20" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/92 via-ink-950/20 to-ink-950/35" />
+
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-20">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/45 bg-ink-950/65 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
+                <ShieldCheck size={13} className="shrink-0 text-brass-400" />
+                <span>
+                  {HAMLET_BRAND_NAME} · {HAMLET_USP}
+                </span>
+              </div>
+
+              <h1 className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-xs sm:text-5xl lg:text-6xl">
+                Lagos is big.{' '}
+                <span className="italic text-brass-300">Your stay, sorted.</span>
+              </h1>
+
+              <p className="mt-3 max-w-xl text-sm font-medium text-ink-100 sm:text-base">
+                Verified shortlets across Lagos Mainland &amp; Island. Pay only after availability is confirmed.
+              </p>
             </div>
 
-            <h1 className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Lagos is big.{' '}
-              <span className="italic text-brass-300">Your stay, sorted.</span>
-            </h1>
+            {/* Sample interior slideshow caption + controls */}
+            <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-end">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-ink-950/65 px-3.5 py-1.5 text-xs font-semibold text-paper backdrop-blur-md">
+                <span className="font-mono text-[10.5px] font-bold text-brass-300">
+                  0{heroSlide + 1}/0{HERO_SLIDES.length}
+                </span>
+                <span className="h-3 w-px bg-white/20" />
+                <span>Sample interior · {activeSlide.room}</span>
+              </div>
 
-            <p className="mt-3 max-w-xl text-sm font-medium text-ink-200 sm:text-base">
-              Verified shortlets across Lagos Mainland &amp; Island. Pay only after availability is confirmed.
-            </p>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-ink-950/65 p-1 backdrop-blur-md">
+                <button
+                  type="button"
+                  aria-label="Previous interior photo"
+                  onClick={() =>
+                    setHeroSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
+                  }
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/85 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
+                >
+                  <ChevronLeft size={15} />
+                </button>
+
+                <div className="flex items-center gap-1 px-1" role="tablist" aria-label="Sample apartment rooms">
+                  {HERO_SLIDES.map((slide, index) => {
+                    const active = index === heroSlide;
+                    return (
+                      <button
+                        key={slide.src}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        aria-label={`Show ${slide.room}`}
+                        onClick={() => setHeroSlide(index)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          active ? 'w-5 bg-brass-400' : 'w-1.5 bg-white/45 hover:bg-white/75'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="Next interior photo"
+                  onClick={() => setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length)}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-white/85 transition hover:bg-white/15 hover:text-white [&>svg]:shrink-0"
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Search Card */}

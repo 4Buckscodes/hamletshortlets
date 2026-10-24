@@ -27,6 +27,12 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
 
     expect(homeSrc).toContain('Available stays');
     expect(homeSrc).toContain('Browse by area');
+    expect(homeSrc).toContain('HERO_SLIDES');
+    expect(homeSrc).toContain('/images/hero-sample-living.jpg');
+    expect(homeSrc).toContain('/images/hero-sample-bedroom.jpg');
+    expect(homeSrc).toContain('/images/hero-sample-kitchen.jpg');
+    expect(homeSrc).toContain('/images/hero-sample-lounge.jpg');
+    expect(homeSrc).toContain('Sample interior');
     expect(homeSrc).not.toContain('Booking ceremony walkthrough');
     expect(homeSrc).not.toContain('Every naira, accounted for');
     expect(detailSrc).toContain('priceStay');
