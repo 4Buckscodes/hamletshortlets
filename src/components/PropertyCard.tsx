@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, BedDouble, Bath, ShieldCheck, Wifi, Zap, ArrowRight, CalendarClock } from 'lucide-react';
+import { Users, BedDouble, Bath, ShieldCheck, Wifi, Zap, ArrowRight, CalendarClock, Compass, MapPin } from 'lucide-react';
 import type { Property } from '../lib/types';
 import { estimateAllInclusiveNightly } from '../lib/pricing';
 import { computePropertyAvailabilitySummary } from '../lib/availability';
@@ -40,6 +40,8 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
   const hasPowerBackup = p.amenities.includes('24/7 Power') || p.amenities.includes('Generator');
   const hasWifi = p.amenities.includes('Wifi');
   const checkInRule = p.houseRules.find(r => r.toLowerCase().includes('check-in'));
+  const hasVerifiedEntrance = p.locationAccuracy === 'verified_entrance';
+  const publicLandmark = p.publicLandmarks?.[0];
 
   const badgeTone =
     availability.selectedDatesStatus === 'unavailable'
@@ -93,6 +95,13 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
           {p.title}
         </h3>
 
+        {publicLandmark && (
+          <p className="mt-1 flex items-center gap-1 truncate text-[11px] font-medium text-ink-500">
+            <MapPin size={11} className="shrink-0 text-jade-700" />
+            <span className="truncate">{publicLandmark}</span>
+          </p>
+        )}
+
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-medium text-ink-500">
           <span className="inline-flex items-center gap-1"><BedDouble size={13} className="shrink-0" />{p.bedrooms} bd</span>
           <span className="inline-flex items-center gap-1"><Bath size={13} className="shrink-0" />{p.bathrooms} ba</span>
@@ -100,6 +109,12 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {hasVerifiedEntrance && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-jade-200 bg-jade-50/70 px-2 py-0.5 text-[10.5px] font-bold text-jade-800">
+              <Compass size={11} className="shrink-0 text-jade-700" />
+              {p.wayfinderStatus === 'guide_ready' ? 'Wayfinder ready' : 'Entrance verified'}
+            </span>
+          )}
           {hasPowerBackup && (
             <span className="inline-flex items-center gap-1 rounded-md border border-ink-100 bg-ink-50/70 px-2 py-0.5 text-[10.5px] font-semibold text-ink-700">
               <Zap size={11} className="shrink-0 text-amber-600" />

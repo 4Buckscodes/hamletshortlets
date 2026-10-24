@@ -137,6 +137,12 @@ export interface Property {
   propertyManagerId?: string | null;
   authorisedManagerId?: string | null;
   managerAssignedAt?: string;
+  // ── HAMLET Wayfinder public-safe location metadata ──
+  city?: string;
+  publicLandmarks?: string[];
+  publicLocationSummary?: string;
+  locationAccuracy?: LocationAccuracy;
+  wayfinderStatus?: WayfinderStatus;
 }
 
 export type BookingStatus =
@@ -268,6 +274,9 @@ export interface Booking {
   guestReferredAt?: string;
   cautionFeeStatus?: CautionDepositStatus;
   payoutStatus?: PayoutStatus;
+  // ── HAMLET Wayfinder confirmed-booking revision snapshot ──
+  wayfinderSnapshot?: WayfinderGuideSnapshot | null;
+  wayfinderSnapshotRevision?: number | null;
 }
 
 export interface CautionDepositRecord {
@@ -464,6 +473,8 @@ export interface Issue {
   evidence: string[];
   resolution?: string;
   timeline: TimelineEvent[];
+  arrivalIssueType?: ArrivalIssueType;
+  wayfinderStepKey?: string;
 }
 
 export type ApplicationStatus = 'pending' | 'approved' | 'needs_correction' | 'rejected';
@@ -558,3 +569,289 @@ export interface AdminBootstrapEmail {
   addedBy?: string;
   createdAt: string;
 }
+
+// ─── HAMLET Wayfinder Domain Model ───────────────────────────────────────────
+
+export type LocationAccuracy =
+  | 'missing'
+  | 'approximate_area'
+  | 'street_level'
+  | 'verified_entrance';
+
+export type WayfinderStatus =
+  | 'location_missing'
+  | 'location_submitted'
+  | 'awaiting_verification'
+  | 'location_verified'
+  | 'guide_incomplete'
+  | 'guide_ready'
+  | 'needs_correction'
+  | 'disabled';
+
+export type WayfinderPublicationStatus =
+  | 'draft'
+  | 'submitted'
+  | 'needs_correction'
+  | 'approved'
+  | 'disabled';
+
+export type CoordinatePointType =
+  | 'property_entrance'
+  | 'road_access'
+  | 'estate_gate'
+  | 'preferred_guest_entrance'
+  | 'building_entrance'
+  | 'dropoff_parking';
+
+export type CoordinateSource =
+  | 'manual_entry'
+  | 'gps_on_site'
+  | 'google_maps_pin'
+  | 'staff_verified_survey';
+
+export type CheckInMethod =
+  | 'host_meet'
+  | 'security_desk'
+  | 'smart_lock'
+  | 'lockbox'
+  | 'concierge';
+
+export type WayfinderWaypointType =
+  | 'main_road_access'
+  | 'estate_entrance'
+  | 'preferred_guest_entrance'
+  | 'building_entrance'
+  | 'parking_dropoff'
+  | 'other_waypoint';
+
+export type WayfinderStepType =
+  | 'navigate'
+  | 'entrance'
+  | 'security'
+  | 'building'
+  | 'floor_corridor'
+  | 'apartment_door'
+  | 'checkin';
+
+export type WayfinderVerificationMethod =
+  | 'staff_desk_review'
+  | 'map_imagery_crosscheck'
+  | 'partner_rep_confirmation'
+  | 'physical_onsite_check'
+  | 'documented_arrival_test';
+
+export type ArrivalIssueType =
+  | 'incorrect_map_pin'
+  | 'cannot_find_entrance'
+  | 'cannot_find_building'
+  | 'cannot_find_apartment'
+  | 'checkin_instructions_unclear'
+  | 'access_method_not_working'
+  | 'other_arrival_problem';
+
+export type WayfinderEventType =
+  | 'wayfinder_opened'
+  | 'directions_clicked'
+  | 'arrival_guide_viewed'
+  | 'help_action_selected'
+  | 'arrival_issue_reported'
+  | 'guide_flagged_incomplete'
+  | 'ease_of_arrival_feedback';
+
+export interface WayfinderWaypoint {
+  id: string;
+  propertyId: string;
+  pointType: WayfinderWaypointType;
+  label: string;
+  latitude: number;
+  longitude: number;
+  instructions: string;
+  photoUrl?: string;
+  sortOrder: number;
+  verificationStatus: 'submitted' | 'verified' | 'needs_correction';
+}
+
+export interface WayfinderStep {
+  id: string;
+  propertyId: string;
+  stepOrder: number;
+  stepType: WayfinderStepType;
+  heading: string;
+  instruction: string;
+  landmark?: string;
+  accessRequirement?: string;
+  photoUrl?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  verificationStatus: 'submitted' | 'verified' | 'needs_correction';
+}
+
+export interface WayfinderSecrets {
+  propertyId: string;
+  gateAccessCode: string;
+  buildingAccessCode: string;
+  lockboxOrSmartlockCode: string;
+  wifiNetworkName: string;
+  wifiPassword: string;
+  releaseHoursBeforeCheckIn: number;
+  updatedAt?: string;
+}
+
+export interface WayfinderGuideSnapshot {
+  publishedRevision: number;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
+  coordinatePointType: CoordinatePointType;
+  coordinateSource: CoordinateSource;
+  ambiguityNotes: string;
+  guestIntroduction: string;
+  estateOrBuildingName: string;
+  preferredEntranceLabel: string;
+  entranceInstructions: string;
+  entrancePhotoUrl?: string;
+  securityDeskInstructions: string;
+  buildingOrBlock: string;
+  buildingInstructions: string;
+  buildingPhotoUrl?: string;
+  floorLabel: string;
+  apartmentIdentifier: string;
+  liftOrStairsInstructions: string;
+  routeToDoor: string;
+  doorLandmarkPhotoUrl?: string;
+  parkingOrDropoffInstructions: string;
+  arrivalRestrictions: string;
+  checkInMethod: CheckInMethod;
+  checkInWindowLabel: string;
+  checkInInstructions: string;
+  arrivalContactName: string;
+  arrivalContactRole: string;
+  arrivalContactPhone: string;
+  coordinatesChecked: boolean;
+  writtenDirectionsChecked: boolean;
+  photosChecked: boolean;
+  physicallyVisited: boolean;
+  guestArrivalTested: boolean;
+  verifiedAt?: string;
+  waypoints: WayfinderWaypoint[];
+  steps: WayfinderStep[];
+}
+
+export interface WayfinderGuide extends WayfinderGuideSnapshot {
+  id: string;
+  propertyId: string;
+  publicationStatus: WayfinderPublicationStatus;
+  needsReverification: boolean;
+  verificationMethod?: WayfinderVerificationMethod;
+  verifiedBy?: string;
+  reviewerNote?: string;
+  pendingStatus?: 'draft' | 'submitted' | 'needs_correction' | null;
+  pendingSubmission?: Partial<WayfinderSubmissionInput> | null;
+  pendingSubmittedAt?: string;
+  updatedAt: string;
+}
+
+export interface WayfinderSubmissionInput {
+  city?: string;
+  publicLandmarks: string[];
+  publicLocationSummary: string;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
+  coordinatePointType: CoordinatePointType;
+  coordinateSource: CoordinateSource;
+  ambiguityNotes: string;
+  guestIntroduction: string;
+  estateOrBuildingName: string;
+  preferredEntranceLabel: string;
+  entranceInstructions: string;
+  entrancePhotoUrl?: string;
+  securityDeskInstructions: string;
+  buildingOrBlock: string;
+  buildingInstructions: string;
+  buildingPhotoUrl?: string;
+  floorLabel: string;
+  apartmentIdentifier: string;
+  liftOrStairsInstructions: string;
+  routeToDoor: string;
+  doorLandmarkPhotoUrl?: string;
+  parkingOrDropoffInstructions: string;
+  arrivalRestrictions: string;
+  checkInMethod: CheckInMethod;
+  checkInWindowLabel: string;
+  checkInInstructions: string;
+  arrivalContactName: string;
+  arrivalContactRole: string;
+  arrivalContactPhone: string;
+  waypoints: Array<{
+    pointType: WayfinderWaypointType;
+    label: string;
+    latitude: number;
+    longitude: number;
+    instructions: string;
+    photoUrl?: string;
+  }>;
+  steps: Array<{
+    stepType: WayfinderStepType;
+    heading: string;
+    instruction: string;
+    landmark?: string;
+    accessRequirement?: string;
+    photoUrl?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  }>;
+  secrets?: {
+    gateAccessCode: string;
+    buildingAccessCode: string;
+    lockboxOrSmartlockCode: string;
+    wifiNetworkName: string;
+    wifiPassword: string;
+    releaseHoursBeforeCheckIn: number;
+  };
+}
+
+export interface WayfinderReviewInput {
+  decision: 'approve_guide' | 'approve_pin_only' | 'needs_correction' | 'disable';
+  verificationMethod: WayfinderVerificationMethod;
+  coordinatesChecked: boolean;
+  writtenDirectionsChecked: boolean;
+  photosChecked: boolean;
+  physicallyVisited: boolean;
+  guestArrivalTested: boolean;
+  reviewerNote: string;
+}
+
+export interface WayfinderEventRecord {
+  id: string;
+  bookingId?: string;
+  propertyId: string;
+  actorId: string;
+  eventType: WayfinderEventType;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface GuestBookingWayfinderView {
+  bookingId: string;
+  bookingReference: string;
+  bookingStatus: BookingStatus;
+  checkIn: string;
+  checkOut: string;
+  guestCount: number;
+  propertyId: string;
+  propertyTitle: string;
+  area: string;
+  city: string;
+  publicAddress: string;
+  publicLandmarks: string[];
+  wayfinderStatus: WayfinderStatus;
+  guideAvailable: boolean;
+  guide: WayfinderGuideSnapshot | null;
+  confirmedSnapshot: WayfinderGuideSnapshot | null;
+  newerRevisionAvailable: boolean;
+  hasSensitiveCodes: boolean;
+  codesUnlocked: boolean;
+  codesUnlockAt: string | null;
+  codesExpireAt: string | null;
+  secrets: Omit<WayfinderSecrets, 'propertyId' | 'releaseHoursBeforeCheckIn' | 'updatedAt'> | null;
+}
+

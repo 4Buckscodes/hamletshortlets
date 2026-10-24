@@ -10,12 +10,19 @@ import type {
   PartnerReferral, PartnerReferralReward, CautionDepositRecord, CautionDepositStatus,
   ExchangeRateConfig, SupportedCurrency, PayoutStatus,
   AvailabilityConfirmationStatus, AvailabilityBlockType, ReferralRelationshipStatus,
+  WayfinderGuide, WayfinderSecrets, WayfinderEventRecord, WayfinderSubmissionInput,
+  WayfinderReviewInput, GuestBookingWayfinderView, ArrivalIssueType, WayfinderEventType,
+  WayfinderWaypoint, WayfinderStep, WayfinderGuideSnapshot,
 } from './types';
 import {
   seedAccounts, seedProperties, seedBookings, seedLedger, seedIssues,
   seedApplications, seedAssignments, seedAudit,
   seedPartnerReferrals, seedPartnerReferralRewards, seedCautionDeposits, seedExchangeRates,
+  seedWayfinderGuides, seedWayfinderSecrets, seedWayfinderEvents,
 } from './seed';
+import {
+  evaluateGuestBookingWayfinder, validateCoordinates, ARRIVAL_ISSUE_TYPE_LABELS,
+} from './wayfinder';
 import {
   buildDefaultExchangeRates, calculateBookingCurrencyQuote, calculateGuestPricing,
   nightsBetween, formatNaira,
@@ -113,6 +120,9 @@ export interface DBState {
   feedback: FeedbackItem[];
   notifications: BookingNotificationRecord[];
   adminBootstrapEmails: AdminBootstrapEmail[];
+  wayfinderGuides: WayfinderGuide[];
+  wayfinderSecrets: WayfinderSecrets[];
+  wayfinderEvents: WayfinderEventRecord[];
   session: Session | null;
 }
 
@@ -121,7 +131,9 @@ const emptyState = (): DBState => ({
   applications: [], assignments: [], partnerReferrals: [], partnerReferralRewards: [],
   cautionDeposits: [], exchangeRates: buildDefaultExchangeRates(),
   audit: [], feedback: [], notifications: [],
-  adminBootstrapEmails: [], session: null,
+  adminBootstrapEmails: [],
+  wayfinderGuides: [], wayfinderSecrets: [], wayfinderEvents: [],
+  session: null,
 });
 
 const DB_KEY = 'hamlet-db-v2';
@@ -144,6 +156,9 @@ function initialState(): DBState {
         exchangeRates: parsed.exchangeRates ?? seedExchangeRates,
         notifications: parsed.notifications ?? [],
         adminBootstrapEmails: parsed.adminBootstrapEmails ?? [],
+        wayfinderGuides: parsed.wayfinderGuides ?? seedWayfinderGuides,
+        wayfinderSecrets: parsed.wayfinderSecrets ?? seedWayfinderSecrets,
+        wayfinderEvents: parsed.wayfinderEvents ?? seedWayfinderEvents,
         accounts: parsed.accounts.map(a => ({ ...a, password: 'demo1234' })),
         session: sessionRaw ? JSON.parse(sessionRaw) : null,
       };
@@ -159,6 +174,9 @@ function initialState(): DBState {
     exchangeRates: seedExchangeRates,
     audit: seedAudit, feedback: [], notifications: [],
     adminBootstrapEmails: [{ email: 'admin@hamlet.ng', note: 'Pilot demo administrator', createdAt: new Date().toISOString() }],
+    wayfinderGuides: seedWayfinderGuides,
+    wayfinderSecrets: seedWayfinderSecrets,
+    wayfinderEvents: seedWayfinderEvents,
     session: null,
   };
 }
@@ -201,6 +219,11 @@ type Action =
   | { type: 'ADD_ASSIGNMENT'; assignment: PartnerAssignment; actorName: string; actorRole: string }
   | { type: 'REVOKE_ASSIGNMENT'; id: string; actor: Session }
   | { type: 'ADD_FEEDBACK'; item: FeedbackItem }
+  | { type: 'SUBMIT_WAYFINDER'; propertyId: string; input: WayfinderSubmissionInput; saveAsDraft: boolean; actor: Session }
+  | { type: 'REVIEW_WAYFINDER'; propertyId: string; input: WayfinderReviewInput; actor: Session }
+  | { type: 'FLAG_WAYFINDER_CORRECTION'; propertyId: string; reason: string; actor: Session }
+  | { type: 'RECORD_WAYFINDER_EVENT'; event: WayfinderEventRecord }
+  | { type: 'LOCK_BOOKING_WAYFINDER_SNAPSHOT'; bookingId: string; snapshot: WayfinderGuideSnapshot; revision: number }
   | { type: 'AUDIT'; actor: Session | { name: string; role: string }; action: string; target: string; detail: string }
   | { type: 'RESET' };
 
@@ -220,6 +243,11 @@ type RemoteProperty = {
   last_availability_update?: string | null;
   property_introducer_id?: string | null;
   authorised_manager_id?: string | null;
+  city?: string | null;
+  public_landmarks?: string[] | null;
+  public_location_summary?: string | null;
+  location_accuracy?: Property['locationAccuracy'] | null;
+  wayfinder_status?: Property['wayfinderStatus'] | null;
   created_at: string; updated_at: string;
 };
 
@@ -259,6 +287,8 @@ type RemoteBooking = {
   status: Booking['status']; special_requests?: string; payment_deadline?: string;
   payment_provider?: string; payment_reference?: string; refund_status: Booking['refundStatus'];
   refund_amount?: number; cancel_reason?: string; created_at: string; timeline: TimelineEvent[];
+  wayfinder_snapshot?: Record<string, unknown> | null;
+  wayfinder_snapshot_revision?: number | null;
 };
 
 type RemoteApplication = {
@@ -308,8 +338,179 @@ type RemoteIssue = {
   reporter_type?: Issue['reporterType']; category: Issue['category'];
   severity: Issue['severity']; subject: string; description: string; status: IssueStatus;
   assignee_id?: string; assignee_name?: string; resolution?: string; evidence: string[];
-  timeline?: TimelineEvent[]; created_at: string; updated_at: string;
+  timeline?: TimelineEvent[]; arrival_issue_type?: ArrivalIssueType | null;
+  wayfinder_step_key?: string | null; created_at: string; updated_at: string;
 };
+
+type RemoteWayfinderGuideRow = {
+  id: string;
+  property_id: string;
+  published_revision: number;
+  publication_status: WayfinderGuide['publicationStatus'];
+  destination_latitude: number | string | null;
+  destination_longitude: number | string | null;
+  coordinate_point_type: WayfinderGuide['coordinatePointType'];
+  coordinate_source: WayfinderGuide['coordinateSource'];
+  ambiguity_notes: string;
+  guest_introduction: string;
+  estate_or_building_name: string;
+  preferred_entrance_label: string;
+  entrance_instructions: string;
+  entrance_photo_url: string;
+  security_desk_instructions: string;
+  building_or_block: string;
+  building_instructions: string;
+  building_photo_url: string;
+  floor_label: string;
+  apartment_identifier: string;
+  lift_or_stairs_instructions: string;
+  route_to_door: string;
+  door_landmark_photo_url: string;
+  parking_or_dropoff_instructions: string;
+  arrival_restrictions: string;
+  checkin_method: WayfinderGuide['checkInMethod'];
+  checkin_window_label: string;
+  checkin_instructions: string;
+  arrival_contact_name: string;
+  arrival_contact_role: string;
+  arrival_contact_phone: string;
+  coordinates_checked: boolean;
+  written_directions_checked: boolean;
+  photos_checked: boolean;
+  physically_visited: boolean;
+  guest_arrival_tested: boolean;
+  needs_reverification: boolean;
+  verification_method?: WayfinderGuide['verificationMethod'] | null;
+  verified_by?: string | null;
+  verified_at?: string | null;
+  reviewer_note: string;
+  pending_status?: WayfinderGuide['pendingStatus'];
+  pending_submission?: Record<string, unknown> | null;
+  pending_submitted_at?: string | null;
+  updated_at: string;
+};
+
+type RemoteWayfinderWaypointRow = {
+  id: string;
+  property_id: string;
+  point_type: WayfinderWaypoint['pointType'];
+  label: string;
+  latitude: number | string;
+  longitude: number | string;
+  instructions: string;
+  photo_url: string;
+  sort_order: number;
+  verification_status: WayfinderWaypoint['verificationStatus'];
+};
+
+type RemoteWayfinderStepRow = {
+  id: string;
+  property_id: string;
+  step_order: number;
+  step_type: WayfinderStep['stepType'];
+  heading: string;
+  instruction: string;
+  landmark: string;
+  access_requirement: string;
+  photo_url: string;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  verification_status: WayfinderStep['verificationStatus'];
+};
+
+type RemoteWayfinderSecretRow = {
+  property_id: string;
+  gate_access_code: string;
+  building_access_code: string;
+  lockbox_or_smartlock_code: string;
+  wifi_network_name: string;
+  wifi_password: string;
+  release_hours_before_checkin: number;
+  updated_at: string;
+};
+
+type RemoteWayfinderEventRow = {
+  id: string;
+  booking_id?: string | null;
+  property_id: string;
+  actor_id: string;
+  event_type: WayfinderEventType;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+};
+
+function mapSnapshotJsonToGuideSnapshot(
+  raw: Record<string, unknown> | null | undefined,
+  propertyId = '',
+): WayfinderGuideSnapshot | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const latRaw = raw.destination_latitude ?? raw.destinationLatitude;
+  const lngRaw = raw.destination_longitude ?? raw.destinationLongitude;
+  const rawWaypoints = Array.isArray(raw.waypoints) ? (raw.waypoints as Array<Record<string, unknown>>) : [];
+  const rawSteps = Array.isArray(raw.steps) ? (raw.steps as Array<Record<string, unknown>>) : [];
+  return {
+    publishedRevision: Number(raw.published_revision ?? raw.publishedRevision ?? 0),
+    destinationLatitude: latRaw !== null && latRaw !== undefined && latRaw !== '' ? Number(latRaw) : null,
+    destinationLongitude: lngRaw !== null && lngRaw !== undefined && lngRaw !== '' ? Number(lngRaw) : null,
+    coordinatePointType: ((raw.coordinate_point_type ?? raw.coordinatePointType) as WayfinderGuide['coordinatePointType']) || 'estate_gate',
+    coordinateSource: ((raw.coordinate_source ?? raw.coordinateSource) as WayfinderGuide['coordinateSource']) || 'manual_entry',
+    ambiguityNotes: String(raw.ambiguity_notes ?? raw.ambiguityNotes ?? ''),
+    guestIntroduction: String(raw.guest_introduction ?? raw.guestIntroduction ?? ''),
+    estateOrBuildingName: String(raw.estate_or_building_name ?? raw.estateOrBuildingName ?? ''),
+    preferredEntranceLabel: String(raw.preferred_entrance_label ?? raw.preferredEntranceLabel ?? ''),
+    entranceInstructions: String(raw.entrance_instructions ?? raw.entranceInstructions ?? ''),
+    entrancePhotoUrl: String(raw.entrance_photo_url ?? raw.entrancePhotoUrl ?? '') || undefined,
+    securityDeskInstructions: String(raw.security_desk_instructions ?? raw.securityDeskInstructions ?? ''),
+    buildingOrBlock: String(raw.building_or_block ?? raw.buildingOrBlock ?? ''),
+    buildingInstructions: String(raw.building_instructions ?? raw.buildingInstructions ?? ''),
+    buildingPhotoUrl: String(raw.building_photo_url ?? raw.buildingPhotoUrl ?? '') || undefined,
+    floorLabel: String(raw.floor_label ?? raw.floorLabel ?? ''),
+    apartmentIdentifier: String(raw.apartment_identifier ?? raw.apartmentIdentifier ?? ''),
+    liftOrStairsInstructions: String(raw.lift_or_stairs_instructions ?? raw.liftOrStairsInstructions ?? ''),
+    routeToDoor: String(raw.route_to_door ?? raw.routeToDoor ?? ''),
+    doorLandmarkPhotoUrl: String(raw.door_landmark_photo_url ?? raw.doorLandmarkPhotoUrl ?? '') || undefined,
+    parkingOrDropoffInstructions: String(raw.parking_or_dropoff_instructions ?? raw.parkingOrDropoffInstructions ?? ''),
+    arrivalRestrictions: String(raw.arrival_restrictions ?? raw.arrivalRestrictions ?? ''),
+    checkInMethod: ((raw.checkin_method ?? raw.checkInMethod) as WayfinderGuide['checkInMethod']) || 'host_meet',
+    checkInWindowLabel: String(raw.checkin_window_label ?? raw.checkInWindowLabel ?? 'From 2:00 PM'),
+    checkInInstructions: String(raw.checkin_instructions ?? raw.checkInInstructions ?? ''),
+    arrivalContactName: String(raw.arrival_contact_name ?? raw.arrivalContactName ?? ''),
+    arrivalContactRole: String(raw.arrival_contact_role ?? raw.arrivalContactRole ?? ''),
+    arrivalContactPhone: String(raw.arrival_contact_phone ?? raw.arrivalContactPhone ?? ''),
+    coordinatesChecked: Boolean(raw.coordinates_checked ?? raw.coordinatesChecked),
+    writtenDirectionsChecked: Boolean(raw.written_directions_checked ?? raw.writtenDirectionsChecked),
+    photosChecked: Boolean(raw.photos_checked ?? raw.photosChecked),
+    physicallyVisited: Boolean(raw.physically_visited ?? raw.physicallyVisited),
+    guestArrivalTested: Boolean(raw.guest_arrival_tested ?? raw.guestArrivalTested),
+    verifiedAt: (raw.verified_at ?? raw.verifiedAt) ? String(raw.verified_at ?? raw.verifiedAt) : undefined,
+    waypoints: rawWaypoints.map((w, idx) => ({
+      id: String(w.id ?? `wp-${idx}`),
+      propertyId,
+      pointType: ((w.point_type ?? w.pointType) as WayfinderWaypoint['pointType']) || 'other_waypoint',
+      label: String(w.label ?? `Point ${idx + 1}`),
+      latitude: Number(w.latitude),
+      longitude: Number(w.longitude),
+      instructions: String(w.instructions ?? ''),
+      photoUrl: w.photo_url || w.photoUrl ? String(w.photo_url ?? w.photoUrl) : undefined,
+      sortOrder: Number(w.sort_order ?? w.sortOrder ?? idx + 1),
+      verificationStatus: 'verified',
+    })),
+    steps: rawSteps.map((s, idx) => ({
+      id: String(s.id ?? `st-${idx}`),
+      propertyId,
+      stepOrder: Number(s.step_order ?? s.stepOrder ?? idx + 1),
+      stepType: ((s.step_type ?? s.stepType) as WayfinderStep['stepType']) || 'entrance',
+      heading: String(s.heading ?? `Step ${idx + 1}`),
+      instruction: String(s.instruction ?? ''),
+      landmark: s.landmark ? String(s.landmark) : undefined,
+      accessRequirement: s.access_requirement || s.accessRequirement ? String(s.access_requirement ?? s.accessRequirement) : undefined,
+      photoUrl: s.photo_url || s.photoUrl ? String(s.photo_url ?? s.photoUrl) : undefined,
+      latitude: s.latitude !== null && s.latitude !== undefined && s.latitude !== '' ? Number(s.latitude) : null,
+      longitude: s.longitude !== null && s.longitude !== undefined && s.longitude !== '' ? Number(s.longitude) : null,
+      verificationStatus: 'verified',
+    })),
+  };
+}
 
 type RemoteAdminDirectoryRow = {
   id: string;
@@ -468,6 +669,11 @@ function toRemoteProperty(
     unavailableBlocks: blocksByPropertyId?.get(row.id) ?? [],
     propertyIntroducerId: row.property_introducer_id ?? undefined,
     authorisedManagerId: row.authorised_manager_id ?? undefined,
+    city: row.city || 'Lagos',
+    publicLandmarks: row.public_landmarks ?? [],
+    publicLocationSummary: row.public_location_summary ?? '',
+    locationAccuracy: row.location_accuracy ?? 'missing',
+    wayfinderStatus: row.wayfinder_status ?? 'location_missing',
     createdAt: row.created_at,
   };
 }
@@ -557,6 +763,8 @@ function toRemoteBooking(
     refundStatus: row.refund_status,
     refundAmount: row.refund_amount,
     timeline: row.timeline ?? [],
+    wayfinderSnapshot: mapSnapshotJsonToGuideSnapshot(row.wayfinder_snapshot ?? null, row.property_id),
+    wayfinderSnapshotRevision: row.wayfinder_snapshot_revision ?? null,
   };
 }
 
@@ -652,6 +860,11 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     referralRewardsRaw,
     cautionDepositsRaw,
     fxRatesRaw,
+    wayfinderGuidesRaw,
+    wayfinderWaypointsRaw,
+    wayfinderStepsRaw,
+    wayfinderSecretsRaw,
+    wayfinderEventsRaw,
   ] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -678,6 +891,13 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     safeQuery<RemotePartnerReferralReward>(supabase.from('partner_referral_rewards').select('*').order('created_at', { ascending: false })),
     safeQuery<RemoteCautionDeposit>(supabase.from('booking_caution_deposits').select('*').order('created_at', { ascending: false })),
     safeQuery<RemoteExchangeRate>(supabase.from('currency_exchange_rates').select('*')),
+    safeQuery<RemoteWayfinderGuideRow>(supabase.from('property_wayfinder_guides').select('*').order('updated_at', { ascending: false })),
+    safeQuery<RemoteWayfinderWaypointRow>(supabase.from('property_wayfinder_waypoints').select('*').order('sort_order', { ascending: true })),
+    safeQuery<RemoteWayfinderStepRow>(supabase.from('property_wayfinder_steps').select('*').order('step_order', { ascending: true })),
+    session.role === 'admin' || session.role === 'partner'
+      ? safeQuery<RemoteWayfinderSecretRow>(supabase.from('property_wayfinder_secrets').select('*'))
+      : Promise.resolve([] as RemoteWayfinderSecretRow[]),
+    safeQuery<RemoteWayfinderEventRow>(supabase.from('wayfinder_events').select('*').order('created_at', { ascending: false }).limit(250)),
   ]);
 
   for (const result of [
@@ -848,6 +1068,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       evidence: issue.evidence ?? [],
       resolution: issue.resolution,
       timeline: issue.timeline ?? [],
+      arrivalIssueType: issue.arrival_issue_type ?? undefined,
+      wayfinderStepKey: issue.wayfinder_step_key ?? undefined,
     };
   });
   const assignments: PartnerAssignment[] = accesses.map(access => {
@@ -1041,6 +1263,148 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     createdAt: row.created_at,
   }));
 
+  const waypointsByProperty = new Map<string, WayfinderWaypoint[]>();
+  for (const w of wayfinderWaypointsRaw) {
+    const arr = waypointsByProperty.get(w.property_id) ?? [];
+    arr.push({
+      id: w.id,
+      propertyId: w.property_id,
+      pointType: w.point_type,
+      label: w.label,
+      latitude: Number(w.latitude),
+      longitude: Number(w.longitude),
+      instructions: w.instructions,
+      photoUrl: w.photo_url || undefined,
+      sortOrder: w.sort_order,
+      verificationStatus: w.verification_status,
+    });
+    waypointsByProperty.set(w.property_id, arr);
+  }
+
+  const stepsByProperty = new Map<string, WayfinderStep[]>();
+  for (const s of wayfinderStepsRaw) {
+    const arr = stepsByProperty.get(s.property_id) ?? [];
+    arr.push({
+      id: s.id,
+      propertyId: s.property_id,
+      stepOrder: s.step_order,
+      stepType: s.step_type,
+      heading: s.heading,
+      instruction: s.instruction,
+      landmark: s.landmark || undefined,
+      accessRequirement: s.access_requirement || undefined,
+      photoUrl: s.photo_url || undefined,
+      latitude: s.latitude !== null && s.latitude !== undefined ? Number(s.latitude) : null,
+      longitude: s.longitude !== null && s.longitude !== undefined ? Number(s.longitude) : null,
+      verificationStatus: s.verification_status,
+    });
+    stepsByProperty.set(s.property_id, arr);
+  }
+
+  const wayfinderGuides: WayfinderGuide[] = wayfinderGuidesRaw.map(g => {
+    const pendingRaw = g.pending_submission;
+    return {
+      id: g.id,
+      propertyId: g.property_id,
+      publishedRevision: g.published_revision,
+      publicationStatus: g.publication_status,
+      destinationLatitude: g.destination_latitude !== null && g.destination_latitude !== undefined ? Number(g.destination_latitude) : null,
+      destinationLongitude: g.destination_longitude !== null && g.destination_longitude !== undefined ? Number(g.destination_longitude) : null,
+      coordinatePointType: g.coordinate_point_type,
+      coordinateSource: g.coordinate_source,
+      ambiguityNotes: g.ambiguity_notes,
+      guestIntroduction: g.guest_introduction,
+      estateOrBuildingName: g.estate_or_building_name,
+      preferredEntranceLabel: g.preferred_entrance_label,
+      entranceInstructions: g.entrance_instructions,
+      entrancePhotoUrl: g.entrance_photo_url || undefined,
+      securityDeskInstructions: g.security_desk_instructions,
+      buildingOrBlock: g.building_or_block,
+      buildingInstructions: g.building_instructions,
+      buildingPhotoUrl: g.building_photo_url || undefined,
+      floorLabel: g.floor_label,
+      apartmentIdentifier: g.apartment_identifier,
+      liftOrStairsInstructions: g.lift_or_stairs_instructions,
+      routeToDoor: g.route_to_door,
+      doorLandmarkPhotoUrl: g.door_landmark_photo_url || undefined,
+      parkingOrDropoffInstructions: g.parking_or_dropoff_instructions,
+      arrivalRestrictions: g.arrival_restrictions,
+      checkInMethod: g.checkin_method,
+      checkInWindowLabel: g.checkin_window_label,
+      checkInInstructions: g.checkin_instructions,
+      arrivalContactName: g.arrival_contact_name,
+      arrivalContactRole: g.arrival_contact_role,
+      arrivalContactPhone: g.arrival_contact_phone,
+      coordinatesChecked: g.coordinates_checked,
+      writtenDirectionsChecked: g.written_directions_checked,
+      photosChecked: g.photos_checked,
+      physicallyVisited: g.physically_visited,
+      guestArrivalTested: g.guest_arrival_tested,
+      needsReverification: g.needs_reverification,
+      verificationMethod: g.verification_method ?? undefined,
+      verifiedBy: g.verified_by ?? undefined,
+      verifiedAt: g.verified_at ?? undefined,
+      reviewerNote: g.reviewer_note || undefined,
+      pendingStatus: g.pending_status ?? null,
+      pendingSubmission: pendingRaw ? {
+        destinationLatitude: pendingRaw.destination_latitude !== undefined && pendingRaw.destination_latitude !== null ? Number(pendingRaw.destination_latitude) : undefined,
+        destinationLongitude: pendingRaw.destination_longitude !== undefined && pendingRaw.destination_longitude !== null ? Number(pendingRaw.destination_longitude) : undefined,
+        coordinatePointType: pendingRaw.coordinate_point_type as WayfinderGuide['coordinatePointType'] | undefined,
+        coordinateSource: pendingRaw.coordinate_source as WayfinderGuide['coordinateSource'] | undefined,
+        ambiguityNotes: pendingRaw.ambiguity_notes as string | undefined,
+        guestIntroduction: pendingRaw.guest_introduction as string | undefined,
+        estateOrBuildingName: pendingRaw.estate_or_building_name as string | undefined,
+        preferredEntranceLabel: pendingRaw.preferred_entrance_label as string | undefined,
+        entranceInstructions: pendingRaw.entrance_instructions as string | undefined,
+        entrancePhotoUrl: pendingRaw.entrance_photo_url as string | undefined,
+        securityDeskInstructions: pendingRaw.security_desk_instructions as string | undefined,
+        buildingOrBlock: pendingRaw.building_or_block as string | undefined,
+        buildingInstructions: pendingRaw.building_instructions as string | undefined,
+        buildingPhotoUrl: pendingRaw.building_photo_url as string | undefined,
+        floorLabel: pendingRaw.floor_label as string | undefined,
+        apartmentIdentifier: pendingRaw.apartment_identifier as string | undefined,
+        liftOrStairsInstructions: pendingRaw.lift_or_stairs_instructions as string | undefined,
+        routeToDoor: pendingRaw.route_to_door as string | undefined,
+        doorLandmarkPhotoUrl: pendingRaw.door_landmark_photo_url as string | undefined,
+        parkingOrDropoffInstructions: pendingRaw.parking_or_dropoff_instructions as string | undefined,
+        arrivalRestrictions: pendingRaw.arrival_restrictions as string | undefined,
+        checkInMethod: pendingRaw.checkin_method as WayfinderGuide['checkInMethod'] | undefined,
+        checkInWindowLabel: pendingRaw.checkin_window_label as string | undefined,
+        checkInInstructions: pendingRaw.checkin_instructions as string | undefined,
+        arrivalContactName: pendingRaw.arrival_contact_name as string | undefined,
+        arrivalContactRole: pendingRaw.arrival_contact_role as string | undefined,
+        arrivalContactPhone: pendingRaw.arrival_contact_phone as string | undefined,
+        publicLandmarks: Array.isArray(pendingRaw.public_landmarks) ? (pendingRaw.public_landmarks as string[]) : undefined,
+        publicLocationSummary: pendingRaw.public_location_summary as string | undefined,
+      } : null,
+      pendingSubmittedAt: g.pending_submitted_at ?? undefined,
+      waypoints: waypointsByProperty.get(g.property_id) ?? [],
+      steps: stepsByProperty.get(g.property_id) ?? [],
+      updatedAt: g.updated_at,
+    };
+  });
+
+  const wayfinderSecrets: WayfinderSecrets[] = wayfinderSecretsRaw.map(s => ({
+    propertyId: s.property_id,
+    gateAccessCode: s.gate_access_code,
+    buildingAccessCode: s.building_access_code,
+    lockboxOrSmartlockCode: s.lockbox_or_smartlock_code,
+    wifiNetworkName: s.wifi_network_name,
+    wifiPassword: s.wifi_password,
+    releaseHoursBeforeCheckIn: s.release_hours_before_checkin,
+    updatedAt: s.updated_at,
+  }));
+
+  const wayfinderEvents: WayfinderEventRecord[] = wayfinderEventsRaw.map(ev => ({
+    id: ev.id,
+    bookingId: ev.booking_id ?? undefined,
+    propertyId: ev.property_id,
+    actorId: ev.actor_id,
+    eventType: ev.event_type,
+    metadata: ev.metadata ?? {},
+    createdAt: ev.created_at,
+  }));
+
   return {
     ...emptyState(),
     accounts,
@@ -1060,6 +1424,9 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     feedback,
     notifications,
     adminBootstrapEmails,
+    wayfinderGuides,
+    wayfinderSecrets,
+    wayfinderEvents,
     session,
   };
 }
@@ -1960,6 +2327,375 @@ function reducer(state: DBState, action: Action): DBState {
     }
     case 'ADD_FEEDBACK':
       return { ...state, feedback: [action.item, ...state.feedback] };
+    case 'SUBMIT_WAYFINDER': {
+      const prop = state.properties.find(p => p.id === action.propertyId);
+      if (!prop) return state;
+      const existing = state.wayfinderGuides.find(g => g.propertyId === action.propertyId);
+      const now = nowIso();
+      const nextSecrets: WayfinderSecrets[] = action.input.secrets
+        ? [
+            {
+              propertyId: action.propertyId,
+              gateAccessCode: action.input.secrets.gateAccessCode.trim(),
+              buildingAccessCode: action.input.secrets.buildingAccessCode.trim(),
+              lockboxOrSmartlockCode: action.input.secrets.lockboxOrSmartlockCode.trim(),
+              wifiNetworkName: action.input.secrets.wifiNetworkName.trim(),
+              wifiPassword: action.input.secrets.wifiPassword.trim(),
+              releaseHoursBeforeCheckIn: action.input.secrets.releaseHoursBeforeCheckIn,
+              updatedAt: now,
+            },
+            ...state.wayfinderSecrets.filter(s => s.propertyId !== action.propertyId),
+          ]
+        : state.wayfinderSecrets;
+
+      // Preserve live approved guide when partner submits an update post-approval (§8 & §10.D)
+      if (existing && existing.publicationStatus === 'approved') {
+        const stagedGuide: WayfinderGuide = {
+          ...existing,
+          pendingStatus: action.saveAsDraft ? 'draft' : 'submitted',
+          pendingSubmission: { ...action.input, secrets: undefined },
+          pendingSubmittedAt: now,
+          updatedAt: now,
+        };
+        return {
+          ...state,
+          wayfinderGuides: state.wayfinderGuides.map(g => (g.propertyId === action.propertyId ? stagedGuide : g)),
+          wayfinderSecrets: nextSecrets,
+          audit: [
+            auditEntry(
+              action.actor.name,
+              action.actor.role,
+              action.saveAsDraft ? 'wayfinder_revision_draft_saved' : 'wayfinder_revision_submitted',
+              prop.title,
+              `Staged Wayfinder update without overwriting live revision #${existing.publishedRevision}`,
+            ),
+            ...state.audit,
+          ],
+        };
+      }
+
+      const nextWayfinderStatus: Property['wayfinderStatus'] = action.saveAsDraft
+        ? action.input.destinationLatitude !== null ? 'location_submitted' : 'location_missing'
+        : 'awaiting_verification';
+
+      const builtGuide: WayfinderGuide = {
+        id: existing?.id ?? uid(),
+        propertyId: action.propertyId,
+        publishedRevision: existing?.publishedRevision ?? 0,
+        publicationStatus: action.saveAsDraft ? 'draft' : 'submitted',
+        destinationLatitude: action.input.destinationLatitude,
+        destinationLongitude: action.input.destinationLongitude,
+        coordinatePointType: action.input.coordinatePointType,
+        coordinateSource: action.input.coordinateSource,
+        ambiguityNotes: action.input.ambiguityNotes.trim(),
+        guestIntroduction: action.input.guestIntroduction.trim(),
+        estateOrBuildingName: action.input.estateOrBuildingName.trim(),
+        preferredEntranceLabel: action.input.preferredEntranceLabel.trim(),
+        entranceInstructions: action.input.entranceInstructions.trim(),
+        entrancePhotoUrl: action.input.entrancePhotoUrl?.trim() || undefined,
+        securityDeskInstructions: action.input.securityDeskInstructions.trim(),
+        buildingOrBlock: action.input.buildingOrBlock.trim(),
+        buildingInstructions: action.input.buildingInstructions.trim(),
+        buildingPhotoUrl: action.input.buildingPhotoUrl?.trim() || undefined,
+        floorLabel: action.input.floorLabel.trim(),
+        apartmentIdentifier: action.input.apartmentIdentifier.trim(),
+        liftOrStairsInstructions: action.input.liftOrStairsInstructions.trim(),
+        routeToDoor: action.input.routeToDoor.trim(),
+        doorLandmarkPhotoUrl: action.input.doorLandmarkPhotoUrl?.trim() || undefined,
+        parkingOrDropoffInstructions: action.input.parkingOrDropoffInstructions.trim(),
+        arrivalRestrictions: action.input.arrivalRestrictions.trim(),
+        checkInMethod: action.input.checkInMethod,
+        checkInWindowLabel: action.input.checkInWindowLabel.trim() || 'From 2:00 PM',
+        checkInInstructions: action.input.checkInInstructions.trim(),
+        arrivalContactName: action.input.arrivalContactName.trim(),
+        arrivalContactRole: action.input.arrivalContactRole.trim(),
+        arrivalContactPhone: action.input.arrivalContactPhone.trim(),
+        coordinatesChecked: false,
+        writtenDirectionsChecked: false,
+        photosChecked: false,
+        physicallyVisited: false,
+        guestArrivalTested: false,
+        needsReverification: false,
+        pendingStatus: null,
+        pendingSubmission: null,
+        waypoints: action.input.waypoints.map((w, i) => ({
+          id: uid(),
+          propertyId: action.propertyId,
+          pointType: w.pointType,
+          label: w.label.trim(),
+          latitude: w.latitude,
+          longitude: w.longitude,
+          instructions: w.instructions.trim(),
+          photoUrl: w.photoUrl?.trim() || undefined,
+          sortOrder: i + 1,
+          verificationStatus: 'submitted',
+        })),
+        steps: action.input.steps.map((s, i) => ({
+          id: uid(),
+          propertyId: action.propertyId,
+          stepOrder: i + 1,
+          stepType: s.stepType,
+          heading: s.heading.trim(),
+          instruction: s.instruction.trim(),
+          landmark: s.landmark?.trim() || undefined,
+          accessRequirement: s.accessRequirement?.trim() || undefined,
+          photoUrl: s.photoUrl?.trim() || undefined,
+          latitude: s.latitude ?? null,
+          longitude: s.longitude ?? null,
+          verificationStatus: 'submitted',
+        })),
+        updatedAt: now,
+      };
+
+      return {
+        ...state,
+        properties: state.properties.map(p =>
+          p.id === action.propertyId
+            ? {
+                ...p,
+                city: action.input.city?.trim() || p.city || 'Lagos',
+                publicLandmarks:
+                  p.status === 'approved' && (p.publicLandmarks?.length ?? 0) > 0
+                    ? p.publicLandmarks
+                    : action.input.publicLandmarks,
+                publicLocationSummary:
+                  p.status === 'approved' && p.publicLocationSummary
+                    ? p.publicLocationSummary
+                    : action.input.publicLocationSummary,
+                locationAccuracy:
+                  p.locationAccuracy === 'verified_entrance'
+                    ? 'verified_entrance'
+                    : action.input.destinationLatitude !== null
+                      ? 'street_level'
+                      : 'approximate_area',
+                wayfinderStatus: nextWayfinderStatus,
+              }
+            : p,
+        ),
+        wayfinderGuides: existing
+          ? state.wayfinderGuides.map(g => (g.propertyId === action.propertyId ? builtGuide : g))
+          : [builtGuide, ...state.wayfinderGuides],
+        wayfinderSecrets: nextSecrets,
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            action.saveAsDraft ? 'wayfinder_draft_saved' : 'wayfinder_submitted',
+            prop.title,
+            action.saveAsDraft ? 'Wayfinder draft saved' : 'Wayfinder location & arrival guide submitted for verification',
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'REVIEW_WAYFINDER': {
+      const prop = state.properties.find(p => p.id === action.propertyId);
+      const guide = state.wayfinderGuides.find(g => g.propertyId === action.propertyId);
+      if (!prop || !guide) return state;
+      const now = nowIso();
+      const { decision } = action.input;
+      const pending = guide.pendingSubmission;
+
+      if (decision === 'needs_correction' && guide.publicationStatus === 'approved' && pending) {
+        const updatedGuide: WayfinderGuide = {
+          ...guide,
+          pendingStatus: 'needs_correction',
+          reviewerNote: action.input.reviewerNote.trim(),
+          updatedAt: now,
+        };
+        return {
+          ...state,
+          wayfinderGuides: state.wayfinderGuides.map(g => (g.propertyId === action.propertyId ? updatedGuide : g)),
+          audit: [
+            auditEntry(action.actor.name, action.actor.role, 'wayfinder_pending_needs_correction', prop.title, action.input.reviewerNote.trim()),
+            ...state.audit,
+          ],
+        };
+      }
+
+      const mergedBase: WayfinderGuide =
+        (decision === 'approve_guide' || decision === 'approve_pin_only') && pending
+          ? {
+              ...guide,
+              destinationLatitude: pending.destinationLatitude !== undefined ? pending.destinationLatitude : guide.destinationLatitude,
+              destinationLongitude: pending.destinationLongitude !== undefined ? pending.destinationLongitude : guide.destinationLongitude,
+              coordinatePointType: pending.coordinatePointType ?? guide.coordinatePointType,
+              coordinateSource: pending.coordinateSource ?? guide.coordinateSource,
+              ambiguityNotes: pending.ambiguityNotes ?? guide.ambiguityNotes,
+              guestIntroduction: pending.guestIntroduction ?? guide.guestIntroduction,
+              estateOrBuildingName: pending.estateOrBuildingName ?? guide.estateOrBuildingName,
+              preferredEntranceLabel: pending.preferredEntranceLabel ?? guide.preferredEntranceLabel,
+              entranceInstructions: pending.entranceInstructions ?? guide.entranceInstructions,
+              entrancePhotoUrl: pending.entrancePhotoUrl ?? guide.entrancePhotoUrl,
+              securityDeskInstructions: pending.securityDeskInstructions ?? guide.securityDeskInstructions,
+              buildingOrBlock: pending.buildingOrBlock ?? guide.buildingOrBlock,
+              buildingInstructions: pending.buildingInstructions ?? guide.buildingInstructions,
+              buildingPhotoUrl: pending.buildingPhotoUrl ?? guide.buildingPhotoUrl,
+              floorLabel: pending.floorLabel ?? guide.floorLabel,
+              apartmentIdentifier: pending.apartmentIdentifier ?? guide.apartmentIdentifier,
+              liftOrStairsInstructions: pending.liftOrStairsInstructions ?? guide.liftOrStairsInstructions,
+              routeToDoor: pending.routeToDoor ?? guide.routeToDoor,
+              doorLandmarkPhotoUrl: pending.doorLandmarkPhotoUrl ?? guide.doorLandmarkPhotoUrl,
+              parkingOrDropoffInstructions: pending.parkingOrDropoffInstructions ?? guide.parkingOrDropoffInstructions,
+              arrivalRestrictions: pending.arrivalRestrictions ?? guide.arrivalRestrictions,
+              checkInMethod: pending.checkInMethod ?? guide.checkInMethod,
+              checkInWindowLabel: pending.checkInWindowLabel ?? guide.checkInWindowLabel,
+              checkInInstructions: pending.checkInInstructions ?? guide.checkInInstructions,
+              arrivalContactName: pending.arrivalContactName ?? guide.arrivalContactName,
+              arrivalContactRole: pending.arrivalContactRole ?? guide.arrivalContactRole,
+              arrivalContactPhone: pending.arrivalContactPhone ?? guide.arrivalContactPhone,
+              waypoints: pending.waypoints
+                ? pending.waypoints.map((w, i) => ({
+                    id: uid(),
+                    propertyId: action.propertyId,
+                    pointType: w.pointType,
+                    label: w.label,
+                    latitude: w.latitude,
+                    longitude: w.longitude,
+                    instructions: w.instructions,
+                    photoUrl: w.photoUrl,
+                    sortOrder: i + 1,
+                    verificationStatus: 'verified' as const,
+                  }))
+                : guide.waypoints.map(w => ({ ...w, verificationStatus: 'verified' as const })),
+              steps: pending.steps
+                ? pending.steps.map((s, i) => ({
+                    id: uid(),
+                    propertyId: action.propertyId,
+                    stepOrder: i + 1,
+                    stepType: s.stepType,
+                    heading: s.heading,
+                    instruction: s.instruction,
+                    landmark: s.landmark,
+                    accessRequirement: s.accessRequirement,
+                    photoUrl: s.photoUrl,
+                    latitude: s.latitude ?? null,
+                    longitude: s.longitude ?? null,
+                    verificationStatus: 'verified' as const,
+                  }))
+                : guide.steps.map(s => ({ ...s, verificationStatus: 'verified' as const })),
+              pendingStatus: null,
+              pendingSubmission: null,
+            }
+          : {
+              ...guide,
+              waypoints:
+                decision === 'approve_guide' || decision === 'approve_pin_only'
+                  ? guide.waypoints.map(w => ({ ...w, verificationStatus: 'verified' as const }))
+                  : guide.waypoints,
+              steps:
+                decision === 'approve_guide'
+                  ? guide.steps.map(s => ({ ...s, verificationStatus: 'verified' as const }))
+                  : guide.steps,
+            };
+
+      const nextRev =
+        decision === 'approve_guide' || decision === 'approve_pin_only'
+          ? mergedBase.publishedRevision + 1
+          : mergedBase.publishedRevision;
+      const nextPub: WayfinderGuide['publicationStatus'] =
+        decision === 'approve_guide' || decision === 'approve_pin_only'
+          ? 'approved'
+          : decision === 'needs_correction'
+            ? 'needs_correction'
+            : 'disabled';
+      const nextWfStatus: Property['wayfinderStatus'] =
+        decision === 'approve_guide'
+          ? 'guide_ready'
+          : decision === 'approve_pin_only'
+            ? 'guide_incomplete'
+            : decision === 'needs_correction'
+              ? 'needs_correction'
+              : 'disabled';
+
+      const reviewedGuide: WayfinderGuide = {
+        ...mergedBase,
+        publishedRevision: nextRev,
+        publicationStatus: nextPub,
+        coordinatesChecked: action.input.coordinatesChecked,
+        writtenDirectionsChecked: action.input.writtenDirectionsChecked,
+        photosChecked: action.input.photosChecked,
+        physicallyVisited: action.input.physicallyVisited,
+        guestArrivalTested: action.input.guestArrivalTested,
+        needsReverification: decision === 'needs_correction' || decision === 'disable',
+        verificationMethod: action.input.verificationMethod,
+        verifiedBy: action.actor.userId,
+        verifiedAt: now,
+        reviewerNote: action.input.reviewerNote.trim(),
+        updatedAt: now,
+      };
+
+      return {
+        ...state,
+        properties: state.properties.map(p =>
+          p.id === action.propertyId
+            ? {
+                ...p,
+                wayfinderStatus: nextWfStatus,
+                locationAccuracy:
+                  decision === 'approve_guide' || decision === 'approve_pin_only'
+                    ? 'verified_entrance'
+                    : p.locationAccuracy,
+                publicLandmarks: pending?.publicLandmarks ?? p.publicLandmarks,
+                publicLocationSummary: pending?.publicLocationSummary ?? p.publicLocationSummary,
+              }
+            : p,
+        ),
+        wayfinderGuides: state.wayfinderGuides.map(g => (g.propertyId === action.propertyId ? reviewedGuide : g)),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            `wayfinder_${decision}`,
+            prop.title,
+            `Rev #${nextRev} · ${action.input.reviewerNote.trim()}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'FLAG_WAYFINDER_CORRECTION': {
+      const prop = state.properties.find(p => p.id === action.propertyId);
+      if (!prop) return state;
+      const now = nowIso();
+      return {
+        ...state,
+        properties: state.properties.map(p =>
+          p.id === action.propertyId ? { ...p, wayfinderStatus: 'needs_correction' } : p,
+        ),
+        wayfinderGuides: state.wayfinderGuides.map(g =>
+          g.propertyId === action.propertyId
+            ? { ...g, needsReverification: true, reviewerNote: action.reason, updatedAt: now }
+            : g,
+        ),
+        wayfinderEvents: [
+          {
+            id: uid(),
+            propertyId: action.propertyId,
+            actorId: action.actor.userId,
+            eventType: 'guide_flagged_incomplete',
+            metadata: { reason: action.reason },
+            createdAt: now,
+          },
+          ...state.wayfinderEvents,
+        ],
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, 'wayfinder_flagged_for_correction', prop.title, action.reason),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'RECORD_WAYFINDER_EVENT':
+      return { ...state, wayfinderEvents: [action.event, ...state.wayfinderEvents] };
+    case 'LOCK_BOOKING_WAYFINDER_SNAPSHOT':
+      return {
+        ...state,
+        bookings: state.bookings.map(b =>
+          b.id === action.bookingId && !b.wayfinderSnapshot
+            ? { ...b, wayfinderSnapshot: action.snapshot, wayfinderSnapshotRevision: action.revision }
+            : b,
+        ),
+      };
     case 'AUDIT':
       return { ...state, audit: [auditEntry(action.actor.name, action.actor.role, action.action, action.target, action.detail), ...state.audit] };
     default:
@@ -2018,6 +2754,14 @@ interface Store {
   revokeAssignment: (id: string, note?: string) => Promise<void>;
   submitBookingFeedback: (input: { bookingId: string; bookingRef: string; propertyTitle?: string; rating: number; category: string; text: string }) => Promise<void>;
   addFeedback: (item: Omit<FeedbackItem, 'id' | 'at'>) => void;
+  submitPropertyWayfinder: (propertyId: string, input: WayfinderSubmissionInput, saveAsDraft?: boolean) => Promise<{ stagedAsPending: boolean }>;
+  reviewPropertyWayfinder: (propertyId: string, input: WayfinderReviewInput) => Promise<void>;
+  flagWayfinderForCorrection: (propertyId: string, reasonNote: string) => Promise<void>;
+  getGuestBookingWayfinder: (bookingId: string) => Promise<GuestBookingWayfinderView>;
+  reportArrivalIssue: (input: { bookingId: string; bookingRef: string; propertyTitle?: string; arrivalCategory: ArrivalIssueType; severity: Issue['severity']; description: string; stepKey?: string; evidence?: string[] }) => Promise<Issue>;
+  recordWayfinderEvent: (bookingId: string, eventType: Exclude<WayfinderEventType, 'arrival_issue_reported' | 'guide_flagged_incomplete'>, metadata?: Record<string, unknown>) => Promise<void>;
+  uploadArrivalGuidePhoto: (propertyId: string, file: File) => Promise<string>;
+  resolveArrivalPhotoUrl: (rawUrl: string | undefined) => Promise<string | null>;
   getUnavailablePropertyIds: (checkIn: string, checkOut: string) => Promise<string[]>;
   refreshState: () => Promise<void>;
   resetDemo: () => void;
@@ -3640,6 +4384,387 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw new Error(sessionError.message);
       dispatch({ type: 'HYDRATE', state: await loadSupabaseState(sessionData.session?.user ?? null) });
+    },
+    submitPropertyWayfinder: async (propertyId, input, saveAsDraft = false) => {
+      if (!state.session) throw new Error('Sign in before updating Wayfinder arrival details.');
+      if (input.destinationLatitude !== null || input.destinationLongitude !== null) {
+        const check = validateCoordinates(input.destinationLatitude, input.destinationLongitude);
+        if (!check.ok) throw new Error(check.error);
+      }
+      if (supabase) {
+        const rpcPayload = {
+          city: input.city ?? 'Lagos',
+          public_landmarks: input.publicLandmarks,
+          public_location_summary: input.publicLocationSummary,
+          destination_latitude: input.destinationLatitude,
+          destination_longitude: input.destinationLongitude,
+          coordinate_point_type: input.coordinatePointType,
+          coordinate_source: input.coordinateSource,
+          ambiguity_notes: input.ambiguityNotes,
+          guest_introduction: input.guestIntroduction,
+          estate_or_building_name: input.estateOrBuildingName,
+          preferred_entrance_label: input.preferredEntranceLabel,
+          entrance_instructions: input.entranceInstructions,
+          entrance_photo_url: input.entrancePhotoUrl ?? '',
+          security_desk_instructions: input.securityDeskInstructions,
+          building_or_block: input.buildingOrBlock,
+          building_instructions: input.buildingInstructions,
+          building_photo_url: input.buildingPhotoUrl ?? '',
+          floor_label: input.floorLabel,
+          apartment_identifier: input.apartmentIdentifier,
+          lift_or_stairs_instructions: input.liftOrStairsInstructions,
+          route_to_door: input.routeToDoor,
+          door_landmark_photo_url: input.doorLandmarkPhotoUrl ?? '',
+          parking_or_dropoff_instructions: input.parkingOrDropoffInstructions,
+          arrival_restrictions: input.arrivalRestrictions,
+          checkin_method: input.checkInMethod,
+          checkin_window_label: input.checkInWindowLabel,
+          checkin_instructions: input.checkInInstructions,
+          arrival_contact_name: input.arrivalContactName,
+          arrival_contact_role: input.arrivalContactRole,
+          arrival_contact_phone: input.arrivalContactPhone,
+          waypoints: input.waypoints.map(w => ({
+            point_type: w.pointType,
+            label: w.label,
+            latitude: w.latitude,
+            longitude: w.longitude,
+            instructions: w.instructions,
+            photo_url: w.photoUrl ?? '',
+          })),
+          steps: input.steps.map(s => ({
+            step_type: s.stepType,
+            heading: s.heading,
+            instruction: s.instruction,
+            landmark: s.landmark ?? '',
+            access_requirement: s.accessRequirement ?? '',
+            photo_url: s.photoUrl ?? '',
+            latitude: s.latitude ?? null,
+            longitude: s.longitude ?? null,
+          })),
+          ...(input.secrets
+            ? {
+                secrets: {
+                  gate_access_code: input.secrets.gateAccessCode,
+                  building_access_code: input.secrets.buildingAccessCode,
+                  lockbox_or_smartlock_code: input.secrets.lockboxOrSmartlockCode,
+                  wifi_network_name: input.secrets.wifiNetworkName,
+                  wifi_password: input.secrets.wifiPassword,
+                  release_hours_before_checkin: input.secrets.releaseHoursBeforeCheckIn,
+                },
+              }
+            : {}),
+        };
+        const { data, error } = await supabase.rpc('submit_property_wayfinder', {
+          target_property_id: propertyId,
+          payload: rpcPayload,
+          save_as_draft: saveAsDraft,
+        });
+        if (error) throw new Error(`Could not save Wayfinder details: ${error.message}`);
+        const { data: authData } = await supabase.auth.getUser();
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        const resultObj = (data ?? {}) as { staged_as_pending?: boolean };
+        return { stagedAsPending: Boolean(resultObj.staged_as_pending) };
+      }
+
+      const existing = state.wayfinderGuides.find(g => g.propertyId === propertyId);
+      const stagedAsPending = Boolean(existing && existing.publicationStatus === 'approved');
+      dispatch({ type: 'SUBMIT_WAYFINDER', propertyId, input, saveAsDraft, actor: state.session });
+      return { stagedAsPending };
+    },
+    reviewPropertyWayfinder: async (propertyId, input) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only active HAMLET administrators can verify Wayfinder guides.');
+      }
+      if (input.reviewerNote.trim().length < 8) {
+        throw new Error('Document a reviewer note of at least 8 characters.');
+      }
+      const guide = state.wayfinderGuides.find(g => g.propertyId === propertyId);
+      if (!guide) throw new Error('No Wayfinder submission found for this property.');
+      if (input.decision === 'approve_guide' && (!input.coordinatesChecked || !input.writtenDirectionsChecked)) {
+        throw new Error('Confirm both entrance coordinates and written directions were checked before full guide approval.');
+      }
+      if (input.decision === 'approve_pin_only' && !input.coordinatesChecked) {
+        throw new Error('Confirm entrance coordinates were checked before approving the destination pin.');
+      }
+
+      if (supabase) {
+        const { error } = await supabase.rpc('review_property_wayfinder', {
+          target_property_id: propertyId,
+          decision: input.decision,
+          review_metadata: {
+            verification_method: input.verificationMethod,
+            coordinates_checked: input.coordinatesChecked,
+            written_directions_checked: input.writtenDirectionsChecked,
+            photos_checked: input.photosChecked,
+            physically_visited: input.physicallyVisited,
+            guest_arrival_tested: input.guestArrivalTested,
+            reviewer_note: input.reviewerNote.trim(),
+          },
+        });
+        if (error) throw new Error(`Could not record Wayfinder review: ${error.message}`);
+        const { data: authData } = await supabase.auth.getUser();
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+
+      dispatch({ type: 'REVIEW_WAYFINDER', propertyId, input, actor: state.session });
+    },
+    flagWayfinderForCorrection: async (propertyId, reasonNote) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only HAMLET administrators can flag a guide for correction.');
+      }
+      if (reasonNote.trim().length < 8) {
+        throw new Error('Provide a correction note of at least 8 characters.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('flag_wayfinder_for_correction', {
+          target_property_id: propertyId,
+          reason_note: reasonNote.trim(),
+        });
+        if (error) throw new Error(`Could not flag Wayfinder guide: ${error.message}`);
+        const { data: authData } = await supabase.auth.getUser();
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({ type: 'FLAG_WAYFINDER_CORRECTION', propertyId, reason: reasonNote.trim(), actor: state.session });
+    },
+    getGuestBookingWayfinder: async (bookingId) => {
+      if (supabase) {
+        const { data, error } = await supabase.rpc('get_guest_booking_wayfinder', {
+          target_booking_id: bookingId,
+        });
+        if (!error && data) {
+          const raw = data as Record<string, unknown>;
+          const rawSecrets = raw.secrets as Record<string, unknown> | null | undefined;
+          return {
+            bookingId: String(raw.booking_id ?? bookingId),
+            bookingReference: String(raw.booking_reference ?? ''),
+            bookingStatus: raw.booking_status as Booking['status'],
+            checkIn: String(raw.check_in ?? ''),
+            checkOut: String(raw.check_out ?? ''),
+            guestCount: Number(raw.guest_count ?? 1),
+            propertyId: String(raw.property_id ?? ''),
+            propertyTitle: String(raw.property_title ?? ''),
+            area: String(raw.area ?? ''),
+            city: String(raw.city ?? 'Lagos'),
+            publicAddress: String(raw.public_address ?? ''),
+            publicLandmarks: Array.isArray(raw.public_landmarks) ? (raw.public_landmarks as string[]) : [],
+            wayfinderStatus: (raw.wayfinder_status as Property['wayfinderStatus']) ?? 'location_missing',
+            guideAvailable: Boolean(raw.guide_available),
+            guide: mapSnapshotJsonToGuideSnapshot(raw.guide as Record<string, unknown> | null, String(raw.property_id ?? '')),
+            confirmedSnapshot: mapSnapshotJsonToGuideSnapshot(raw.confirmed_snapshot as Record<string, unknown> | null, String(raw.property_id ?? '')),
+            newerRevisionAvailable: Boolean(raw.newer_revision_available),
+            hasSensitiveCodes: Boolean(raw.has_sensitive_codes),
+            codesUnlocked: Boolean(raw.codes_unlocked),
+            codesUnlockAt: raw.codes_unlock_at ? String(raw.codes_unlock_at) : null,
+            codesExpireAt: raw.codes_expire_at ? String(raw.codes_expire_at) : null,
+            secrets: rawSecrets
+              ? {
+                  gateAccessCode: String(rawSecrets.gate_access_code ?? ''),
+                  buildingAccessCode: String(rawSecrets.building_access_code ?? ''),
+                  lockboxOrSmartlockCode: String(rawSecrets.lockbox_or_smartlock_code ?? ''),
+                  wifiNetworkName: String(rawSecrets.wifi_network_name ?? ''),
+                  wifiPassword: String(rawSecrets.wifi_password ?? ''),
+                }
+              : null,
+          };
+        }
+        // If migration RPC is not yet deployed to cloud DB, fall back safely only for valid confirmed/completed own booking
+        if (error && !/function .*get_guest_booking_wayfinder.* does not exist|schema cache/i.test(error.message)) {
+          throw new Error(error.message);
+        }
+      }
+
+      const booking = state.bookings.find(b => b.id === bookingId || b.ref === bookingId);
+      const property = booking ? state.properties.find(p => p.id === booking.propertyId) : undefined;
+      const guide = property ? state.wayfinderGuides.find(g => g.propertyId === property.id) : undefined;
+      const secrets = property ? state.wayfinderSecrets.find(s => s.propertyId === property.id) : undefined;
+      const canManage = Boolean(
+        state.session &&
+          property &&
+          (state.session.role === 'admin' ||
+            property.ownerId === state.session.userId ||
+            property.assignedPartnerIds.includes(state.session.userId)),
+      );
+      const evaluated = evaluateGuestBookingWayfinder({
+        booking,
+        property,
+        guide,
+        secrets,
+        session: state.session,
+        canManageProperty: canManage,
+      });
+      if (!evaluated.ok) {
+        throw new Error(evaluated.error);
+      }
+      if (!supabase && booking && booking.status === 'confirmed' && !booking.wayfinderSnapshot && evaluated.data.guide) {
+        dispatch({
+          type: 'LOCK_BOOKING_WAYFINDER_SNAPSHOT',
+          bookingId: booking.id,
+          snapshot: evaluated.data.guide,
+          revision: evaluated.data.guide.publishedRevision,
+        });
+      }
+      return evaluated.data;
+    },
+    reportArrivalIssue: async (input) => {
+      if (!state.session) throw new Error('Sign in before reporting an arrival issue.');
+      const desc = input.description.trim();
+      if (desc.length < 10) {
+        throw new Error('Describe the arrival problem in at least 10 characters so support can assist.');
+      }
+      if (supabase) {
+        const { data: createdId, error } = await supabase.rpc('report_arrival_issue', {
+          target_booking_id: input.bookingId,
+          arrival_category: input.arrivalCategory,
+          issue_severity: input.severity,
+          issue_description: desc,
+          step_key: input.stepKey ?? null,
+          evidence_items: input.evidence ?? [],
+        });
+        if (!error && createdId) {
+          const { data: authData } = await supabase.auth.getUser();
+          const refreshed = await loadSupabaseState(authData.user);
+          dispatch({ type: 'HYDRATE', state: refreshed });
+          const found = refreshed.issues.find(i => i.id === createdId);
+          if (found) return found;
+        } else if (error && /function .*report_arrival_issue.* does not exist|schema cache/i.test(error.message)) {
+          // Graceful fallback to existing report_booking_issue RPC if Wayfinder migration is pending review
+          const { data: fallbackId, error: fallbackErr } = await supabase.rpc('report_booking_issue', {
+            target_booking_id: input.bookingId,
+            issue_category: 'Access & check-in',
+            issue_severity: input.severity,
+            issue_subject: `Wayfinder · ${ARRIVAL_ISSUE_TYPE_LABELS[input.arrivalCategory]}`,
+            issue_description: desc,
+            evidence_items: input.evidence ?? [],
+          });
+          if (fallbackErr) throw new Error(fallbackErr.message);
+          const { data: authData } = await supabase.auth.getUser();
+          const refreshed = await loadSupabaseState(authData.user);
+          dispatch({ type: 'HYDRATE', state: refreshed });
+          const found = refreshed.issues.find(i => i.id === fallbackId);
+          if (found) return found;
+        } else if (error) {
+          throw new Error(error.message);
+        }
+      }
+
+      const now = nowIso();
+      const booking = state.bookings.find(b => b.id === input.bookingId || b.ref === input.bookingRef);
+      const issue: Issue = {
+        id: uid(),
+        ref: `HML-IS-${Math.floor(1000 + Math.random() * 9000)}`,
+        bookingRef: input.bookingRef,
+        propertyTitle: input.propertyTitle ?? booking?.propertyTitle,
+        category: 'Access & check-in',
+        severity: input.severity,
+        subject: `Wayfinder · ${ARRIVAL_ISSUE_TYPE_LABELS[input.arrivalCategory]}`,
+        description: desc,
+        reporter: state.session.name,
+        reporterType: state.session.role === 'partner' ? 'partner' : state.session.role === 'admin' ? 'internal' : 'guest',
+        status: 'open',
+        createdAt: now,
+        updatedAt: now,
+        evidence: input.evidence ?? [],
+        arrivalIssueType: input.arrivalCategory,
+        wayfinderStepKey: input.stepKey,
+        timeline: [
+          {
+            at: now,
+            label: 'Arrival issue reported via Wayfinder',
+            actor: state.session.name,
+            detail: `${ARRIVAL_ISSUE_TYPE_LABELS[input.arrivalCategory]} · ${input.severity.toUpperCase()}`,
+          },
+        ],
+      };
+      dispatch({ type: 'ADD_ISSUE', issue });
+      if (booking) {
+        dispatch({
+          type: 'RECORD_WAYFINDER_EVENT',
+          event: {
+            id: uid(),
+            bookingId: booking.id,
+            propertyId: booking.propertyId,
+            actorId: state.session.userId,
+            eventType: 'arrival_issue_reported',
+            metadata: { arrival_issue_type: input.arrivalCategory, issue_ref: issue.ref },
+            createdAt: now,
+          },
+        });
+      }
+      return issue;
+    },
+    recordWayfinderEvent: async (bookingId, eventType, metadata = {}) => {
+      if (!state.session) return;
+      if (supabase) {
+        try {
+          await supabase.rpc('record_wayfinder_event', {
+            target_booking_id: bookingId,
+            event_type_input: eventType,
+            event_meta: metadata,
+          });
+        } catch {
+          // Non-blocking privacy-safe operational telemetry
+        }
+        return;
+      }
+      const booking = state.bookings.find(b => b.id === bookingId || b.ref === bookingId);
+      if (!booking) return;
+      dispatch({
+        type: 'RECORD_WAYFINDER_EVENT',
+        event: {
+          id: uid(),
+          bookingId: booking.id,
+          propertyId: booking.propertyId,
+          actorId: state.session.userId,
+          eventType,
+          metadata,
+          createdAt: nowIso(),
+        },
+      });
+    },
+    uploadArrivalGuidePhoto: async (propertyId, file) => {
+      if (!state.session) throw new Error('Sign in before uploading arrival guide photos.');
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Only JPEG, PNG, and WebP arrival photos are supported.');
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Each arrival guide photo must be 5 MB or smaller.');
+      }
+      if (supabase) {
+        const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const objectPath = `${propertyId}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('arrival-guide-media')
+          .upload(objectPath, file, { contentType: file.type, upsert: false });
+        if (uploadError) {
+          throw new Error(`Could not upload arrival photo: ${uploadError.message}`);
+        }
+        return `storage://arrival-guide-media/${objectPath}`;
+      }
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Could not read selected image.'));
+        };
+        reader.onerror = () => reject(new Error('Could not read selected image.'));
+        reader.readAsDataURL(file);
+      });
+    },
+    resolveArrivalPhotoUrl: async (rawUrl) => {
+      if (!rawUrl || !rawUrl.trim()) return null;
+      const trimmed = rawUrl.trim();
+      const prefix = 'storage://arrival-guide-media/';
+      if (!trimmed.startsWith(prefix)) return trimmed;
+      if (!supabase) return null;
+      const objectPath = trimmed.slice(prefix.length);
+      const { data, error } = await supabase.storage
+        .from('arrival-guide-media')
+        .createSignedUrl(objectPath, 3600);
+      if (error || !data?.signedUrl) return null;
+      return data.signedUrl;
     },
     addFeedback: (item) => dispatch({ type: 'ADD_FEEDBACK', item: { ...item, id: uid(), at: nowIso() } }),
     resetDemo: () => dispatch({ type: 'RESET' }),

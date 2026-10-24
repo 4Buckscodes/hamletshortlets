@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert, ImagePlus, Loader2, CalendarClock, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert, ImagePlus, Loader2, CalendarClock, Plus, Trash2, Compass } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { AREAS } from '../../lib/seed';
+import { validateCoordinates } from '../../lib/wayfinder';
 import type { AvailabilityBlockType, AvailabilityConfirmationStatus, PropertyAvailabilityBlock } from '../../lib/types';
 
 const STEPS = ['Property basics', 'Listing details', 'Pricing & calendar', 'Documentation & authority', 'Review & submit'];
@@ -11,7 +12,7 @@ const AMENITIES = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', '
 const PROPERTY_TYPES = ['Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa', 'Terrace'];
 
 export default function NewProperty() {
-  const { submitProperty, uploadPropertyImage, state, backendConfigured } = useHamlet();
+  const { submitProperty, submitPropertyWayfinder, uploadPropertyImage, state, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -21,6 +22,11 @@ export default function NewProperty() {
   const [type, setType] = useState('Serviced apartment');
   const [area, setArea] = useState('Victoria Island');
   const [address, setAddress] = useState('');
+  const [publicLandmarksText, setPublicLandmarksText] = useState('');
+  const [locationSummary, setLocationSummary] = useState('');
+  const [entranceLatStr, setEntranceLatStr] = useState('');
+  const [entranceLngStr, setEntranceLngStr] = useState('');
+  const [preferredGateLabel, setPreferredGateLabel] = useState('');
   const [bedrooms, setBedrooms] = useState(2);
   const [bathrooms, setBathrooms] = useState(2);
   const [capacity, setCapacity] = useState(4);
@@ -129,6 +135,57 @@ export default function NewProperty() {
         toast(result.error ?? 'Could not submit property.', 'error');
         return;
       }
+
+      const hasInitialWayfinder =
+        publicLandmarksText.trim() ||
+        locationSummary.trim() ||
+        (entranceLatStr.trim() && entranceLngStr.trim()) ||
+        preferredGateLabel.trim();
+
+      if (result.property && hasInitialWayfinder) {
+        const lat = entranceLatStr.trim() ? Number(entranceLatStr.trim()) : null;
+        const lng = entranceLngStr.trim() ? Number(entranceLngStr.trim()) : null;
+        const coordCheck = lat !== null && lng !== null ? validateCoordinates(lat, lng) : null;
+        const coordsValid = Boolean(coordCheck?.ok && coordCheck.withinNigeriaBounds);
+        try {
+          await submitPropertyWayfinder(
+            result.property.id,
+            {
+              publicLandmarks: publicLandmarksText.split(',').map(s => s.trim()).filter(Boolean),
+              publicLocationSummary: locationSummary.trim(),
+              destinationLatitude: coordsValid ? lat : null,
+              destinationLongitude: coordsValid ? lng : null,
+              coordinatePointType: 'estate_gate',
+              coordinateSource: 'manual_entry',
+              ambiguityNotes: '',
+              guestIntroduction: '',
+              estateOrBuildingName: '',
+              preferredEntranceLabel: preferredGateLabel.trim(),
+              entranceInstructions: '',
+              securityDeskInstructions: '',
+              buildingOrBlock: '',
+              buildingInstructions: '',
+              floorLabel: '',
+              apartmentIdentifier: '',
+              liftOrStairsInstructions: '',
+              routeToDoor: '',
+              parkingOrDropoffInstructions: '',
+              arrivalRestrictions: '',
+              checkInMethod: 'host_meet',
+              checkInWindowLabel: 'From 2:00 PM',
+              checkInInstructions: '',
+              arrivalContactName: '',
+              arrivalContactRole: '',
+              arrivalContactPhone: '',
+              waypoints: [],
+              steps: [],
+            },
+            saveAsDraft || !coordsValid,
+          );
+        } catch {
+          // Non-blocking: partner can complete Wayfinder guide on My properties
+        }
+      }
       toast(
         saveAsDraft
           ? 'Draft saved. You can finish photos, calendar, and authority details anytime from My properties.'
@@ -177,6 +234,36 @@ export default function NewProperty() {
                 <select className="input-dark" value={area} onChange={e => setArea(e.target.value)}>{AREAS.map(a => <option key={a}>{a}</option>)}</select>
               </label>
               <label className="sm:col-span-2"><span className="label-dark">Full address</span><input className="input-dark" placeholder="Street, landmark, area, Lagos" value={address} onChange={e => setAddress(e.target.value)} /></label>
+            </div>
+            <div className="rounded-xl border border-ink-800 bg-ink-950/60 p-4">
+              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+                <Compass size={12} /> Optional · HAMLET Wayfinder location basics
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-ink-400">
+                Add public landmarks and optional entrance coordinates now, or complete the full gate-to-door arrival guide anytime from My properties.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <label className="sm:col-span-2">
+                  <span className="label-dark">Nearby public landmarks (comma-separated)</span>
+                  <input className="input-dark" placeholder="e.g. Off Admiralty Way, 3 mins from Lekki Phase 1 Gate" value={publicLandmarksText} onChange={e => setPublicLandmarksText(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Entrance / gate name</span>
+                  <input className="input-dark" placeholder="e.g. Main Estate Gate" value={preferredGateLabel} onChange={e => setPreferredGateLabel(e.target.value)} />
+                </label>
+                <label className="sm:col-span-3">
+                  <span className="label-dark">General location summary (public-safe)</span>
+                  <input className="input-dark" placeholder="e.g. Paved gated close in central Lekki Phase 1; exact door guide unlocks after confirmation." value={locationSummary} onChange={e => setLocationSummary(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Entrance GPS latitude (optional)</span>
+                  <input className="input-dark font-mono text-[12px]" placeholder="6.447820" value={entranceLatStr} onChange={e => setEntranceLatStr(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Entrance GPS longitude (optional)</span>
+                  <input className="input-dark font-mono text-[12px]" placeholder="3.438410" value={entranceLngStr} onChange={e => setEntranceLngStr(e.target.value)} />
+                </label>
+              </div>
             </div>
             <p className="text-[10.5px] font-medium text-ink-500">HAMLET currently serves Lagos neighbourhoods only — submissions outside Lagos will be rejected.</p>
           </div>

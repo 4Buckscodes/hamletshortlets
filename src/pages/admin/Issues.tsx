@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, UserPlus, AlertOctagon, SearchCheck, CheckCheck, FileText, Paperclip, PlusCircle } from 'lucide-react';
+import { X, UserPlus, AlertOctagon, SearchCheck, CheckCheck, FileText, Paperclip, PlusCircle, Compass } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { IssueStatusPill, SeverityDot } from '../../components/Badges';
 import type { IssueStatus, Issue } from '../../lib/types';
 import { formatDateTime } from '../../lib/pricing';
+import { ARRIVAL_ISSUE_TYPE_LABELS } from '../../lib/wayfinder';
 
 export default function AdminIssues() {
-  const { state, updateIssue, reportIssue, appendIssueEvidence } = useHamlet();
+  const { state, updateIssue, reportIssue, appendIssueEvidence, flagWayfinderForCorrection } = useHamlet();
   const { toast } = useToast();
   const [selected, setSelected] = useState<Issue | null>(null);
   const [note, setNote] = useState('');
@@ -165,6 +166,11 @@ export default function AdminIssues() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-[10.5px] font-bold text-brass-300">{i.ref}</span>
                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-ink-500">{i.category}</span>
+                  {i.arrivalIssueType && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] font-bold text-amber-300">
+                      <Compass size={10} /> {ARRIVAL_ISSUE_TYPE_LABELS[i.arrivalIssueType]}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-0.5 line-clamp-1 text-[13px] font-bold text-ink-50">{i.subject}</p>
                 <p className="text-[10.5px] font-semibold text-ink-500">Reporter: {i.reporter} ({i.reporterType}){i.bookingRef ? ` · Booking ${i.bookingRef}` : ''}{i.propertyTitle ? ` · ${i.propertyTitle}` : ''}</p>
@@ -254,9 +260,56 @@ export default function AdminIssues() {
               <div className="p-4 sm:p-6">
                 <div className="flex flex-wrap gap-2 text-[10px] font-bold">
                   <span className="rounded-md border border-ink-800 bg-ink-850 px-2.5 py-1 text-ink-200">{activeIssue.category}</span>
+                  {activeIssue.arrivalIssueType && (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/15 px-2.5 py-1 text-amber-300">
+                      <Compass size={11} /> Wayfinder: {ARRIVAL_ISSUE_TYPE_LABELS[activeIssue.arrivalIssueType]}
+                    </span>
+                  )}
+                  {activeIssue.wayfinderStepKey && (
+                    <span className="rounded-md border border-ink-800 bg-ink-850 px-2.5 py-1 font-mono text-ink-300">
+                      Stage: {activeIssue.wayfinderStepKey}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1.5 rounded-md border border-ink-800 bg-ink-850 px-2.5 py-1 capitalize text-ink-200"><SeverityDot severity={activeIssue.severity} />{activeIssue.severity} severity</span>
                   {activeIssue.assignee && <span className="rounded-md border border-ink-800 bg-ink-850 px-2.5 py-1 text-ink-200">Assignee: {activeIssue.assignee}</span>}
                 </div>
+                {(() => {
+                  const linkedBooking = activeIssue.bookingRef
+                    ? state.bookings.find(b => b.ref === activeIssue.bookingRef)
+                    : undefined;
+                  const targetPropertyId = linkedBooking?.propertyId;
+                  if (!targetPropertyId || !(activeIssue.arrivalIssueType || activeIssue.category === 'Access & check-in')) {
+                    return null;
+                  }
+                  return (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[11.5px] font-semibold text-amber-200">
+                      <span>Arrival accuracy alert — flag property arrival guide for partner correction?</span>
+                      <button
+                        type="button"
+                        disabled={saving}
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            await flagWayfinderForCorrection(
+                              targetPropertyId,
+                              note.trim().length >= 8
+                                ? note.trim()
+                                : `Flagged from arrival issue ${activeIssue.ref}: ${activeIssue.subject}`,
+                            );
+                            toast('Property arrival guide flagged for partner correction & re-review.');
+                          } catch (err) {
+                            toast(err instanceof Error ? err.message : 'Could not flag guide.', 'error');
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                        className="rounded-lg border border-amber-400/50 bg-amber-400/20 px-2.5 py-1 text-[11px] font-extrabold text-amber-100 hover:bg-amber-400/30 disabled:opacity-50"
+                      >
+                        Flag guide for correction
+                      </button>
+                    </div>
+                  );
+                })()}
                 <p className="mt-4 break-words text-[12.5px] font-medium leading-relaxed text-ink-100">{activeIssue.description}</p>
                 <p className="mt-2 text-[10.5px] font-semibold text-ink-500">Reported {formatDateTime(activeIssue.createdAt)} by {activeIssue.reporter} ({activeIssue.reporterType})</p>
 
