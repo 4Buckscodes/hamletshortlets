@@ -54,11 +54,15 @@ describe('Stay currency switcher (NGN ₦ <-> USD $ <-> GBP £)', () => {
     expect(formatGbp(100)).toBe('£100');
     expect(formatGbp(92.5)).toBe('£92.50');
 
+    // Stay amounts in USD/GBP apply the 10% international buffer ONCE (§6.1);
+    // refundable caution deposits use applyInternationalBuffer: false (0% buffer).
     expect(formatStayAmount(160_000, 'NGN')).toBe('₦160,000');
-    expect(formatStayAmount(160_000, 'USD', 1600)).toBe('$100');
-    expect(formatStayAmount(185_000, 'USD', 1600)).toBe('$115.63');
-    expect(formatStayAmount(200_000, 'GBP', 2000)).toBe('£100');
-    expect(formatStayAmount(185_000, 'GBP', 2000)).toBe('£92.50');
+    expect(formatStayAmount(160_000, 'USD', 1600)).toBe('$110'); // $100 converted base × 1.10 = $110
+    expect(formatStayAmount(320_000, 'USD', 1600)).toBe('$220'); // $200 converted base × 1.10 = $220
+    expect(formatStayAmount(200_000, 'GBP', 2000)).toBe('£110'); // £100 converted base × 1.10 = £110
+    expect(formatStayAmount(400_000, 'GBP', 2000)).toBe('£220'); // £200 converted base × 1.10 = £220
+    expect(formatStayAmount(160_000, 'USD', { ngnPerUsd: 1600, applyInternationalBuffer: false })).toBe('$100');
+    expect(formatStayAmount(200_000, 'GBP', { ngnPerGbp: 2000, applyInternationalBuffer: false })).toBe('£100');
   });
 
   it('wires CurrencyProvider and NGN/USD/GBP CurrencyToggle across guest stay discovery and booking views', () => {

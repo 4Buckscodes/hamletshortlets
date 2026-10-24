@@ -13,10 +13,11 @@ import {
   matchesLagosAreaFilter,
 } from '../lib/areas';
 import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
+import { computePropertyAvailabilitySummary } from '../lib/availability';
 
 const AMENITY_FILTERS = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'Generator', 'Concierge'];
 const TYPE_FILTERS = ['All types', 'Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa'];
-const MAX_PRICE_TIERS = [100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000];
+const MAX_PRICE_TIERS = [120_000, 240_000, 420_000, 600_000, 900_000, 1_200_000];
 const MAINLAND_QUICK_HUBS = ['Lagos Mainland', 'Yaba', 'Surulere', 'Shomolu', 'Ikeja GRA', 'Gbagada', 'Maryland', 'Ilupeju', 'Ebute Metta', 'Magodo'] as const;
 
 export default function Stays() {
@@ -26,7 +27,7 @@ export default function Stays() {
   );
 
   const { state, getUnavailablePropertyIds, backendReady, backendError } = useHamlet();
-  const { formatPrice } = useCurrency();
+  const { formatStayPrice } = useCurrency();
   const [params, setParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [unavailableIds, setUnavailableIds] = useState<Set<string>>(() => new Set());
@@ -35,6 +36,7 @@ export default function Stays() {
   const area = params.get('area') ?? '';
   const checkIn = params.get('checkIn') ?? '';
   const checkOut = params.get('checkOut') ?? '';
+  const availabilityMode = params.get('avail') ?? 'all';
   const guests = Number(params.get('guests') ?? '1');
   const maxPrice = params.get('maxPrice') ?? '';
   const type = params.get('type') ?? 'All types';
@@ -77,10 +79,21 @@ export default function Stays() {
   const normalizedQuery = keyword.trim().toLowerCase();
   const isMainlandActive = MAINLAND_AREAS.some(m => m.toLowerCase() === area.trim().toLowerCase());
 
-  // Only approved, non-suspended listings without overlapping confirmed/held bookings are discoverable for selected dates.
+  // Approved listings remain discoverable for future dates unless filtered by a specific unavailable date range or availability filter.
   const results = state.properties
     .filter(p => p.status === 'approved')
     .filter(p => !unavailableIds.has(p.id))
+    .filter(p => {
+      if (availabilityMode === 'all') return true;
+      const summary = computePropertyAvailabilitySummary({
+        property: p,
+        bookings: state.bookings,
+        publicCalendarSpans: state.publicCalendarSpans,
+      });
+      if (availabilityMode === 'now') return summary.currentStatus === 'available_now';
+      if (availabilityMode === 'future') return summary.currentStatus !== 'available_now';
+      return true;
+    })
     .filter(p => {
       if (!normalizedQuery) return true;
       if (matchesLagosAreaFilter(p, normalizedQuery)) return true;
@@ -89,7 +102,7 @@ export default function Stays() {
     })
     .filter(p => !area || matchesLagosAreaFilter(p, area))
     .filter(p => p.capacity >= guests)
-    .filter(p => !maxPrice || p.nightlyRate <= Number(maxPrice))
+    .filter(p => !maxPrice || Math.round(p.nightlyRate * 1.2) <= Number(maxPrice))
     .filter(p => type === 'All types' || p.type === type)
     .filter(p => amenities.every(a => p.amenities.includes(a)))
     .sort((a, b) => a.nightlyRate - b.nightlyRate);
@@ -228,11 +241,20 @@ export default function Stays() {
             </div>
 
             <div className="mt-4">
-              <label className="label" htmlFor="f-price">Max nightly rate</label>
+              <label className="label" htmlFor="f-avail">Calendar availability</label>
+              <select id="f-avail" className="input" value={availabilityMode} onChange={e => update({ avail: e.target.value === 'all' ? '' : e.target.value })}>
+                <option value="all">All approved stays (now + future)</option>
+                <option value="now">Available right now</option>
+                <option value="future">Currently occupied · Future dates</option>
+              </select>
+            </div>
+
+            <div className="mt-4">
+              <label className="label" htmlFor="f-price">Max nightly stay price</label>
               <select id="f-price" className="input" value={maxPrice} onChange={e => update({ maxPrice: e.target.value })}>
                 <option value="">No maximum</option>
                 {MAX_PRICE_TIERS.map(tier => (
-                  <option key={tier} value={String(tier)}>{formatPrice(tier)}</option>
+                  <option key={tier} value={String(tier)}>{formatStayPrice(tier)}</option>
                 ))}
               </select>
             </div>

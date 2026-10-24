@@ -252,7 +252,7 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
       // 3 nights × 150,000 = 450,000 subtotal
       // mandatory charges = 25,000 + 15,000 = 40,000
       // 3% guest fee on accommodation subtotal = round(450,000 * 0.03) = 13,500
-      // guest total = 450,000 + 40,000 + 13,500 = 503,500
+      // guest total = 450,000 + 40,000 + 90,000 (20% domestic markup on B) = 580,000
       const booking = await insertBookingAsGuest(guestAId, {
         checkIn: addDays(baseDateIso, 7),
         checkOut: addDays(baseDateIso, 10),
@@ -266,8 +266,8 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
       expect(booking.status).toBe('requested');
       expect(booking.accommodation_subtotal).toBe(450_000);
       expect(booking.mandatory_total).toBe(40_000);
-      expect(booking.hamlet_guest_fee).toBe(13_500);
-      expect(booking.guest_total).toBe(503_500);
+      expect(booking.hamlet_guest_fee).toBe(90_000);
+      expect(booking.guest_total).toBe(580_000);
       expect(booking.refundable_deposit).toBe(100_000);
       expect(booking.payment_deadline).toBeNull();
       expect(booking.timeline).toHaveLength(1);

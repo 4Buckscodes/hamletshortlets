@@ -46,7 +46,7 @@ export default function Safety() {
             <Banknote size={20} className="shrink-0 text-jade-700" /> 2. Clear pricing before commitment
           </h2>
           <p className="mt-2.5 text-sm leading-relaxed text-ink-600">
-            You should understand the cost of your stay before you confirm. Review the price breakdown, including the nightly rate, the 3% HAMLET guest service fee, disclosed mandatory charges, and any refundable security deposit shown for your booking. Check the payment instructions and cancellation terms before proceeding.
+            You should understand the cost of your stay before you confirm. Review the price breakdown, including the owner’s listed rate, the 20% HAMLET domestic accommodation markup, disclosed mandatory charges, any 10% international USD/GBP currency buffer, and any refundable caution deposit itemised separately for your booking. Check the payment instructions and cancellation terms before proceeding.
           </p>
           <p className="mt-2 text-sm font-semibold text-ink-800">
             Never rely on an informal promise that conflicts with the displayed booking terms. If someone requests an additional payment that was not disclosed, pause and contact HAMLET through the official support route before sending money.

@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
-import { HamletProvider } from './lib/store';
+import { useEffect, type ReactNode } from 'react';
+import { HamletProvider, useHamlet, captureUrlAttributionParams } from './lib/store';
 import { CurrencyProvider } from './lib/currency';
 import { ToastProvider } from './lib/toast';
 import { buildAuthPath } from './lib/authRedirect';
@@ -23,6 +23,7 @@ import NewProperty from './pages/partner/NewProperty';
 import PartnerBookings from './pages/partner/Bookings';
 import PartnerBookingReview from './pages/partner/BookingReview';
 import PartnerEarnings from './pages/partner/Earnings';
+import PartnerReferrals from './pages/partner/Referrals';
 import PartnerAssignments from './pages/partner/Assignments';
 import PartnerProfile from './pages/partner/Profile';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -30,6 +31,7 @@ import AdminOverview from './pages/admin/Overview';
 import AdminProperties from './pages/admin/Properties';
 import AdminBookings from './pages/admin/Bookings';
 import AdminLedger from './pages/admin/Ledger';
+import AdminReferrals from './pages/admin/Referrals';
 import AdminIssues from './pages/admin/Issues';
 import AdminApplications from './pages/admin/Applications';
 import AdminAssignments from './pages/admin/Assignments';
@@ -37,8 +39,11 @@ import AdminUsers from './pages/admin/Users';
 import AdminAudit from './pages/admin/Audit';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  const { pathname, search } = useLocation();
+  useEffect(() => {
+    captureUrlAttributionParams();
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
   return null;
 }
 
@@ -48,10 +53,15 @@ function SignupRedirect() {
   return <Navigate to={buildAuthPath({ signup: true, redirect: params.get('redirect') })} replace />;
 }
 
+function StoreBackedCurrencyProvider({ children }: { children: ReactNode }) {
+  const { state } = useHamlet();
+  return <CurrencyProvider exchangeRates={state.exchangeRates}>{children}</CurrencyProvider>;
+}
+
 export default function App() {
   return (
     <HamletProvider>
-      <CurrencyProvider>
+      <StoreBackedCurrencyProvider>
         <ToastProvider>
           <HashRouter>
             <ScrollToTop />
@@ -78,6 +88,7 @@ export default function App() {
               <Route path="/partner/bookings" element={<PartnerLayout><PartnerBookings /></PartnerLayout>} />
               <Route path="/partner/bookings/:bookingId" element={<PartnerLayout><PartnerBookingReview /></PartnerLayout>} />
               <Route path="/partner/earnings" element={<PartnerLayout><PartnerEarnings /></PartnerLayout>} />
+              <Route path="/partner/referrals" element={<PartnerLayout><PartnerReferrals /></PartnerLayout>} />
               <Route path="/partner/assignments" element={<PartnerLayout><PartnerAssignments /></PartnerLayout>} />
               <Route path="/partner/profile" element={<PartnerLayout><PartnerProfile /></PartnerLayout>} />
 
@@ -86,6 +97,7 @@ export default function App() {
               <Route path="/admin/properties" element={<AdminLayout><AdminProperties /></AdminLayout>} />
               <Route path="/admin/bookings" element={<AdminLayout><AdminBookings /></AdminLayout>} />
               <Route path="/admin/ledger" element={<AdminLayout><AdminLedger /></AdminLayout>} />
+              <Route path="/admin/referrals" element={<AdminLayout><AdminReferrals /></AdminLayout>} />
               <Route path="/admin/issues" element={<AdminLayout><AdminIssues /></AdminLayout>} />
               <Route path="/admin/applications" element={<AdminLayout><AdminApplications /></AdminLayout>} />
               <Route path="/admin/assignments" element={<AdminLayout><AdminAssignments /></AdminLayout>} />
@@ -96,7 +108,7 @@ export default function App() {
             </Routes>
           </HashRouter>
         </ToastProvider>
-      </CurrencyProvider>
+      </StoreBackedCurrencyProvider>
     </HamletProvider>
   );
 }

@@ -14,6 +14,8 @@ export default function AdminOverview() {
   const inReview = state.properties.filter(p => ['submitted', 'needs_correction'].includes(p.status));
   const suspended = state.properties.filter(p => p.status === 'suspended');
   const guestFees = state.ledger.filter(l => l.type === 'guest_service_fee' && ['settled', 'reconciled', 'recorded'].includes(l.status)).reduce((s, l) => s + l.amount, 0);
+  const hamletNetAllocation = state.ledger.filter(l => l.type === 'hamlet_allocation').reduce((s, l) => s + l.amount, 0);
+  const paymentReserveTotal = state.ledger.filter(l => l.type === 'payment_reserve').reduce((s, l) => s + l.amount, 0);
   const guestCharges = state.ledger.filter(l => l.type === 'guest_charge').reduce((s, l) => s + l.amount, 0);
   const providerCharges = state.ledger.filter(l => l.type === 'provider_charge').reduce((s, l) => s + l.amount, 0);
   const openIssues = state.issues.filter(i => !['resolved', 'closed'].includes(i.status));
@@ -23,7 +25,7 @@ export default function AdminOverview() {
   const kpis = [
     { label: 'Approved properties', value: `${approved.length}/50`, sub: inReview.length > 0 ? `${inReview.length} in review pipeline` : 'Supply target met or in pipeline', Icon: Home, tone: approved.length >= 50 ? 'text-jade-400' : 'text-brass-400' },
     { label: 'Confirmed + completed stays', value: String(confirmedCompleted), sub: 'Pilot success = completed bookings', Icon: BadgeCheck, tone: 'text-jade-400' },
-    { label: 'Guest fee revenue (3%)', value: formatNaira(guestFees), sub: 'Guest-paid only · owner fee 0%', Icon: Receipt, tone: 'text-brass-300' },
+    { label: '20% domestic stay markup', value: formatNaira(guestFees), sub: `HAMLET net allocation: ${formatNaira(hamletNetAllocation)} · 0% owner fee`, Icon: Receipt, tone: 'text-brass-300' },
     { label: 'Open issues', value: String(openIssues.length), sub: critical.length > 0 ? `${critical.length} critical/escalated` : 'None critical', Icon: LifeBuoy, tone: critical.length > 0 ? 'text-red-400' : 'text-sky-400' },
   ];
 
@@ -126,8 +128,8 @@ export default function AdminOverview() {
           <dl className="mt-4 space-y-3 text-[12px] font-semibold">
             {[
               ['Gross guest charges (ledger)', formatNaira(guestCharges)],
-              ['HAMLET guest fees (3%)', formatNaira(guestFees)],
-              ['Provider charges (policy undecided)', formatNaira(providerCharges)],
+              ['20% domestic stay markup', formatNaira(guestFees)],
+              ['2.5% internal payment reserve vs actual Paystack fee', `${formatNaira(paymentReserveTotal)} / ${formatNaira(providerCharges)}`],
               ['Ledger variance (absolute)', varianceTotal === 0 ? '₦0 — reconciled' : formatNaira(varianceTotal)],
             ].map(([k, v]) => (
               <div key={k as string} className="flex items-baseline justify-between gap-3 border-b border-ink-800 pb-3 last:border-0">

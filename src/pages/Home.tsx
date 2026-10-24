@@ -214,7 +214,7 @@ export default function Home() {
               {!backendReady
                 ? 'Finding spaces that fit your plans…'
                 : approved.length > 0
-                  ? `${filteredMarketplace.length} available stay${filteredMarketplace.length === 1 ? '' : 's'}${activeAreaFilter ? ` in ${activeAreaFilter}` : ''} · 3% guest fee disclosed upfront`
+                  ? `${filteredMarketplace.length} approved stay${filteredMarketplace.length === 1 ? '' : 's'}${activeAreaFilter ? ` in ${activeAreaFilter}` : ''} · upfront guest pricing (0% owner fee)`
                   : 'Verified Lagos Mainland & Island apartments · manual review before listing'}
             </p>
           </div>

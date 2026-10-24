@@ -639,12 +639,12 @@ describe('HAMLET Release 1 — partner suspension, property corrections, private
       );
 
       expect(validInitRes.status).toBe(200);
-      // 2 nights × 150,000 = 300,000 + 15,000 mandatory + 9,000 (3% fee) = 324,000 NGN -> 32,400,000 kobo
-      expect(booking.guest_total).toBe(324_000);
+      // 2 nights × 150,000 = 300,000 + 15,000 mandatory + 60,000 (20% markup on B) = 375,000 NGN -> 37,500,000 kobo
+      expect(booking.guest_total).toBe(375_000);
       expect(capturedGatewayCall).toEqual({
         secretKey: TEST_SECRET,
         email: 'guest1@hamlet.test',
-        amountKobo: 32_400_000,
+        amountKobo: 37_500_000,
         bookingId: booking.id,
         bookingReference: booking.reference,
         callbackUrl: 'https://hamlet.ng/#/account?payment=returned',

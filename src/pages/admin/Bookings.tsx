@@ -34,6 +34,7 @@ export default function AdminBookings() {
     bookingTransition,
     verifyPayment,
     recordBookingRefund,
+    transitionCautionDeposit,
     retryBookingNotifications,
   } = useHamlet();
   const { toast } = useToast();
@@ -50,6 +51,8 @@ export default function AdminBookings() {
   const [actionNote, setActionNote] = useState('');
   const [refundAmount, setRefundAmount] = useState<number>(0);
   const [refundRef, setRefundRef] = useState('');
+  const [cautionDeductDraft, setCautionDeductDraft] = useState<Record<string, number>>({});
+  const [cautionReasonDraft, setCautionReasonDraft] = useState<Record<string, string>>({});
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -81,7 +84,7 @@ export default function AdminBookings() {
   const exportBookingsCsv = () => {
     downloadCsvFile(
       `hamlet-bookings-${lagosIsoDateOffset(0)}.csv`,
-      ['Ref', 'Status', 'Property', 'Area', 'Guest Name', 'Guest Email', 'Check-in', 'Check-out', 'Nights', 'Guests', 'Accommodation', 'Mandatory Charges', 'HAMLET Fee (3%)', 'Guest Total', 'Deposit', 'Payment Ref', 'Refund Status'],
+      ['Ref', 'Status', 'Property', 'Area', 'Guest Name', 'Guest Email', 'Check-in', 'Check-out', 'Nights', 'Guests', 'Owner Rate (B)', 'Mandatory Charges', '20% Markup', 'Closing Agent (10%)', 'Referrer (2.5%)', 'HAMLET Allocation', 'Reserve (2.5%)', 'Quote Currency', 'Settlement Total NGN', 'Deposit', 'Payment Ref', 'Refund Status'],
       filtered.map(b => [
         b.ref,
         b.status,
@@ -96,7 +99,12 @@ export default function AdminBookings() {
         b.accommodationSubtotal,
         b.mandatoryTotal,
         b.hamletGuestFee,
-        b.guestTotal,
+        b.closingAgentCommissionNgn ?? 0,
+        b.directReferrerRewardNgn ?? 0,
+        b.hamletAllocationNgn ?? 0,
+        b.paymentReserveNgn ?? 0,
+        b.quoteCurrency ?? 'NGN',
+        b.settlementTotalNgn ?? (b.guestTotal + b.deposit),
         b.deposit,
         b.paymentRef ?? '',
         b.refundStatus ?? 'none',
@@ -341,14 +349,113 @@ export default function AdminBookings() {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-800">
                     <div className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2">
                       <div>
-                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Price & ledger snapshot</p>
+                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">20% markup allocation, FX quote & 5-role attribution</p>
                         <dl className="mt-1.5 space-y-1 text-[11.5px] font-medium text-ink-200">
-                          <div className="flex justify-between gap-3"><dt>Subtotal</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
-                          <div className="flex justify-between gap-3"><dt>Mandatory charges</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.mandatoryTotal)}</dd></div>
-                          <div className="flex justify-between gap-3"><dt>HAMLET guest fee (3%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletGuestFee)}</dd></div>
-                          <div className="flex justify-between gap-3 border-t border-ink-800 pt-1 font-bold text-paper"><dt>Guest total</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                          <div className="flex justify-between gap-3 text-ink-400"><dt>Refundable deposit</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>Owner listed accommodation (B)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>20% domestic accommodation markup</dt><dd className="shrink-0 tabular-nums text-brass-300">{formatNaira(b.hamletGuestFee)}</dd></div>
+                          <div className="flex justify-between gap-3 pl-3 text-[11px] text-ink-400"><dt>↳ Closing agent (10%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.closingAgentCommissionNgn ?? 0)}</dd></div>
+                          <div className="flex justify-between gap-3 pl-3 text-[11px] text-ink-400"><dt>↳ Direct partner referrer (2.5%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.directReferrerRewardNgn ?? 0)}</dd></div>
+                          <div className="flex justify-between gap-3 pl-3 text-[11px] text-ink-400"><dt>↳ HAMLET net allocation</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.hamletAllocationNgn ?? 0)}</dd></div>
+                          <div className="flex justify-between gap-3 pl-3 text-[11px] text-ink-400"><dt>↳ Internal payment reserve (2.5%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.paymentReserveNgn ?? 0)}</dd></div>
+                          <div className="flex justify-between gap-3"><dt>Mandatory property charges</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.mandatoryTotal)}</dd></div>
+                          {b.quoteCurrency && b.quoteCurrency !== 'NGN' && (
+                            <div className="flex justify-between gap-3 text-sky-300"><dt>International {b.quoteCurrency} quote (@ ₦{b.fxRate?.toLocaleString('en-NG')})</dt><dd className="shrink-0 tabular-nums">+{formatNaira(b.internationalBufferNgnEquiv ?? 0)} FX buffer</dd></div>
+                          )}
+                          <div className="flex justify-between gap-3 border-t border-ink-800 pt-1 font-bold text-paper"><dt>Stay total (NGN)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                          <div className="flex justify-between gap-3 text-ink-400"><dt>Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                          <div className="flex justify-between gap-3 border-t border-ink-800 pt-1 font-bold text-jade-300"><dt>Settlement total (NGN)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.settlementTotalNgn ?? (b.guestTotal + b.deposit))}</dd></div>
                         </dl>
+
+                        <div className="mt-3 rounded-xl border border-ink-800 bg-ink-950/60 p-3 text-[11px] text-ink-300">
+                          <p className="text-[9.5px] font-extrabold uppercase tracking-wider text-ink-500">5 Independent Attributions</p>
+                          <p className="mt-1">1. Property introducer: <span className="font-mono text-ink-100">{b.propertyIntroducerId ?? '—'}</span></p>
+                          <p>2. Authorised manager: <span className="font-mono text-ink-100">{b.propertyManagerId ?? '—'}</span></p>
+                          <p>3. Closing agent: <span className="font-mono text-brass-300">{b.closingAgentName ?? b.closingAgentCode ?? b.closingAgentId ?? 'Direct (no closing agent)'}</span></p>
+                          <p>4. Direct partner referrer: <span className="font-mono text-jade-300">{b.directReferrerId ?? 'None'}</span></p>
+                          <p>5. Guest referral source: <span className="font-mono text-ink-200">{b.guestReferralSource ?? 'Direct marketplace'}</span></p>
+                        </div>
+
+                        {(() => {
+                          const cd = state.cautionDeposits.find(x => x.bookingId === b.id);
+                          if (!cd) return null;
+                          const deductVal = cautionDeductDraft[b.id] ?? cd.deductedAmountNgn;
+                          const reasonVal = cautionReasonDraft[b.id] ?? cd.deductionReason ?? '';
+                          return (
+                            <div className="mt-3 rounded-xl border border-ink-800 bg-ink-950/70 p-3 text-[11px] text-ink-200">
+                              <p className="font-bold text-brass-300">
+                                Caution Deposit ({formatNaira(cd.amountNgn)}): <span className="uppercase">{cd.status.replace(/_/g, ' ')}</span>
+                              </p>
+                              {cd.inspectionNotes && <p className="mt-1 text-ink-400">Inspection: {cd.inspectionNotes}</p>}
+                              {!['refund_completed', 'partially_refunded', 'forfeited'].includes(cd.status) && cd.amountNgn > 0 && (
+                                <div className="mt-2 space-y-2 border-t border-ink-800 pt-2">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={cd.amountNgn}
+                                      className="input-dark !py-1.5 text-[11px]"
+                                      placeholder="Deduction (₦)"
+                                      value={deductVal}
+                                      onChange={e => setCautionDeductDraft(prev => ({ ...prev, [b.id]: Number(e.target.value) }))}
+                                    />
+                                    <input
+                                      className="input-dark !py-1.5 text-[11px]"
+                                      placeholder="Deduction / refund note…"
+                                      value={reasonVal}
+                                      onChange={e => setCautionReasonDraft(prev => ({ ...prev, [b.id]: e.target.value }))}
+                                    />
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        try {
+                                          await transitionCautionDeposit(b.id, 'refund_completed', {
+                                            deductedAmountNgn: 0,
+                                            refundedAmountNgn: cd.amountNgn,
+                                            inspectionNotes: reasonVal || 'Full caution deposit refunded post-inspection.',
+                                          });
+                                          toast(`Full caution deposit (${formatNaira(cd.amountNgn)}) refunded.`);
+                                        } catch (err) {
+                                          toast(err instanceof Error ? err.message : 'Could not update deposit.', 'error');
+                                        }
+                                      }}
+                                      className="btn-brass !px-2.5 !py-1 text-[10.5px]"
+                                    >
+                                      Complete full refund
+                                    </button>
+                                    {deductVal > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          try {
+                                            const refundAmt = Math.max(0, cd.amountNgn - deductVal);
+                                            await transitionCautionDeposit(
+                                              b.id,
+                                              'partially_refunded',
+                                              {
+                                                deductedAmountNgn: deductVal,
+                                                refundedAmountNgn: refundAmt,
+                                                deductionReason: reasonVal || 'Verified damage deduction',
+                                              },
+                                            );
+                                            toast('Caution deposit deduction & settlement recorded.');
+                                          } catch (err) {
+                                            toast(err instanceof Error ? err.message : 'Could not record deduction.', 'error');
+                                          }
+                                        }}
+                                        className="btn-ghost-dark !border !border-amber-500/40 !px-2.5 !py-1 text-[10.5px] text-amber-300"
+                                      >
+                                        Record deduction ({formatNaira(deductVal)})
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                         {b.paymentRef && <p className="mt-2 break-all font-mono text-[10px] font-bold text-ink-500">{b.paymentProvider} · {b.paymentRef}</p>}
                         {b.cancelReason && <p className="mt-2 break-words text-[11px] font-semibold text-red-300">Cancellation reason: {b.cancelReason}</p>}
                       </div>

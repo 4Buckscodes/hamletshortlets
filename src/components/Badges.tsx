@@ -5,11 +5,15 @@ const pill = 'chip border';
 
 export function PropertyStatusPill({ status }: { status: PropertyStatus }) {
   const map: Record<PropertyStatus, { cls: string; label: string; Icon: typeof Circle }> = {
-    approved: { cls: 'bg-jade-50 text-jade-800 border-jade-200', label: 'Approved · Live', Icon: BadgeCheck },
+    draft: { cls: 'bg-stone-100 text-stone-700 border-stone-300', label: 'Draft', Icon: Circle },
     submitted: { cls: 'bg-amber-50 text-amber-800 border-amber-200', label: 'Submitted · In review', Icon: Clock },
+    pending_review: { cls: 'bg-amber-50 text-amber-800 border-amber-200', label: 'Pending review', Icon: Clock },
+    approved: { cls: 'bg-jade-50 text-jade-800 border-jade-200', label: 'Approved · Published', Icon: BadgeCheck },
+    paused: { cls: 'bg-stone-100 text-stone-800 border-stone-300', label: 'Paused by host', Icon: PauseCircle },
     needs_correction: { cls: 'bg-orange-50 text-orange-800 border-orange-200', label: 'Needs correction', Icon: FileWarning },
     rejected: { cls: 'bg-red-50 text-red-800 border-red-200', label: 'Rejected', Icon: XCircle },
     suspended: { cls: 'bg-red-100 text-red-900 border-red-300', label: 'Suspended', Icon: PauseCircle },
+    archived: { cls: 'bg-ink-100 text-ink-600 border-ink-200', label: 'Archived', Icon: Ban },
   };
   const { cls, label, Icon } = map[status];
   return <span className={`${pill} ${cls}`}><Icon size={12} />{label}</span>;

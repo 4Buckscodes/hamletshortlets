@@ -1,26 +1,45 @@
 import { Link } from 'react-router-dom';
 import { useMemo, useRef, useState } from 'react';
-import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck, ImagePlus, Loader2, UploadCloud } from 'lucide-react';
+import { PlusCircle, BedDouble, Bath, Users, FileWarning, RefreshCcw, Pencil, X, ShieldCheck, ImagePlus, Loader2, UploadCloud, CalendarClock, PauseCircle, PlayCircle, Plus, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { PropertyStatusPill, DocStatusBadge } from '../../components/Badges';
 import { myPartnerProperties } from '../../lib/partnerUtils';
-import { formatNaira } from '../../lib/pricing';
+import { formatNaira, formatDate } from '../../lib/pricing';
+import { computePropertyAvailabilitySummary, formatBlockTypeLabel } from '../../lib/availability';
 import { AREAS } from '../../lib/seed';
-import type { Property } from '../../lib/types';
+import type { Property, AvailabilityBlockType, AvailabilityConfirmationStatus } from '../../lib/types';
 
 const PROPERTY_TYPES = ['Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa', 'Terrace'];
 const AMENITIES = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'TV', 'Air Conditioning', 'Generator', 'Concierge', 'Garden', 'Balcony'];
 
 export default function PartnerProperties() {
-  const { state, reviewProperty, updateAndResubmitProperty, uploadPropertyImage } = useHamlet();
+  const {
+    state,
+    reviewProperty,
+    updateAndResubmitProperty,
+    uploadPropertyImage,
+    updatePropertyAvailabilitySettings,
+    addPropertyAvailabilityBlock,
+    removePropertyAvailabilityBlock,
+    setPropertyPublicationPause,
+  } = useHamlet();
   const { toast } = useToast();
   const editFileRef = useRef<HTMLInputElement | null>(null);
   const userId = state.session!.userId;
   const isSuspended = state.session?.accountStatus === 'suspended';
   const myProps = useMemo(() => myPartnerProperties(state, userId), [state, userId]);
   const [openDocs, setOpenDocs] = useState<string | null>(null);
+  const [openCalendarId, setOpenCalendarId] = useState<string | null>(null);
+  const [calFirstAvail, setCalFirstAvail] = useState('');
+  const [calConfirmMode, setCalConfirmMode] = useState<AvailabilityConfirmationStatus>('confirmed_calendar');
+  const [calResponsible, setCalResponsible] = useState('');
+  const [blockStart, setBlockStart] = useState('');
+  const [blockEnd, setBlockEnd] = useState('');
+  const [blockType, setBlockType] = useState<AvailabilityBlockType>('owner_block');
+  const [blockNote, setBlockNote] = useState('');
+  const [savingCal, setSavingCal] = useState(false);
   const [editing, setEditing] = useState<Property | null>(null);
 
   // Edit & resubmit modal state
@@ -168,13 +187,29 @@ export default function PartnerProperties() {
             {!isSuspended && <Link to="/partner/properties/new" className="btn-brass mt-6"><PlusCircle size={16} /> Start submission</Link>}
           </div>
         )}
-        {myProps.map(p => (
+        {myProps.map(p => {
+          const avail = computePropertyAvailabilitySummary({
+            property: p,
+            bookings: state.bookings,
+            publicCalendarSpans: state.publicCalendarSpans,
+          });
+          const calendarOpen = openCalendarId === p.id;
+          return (
           <article key={p.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
             <div className="flex flex-col gap-4 p-5 sm:flex-row">
               <img src={p.images[0]} alt={p.title} className="h-40 w-full shrink-0 rounded-xl object-cover sm:w-52" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <PropertyStatusPill status={p.status} />
+                  <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
+                    avail.currentStatus === 'available_now'
+                      ? 'border-jade-500/40 bg-jade-500/10 text-jade-300'
+                      : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                  }`}>
+                    <CalendarClock size={11} />
+                    {avail.primaryBadgeLabel}
+                    {avail.nextAvailableLabel && avail.primaryBadgeLabel !== avail.nextAvailableLabel ? ` · ${avail.nextAvailableLabel}` : ''}
+                  </span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{p.type} · {p.area}</span>
                 </div>
                 <h2 className="mt-1.5 font-display text-lg font-bold text-ink-50">{p.title}</h2>
@@ -182,7 +217,8 @@ export default function PartnerProperties() {
                   <span className="inline-flex items-center gap-1.5"><BedDouble size={13} />{p.bedrooms} bd</span>
                   <span className="inline-flex items-center gap-1.5"><Bath size={13} />{p.bathrooms} ba</span>
                   <span className="inline-flex items-center gap-1.5"><Users size={13} />sleeps {p.capacity}</span>
-                  <span className="font-bold text-brass-300">{formatNaira(p.nightlyRate)}/night</span>
+                  <span className="font-bold text-brass-300">Owner: {formatNaira(p.nightlyRate)}/night</span>
+                  <span className="text-ink-400">Guest (20% markup): {formatNaira(Math.round(p.nightlyRate * 1.2))}/night</span>
                 </p>
                 <p className="mt-1.5 text-[11px] font-medium text-ink-500">{p.address}</p>
                 <p className="mt-1 text-[10.5px] font-semibold text-ink-500">Authority: {p.authorityBasis}</p>
@@ -192,10 +228,52 @@ export default function PartnerProperties() {
                   </div>
                 )}
               </div>
-              <div className="flex shrink-0 flex-col items-start justify-between gap-3 sm:items-end">
-                <button onClick={() => setOpenDocs(openDocs === p.id ? null : p.id)} className="btn-ghost-dark !px-3 !py-2 text-[11px]">
-                  Documentation ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)
-                </button>
+              <div className="flex shrink-0 flex-col items-start justify-between gap-2 sm:items-end">
+                <div className="flex flex-wrap gap-1.5 sm:justify-end">
+                  {!isSuspended && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (calendarOpen) {
+                          setOpenCalendarId(null);
+                        } else {
+                          setOpenCalendarId(p.id);
+                          setCalFirstAvail(p.firstAvailableDate ?? '');
+                          setCalConfirmMode(p.availabilityConfirmationStatus ?? 'confirmed_calendar');
+                          setCalResponsible(p.calendarResponsiblePerson ?? state.session?.name ?? '');
+                          setBlockStart('');
+                          setBlockEnd('');
+                          setBlockNote('');
+                        }
+                      }}
+                      className="btn-brass !px-3 !py-1.5 text-[11px]"
+                    >
+                      <CalendarClock size={13} /> Manage calendar
+                    </button>
+                  )}
+                  <button onClick={() => setOpenDocs(openDocs === p.id ? null : p.id)} className="btn-ghost-dark !px-3 !py-1.5 text-[11px]">
+                    Docs ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length})
+                  </button>
+                </div>
+
+                {!isSuspended && (p.status === 'approved' || p.status === 'paused') && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const shouldPause = p.status === 'approved';
+                        await setPropertyPublicationPause(p.id, shouldPause);
+                        toast(shouldPause ? 'Listing paused from public search.' : 'Listing resumed & live in marketplace.');
+                      } catch (err) {
+                        toast(err instanceof Error ? err.message : 'Could not change publication status.', 'error');
+                      }
+                    }}
+                    className="btn-ghost-dark !border !border-ink-700 !px-3 !py-1.5 text-[11px]"
+                  >
+                    {p.status === 'approved' ? <><PauseCircle size={13} /> Pause listing</> : <><PlayCircle size={13} /> Resume listing</>}
+                  </button>
+                )}
+
                 {p.status === 'needs_correction' && !isSuspended && (
                   <div className="flex flex-wrap gap-2 sm:justify-end">
                     <button onClick={() => openEditor(p)} className="btn-brass !px-3.5 !py-2 text-[11px]">
@@ -215,6 +293,128 @@ export default function PartnerProperties() {
                 )}
               </div>
             </div>
+
+            {calendarOpen && (
+              <div className="border-t border-ink-800 bg-ink-950/75 px-5 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+                    Calendar & availability controls (live update — no re-submission required)
+                  </p>
+                  <button type="button" onClick={() => setOpenCalendarId(null)} className="text-[11px] font-bold text-ink-400 hover:text-white">Close</button>
+                </div>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-4">
+                  <label>
+                    <span className="label-dark">First available date</span>
+                    <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={calFirstAvail} onChange={e => setCalFirstAvail(e.target.value)} />
+                  </label>
+                  <label>
+                    <span className="label-dark">Confirmation mode</span>
+                    <select className="input-dark text-[12px]" value={calConfirmMode} onChange={e => setCalConfirmMode(e.target.value as AvailabilityConfirmationStatus)}>
+                      <option value="confirmed_calendar">Confirmed live calendar</option>
+                      <option value="recently_updated">Recently updated</option>
+                      <option value="manual_confirmation">Needs host confirmation</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span className="label-dark">Responsible manager</span>
+                    <input className="input-dark text-[12px]" value={calResponsible} onChange={e => setCalResponsible(e.target.value)} />
+                  </label>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      disabled={savingCal}
+                      onClick={async () => {
+                        setSavingCal(true);
+                        try {
+                          await updatePropertyAvailabilitySettings(p.id, {
+                            firstAvailableDate: calFirstAvail || null,
+                            availabilityConfirmationStatus: calConfirmMode,
+                            calendarResponsiblePerson: calResponsible,
+                          });
+                          toast('Availability settings saved.');
+                        } catch (err) {
+                          toast(err instanceof Error ? err.message : 'Could not update settings.', 'error');
+                        } finally {
+                          setSavingCal(false);
+                        }
+                      }}
+                      className="btn-brass w-full !py-2 text-[11.5px] disabled:opacity-50"
+                    >
+                      Save calendar settings
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-ink-800 pt-3">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Add owner-blocked / external occupied dates</p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-5">
+                    <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockStart} onChange={e => setBlockStart(e.target.value)} aria-label="Block start" />
+                    <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockEnd} onChange={e => setBlockEnd(e.target.value)} aria-label="Block end" />
+                    <select className="input-dark text-[12px]" value={blockType} onChange={e => setBlockType(e.target.value as AvailabilityBlockType)}>
+                      <option value="owner_block">Owner block</option>
+                      <option value="external_booking">External booking</option>
+                      <option value="maintenance_block">Maintenance hold</option>
+                    </select>
+                    <input className="input-dark text-[12px]" placeholder="Optional note…" value={blockNote} onChange={e => setBlockNote(e.target.value)} />
+                    <button
+                      type="button"
+                      disabled={savingCal}
+                      onClick={async () => {
+                        setSavingCal(true);
+                        try {
+                          await addPropertyAvailabilityBlock(p.id, {
+                            startDate: blockStart,
+                            endDate: blockEnd,
+                            blockType,
+                            note: blockNote,
+                          });
+                          setBlockStart('');
+                          setBlockEnd('');
+                          setBlockNote('');
+                          toast('Unavailable date range added to property calendar.');
+                        } catch (err) {
+                          toast(err instanceof Error ? err.message : 'Could not add block.', 'error');
+                        } finally {
+                          setSavingCal(false);
+                        }
+                      }}
+                      className="btn-ghost-dark !border !border-ink-700 !py-2 text-[11.5px]"
+                    >
+                      <Plus size={14} /> Block dates
+                    </button>
+                  </div>
+
+                  {(p.unavailableBlocks ?? []).length > 0 && (
+                    <ul className="mt-3 space-y-1.5">
+                      {(p.unavailableBlocks ?? []).map(bl => (
+                        <li key={bl.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-800 bg-ink-900 px-3 py-2 text-[11.5px] font-medium text-ink-200">
+                          <span>
+                            <strong>{formatDate(bl.startDate)} → {formatDate(bl.endDate)}</strong> · <span className="text-brass-300">{formatBlockTypeLabel(bl.blockType)}</span>
+                            {bl.note ? ` · ${bl.note}` : ''}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await removePropertyAvailabilityBlock(p.id, bl.id);
+                                toast('Calendar block removed.');
+                              } catch (err) {
+                                toast(err instanceof Error ? err.message : 'Could not remove block.', 'error');
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 size={12} /> Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+
             {openDocs === p.id && (
               <div className="border-t border-ink-800 bg-ink-850/60 px-5 py-4">
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">Documentation evidence — reviewed by HAMLET</p>
@@ -230,7 +430,8 @@ export default function PartnerProperties() {
               </div>
             )}
           </article>
-        ))}
+          );
+        })}
       </div>
 
       {/* Edit & resubmit modal */}

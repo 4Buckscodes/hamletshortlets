@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert, ImagePlus, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck, CircleAlert, ImagePlus, Loader2, CalendarClock, Plus, Trash2 } from 'lucide-react';
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { AREAS } from '../../lib/seed';
+import type { AvailabilityBlockType, AvailabilityConfirmationStatus, PropertyAvailabilityBlock } from '../../lib/types';
 
-const STEPS = ['Property basics', 'Listing details', 'Pricing & inventory', 'Documentation & authority', 'Review & submit'];
+const STEPS = ['Property basics', 'Listing details', 'Pricing & calendar', 'Documentation & authority', 'Review & submit'];
 const AMENITIES = ['Wifi', 'Pool', 'Gym', 'Parking', '24/7 Power', 'Security', 'Workspace', 'Kitchen', 'TV', 'Air Conditioning', 'Generator', 'Concierge', 'Garden', 'Balcony'];
 const PROPERTY_TYPES = ['Penthouse', 'Serviced apartment', 'Apartment', 'Studio apartment', 'Duplex', 'Villa', 'Terrace'];
 
@@ -27,6 +28,14 @@ export default function NewProperty() {
   const [nightlyRate, setNightlyRate] = useState(200000);
   const [cleaningFee, setCleaningFee] = useState(25000);
   const [deposit, setDeposit] = useState(150000);
+  const [firstAvailableDate, setFirstAvailableDate] = useState('');
+  const [confirmationStatus, setConfirmationStatus] = useState<AvailabilityConfirmationStatus>('confirmed_calendar');
+  const [calendarPerson, setCalendarPerson] = useState(state.session?.name ?? '');
+  const [blockStart, setBlockStart] = useState('');
+  const [blockEnd, setBlockEnd] = useState('');
+  const [blockType, setBlockType] = useState<AvailabilityBlockType>('external_booking');
+  const [blockNote, setBlockNote] = useState('');
+  const [initialBlocks, setInitialBlocks] = useState<PropertyAvailabilityBlock[]>([]);
   const [amenities, setAmenities] = useState<string[]>(['Wifi', 'Kitchen', 'TV', 'Air Conditioning']);
   const [imageUrl, setImageUrl] = useState('');
   const [images, setImages] = useState<string[]>(() =>
@@ -98,6 +107,10 @@ export default function NewProperty() {
         amenities, images, houseRules: houseRules.split('\n').map(s => s.trim()).filter(Boolean),
         authorityBasis: authorityNote.trim(),
         submittedRole: role,
+        firstAvailableDate: firstAvailableDate || null,
+        availabilityConfirmationStatus: confirmationStatus,
+        calendarResponsiblePerson: calendarPerson.trim() || state.session?.name,
+        unavailableBlocks: initialBlocks,
         docs: [
           { label: 'Certificate of occupancy / title deed', status: ownershipDoc ? 'self_reported' : 'pending_review' },
           { label: 'Government-issued ID of owner', status: idDoc ? 'self_reported' : 'pending_review' },
@@ -225,21 +238,100 @@ export default function NewProperty() {
         {step === 2 && (
           <div className="grid gap-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <label><span className="label-dark">Nightly rate (₦)</span><input type="number" min={20000} step={5000} className="input-dark" value={nightlyRate} onChange={e => setNightlyRate(Number(e.target.value))} /></label>
+              <label><span className="label-dark">Owner nightly rate B (₦)</span><input type="number" min={20000} step={5000} className="input-dark" value={nightlyRate} onChange={e => setNightlyRate(Number(e.target.value))} /></label>
               <label><span className="label-dark">Cleaning & turnover (₦)</span><input type="number" min={0} step={1000} className="input-dark" value={cleaningFee} onChange={e => setCleaningFee(Number(e.target.value))} /></label>
-              <label><span className="label-dark">Refundable deposit (₦)</span><input type="number" min={0} step={10000} className="input-dark" value={deposit} onChange={e => setDeposit(Number(e.target.value))} /></label>
+              <label><span className="label-dark">Refundable caution deposit (₦)</span><input type="number" min={0} step={10000} className="input-dark" value={deposit} onChange={e => setDeposit(Number(e.target.value))} /></label>
             </div>
             <div className="rounded-2xl border border-brass-500/30 bg-brass-500/5 p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">What the guest will see</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Single-source pricing preview (0% owner fee)</p>
               <dl className="mt-2 grid gap-1 text-[12px] font-semibold text-ink-100">
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Accommodation (per night)</dt><dd className="shrink-0 tabular-nums">₦{nightlyRate.toLocaleString()}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Mandatory cleaning & turnover</dt><dd className="shrink-0 tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest fee (3% — guest pays, owner pays 0%)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 0.03).toLocaleString()} / night</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable deposit (held separately, excluded from fee)</dt><dd className="shrink-0 tabular-nums">₦{deposit.toLocaleString()}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Your owner accommodation proceeds (100% of B)</dt><dd className="shrink-0 tabular-nums text-jade-300">₦{nightlyRate.toLocaleString()} / night</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET domestic markup (20% — guest pays, owner pays 0%)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 0.20).toLocaleString()} / night</dd></div>
+                <div className="flex justify-between gap-3 font-bold text-brass-200"><dt className="min-w-0">Domestic guest nightly accommodation rate (B × 1.20)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 1.20).toLocaleString()} / night</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Mandatory cleaning & turnover (owner settlement)</dt><dd className="shrink-0 tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable caution deposit (tracked separately, excluded from markup)</dt><dd className="shrink-0 tabular-nums">₦{deposit.toLocaleString()}</dd></div>
               </dl>
-              <p className="mt-2 text-[10px] font-medium text-ink-400">The guest-facing total is computed by HAMLET's shared pricing engine from the full stay subtotal — never hard-coded in this form. Provider processing-fee treatment remains undecided and is not added here.</p>
             </div>
-            <p className="text-[10.5px] font-medium text-ink-500">Pricing & availability inputs are captured at submission. Advanced calendar synchronisation and dynamic pricing are explicitly deferred from Release 1.</p>
+
+            {/* Calendar & Occupancy Onboarding (§3.3) */}
+            <div className="rounded-2xl border border-ink-700 bg-ink-950/60 p-4">
+              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-300">
+                <CalendarClock size={14} /> Current occupancy & calendar availability
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-ink-400">
+                Currently booked or occupied properties are welcome on HAMLET — add any existing unavailable dates or next available date below so guests can discover and book future open dates.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <label>
+                  <span className="label-dark">First available date (optional)</span>
+                  <input type="date" className="input-dark [color-scheme:dark]" value={firstAvailableDate} onChange={e => setFirstAvailableDate(e.target.value)} />
+                </label>
+                <label>
+                  <span className="label-dark">Calendar confirmation mode</span>
+                  <select className="input-dark" value={confirmationStatus} onChange={e => setConfirmationStatus(e.target.value as AvailabilityConfirmationStatus)}>
+                    <option value="confirmed_calendar">Confirmed live calendar</option>
+                    <option value="manual_confirmation">Needs host confirmation per request</option>
+                  </select>
+                </label>
+                <label>
+                  <span className="label-dark">Calendar responsible person</span>
+                  <input className="input-dark" value={calendarPerson} onChange={e => setCalendarPerson(e.target.value)} placeholder="Name of calendar manager" />
+                </label>
+              </div>
+
+              <div className="mt-3 border-t border-ink-800 pt-3">
+                <span className="label-dark">Pre-existing unavailable / occupied date windows (optional)</span>
+                <div className="grid gap-2 sm:grid-cols-4">
+                  <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockStart} onChange={e => setBlockStart(e.target.value)} aria-label="Block start date" />
+                  <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockEnd} onChange={e => setBlockEnd(e.target.value)} aria-label="Block end date" />
+                  <select className="input-dark text-[12px]" value={blockType} onChange={e => setBlockType(e.target.value as AvailabilityBlockType)}>
+                    <option value="external_booking">External booking</option>
+                    <option value="owner_block">Owner personal block</option>
+                    <option value="maintenance_block">Maintenance hold</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!blockStart || !blockEnd || blockEnd <= blockStart) {
+                        toast('Choose a start date and an end date after start date.', 'error');
+                        return;
+                      }
+                      setInitialBlocks(prev => [
+                        ...prev,
+                        {
+                          id: `blk-${Date.now()}`,
+                          propertyId: 'pending',
+                          startDate: blockStart,
+                          endDate: blockEnd,
+                          blockType,
+                          note: blockNote.trim() || undefined,
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        },
+                      ]);
+                      setBlockStart('');
+                      setBlockEnd('');
+                      setBlockNote('');
+                    }}
+                    className="btn-ghost-dark !border !border-ink-700 !py-2 text-[11.5px]"
+                  >
+                    <Plus size={14} /> Add blocked range
+                  </button>
+                </div>
+                {initialBlocks.length > 0 && (
+                  <ul className="mt-2 space-y-1.5">
+                    {initialBlocks.map(bl => (
+                      <li key={bl.id} className="flex items-center justify-between rounded-xl border border-ink-800 bg-ink-900 px-3 py-1.5 text-[11.5px] font-medium text-ink-200">
+                        <span>{bl.startDate} → {bl.endDate} · <span className="text-brass-300">{bl.blockType.replace('_', ' ')}</span></span>
+                        <button type="button" onClick={() => setInitialBlocks(prev => prev.filter(x => x.id !== bl.id))} className="text-red-400 hover:text-red-300" aria-label="Remove block">
+                          <Trash2 size={13} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

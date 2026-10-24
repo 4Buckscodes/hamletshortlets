@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode,
 } from 'react';
@@ -5,15 +6,74 @@ import type {
   Account, Session, Property, Booking, LedgerEntry, Issue, IssueStatus,
   PartnerApplication, PartnerAssignment, AuditEntry, AccountRole, TimelineEvent,
   BookingNotificationRecord, NotificationEventType, NotificationRecipientType,
-  AdminBootstrapEmail,
+  AdminBootstrapEmail, PropertyAvailabilityBlock, PublicCalendarSpan,
+  PartnerReferral, PartnerReferralReward, CautionDepositRecord, CautionDepositStatus,
+  ExchangeRateConfig, SupportedCurrency, PayoutStatus,
+  AvailabilityConfirmationStatus, AvailabilityBlockType, ReferralRelationshipStatus,
 } from './types';
 import {
   seedAccounts, seedProperties, seedBookings, seedLedger, seedIssues,
   seedApplications, seedAssignments, seedAudit,
+  seedPartnerReferrals, seedPartnerReferralRewards, seedCautionDeposits, seedExchangeRates,
 } from './seed';
-import { calculateGuestPricing, nightsBetween, formatNaira } from './pricing';
+import {
+  buildDefaultExchangeRates, calculateBookingCurrencyQuote, calculateGuestPricing,
+  nightsBetween, formatNaira,
+} from './pricing';
+import {
+  buildPartnerReferralCode, evaluateReferralOnBookingCompletion, normalizeReferralCode,
+} from './referrals';
 import { extractEdgeFunctionError, isSupabaseConfigured, supabase } from './supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+const PARTNER_REF_STORAGE_KEY = 'hamlet_partner_ref_code_v1';
+const CLOSING_AGENT_STORAGE_KEY = 'hamlet_closing_agent_code_v1';
+
+export function captureUrlAttributionParams(): void {
+  try {
+    if (typeof window === 'undefined') return;
+    const sources = [window.location.search];
+    const hashIdx = window.location.hash.indexOf('?');
+    if (hashIdx >= 0) sources.push(window.location.hash.slice(hashIdx));
+    for (const src of sources) {
+      if (!src) continue;
+      const params = new URLSearchParams(src);
+      const refCode = normalizeReferralCode(params.get('ref'));
+      if (refCode) window.localStorage.setItem(PARTNER_REF_STORAGE_KEY, refCode);
+      const agentCode = normalizeReferralCode(params.get('agent'));
+      if (agentCode) window.localStorage.setItem(CLOSING_AGENT_STORAGE_KEY, agentCode);
+    }
+  } catch {
+    // Ignore storage access errors in restricted browsing contexts.
+  }
+}
+
+export function getPersistedPartnerRefCode(): string {
+  try {
+    if (typeof window === 'undefined') return '';
+    return normalizeReferralCode(window.localStorage.getItem(PARTNER_REF_STORAGE_KEY));
+  } catch {
+    return '';
+  }
+}
+
+export function clearPersistedPartnerRefCode(): void {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(PARTNER_REF_STORAGE_KEY);
+  } catch {
+    // Ignore storage access errors.
+  }
+}
+
+export function getPersistedClosingAgentCode(): string {
+  try {
+    if (typeof window === 'undefined') return '';
+    return normalizeReferralCode(window.localStorage.getItem(CLOSING_AGENT_STORAGE_KEY));
+  } catch {
+    return '';
+  }
+}
 
 export interface FeedbackItem {
   id: string; at: string; bookingRef: string; propertyTitle?: string; guestName: string;
@@ -23,11 +83,16 @@ export interface FeedbackItem {
 export interface DBState {
   accounts: Account[];
   properties: Property[];
+  publicCalendarSpans: PublicCalendarSpan[];
   bookings: Booking[];
   ledger: LedgerEntry[];
   issues: Issue[];
   applications: PartnerApplication[];
   assignments: PartnerAssignment[];
+  partnerReferrals: PartnerReferral[];
+  partnerReferralRewards: PartnerReferralReward[];
+  cautionDeposits: CautionDepositRecord[];
+  exchangeRates: ExchangeRateConfig[];
   audit: AuditEntry[];
   feedback: FeedbackItem[];
   notifications: BookingNotificationRecord[];
@@ -36,12 +101,14 @@ export interface DBState {
 }
 
 const emptyState = (): DBState => ({
-  accounts: [], properties: [], bookings: [], ledger: [], issues: [],
-  applications: [], assignments: [], audit: [], feedback: [], notifications: [],
+  accounts: [], properties: [], publicCalendarSpans: [], bookings: [], ledger: [], issues: [],
+  applications: [], assignments: [], partnerReferrals: [], partnerReferralRewards: [],
+  cautionDeposits: [], exchangeRates: buildDefaultExchangeRates(),
+  audit: [], feedback: [], notifications: [],
   adminBootstrapEmails: [], session: null,
 });
 
-const DB_KEY = 'hamlet-db-v1';
+const DB_KEY = 'hamlet-db-v2';
 const SESSION_KEY = 'hamlet-session-v1';
 
 function initialState(): DBState {
@@ -54,6 +121,11 @@ function initialState(): DBState {
       return {
         ...emptyState(),
         ...parsed,
+        publicCalendarSpans: parsed.publicCalendarSpans ?? [],
+        partnerReferrals: parsed.partnerReferrals ?? seedPartnerReferrals,
+        partnerReferralRewards: parsed.partnerReferralRewards ?? seedPartnerReferralRewards,
+        cautionDeposits: parsed.cautionDeposits ?? seedCautionDeposits,
+        exchangeRates: parsed.exchangeRates ?? seedExchangeRates,
         notifications: parsed.notifications ?? [],
         adminBootstrapEmails: parsed.adminBootstrapEmails ?? [],
         accounts: parsed.accounts.map(a => ({ ...a, password: 'demo1234' })),
@@ -62,9 +134,14 @@ function initialState(): DBState {
     }
   } catch { /* fall through to seed */ }
   return {
-    accounts: seedAccounts, properties: seedProperties, bookings: seedBookings,
-    ledger: seedLedger, issues: seedIssues, applications: seedApplications,
-    assignments: seedAssignments, audit: seedAudit, feedback: [], notifications: [],
+    accounts: seedAccounts, properties: seedProperties, publicCalendarSpans: [],
+    bookings: seedBookings, ledger: seedLedger, issues: seedIssues,
+    applications: seedApplications, assignments: seedAssignments,
+    partnerReferrals: seedPartnerReferrals,
+    partnerReferralRewards: seedPartnerReferralRewards,
+    cautionDeposits: seedCautionDeposits,
+    exchangeRates: seedExchangeRates,
+    audit: seedAudit, feedback: [], notifications: [],
     adminBootstrapEmails: [{ email: 'admin@hamlet.ng', note: 'Pilot demo administrator', createdAt: new Date().toISOString() }],
     session: null,
   };
@@ -77,18 +154,27 @@ type Action =
   | { type: 'SIGN_OUT' }
   | { type: 'UPDATE_PROFILE'; name: string; phone?: string; company?: string }
   | { type: 'REGISTER_GUEST'; account: Account; session: Session }
-  | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication }
+  | { type: 'REGISTER_PARTNER'; account: Account; application: PartnerApplication; referral?: PartnerReferral }
   | { type: 'RESUBMIT_PARTNER_APPLICATION'; id: string; patch: Pick<PartnerApplication, 'name' | 'phone' | 'company' | 'role' | 'areas' | 'propertiesCount' | 'motivation'>; actor: Session }
   | { type: 'ADD_PROPERTY'; property: Property }
   | { type: 'UPDATE_AND_RESUBMIT_PROPERTY'; id: string; patch: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>; actor: Session; note?: string }
   | { type: 'PROPERTY_REVIEW'; id: string; status: Property['status']; note?: string; verification?: Property['verification']; actor: Session }
+  | { type: 'UPDATE_PROPERTY_AVAILABILITY'; id: string; firstAvailableDate?: string | null; availabilityConfirmationStatus: 'confirmed' | 'needs_confirmation'; calendarResponsiblePerson?: string; actor: Session }
+  | { type: 'ADD_AVAILABILITY_BLOCK'; propertyId: string; block: PropertyAvailabilityBlock; actor: Session }
+  | { type: 'REMOVE_AVAILABILITY_BLOCK'; propertyId: string; blockId: string; actor: Session }
+  | { type: 'SET_PROPERTY_PAUSE'; propertyId: string; paused: boolean; note?: string; actor: Session }
   | { type: 'SET_PARTNER_STATUS'; partnerId: string; status: 'active' | 'suspended'; reason: string; cascadeSuspend: boolean; actor: Session }
   | { type: 'SET_GUEST_STATUS'; guestId: string; status: 'active' | 'suspended'; reason: string; actor: Session }
   | { type: 'AUTHORIZE_ADMIN_EMAIL'; email: string; note: string; actor: Session }
-  | { type: 'ADD_BOOKING'; booking: Booking }
+  | { type: 'ADD_BOOKING'; booking: Booking; cautionDeposit?: CautionDepositRecord }
+  | { type: 'REFRESH_BOOKING_QUOTE'; bookingId: string; patch: Partial<Booking> }
   | { type: 'BOOKING_TRANSITION'; id: string; to: Booking['status']; actor: Session; note?: string; reason?: string }
   | { type: 'VERIFY_PAYMENT'; id: string; actor: Session; providerRef: string; provider: string }
   | { type: 'RECORD_REFUND'; id: string; actor: Session; amount: number; providerRef?: string; note: string }
+  | { type: 'TRANSITION_CAUTION_DEPOSIT'; bookingId: string; status: CautionDepositStatus; deductedAmountNgn?: number; refundedAmountNgn?: number; inspectionNotes?: string; deductionReason?: string; refundReference?: string; evidence?: string[]; actor: Session }
+  | { type: 'UPDATE_EXCHANGE_RATE'; config: ExchangeRateConfig; actor: Session }
+  | { type: 'RESOLVE_REFERRAL_DISPUTE'; referralId: string; status: PartnerReferral['status']; note: string; overrideWindowDays?: number; actor: Session }
+  | { type: 'UPDATE_PAYOUT_STATUS'; entryId: string; payoutStatus: PayoutStatus; note?: string; actor: Session }
   | { type: 'ADD_LEDGER'; entries: LedgerEntry[] }
   | { type: 'RECONCILE_LEDGER'; id: string; actor: Session; status: LedgerEntry['status']; variance: number; note?: string }
   | { type: 'ADD_ISSUE'; issue: Issue }
@@ -111,7 +197,26 @@ type RemoteProperty = {
   refundable_deposit: number; bedrooms: number; bathrooms: number; capacity: number;
   bed_setup: string; amenities: string[]; image_urls: string[]; house_rules: string[];
   status: Property['status']; verification: Property['verification']; trust_label: string;
-  review_note?: string; created_at: string; updated_at: string;
+  review_note?: string; first_available_date?: string | null;
+  availability_confirmation_status?: 'confirmed' | 'needs_confirmation';
+  calendar_responsible_person?: string | null;
+  calendar_responsible_user_id?: string | null;
+  last_availability_update?: string | null;
+  property_introducer_id?: string | null;
+  authorised_manager_id?: string | null;
+  created_at: string; updated_at: string;
+};
+
+type RemoteAvailabilityBlock = {
+  id: string; property_id: string; start_date: string; end_date: string;
+  block_type: PropertyAvailabilityBlock['blockType'];
+  source: PropertyAvailabilityBlock['source'];
+  note?: string | null; created_by?: string | null; created_at: string;
+};
+
+type RemotePublicSpan = {
+  property_id: string; start_date: string; end_date: string;
+  kind: PublicCalendarSpan['kind'];
 };
 
 type RemotePropertySubmission = {
@@ -124,6 +229,17 @@ type RemoteBooking = {
   id: string; reference: string; property_id: string; guest_id: string; check_in: string; check_out: string;
   guest_count: number; accommodation_subtotal: number; mandatory_charges: Property['mandatoryCharges'];
   mandatory_total: number; hamlet_guest_fee: number; guest_total: number; refundable_deposit: number;
+  property_introducer_id?: string | null; authorised_manager_id?: string | null;
+  closing_agent_id?: string | null; direct_referrer_id?: string | null; guest_referral_source?: string | null;
+  pricing_rules_version?: string; owner_listed_price_ngn?: number;
+  domestic_markup_rate?: number; domestic_markup_ngn?: number; domestic_guest_price_ngn?: number;
+  closing_agent_commission_ngn?: number; direct_referrer_reward_ngn?: number;
+  hamlet_allocation_ngn?: number; payment_reserve_ngn?: number; actual_payment_fee_ngn?: number;
+  quote_currency?: SupportedCurrency; currency_pair?: Booking['currencyPair'];
+  exchange_rate_ngn_per_unit?: number; exchange_rate_source?: string; exchange_rate_timestamp?: string;
+  international_buffer_rate?: number; converted_base_amount?: number; international_buffer_amount?: number;
+  international_buffer_ngn_equiv?: number; quoted_guest_total?: number; settlement_total_ngn?: number;
+  quote_expires_at?: string | null;
   status: Booking['status']; special_requests?: string; payment_deadline?: string;
   payment_provider?: string; payment_reference?: string; refund_status: Booking['refundStatus'];
   refund_amount?: number; cancel_reason?: string; created_at: string; timeline: TimelineEvent[];
@@ -132,7 +248,38 @@ type RemoteBooking = {
 type RemoteApplication = {
   id: string; applicant_id: string; full_name: string; email: string; phone: string; company: string; role: string;
   areas: string[]; properties_count: number; motivation: string; status: PartnerApplication['status'];
+  referred_by_code?: string | null; referred_by_partner_id?: string | null;
   review_note?: string; submitted_at: string;
+};
+
+type RemotePartnerReferral = {
+  id: string; referrer_partner_id: string; referred_partner_id: string; referral_code: string;
+  status: PartnerReferral['status']; earning_window_days: number;
+  registered_at: string; verified_at?: string | null; activated_at?: string | null;
+  activating_booking_id?: string | null; eligibility_starts_at?: string | null;
+  eligibility_ends_at?: string | null; dispute_note?: string | null; resolved_by?: string | null;
+};
+
+type RemotePartnerReferralReward = {
+  id: string; referral_id: string; referrer_partner_id: string; referred_closing_agent_id: string;
+  booking_id: string; booking_reference: string; owner_listed_price_ngn: number;
+  reward_rate: number; reward_amount_ngn: number; payout_status: PartnerReferralReward['payoutStatus'];
+  reversal_reason?: string | null; created_at: string;
+};
+
+type RemoteCautionDeposit = {
+  id: string; booking_id: string; property_id: string; guest_id: string; amount_ngn: number;
+  status: CautionDepositStatus; deducted_amount_ngn: number; refunded_amount_ngn: number;
+  collection_reference?: string | null; refund_reference?: string | null;
+  inspection_notes?: string | null; deduction_reason?: string | null; evidence: string[];
+  decision_by?: string | null; decision_at?: string | null; created_at: string; updated_at: string;
+};
+
+type RemoteExchangeRate = {
+  currency: 'USD' | 'GBP'; currency_pair: 'NGN/USD' | 'NGN/GBP';
+  ngn_per_unit: number; buffer_rate: number; source: string;
+  effective_at: string; expires_at?: string | null; is_active: boolean;
+  updated_by?: string | null; updated_at: string;
 };
 
 type RemoteFeedback = {
@@ -171,13 +318,17 @@ type RemoteAdminBootstrapEmailRow = {
 type RemoteLedgerRow = {
   id: string; booking_id: string; record_type: LedgerEntry['type']; amount: number;
   provider_reference?: string; status: LedgerEntry['status']; description: string;
-  variance: number; note?: string; operator_name: string; created_at: string;
+  variance: number; note?: string; operator_name: string;
+  beneficiary_user_id?: string | null; payout_status?: PayoutStatus;
+  created_at: string;
 };
 
 type RemoteProfile = {
   id: string; full_name: string; role: AccountRole; phone?: string;
   company?: string; partner_role?: string; account_status?: 'active' | 'suspended';
-  suspension_reason?: string; created_at: string;
+  suspension_reason?: string; referral_code?: string | null;
+  referred_by_partner_id?: string | null; referred_by_code?: string | null;
+  created_at: string;
 };
 
 type RemoteAuditEntry = {
@@ -259,6 +410,7 @@ function toRemoteProperty(
   accesses: { property_id: string; user_id: string; access_role?: string }[],
   submission?: RemotePropertySubmission,
   profileById?: Map<string, RemoteProfile>,
+  blocksByPropertyId?: Map<string, PropertyAvailabilityBlock[]>,
 ): Property {
   const propertyAccess = accesses.filter(access => access.property_id === row.id);
   const submitterAccess = propertyAccess.find(access => access.access_role === 'submitter') ?? propertyAccess[0];
@@ -292,6 +444,14 @@ function toRemoteProperty(
     docs: submission?.docs ?? [],
     assignedPartnerIds: propertyAccess.map(access => access.user_id),
     reviewNote: row.review_note ?? undefined,
+    firstAvailableDate: row.first_available_date ?? null,
+    availabilityConfirmationStatus: row.availability_confirmation_status ?? 'confirmed',
+    calendarResponsiblePerson: row.calendar_responsible_person ?? resolvedPartnerName,
+    calendarResponsibleUserId: row.calendar_responsible_user_id ?? undefined,
+    lastAvailabilityUpdate: row.last_availability_update ?? row.updated_at,
+    unavailableBlocks: blocksByPropertyId?.get(row.id) ?? [],
+    propertyIntroducerId: row.property_introducer_id ?? undefined,
+    authorisedManagerId: row.authorised_manager_id ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -319,11 +479,38 @@ function toRemoteBooking(
     nights: nightsBetween(row.check_in, row.check_out),
     guests: row.guest_count,
     accommodationSubtotal: row.accommodation_subtotal,
+    ownerListedPriceNgn: row.owner_listed_price_ngn ?? row.accommodation_subtotal,
+    domesticMarkupRate: row.domestic_markup_rate !== undefined ? Number(row.domestic_markup_rate) : 0.2,
+    domesticMarkupNgn: row.domestic_markup_ngn ?? row.hamlet_guest_fee,
+    domesticGuestPriceNgn: row.domestic_guest_price_ngn ?? row.accommodation_subtotal + row.hamlet_guest_fee,
     mandatoryCharges: row.mandatory_charges ?? [],
     mandatoryTotal: row.mandatory_total,
     hamletGuestFee: row.hamlet_guest_fee,
     guestTotal: row.guest_total,
     deposit: row.refundable_deposit,
+    propertyIntroducerId: row.property_introducer_id ?? null,
+    authorisedManagerId: row.authorised_manager_id ?? null,
+    closingAgentId: row.closing_agent_id ?? null,
+    directReferrerId: row.direct_referrer_id ?? null,
+    guestReferralSource: row.guest_referral_source ?? null,
+    closingAgentCommissionNgn: row.closing_agent_commission_ngn ?? 0,
+    directReferrerRewardNgn: row.direct_referrer_reward_ngn ?? 0,
+    hamletAllocationNgn: row.hamlet_allocation_ngn ?? 0,
+    paymentReserveNgn: row.payment_reserve_ngn ?? 0,
+    actualPaymentFeeNgn: row.actual_payment_fee_ngn ?? 0,
+    quoteCurrency: row.quote_currency ?? 'NGN',
+    currencyPair: row.currency_pair ?? 'NGN/NGN',
+    exchangeRateNgnPerUnit: row.exchange_rate_ngn_per_unit !== undefined ? Number(row.exchange_rate_ngn_per_unit) : 1,
+    exchangeRateSource: row.exchange_rate_source ?? 'domestic_ngn',
+    exchangeRateTimestamp: row.exchange_rate_timestamp ?? row.created_at,
+    internationalBufferRate: row.international_buffer_rate !== undefined ? Number(row.international_buffer_rate) : 0,
+    convertedBaseAmount: row.converted_base_amount !== undefined ? Number(row.converted_base_amount) : row.guest_total,
+    internationalBufferAmount: row.international_buffer_amount !== undefined ? Number(row.international_buffer_amount) : 0,
+    internationalBufferNgnEquiv: row.international_buffer_ngn_equiv ?? 0,
+    quotedGuestTotal: row.quoted_guest_total !== undefined ? Number(row.quoted_guest_total) : row.guest_total,
+    settlementTotalNgn: row.settlement_total_ngn ?? row.guest_total,
+    quoteExpiresAt: row.quote_expires_at ?? null,
+    pricingRulesVersion: row.pricing_rules_version ?? undefined,
     status: row.status,
     requestedAt: row.created_at,
     paymentDeadline: row.payment_deadline,
@@ -337,16 +524,53 @@ function toRemoteBooking(
   };
 }
 
+function mapRemoteExchangeRates(rows: RemoteExchangeRate[]): ExchangeRateConfig[] {
+  if (!rows || rows.length === 0) return buildDefaultExchangeRates();
+  return rows.map(r => ({
+    currency: r.currency,
+    currencyPair: r.currency_pair,
+    ngnPerUnit: Number(r.ngn_per_unit),
+    bufferRate: Number(r.buffer_rate),
+    source: r.source,
+    effectiveAt: r.effective_at,
+    expiresAt: r.expires_at ?? null,
+    isActive: Boolean(r.is_active),
+    updatedBy: r.updated_by ?? undefined,
+    updatedAt: r.updated_at,
+  }));
+}
+
 async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   if (!supabase) return emptyState();
+  const safeQuery = async <T,>(promise: PromiseLike<{ data: unknown; error: { message: string } | null }>): Promise<T[]> => {
+    try {
+      const res = await promise;
+      if (res.error || !res.data) return [];
+      return Array.isArray(res.data) ? (res.data as T[]) : [];
+    } catch {
+      return [];
+    }
+  };
+
   if (!user) {
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false });
+    const [{ data, error }, publicSpansRaw, fxRatesRaw] = await Promise.all([
+      supabase.from('properties').select('*').eq('status', 'approved').order('created_at', { ascending: false }),
+      safeQuery<RemotePublicSpan>(supabase.rpc('get_public_property_calendar', { target_property_ids: null })),
+      safeQuery<RemoteExchangeRate>(supabase.from('currency_exchange_rates').select('*')),
+    ]);
     if (error) throw new Error(`Could not load approved stays: ${error.message}`);
-    return { ...emptyState(), properties: ((data ?? []) as unknown as RemoteProperty[]).map(row => toRemoteProperty(row, '', [])) };
+    const publicCalendarSpans: PublicCalendarSpan[] = publicSpansRaw.map(s => ({
+      propertyId: s.property_id,
+      startDate: s.start_date,
+      endDate: s.end_date,
+      kind: s.kind,
+    }));
+    return {
+      ...emptyState(),
+      properties: ((data ?? []) as unknown as RemoteProperty[]).map(row => toRemoteProperty(row, '', [])),
+      publicCalendarSpans,
+      exchangeRates: mapRemoteExchangeRates(fxRatesRaw),
+    };
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -364,6 +588,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     phone: (profile.phone as string | undefined) || (user.user_metadata.phone as string | undefined) || undefined,
     partnerRole: profile.partner_role ?? undefined,
     company: profile.company ?? undefined,
+    referralCode: (profile.referral_code as string | undefined) ?? undefined,
     accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
     suspensionReason: (profile.suspension_reason as string | undefined) ?? undefined,
   };
@@ -385,8 +610,14 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     notificationResult,
     adminDirectoryResult,
     adminBootstrapResult,
+    publicSpansRaw,
+    blocksRaw,
+    referralsRaw,
+    referralRewardsRaw,
+    cautionDepositsRaw,
+    fxRatesRaw,
   ] = await Promise.all([
-    supabase.from('profiles').select('id,full_name,role,phone,company,partner_role,account_status,suspension_reason,created_at').order('created_at', { ascending: false }),
+    supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
     supabase.from('property_access').select('property_id,user_id,access_role,scope,commission_rate,commission_note,status,granted_at,revoked_at'),
     supabase.from('property_private_records').select('property_id,record_type,record_data').eq('record_type', 'partner_submission'),
@@ -405,6 +636,12 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     session.role === 'admin'
       ? supabase.from('admin_bootstrap_emails').select('*').order('created_at', { ascending: false })
       : Promise.resolve({ data: [], error: null }),
+    safeQuery<RemotePublicSpan>(supabase.rpc('get_public_property_calendar', { target_property_ids: null })),
+    safeQuery<RemoteAvailabilityBlock>(supabase.from('property_availability_blocks').select('*').order('start_date', { ascending: true })),
+    safeQuery<RemotePartnerReferral>(supabase.from('partner_referrals').select('*').order('created_at', { ascending: false })),
+    safeQuery<RemotePartnerReferralReward>(supabase.from('partner_referral_rewards').select('*').order('created_at', { ascending: false })),
+    safeQuery<RemoteCautionDeposit>(supabase.from('booking_caution_deposits').select('*').order('created_at', { ascending: false })),
+    safeQuery<RemoteExchangeRate>(supabase.from('currency_exchange_rates').select('*')),
   ]);
 
   for (const result of [
@@ -435,13 +672,32 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     commission_rate: number | null; commission_note: string; status: 'active' | 'revoked';
     granted_at: string; revoked_at?: string;
   }>;
+  const blocksByPropertyId = new Map<string, PropertyAvailabilityBlock[]>();
+  for (const b of blocksRaw) {
+    const mapped: PropertyAvailabilityBlock = {
+      id: b.id,
+      propertyId: b.property_id,
+      startDate: b.start_date,
+      endDate: b.end_date,
+      blockType: b.block_type,
+      source: b.source,
+      note: b.note ?? undefined,
+      createdBy: b.created_by ?? undefined,
+      createdAt: b.created_at,
+    };
+    const arr = blocksByPropertyId.get(b.property_id) ?? [];
+    arr.push(mapped);
+    blocksByPropertyId.set(b.property_id, arr);
+  }
   const submissions = new Map(
     (privateRecordResult.data ?? []).map(record => [
       record.property_id,
       record.record_data as RemotePropertySubmission,
     ]),
   );
-  const properties = propertyRows.map(row => toRemoteProperty(row, user.id, accesses, submissions.get(row.id), profileById));
+  const properties = propertyRows.map(row =>
+    toRemoteProperty(row, user.id, accesses, submissions.get(row.id), profileById, blocksByPropertyId),
+  );
   const propertyById = new Map(properties.map(property => [property.id, property]));
   const bookings = ((bookingResult.data ?? []) as unknown as RemoteBooking[])
     .map(row => toRemoteBooking(row, propertyById.get(row.property_id), session, profileById, adminDirectoryById));
@@ -456,6 +712,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     areas: application.areas,
     propertiesCount: application.properties_count,
     motivation: application.motivation,
+    referredByCode: application.referred_by_code ?? null,
+    referredByPartnerId: application.referred_by_partner_id ?? null,
     submittedAt: application.submitted_at,
     status: application.status,
     reviewNote: application.review_note,
@@ -476,6 +734,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       operator: row.operator_name || 'System',
       variance: row.variance ?? 0,
       note: row.note ?? undefined,
+      beneficiaryUserId: row.beneficiary_user_id ?? undefined,
+      payoutStatus: row.payout_status ?? 'not_applicable',
     };
   });
   const issues = ((issueResult.data ?? []) as unknown as RemoteIssue[]).map(issue => {
@@ -531,6 +791,9 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
           partnerRole: row.partner_role || dirEntry?.partner_role || undefined,
           company: row.company || dirEntry?.company || undefined,
           phone: row.phone || dirEntry?.phone || undefined,
+          referralCode: row.referral_code ?? undefined,
+          referredByPartnerId: row.referred_by_partner_id ?? null,
+          referredByCode: row.referred_by_code ?? null,
           accountStatus: row.account_status ?? dirEntry?.account_status ?? 'active',
           suspensionReason: row.suspension_reason || dirEntry?.suspension_reason || undefined,
           createdAt: row.created_at,
@@ -545,10 +808,90 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
         partnerRole: session.partnerRole,
         company: session.company,
         phone: profile.phone ?? undefined,
+        referralCode: (profile.referral_code as string | undefined) ?? undefined,
+        referredByPartnerId: (profile.referred_by_partner_id as string | undefined) ?? null,
+        referredByCode: (profile.referred_by_code as string | undefined) ?? null,
         accountStatus: session.accountStatus ?? 'active',
         suspensionReason: session.suspensionReason,
         createdAt: profile.created_at,
       }];
+
+  const publicCalendarSpans: PublicCalendarSpan[] = publicSpansRaw.map(s => ({
+    propertyId: s.property_id,
+    startDate: s.start_date,
+    endDate: s.end_date,
+    kind: s.kind,
+  }));
+
+  const partnerReferrals: PartnerReferral[] = referralsRaw.map(r => {
+    const referrerProf = profileById.get(r.referrer_partner_id);
+    const referredProf = profileById.get(r.referred_partner_id);
+    return {
+      id: r.id,
+      referrerPartnerId: r.referrer_partner_id,
+      referrerName: referrerProf?.full_name || 'HAMLET partner',
+      referredPartnerId: r.referred_partner_id,
+      referredName: referredProf?.full_name || 'Referred partner',
+      referredCompany: referredProf?.company ?? undefined,
+      referralCode: r.referral_code,
+      status: r.status,
+      earningWindowDays: r.earning_window_days,
+      registeredAt: r.registered_at,
+      verifiedAt: r.verified_at ?? undefined,
+      activatedAt: r.activated_at ?? undefined,
+      activatingBookingId: r.activating_booking_id ?? undefined,
+      eligibilityStartsAt: r.eligibility_starts_at ?? undefined,
+      eligibilityEndsAt: r.eligibility_ends_at ?? undefined,
+      disputeNote: r.dispute_note ?? undefined,
+      resolvedBy: r.resolved_by ?? undefined,
+    };
+  });
+
+  const partnerReferralRewards: PartnerReferralReward[] = referralRewardsRaw.map(rw => {
+    const agentProf = profileById.get(rw.referred_closing_agent_id);
+    return {
+      id: rw.id,
+      referralId: rw.referral_id,
+      referrerPartnerId: rw.referrer_partner_id,
+      referredClosingAgentId: rw.referred_closing_agent_id,
+      referredAgentName: agentProf?.full_name || 'Closing agent',
+      bookingId: rw.booking_id,
+      bookingRef: rw.booking_reference,
+      ownerListedPriceNgn: rw.owner_listed_price_ngn,
+      rewardRate: Number(rw.reward_rate),
+      rewardAmountNgn: rw.reward_amount_ngn,
+      payoutStatus: rw.payout_status,
+      reversalReason: rw.reversal_reason ?? undefined,
+      createdAt: rw.created_at,
+    };
+  });
+
+  const cautionDeposits: CautionDepositRecord[] = cautionDepositsRaw.map(cd => {
+    const booking = bookingById.get(cd.booking_id);
+    const prop = propertyById.get(cd.property_id);
+    return {
+      id: cd.id,
+      bookingId: cd.booking_id,
+      bookingRef: booking?.ref,
+      propertyId: cd.property_id,
+      propertyTitle: prop?.title ?? booking?.propertyTitle,
+      guestId: cd.guest_id,
+      guestName: booking?.guestName,
+      amountNgn: cd.amount_ngn,
+      status: cd.status,
+      deductedAmountNgn: cd.deducted_amount_ngn,
+      refundedAmountNgn: cd.refunded_amount_ngn,
+      collectionReference: cd.collection_reference ?? undefined,
+      refundReference: cd.refund_reference ?? undefined,
+      inspectionNotes: cd.inspection_notes ?? undefined,
+      deductionReason: cd.deduction_reason ?? undefined,
+      evidence: Array.isArray(cd.evidence) ? cd.evidence : [],
+      decisionBy: cd.decision_by ?? undefined,
+      decisionAt: cd.decision_at ?? undefined,
+      createdAt: cd.created_at,
+      updatedAt: cd.updated_at,
+    };
+  });
   const feedback: FeedbackItem[] = ((feedbackResult.data ?? []) as unknown as RemoteFeedback[]).map(row => {
     const booking = bookingById.get(row.booking_id);
     const guestProfile = profileById.get(row.guest_id);
@@ -613,11 +956,16 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     ...emptyState(),
     accounts,
     properties,
+    publicCalendarSpans,
     bookings,
     ledger,
     issues,
     applications,
     assignments,
+    partnerReferrals,
+    partnerReferralRewards,
+    cautionDeposits,
+    exchangeRates: mapRemoteExchangeRates(fxRatesRaw),
     audit,
     feedback,
     notifications,
@@ -704,7 +1052,10 @@ function reducer(state: DBState, action: Action): DBState {
         ...state,
         accounts: [...state.accounts, action.account],
         applications: [action.application, ...state.applications],
-        audit: [auditEntry(action.account.name, 'partner', 'partner_application_submitted', action.application.company, `Role: ${action.application.role} · ${action.application.areas.join(', ')}`), ...state.audit],
+        partnerReferrals: action.referral
+          ? [action.referral, ...state.partnerReferrals]
+          : state.partnerReferrals,
+        audit: [auditEntry(action.account.name, 'partner', 'partner_application_submitted', action.application.company, `Role: ${action.application.role} · ${action.application.areas.join(', ')}${action.application.referredByCode ? ` · Ref: ${action.application.referredByCode}` : ''}`), ...state.audit],
       };
     case 'RESUBMIT_PARTNER_APPLICATION':
       return {
@@ -845,14 +1196,113 @@ function reducer(state: DBState, action: Action): DBState {
         audit: [auditEntry(action.actor.name, action.actor.role, labels[action.status] ?? 'listing_reviewed', `${p.id} · ${p.title}`, action.note ?? `Status set to ${action.status}`), ...state.audit],
       };
     }
+    case 'UPDATE_PROPERTY_AVAILABILITY': {
+      const p = state.properties.find(x => x.id === action.id);
+      if (!p) return state;
+      const updated: Property = {
+        ...p,
+        firstAvailableDate: action.firstAvailableDate ?? null,
+        availabilityConfirmationStatus: action.availabilityConfirmationStatus,
+        calendarResponsiblePerson: action.calendarResponsiblePerson || p.calendarResponsiblePerson || action.actor.name,
+        calendarResponsibleUserId: action.actor.userId,
+        lastAvailabilityUpdate: nowIso(),
+      };
+      return {
+        ...state,
+        properties: state.properties.map(x => (x.id === action.id ? updated : x)),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            'property_availability_updated',
+            p.title,
+            `First available: ${action.firstAvailableDate ?? 'immediate'} · status: ${action.availabilityConfirmationStatus}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'ADD_AVAILABILITY_BLOCK': {
+      const p = state.properties.find(x => x.id === action.propertyId);
+      if (!p) return state;
+      const updated: Property = {
+        ...p,
+        unavailableBlocks: [...(p.unavailableBlocks ?? []), action.block],
+        lastAvailabilityUpdate: nowIso(),
+      };
+      return {
+        ...state,
+        properties: state.properties.map(x => (x.id === action.propertyId ? updated : x)),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            'property_block_added',
+            p.title,
+            `Blocked ${action.block.startDate} → ${action.block.endDate} (${action.block.blockType})`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'REMOVE_AVAILABILITY_BLOCK': {
+      const p = state.properties.find(x => x.id === action.propertyId);
+      if (!p) return state;
+      const updated: Property = {
+        ...p,
+        unavailableBlocks: (p.unavailableBlocks ?? []).filter(b => b.id !== action.blockId),
+        lastAvailabilityUpdate: nowIso(),
+      };
+      return {
+        ...state,
+        properties: state.properties.map(x => (x.id === action.propertyId ? updated : x)),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            'property_block_removed',
+            p.title,
+            `Removed calendar block ${action.blockId}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'SET_PROPERTY_PAUSE': {
+      const p = state.properties.find(x => x.id === action.propertyId);
+      if (!p) return state;
+      const nextStatus: Property['status'] = action.paused ? 'paused' : 'approved';
+      return {
+        ...state,
+        properties: state.properties.map(x => (x.id === action.propertyId ? { ...x, status: nextStatus } : x)),
+        audit: [
+          auditEntry(
+            action.actor.name,
+            action.actor.role,
+            `property_${nextStatus}`,
+            p.title,
+            action.note ?? `Publication status set to ${nextStatus}`,
+          ),
+          ...state.audit,
+        ],
+      };
+    }
     case 'ADD_BOOKING':
       return {
         ...state,
         bookings: [action.booking, ...state.bookings],
+        cautionDeposits: action.cautionDeposit
+          ? [action.cautionDeposit, ...state.cautionDeposits]
+          : state.cautionDeposits,
         notifications: [
           ...buildDemoNotifications(action.booking, 'booking_request_created', ['guest', 'partner', 'operations']),
           ...state.notifications,
         ],
+      };
+    case 'REFRESH_BOOKING_QUOTE':
+      return {
+        ...state,
+        bookings: state.bookings.map(b => (b.id === action.bookingId ? { ...b, ...action.patch } : b)),
       };
     case 'BOOKING_TRANSITION': {
       const b = state.bookings.find(x => x.id === action.id);
@@ -877,6 +1327,143 @@ function reducer(state: DBState, action: Action): DBState {
         case 'refunded': updated.timeline = [...b.timeline, ev('Refund processed', action.note)]; updated.refundStatus = 'processed'; break;
         default: updated.timeline = [...b.timeline, ev(`Status → ${action.to}`, action.note)];
       }
+
+      let nextReferrals = state.partnerReferrals;
+      let nextRewards = state.partnerReferralRewards;
+      let nextLedger = state.ledger;
+      let nextCaution = state.cautionDeposits;
+
+      if (action.to === 'completed') {
+        nextCaution = state.cautionDeposits.map(cd =>
+          cd.bookingId === b.id && cd.status === 'received'
+            ? { ...cd, status: 'inspection_pending' as const, updatedAt: at }
+            : cd,
+        );
+        nextLedger = state.ledger.map(le =>
+          le.bookingRef === b.ref && le.payoutStatus === 'pending' &&
+          (le.type === 'closing_agent_commission' || le.type === 'accommodation_revenue' || le.type === 'mandatory_charges')
+            ? { ...le, payoutStatus: 'approved' as const }
+            : le,
+        );
+
+        if (b.closingAgentId) {
+          const refRecord = state.partnerReferrals.find(r => r.referredPartnerId === b.closingAgentId);
+          if (refRecord) {
+            const evalRes = evaluateReferralOnBookingCompletion({
+              referral: refRecord,
+              referrerAccountActive: true,
+              referredAccountActive: true,
+              bookingId: b.id,
+              bookingStatus: 'completed',
+              closingAgentId: b.closingAgentId,
+              ownerListedPriceNgn: b.ownerListedPriceNgn ?? b.accommodationSubtotal,
+              completedAtIso: at,
+            });
+            if (evalRes.action === 'activate_only') {
+              nextReferrals = state.partnerReferrals.map(r =>
+                r.id === refRecord.id
+                  ? {
+                      ...r,
+                      status: 'active' as const,
+                      activatedAt: evalRes.nextActivatedAt,
+                      activatingBookingId: b.id,
+                      eligibilityStartsAt: evalRes.nextActivatedAt,
+                      eligibilityEndsAt: evalRes.nextEligibilityEndsAt,
+                    }
+                  : r,
+              );
+              nextRewards = [
+                {
+                  id: uid(),
+                  referralId: refRecord.id,
+                  referrerPartnerId: refRecord.referrerPartnerId,
+                  referredClosingAgentId: b.closingAgentId,
+                  bookingId: b.id,
+                  bookingRef: b.ref,
+                  ownerListedPriceNgn: b.ownerListedPriceNgn ?? b.accommodationSubtotal,
+                  rewardRate: 0,
+                  rewardAmountNgn: 0,
+                  payoutStatus: 'activated_no_payout',
+                  createdAt: at,
+                },
+                ...state.partnerReferralRewards,
+              ];
+            } else if (evalRes.action === 'award_recurring') {
+              updated.directReferrerId = refRecord.referrerPartnerId;
+              updated.directReferrerRewardNgn = evalRes.rewardAmountNgn;
+              const markup = updated.domesticMarkupNgn ?? updated.hamletGuestFee;
+              updated.hamletAllocationNgn = Math.max(
+                0,
+                markup - (updated.closingAgentCommissionNgn ?? 0) - evalRes.rewardAmountNgn - (updated.paymentReserveNgn ?? 0),
+              );
+              nextRewards = [
+                {
+                  id: uid(),
+                  referralId: refRecord.id,
+                  referrerPartnerId: refRecord.referrerPartnerId,
+                  referredClosingAgentId: b.closingAgentId,
+                  bookingId: b.id,
+                  bookingRef: b.ref,
+                  ownerListedPriceNgn: b.ownerListedPriceNgn ?? b.accommodationSubtotal,
+                  rewardRate: evalRes.rewardRate,
+                  rewardAmountNgn: evalRes.rewardAmountNgn,
+                  payoutStatus: 'pending',
+                  createdAt: at,
+                },
+                ...state.partnerReferralRewards,
+              ];
+              nextLedger = [
+                {
+                  id: uid(),
+                  at,
+                  bookingRef: b.ref,
+                  propertyTitle: b.propertyTitle,
+                  type: 'referral_reward',
+                  description: 'Direct partner referral reward (2.5% of owner listed price within 90-day window)',
+                  amount: evalRes.rewardAmountNgn,
+                  status: 'recorded',
+                  operator: action.actor.name,
+                  variance: 0,
+                  beneficiaryUserId: refRecord.referrerPartnerId,
+                  payoutStatus: 'pending',
+                },
+                ...nextLedger,
+              ];
+            }
+          }
+        }
+      } else if (action.to === 'cancelled' || action.to === 'no_show') {
+        const reversals: LedgerEntry[] = [];
+        nextLedger = state.ledger.map(le => {
+          if (
+            le.bookingRef === b.ref &&
+            (le.type === 'closing_agent_commission' || le.type === 'referral_reward' || le.type === 'partner_commission') &&
+            (le.payoutStatus === 'pending' || le.payoutStatus === 'approved')
+          ) {
+            reversals.push({
+              id: uid(),
+              at,
+              bookingRef: b.ref,
+              propertyTitle: b.propertyTitle,
+              type: le.type === 'referral_reward' ? 'referral_reversal' : 'commission_reversal',
+              description: `Reversed due to ${action.to}`,
+              amount: le.amount,
+              status: 'reconciled',
+              operator: action.actor.name,
+              variance: 0,
+              beneficiaryUserId: le.beneficiaryUserId,
+              payoutStatus: 'reversed',
+            });
+            return { ...le, payoutStatus: 'reversed' as const };
+          }
+          return le;
+        });
+        nextLedger = [...reversals, ...nextLedger];
+        nextRewards = state.partnerReferralRewards.map(rw =>
+          rw.bookingId === b.id ? { ...rw, payoutStatus: 'reversed' as const, reversalReason: action.to } : rw,
+        );
+      }
+
       const auditAction = action.to === 'completed' ? 'booking_completed'
         : action.to === 'cancelled' ? 'booking_cancelled'
         : action.to === 'expired' ? 'booking_expired'
@@ -891,6 +1478,10 @@ function reducer(state: DBState, action: Action): DBState {
       return {
         ...state,
         bookings: state.bookings.map(x => (x.id === action.id ? updated : x)),
+        partnerReferrals: nextReferrals,
+        partnerReferralRewards: nextRewards,
+        ledger: nextLedger,
+        cautionDeposits: nextCaution,
         notifications: [...demoTransitionNotifications, ...state.notifications],
         audit: [auditEntry(action.actor.name, action.actor.role, auditAction, b.ref, `→ ${action.to}${action.reason ? ` · ${action.reason}` : ''}`), ...state.audit],
       };
@@ -899,27 +1490,137 @@ function reducer(state: DBState, action: Action): DBState {
       const b = state.bookings.find(x => x.id === action.id);
       if (!b) return state;
       const at = nowIso();
+      const paidNgn = b.settlementTotalNgn ?? b.guestTotal;
       const updated: Booking = {
         ...b, status: 'confirmed', paymentRef: action.providerRef, paymentProvider: action.provider,
         timeline: [
           ...b.timeline,
-          { at, label: 'Payment verified server-side via provider webhook', actor: `System (${action.provider})`, detail: `Ref ${action.providerRef} · ${formatNaira(b.guestTotal)}` },
+          { at, label: 'Payment verified server-side via provider webhook', actor: `System (${action.provider})`, detail: `Ref ${action.providerRef} · ${formatNaira(paidNgn)}` },
           { at, label: 'Booking confirmed — availability rechecked. No overlap.', actor: 'System' },
         ],
       };
       const entries: LedgerEntry[] = [
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_charge', description: `Guest payment verified via webhook (${b.nights} nights + mandatory charges + 3% HAMLET guest fee)`, amount: b.guestTotal, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'accommodation_revenue', description: `Owner accommodation revenue (${b.nights} nights · 0% HAMLET owner fee)`, amount: b.accommodationSubtotal, status: 'recorded', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
-        ...(b.mandatoryTotal > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'mandatory_charges' as const, description: 'Disclosed mandatory property charges (owner settlement)', amount: b.mandatoryTotal, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef }] : []),
-        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_service_fee', description: `HAMLET guest service fee (3.0% × ${formatNaira(b.accommodationSubtotal)})`, amount: b.hamletGuestFee, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
-        ...(b.deposit > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'deposit_hold' as const, description: 'Refundable security deposit — held, not revenue. Excluded from fee base.', amount: b.deposit, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef }] : []),
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_charge', description: `Guest payment verified via webhook (${b.nights} nights + mandatory charges + 20% domestic accommodation markup)`, amount: paidNgn, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'accommodation_revenue', description: `Owner accommodation revenue (${b.nights} nights · 0% HAMLET owner fee)`, amount: b.accommodationSubtotal, status: 'recorded', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef, payoutStatus: 'pending' },
+        ...(b.mandatoryTotal > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'mandatory_charges' as const, description: 'Disclosed mandatory property charges (owner settlement)', amount: b.mandatoryTotal, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef, payoutStatus: 'pending' as const }] : []),
+        { id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'guest_service_fee', description: `HAMLET 20% domestic accommodation markup (20.0% × ${formatNaira(b.accommodationSubtotal)})`, amount: b.hamletGuestFee, status: 'reconciled', operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef },
+        ...(b.closingAgentId && (b.closingAgentCommissionNgn ?? 0) > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'closing_agent_commission' as const, description: 'Closing agent commission (10.0% of owner listed price)', amount: b.closingAgentCommissionNgn ?? 0, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: `${action.providerRef}:closing_agent`, beneficiaryUserId: b.closingAgentId, payoutStatus: 'pending' as const }] : []),
+        ...((b.paymentReserveNgn ?? 0) > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'payment_reserve' as const, description: 'Internal payment & settlement cost reserve (2.5% of owner listed price)', amount: b.paymentReserveNgn ?? 0, status: 'reconciled' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: `${action.providerRef}:payment_reserve`, note: 'Internal budget only — actual gateway charges recorded separately.' }] : []),
+        ...((b.hamletAllocationNgn ?? 0) > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'hamlet_allocation' as const, description: 'HAMLET net markup allocation', amount: b.hamletAllocationNgn ?? 0, status: 'reconciled' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: `${action.providerRef}:hamlet_allocation` }] : []),
+        ...((b.internationalBufferNgnEquiv ?? 0) > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'international_buffer' as const, description: `International 10% currency buffer (${b.quoteCurrency} quote)`, amount: b.internationalBufferNgnEquiv ?? 0, status: 'reconciled' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: `${action.providerRef}:fx_buffer` }] : []),
+        ...(b.deposit > 0 ? [{ id: uid(), at, bookingRef: b.ref, propertyTitle: b.propertyTitle, type: 'deposit_hold' as const, description: 'Refundable caution deposit — tracked separately, excluded from markup & commissions.', amount: b.deposit, status: 'recorded' as const, operator: `System (${action.provider} webhook)`, variance: 0, providerRef: action.providerRef }] : []),
       ];
+      const nextCaution = b.deposit > 0
+        ? state.cautionDeposits.some(cd => cd.bookingId === b.id)
+          ? state.cautionDeposits.map(cd => (cd.bookingId === b.id && cd.status === 'due' ? { ...cd, status: 'received' as const, collectionReference: action.providerRef, updatedAt: at } : cd))
+          : [{ id: uid(), bookingId: b.id, bookingRef: b.ref, propertyId: b.propertyId, propertyTitle: b.propertyTitle, guestId: b.guestId, guestName: b.guestName, amountNgn: b.deposit, status: 'received' as const, deductedAmountNgn: 0, refundedAmountNgn: 0, collectionReference: action.providerRef, evidence: [], createdAt: at, updatedAt: at }, ...state.cautionDeposits]
+        : state.cautionDeposits;
       return {
         ...state,
         bookings: state.bookings.map(x => (x.id === action.id ? updated : x)),
         ledger: [...entries, ...state.ledger],
+        cautionDeposits: nextCaution,
         audit: [
-          auditEntry(action.actor.name, action.actor.role, 'payment_verified', b.ref, `Webhook signature verified server-side. ${formatNaira(b.guestTotal)} confirmed. Idempotency key ${action.providerRef}`),
+          auditEntry(action.actor.name, action.actor.role, 'payment_verified', b.ref, `Webhook signature verified server-side. ${formatNaira(paidNgn)} confirmed. Idempotency key ${action.providerRef}`),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'TRANSITION_CAUTION_DEPOSIT': {
+      const target = state.cautionDeposits.find(cd => cd.bookingId === action.bookingId);
+      if (!target) return state;
+      const at = nowIso();
+      const updatedCd: CautionDepositRecord = {
+        ...target,
+        status: action.status,
+        deductedAmountNgn: action.deductedAmountNgn ?? target.deductedAmountNgn,
+        refundedAmountNgn: action.refundedAmountNgn ?? target.refundedAmountNgn,
+        inspectionNotes: action.inspectionNotes ?? target.inspectionNotes,
+        deductionReason: action.deductionReason ?? target.deductionReason,
+        refundReference: action.refundReference ?? target.refundReference,
+        evidence: action.evidence ?? target.evidence,
+        decisionBy: action.actor.role === 'admin' ? action.actor.userId : target.decisionBy,
+        decisionAt: action.actor.role === 'admin' ? at : target.decisionAt,
+        updatedAt: at,
+      };
+      const extraLedger: LedgerEntry[] = [];
+      if (action.actor.role === 'admin' && (action.status === 'partially_refunded' || action.status === 'refund_completed')) {
+        if ((action.deductedAmountNgn ?? 0) > 0) {
+          extraLedger.push({
+            id: uid(), at, bookingRef: target.bookingRef ?? target.bookingId, propertyTitle: target.propertyTitle,
+            type: 'caution_deduction', description: `Caution deposit deduction — ${action.deductionReason ?? 'Inspection damage'}`,
+            amount: action.deductedAmountNgn ?? 0, status: 'reconciled', operator: action.actor.name, variance: 0,
+          });
+        }
+        if ((action.refundedAmountNgn ?? 0) > 0) {
+          extraLedger.push({
+            id: uid(), at, bookingRef: target.bookingRef ?? target.bookingId, propertyTitle: target.propertyTitle,
+            type: 'caution_refund', description: 'Caution deposit refunded to guest post-inspection',
+            amount: action.refundedAmountNgn ?? 0, status: 'reconciled', operator: action.actor.name, variance: 0,
+          });
+        }
+      }
+      return {
+        ...state,
+        cautionDeposits: state.cautionDeposits.map(cd => (cd.id === target.id ? updatedCd : cd)),
+        ledger: [...extraLedger, ...state.ledger],
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, `caution_deposit_${action.status}`, target.bookingRef ?? target.bookingId, `Status → ${action.status}`),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'UPDATE_EXCHANGE_RATE': {
+      const exists = state.exchangeRates.some(r => r.currency === action.config.currency);
+      const nextRates = exists
+        ? state.exchangeRates.map(r => (r.currency === action.config.currency ? action.config : r))
+        : [...state.exchangeRates, action.config];
+      return {
+        ...state,
+        exchangeRates: nextRates,
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, 'exchange_rate_updated', action.config.currencyPair, `${action.config.currencyPair} set to ${action.config.ngnPerUnit} (${action.config.source})`),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'RESOLVE_REFERRAL_DISPUTE': {
+      const target = state.partnerReferrals.find(r => r.id === action.referralId);
+      if (!target) return state;
+      return {
+        ...state,
+        partnerReferrals: state.partnerReferrals.map(r =>
+          r.id === action.referralId
+            ? {
+                ...r,
+                status: action.status,
+                earningWindowDays: action.overrideWindowDays ?? r.earningWindowDays,
+                disputeNote: action.note,
+                resolvedBy: action.actor.userId,
+              }
+            : r,
+        ),
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, `referral_${action.status}`, target.referralCode, action.note),
+          ...state.audit,
+        ],
+      };
+    }
+    case 'UPDATE_PAYOUT_STATUS': {
+      const entry = state.ledger.find(l => l.id === action.entryId);
+      if (!entry) return state;
+      return {
+        ...state,
+        ledger: state.ledger.map(l =>
+          l.id === action.entryId
+            ? { ...l, payoutStatus: action.payoutStatus, status: action.payoutStatus === 'paid' ? 'settled' : l.status, note: action.note ?? l.note }
+            : l,
+        ),
+        partnerReferralRewards: entry.type === 'referral_reward'
+          ? state.partnerReferralRewards.map(rw => (rw.bookingRef === entry.bookingRef ? { ...rw, payoutStatus: action.payoutStatus } : rw))
+          : state.partnerReferralRewards,
+        audit: [
+          auditEntry(action.actor.name, action.actor.role, `payout_${action.payoutStatus}`, entry.bookingRef, `${entry.type} → ${action.payoutStatus}`),
           ...state.audit,
         ],
       };
@@ -1152,16 +1853,27 @@ interface Store {
   requestPasswordReset: (email: string) => Promise<{ ok: boolean; error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (input: { name: string; phone?: string; company?: string }) => Promise<{ ok: boolean; error?: string }>;
-  registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string; password?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
+  registerPartner: (input: { name: string; email: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string; password?: string; referralCode?: string }) => Promise<{ ok: boolean; needsEmailConfirmation?: boolean; error?: string }>;
   resubmitPartnerApplication: (id: string, input: { name: string; phone: string; company: string; role: string; areas: string[]; propertiesCount: number; motivation: string }) => Promise<void>;
   uploadPropertyImage: (file: File) => Promise<string>;
   submitProperty: (input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'docs' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy' | 'submittedRole' | 'authorityBasis'> & Pick<Property, 'authorityBasis' | 'docs'> & Partial<Pick<Property, 'submittedRole'>>) => Promise<{ ok: boolean; error?: string; property?: Property }>;
   updateAndResubmitProperty: (id: string, input: Omit<Property, 'id' | 'status' | 'verification' | 'trustLabel' | 'assignedPartnerIds' | 'createdAt' | 'ownerId' | 'ownerName' | 'submittedBy'>, correctionNote?: string) => Promise<void>;
+  updatePropertyAvailabilitySettings: (propertyId: string, input: { firstAvailableDate: string | null; availabilityConfirmationStatus: AvailabilityConfirmationStatus; calendarResponsiblePerson?: string }) => Promise<void>;
+  addPropertyAvailabilityBlock: (propertyId: string, input: { startDate: string; endDate: string; blockType: AvailabilityBlockType; note?: string }) => Promise<void>;
+  removePropertyAvailabilityBlock: (propertyId: string, blockId: string) => Promise<void>;
+  setPropertyPublicationPause: (propertyId: string, paused: boolean, note?: string) => Promise<void>;
   reviewProperty: (id: string, status: Property['status'], note?: string, verification?: Property['verification']) => Promise<void>;
   setPartnerAccountStatus: (partnerId: string, status: 'active' | 'suspended', reason: string, cascadeSuspendProperties?: boolean) => Promise<void>;
   setGuestAccountStatus: (guestId: string, status: 'active' | 'suspended', reason: string) => Promise<void>;
   authorizeAdminEmail: (email: string, note: string) => Promise<{ promotedExisting: boolean }>;
-  requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
+  ensureMyReferralCode: () => Promise<string>;
+  resolveReferralCode: (code: string) => Promise<{ valid: boolean; code: string; referrerName?: string; referrerCompany?: string }>;
+  resolveReferralDispute: (referralId: string, status: ReferralRelationshipStatus, note: string, overrideWindowDays?: number) => Promise<void>;
+  requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string; quoteCurrency?: SupportedCurrency; closingAgentCode?: string; guestReferralSource?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
+  refreshBookingFxQuote: (bookingId: string, quoteCurrency: SupportedCurrency) => Promise<void>;
+  transitionCautionDeposit: (bookingId: string, status: CautionDepositStatus, opts?: { deductedAmountNgn?: number; refundedAmountNgn?: number; inspectionNotes?: string; deductionReason?: string; refundReference?: string; evidence?: string[] }) => Promise<void>;
+  updateExchangeRateConfig: (input: { currency: 'USD' | 'GBP'; ngnPerUnit: number; source: string; quoteTtlMinutes?: number; isActive?: boolean; expiresAt?: string | null }) => Promise<void>;
+  updatePayoutStatus: (entryId: string, payoutStatus: PayoutStatus, note?: string) => Promise<void>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   retryBookingNotifications: (bookingId: string) => Promise<{ ok: boolean; sent: number; failed: number; error?: string }>;
   verifyPayment: (id: string) => void;
@@ -1190,6 +1902,10 @@ export function HamletProvider({ children }: { children: ReactNode }) {
   const [backendReady, setBackendReady] = useState(!isSupabaseConfigured);
   const [backendError, setBackendError] = useState<string | null>(null);
   const [passwordRecoveryPending, setPasswordRecoveryPending] = useState(false);
+
+  useEffect(() => {
+    captureUrlAttributionParams();
+  }, []);
 
   useEffect(() => {
     const client = supabase;
@@ -1441,6 +2157,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       return { ok: true };
     },
     registerPartner: async (input) => {
+      const normalizedRefCode = normalizeReferralCode(input.referralCode || getPersistedPartnerRefCode());
       if (supabase) {
         let applicantUserId = state.session?.userId;
         let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
@@ -1456,6 +2173,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
               data: {
                 full_name: input.name.trim(),
                 phone: input.phone.trim(),
+                ...(normalizedRefCode ? { referral_code: normalizedRefCode } : {}),
               },
             },
           });
@@ -1489,8 +2207,10 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           areas: input.areas,
           properties_count: input.propertiesCount,
           motivation: input.motivation.trim(),
+          referred_by_code: normalizedRefCode || null,
         });
         if (error) return { ok: false, error: error.message };
+        clearPersistedPartnerRefCode();
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) return { ok: false, error: authError.message };
         try {
@@ -1500,14 +2220,54 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         }
         return { ok: true };
       }
+
+      const referrerAccount = normalizedRefCode
+        ? state.accounts.find(
+            a =>
+              a.role === 'partner' &&
+              a.accountStatus !== 'suspended' &&
+              normalizeReferralCode(a.referralCode) === normalizedRefCode &&
+              a.email.toLowerCase() !== input.email.trim().toLowerCase(),
+          )
+        : undefined;
+      if (normalizedRefCode && state.accounts.some(a => normalizeReferralCode(a.referralCode) === normalizedRefCode && a.email.toLowerCase() === input.email.trim().toLowerCase())) {
+        return { ok: false, error: 'Self-referrals are not permitted.' };
+      }
+      const generatedOwnCode = buildPartnerReferralCode(
+        input.name,
+        `${input.email}-${Date.now()}`,
+        new Set(state.accounts.map(a => normalizeReferralCode(a.referralCode)).filter(Boolean)),
+      );
       const account: Account = {
         id: uid(), name: input.name, email: input.email, password: input.password || 'demo1234', role: 'partner',
-        partnerRole: input.role, company: input.company, phone: input.phone, createdAt: nowIso(),
+        partnerRole: input.role, company: input.company, phone: input.phone,
+        referralCode: generatedOwnCode,
+        referredByPartnerId: referrerAccount?.id ?? null,
+        referredByCode: referrerAccount ? normalizedRefCode : null,
+        createdAt: nowIso(),
       };
       const application: PartnerApplication = {
-        id: uid(), applicantId: account.id, ...input, submittedAt: nowIso(), status: 'pending',
+        id: uid(), applicantId: account.id, ...input,
+        referredByCode: referrerAccount ? normalizedRefCode : undefined,
+        referredByPartnerId: referrerAccount?.id,
+        submittedAt: nowIso(), status: 'pending',
       };
-      dispatch({ type: 'REGISTER_PARTNER', account, application });
+      const referral: PartnerReferral | undefined = referrerAccount
+        ? {
+            id: uid(),
+            referrerPartnerId: referrerAccount.id,
+            referrerName: referrerAccount.name,
+            referredPartnerId: account.id,
+            referredName: account.name,
+            referredCompany: account.company,
+            referralCode: normalizedRefCode,
+            status: 'pending_verification',
+            earningWindowDays: 90,
+            registeredAt: nowIso(),
+          }
+        : undefined;
+      clearPersistedPartnerRefCode();
+      dispatch({ type: 'REGISTER_PARTNER', account, application, referral });
       return { ok: true };
     },
     resubmitPartnerApplication: async (id, input) => {
@@ -1600,6 +2360,20 @@ export function HamletProvider({ children }: { children: ReactNode }) {
             amenities: input.amenities,
             image_urls: input.images,
             house_rules: input.houseRules,
+            first_available_date: input.firstAvailableDate ?? null,
+            availability_confirmation_status:
+              input.availabilityConfirmationStatus === 'needs_confirmation' ||
+              input.availabilityConfirmationStatus === 'manual_confirmation' ||
+              input.availabilityConfirmationStatus === 'unconfirmed'
+                ? 'needs_confirmation'
+                : 'confirmed',
+            calendar_responsible_person: input.calendarResponsiblePerson ?? s.name,
+            unavailable_blocks: (input.unavailableBlocks ?? []).map(b => ({
+              start_date: b.startDate,
+              end_date: b.endDate,
+              block_type: b.blockType,
+              note: b.note ?? '',
+            })),
           },
           submission_data: {
             authority_basis: input.authorityBasis,
@@ -1639,10 +2413,122 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         submittedBy: s?.name ?? 'Partner',
         submittedRole: s?.partnerRole ?? 'Partner',
         authorityBasis: input.authorityBasis ?? 'Submitted via partner portal — evidence under review',
+        introducerPartnerId: s?.userId,
+        managerPartnerId: s?.userId,
+        availabilityConfirmationStatus: input.availabilityConfirmationStatus ?? 'manual_confirmation',
+        firstAvailableDate: input.firstAvailableDate ?? null,
+        calendarResponsiblePerson: input.calendarResponsiblePerson ?? s?.name ?? 'Partner',
+        calendarResponsibleUserId: s?.userId,
+        lastAvailabilityUpdate: nowIso(),
+        unavailableBlocks: input.unavailableBlocks ?? [],
         createdAt: nowIso(),
       };
       dispatch({ type: 'ADD_PROPERTY', property });
       return { ok: true, property };
+    },
+    updatePropertyAvailabilitySettings: async (propertyId, input) => {
+      if (!state.session) throw new Error('Sign in before updating property availability.');
+      const normalizedConfirmation: 'confirmed' | 'needs_confirmation' =
+        input.availabilityConfirmationStatus === 'needs_confirmation' ||
+        input.availabilityConfirmationStatus === 'manual_confirmation' ||
+        input.availabilityConfirmationStatus === 'unconfirmed'
+          ? 'needs_confirmation'
+          : 'confirmed';
+      if (supabase) {
+        const { error } = await supabase.rpc('update_property_availability_settings', {
+          target_property_id: propertyId,
+          next_first_available_date: input.firstAvailableDate,
+          next_confirmation_status: normalizedConfirmation,
+          next_responsible_person: input.calendarResponsiblePerson?.trim() || null,
+        });
+        if (error) throw new Error(`Could not update availability settings: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'UPDATE_PROPERTY_AVAILABILITY',
+        id: propertyId,
+        firstAvailableDate: input.firstAvailableDate,
+        availabilityConfirmationStatus: normalizedConfirmation,
+        calendarResponsiblePerson: input.calendarResponsiblePerson,
+        actor: state.session,
+      });
+    },
+    addPropertyAvailabilityBlock: async (propertyId, input) => {
+      if (!state.session) throw new Error('Sign in before adding calendar unavailable dates.');
+      if (!input.startDate || !input.endDate || input.endDate <= input.startDate) {
+        throw new Error('Block end date must be after start date.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('add_property_availability_block', {
+          target_property_id: propertyId,
+          block_start: input.startDate,
+          block_end: input.endDate,
+          kind: input.blockType,
+          block_source: state.session.role === 'admin' ? 'admin' : 'partner',
+          block_note: input.note?.trim() || null,
+        });
+        if (error) throw new Error(`Could not add availability block: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      const clash = state.bookings.find(
+        b =>
+          b.propertyId === propertyId &&
+          b.status === 'confirmed' &&
+          b.checkIn < input.endDate &&
+          b.checkOut > input.startDate,
+      );
+      if (clash) {
+        throw new Error(`Cannot block dates overlapping confirmed HAMLET booking (${clash.ref}).`);
+      }
+      const block: PropertyAvailabilityBlock = {
+        id: uid(),
+        propertyId,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        blockType: input.blockType,
+        note: input.note?.trim() || undefined,
+        createdBy: state.session.userId,
+        createdByName: state.session.name,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      };
+      dispatch({ type: 'ADD_AVAILABILITY_BLOCK', propertyId, block, actor: state.session });
+    },
+    removePropertyAvailabilityBlock: async (propertyId, blockId) => {
+      if (!state.session) throw new Error('Sign in before removing a calendar block.');
+      if (supabase) {
+        const { error } = await supabase.rpc('remove_property_availability_block', {
+          target_block_id: blockId,
+        });
+        if (error) throw new Error(`Could not remove calendar block: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({ type: 'REMOVE_AVAILABILITY_BLOCK', propertyId, blockId, actor: state.session });
+    },
+    setPropertyPublicationPause: async (propertyId, paused, note) => {
+      if (!state.session) throw new Error('Sign in before changing listing publication status.');
+      if (supabase) {
+        const { error } = await supabase.rpc('set_property_publication_pause', {
+          target_property_id: propertyId,
+          paused,
+          pause_note: note?.trim() || null,
+        });
+        if (error) throw new Error(`Could not update publication status: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({ type: 'SET_PROPERTY_PAUSE', propertyId, paused, note, actor: state.session });
     },
     reviewProperty: async (id, status, note, verification) => {
       if (!state.session) return;
@@ -1678,7 +2564,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       dispatch({ type: 'PROPERTY_REVIEW', id, status, note, verification, actor: state.session });
     },
-    requestBooking: async ({ property, guestId, guestName, guestEmail, checkIn, checkOut, guests, specialRequests }) => {
+    requestBooking: async ({ property, guestId, guestName, guestEmail, checkIn, checkOut, guests, specialRequests, quoteCurrency = 'NGN', closingAgentCode, guestReferralSource }) => {
+      const resolvedAgentCode = normalizeReferralCode(closingAgentCode || getPersistedClosingAgentCode());
       if (supabase) {
         if (!state.session || state.session.role !== 'guest') {
           return { ok: false, error: 'Sign in with a guest account to request this stay.' };
@@ -1712,6 +2599,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           hamlet_guest_fee: pricing.hamletGuestServiceFee,
           guest_total: pricing.guestTotal,
           refundable_deposit: pricing.refundableDeposit,
+          quote_currency: quoteCurrency,
+          guest_referral_source: resolvedAgentCode || guestReferralSource?.trim() || null,
           special_requests: specialRequests,
         }).select('*').single();
         if (error) return { ok: false, error: error.message };
@@ -1731,32 +2620,123 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       const nights = nightsBetween(checkIn, checkOut);
       if (nights <= 0) return { ok: false, error: 'Check-out must be after check-in.' };
       if (new Date(checkIn) < new Date(new Date().toDateString())) return { ok: false, error: 'Check-in cannot be in the past.' };
+      if (property.firstAvailableDate && checkIn < property.firstAvailableDate) {
+        return { ok: false, error: `This property is next available from ${property.firstAvailableDate}.` };
+      }
+      const blockClash = (property.unavailableBlocks ?? []).find(
+        bl => bl.startDate < checkOut && bl.endDate > checkIn,
+      );
+      if (blockClash) {
+        return { ok: false, error: 'Those dates are marked unavailable on the property calendar. Please choose different dates.' };
+      }
       // Overlap prevention: no confirmed or awaiting_payment booking may overlap the requested range.
       const clash = state.bookings.find(b =>
         b.propertyId === property.id &&
         (b.status === 'confirmed' || b.status === 'awaiting_payment') &&
         new Date(b.checkIn) < new Date(checkOut) && new Date(b.checkOut) > new Date(checkIn));
       if (clash) return { ok: false, error: `Those dates conflict with an existing booking (${clash.ref}). Please choose different dates.` };
+
+      const matchedAgent = resolvedAgentCode
+        ? state.accounts.find(
+            a =>
+              a.role === 'partner' &&
+              a.accountStatus !== 'suspended' &&
+              normalizeReferralCode(a.referralCode) === resolvedAgentCode &&
+              a.id !== guestId,
+          )
+        : undefined;
+      const activeReferral = matchedAgent
+        ? state.partnerReferrals.find(
+            r =>
+              r.referredPartnerId === matchedAgent.id &&
+              r.status === 'active' &&
+              (!r.eligibilityEndsAt || new Date(r.eligibilityEndsAt).getTime() >= Date.now()),
+          )
+        : undefined;
+
+      const ownerListedPriceNgn = nights * property.nightlyRate;
       const pricing = calculateGuestPricing({
-        accommodationSubtotal: nights * property.nightlyRate,
+        accommodationSubtotal: ownerListedPriceNgn,
         mandatoryCharges: property.mandatoryCharges,
         refundableDeposit: property.deposit,
+        hasClosingAgent: Boolean(matchedAgent),
+        hasQualifyingDirectReferrer: Boolean(activeReferral),
       });
+      const fxConfig = quoteCurrency !== 'NGN'
+        ? state.exchangeRates.find(r => r.currency === quoteCurrency) ?? null
+        : null;
+      const fxQuote = calculateBookingCurrencyQuote({
+        ownerListedPriceNgn,
+        mandatoryChargesTotalNgn: pricing.mandatoryChargesTotal,
+        refundableDepositNgn: pricing.refundableDeposit,
+        quoteCurrency,
+        exchangeRateConfig: fxConfig,
+        hasClosingAgent: Boolean(matchedAgent),
+        hasQualifyingDirectReferrer: Boolean(activeReferral),
+      });
+
       const seq = 10 + state.bookings.length;
+      const bookingId = uid();
+      const bookingRef = `HML-2026-${String(seq).padStart(4, '0')}`;
       const booking: Booking = {
-        id: uid(), ref: `HML-2026-${String(seq).padStart(4, '0')}`,
+        id: bookingId, ref: bookingRef,
         propertyId: property.id, propertyTitle: property.title, area: property.area,
         guestId, guestName, guestEmail, checkIn, checkOut, nights, guests,
+        ownerListedPriceNgn,
+        domesticMarkupNgn: pricing.hamletGuestServiceFee,
+        domesticGuestPriceNgn: pricing.domesticGuestPriceNgn,
+        closingAgentCommissionNgn: pricing.allocation.closingAgentCommissionNgn,
+        directReferrerRewardNgn: pricing.allocation.directReferrerRewardNgn,
+        hamletAllocationNgn: pricing.allocation.hamletAllocationNgn,
+        paymentReserveNgn: pricing.allocation.paymentReserveNgn,
         accommodationSubtotal: pricing.accommodationSubtotal,
         mandatoryCharges: pricing.mandatoryCharges,
         mandatoryTotal: pricing.mandatoryChargesTotal,
         hamletGuestFee: pricing.hamletGuestServiceFee,
         guestTotal: pricing.guestTotal,
         deposit: pricing.refundableDeposit,
+        quoteCurrency: fxQuote.quoteCurrency,
+        settlementCurrency: 'NGN',
+        fxRatePair: fxQuote.fxRatePair ?? undefined,
+        fxRate: fxQuote.fxRate ?? undefined,
+        fxRateSource: fxQuote.fxRateSource ?? undefined,
+        fxQuotedAt: fxQuote.fxQuotedAt ?? undefined,
+        quoteExpiresAt: fxQuote.quoteExpiresAt ?? undefined,
+        internationalConvertedBaseMinor: fxQuote.convertedBaseMinor ?? undefined,
+        internationalBufferMinor: fxQuote.internationalBufferMinor ?? undefined,
+        internationalBufferNgnEquiv: fxQuote.internationalBufferNgnEquiv,
+        quotedStayTotalMinor: fxQuote.quotedStayTotalMinor,
+        quotedGrandTotalMinor: fxQuote.quotedGrandTotalMinor,
+        settlementTotalNgn: fxQuote.settlementTotalNgn,
+        propertyIntroducerId: property.introducerPartnerId ?? property.ownerId,
+        propertyManagerId: property.managerPartnerId ?? property.ownerId,
+        closingAgentId: matchedAgent?.id ?? null,
+        closingAgentName: matchedAgent?.name,
+        closingAgentCode: matchedAgent ? resolvedAgentCode : null,
+        directReferrerId: activeReferral?.referrerPartnerId ?? null,
+        guestReferralSource: guestReferralSource?.trim() || null,
         status: 'requested', requestedAt: nowIso(), specialRequests,
-        timeline: [{ at: nowIso(), label: 'Booking requested', actor: `Guest · ${guestName}`, detail: 'Awaiting availability & terms check' }],
+        timeline: [{ at: nowIso(), label: 'Booking requested', actor: `Guest · ${guestName}`, detail: `Awaiting availability & terms check (${fxQuote.quoteCurrency} quote)` }],
       };
-      dispatch({ type: 'ADD_BOOKING', booking });
+      const cautionDeposit: CautionDepositRecord | undefined = pricing.refundableDeposit > 0
+        ? {
+            id: uid(),
+            bookingId,
+            bookingRef,
+            propertyId: property.id,
+            propertyTitle: property.title,
+            guestId,
+            guestName,
+            amountNgn: pricing.refundableDeposit,
+            status: 'due',
+            deductedAmountNgn: 0,
+            refundedAmountNgn: 0,
+            evidence: [],
+            createdAt: nowIso(),
+            updatedAt: nowIso(),
+          }
+        : undefined;
+      dispatch({ type: 'ADD_BOOKING', booking, cautionDeposit });
       return { ok: true, booking };
     },
     bookingTransition: async (id, to, opts) => {
@@ -2020,6 +3000,9 @@ export function HamletProvider({ children }: { children: ReactNode }) {
             amenities: input.amenities,
             image_urls: input.images,
             house_rules: input.houseRules,
+            first_available_date: input.firstAvailableDate ?? null,
+            availability_confirmation_status: input.availabilityConfirmationStatus ?? 'manual_confirmation',
+            calendar_responsible_person: input.calendarResponsiblePerson ?? state.session.name,
           },
           submission_data: {
             authority_basis: input.authorityBasis,
@@ -2257,6 +3240,223 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         detail: `Private pilot feedback (${input.rating}/5 · ${input.category}) recorded.`,
       });
     },
+    ensureMyReferralCode: async () => {
+      if (!state.session) throw new Error('Sign in before requesting a partner referral code.');
+      if (supabase) {
+        const { data, error } = await supabase.rpc('ensure_my_referral_code');
+        if (error) throw new Error(`Could not obtain referral code: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (!authError) {
+          dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        }
+        return String(data);
+      }
+      const existing = state.accounts.find(a => a.id === state.session?.userId)?.referralCode;
+      if (existing) return existing;
+      return buildPartnerReferralCode(state.session.name, state.session.userId);
+    },
+    resolveReferralCode: async (code) => {
+      const normalized = normalizeReferralCode(code);
+      if (!normalized) return { valid: false, code: '' };
+      if (supabase) {
+        const { data, error } = await supabase.rpc('resolve_referral_code', { code_input: normalized });
+        if (error || !data) return { valid: false, code: normalized };
+        const payload = data as {
+          valid?: boolean;
+          code?: string;
+          referral_code?: string;
+          partner_name?: string;
+          referrer_name?: string;
+          company?: string;
+          referrer_company?: string;
+        };
+        return {
+          valid: Boolean(payload.valid),
+          code: payload.referral_code ?? payload.code ?? normalized,
+          referrerName: payload.partner_name ?? payload.referrer_name,
+          referrerCompany: payload.company ?? payload.referrer_company,
+        };
+      }
+      const partner = state.accounts.find(
+        a =>
+          a.role === 'partner' &&
+          a.accountStatus !== 'suspended' &&
+          normalizeReferralCode(a.referralCode) === normalized,
+      );
+      if (!partner) return { valid: false, code: normalized };
+      return {
+        valid: true,
+        code: normalized,
+        referrerName: partner.name,
+        referrerCompany: partner.company,
+      };
+    },
+    resolveReferralDispute: async (referralId, status, note, overrideWindowDays) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can resolve referral attribution disputes.');
+      }
+      const trimmedNote = note.trim();
+      if (trimmedNote.length < 10) {
+        throw new Error('Provide an attribution resolution note of at least 10 characters.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('admin_resolve_referral_dispute', {
+          target_referral_id: referralId,
+          next_status: status,
+          resolution_note: trimmedNote,
+          override_window_days: overrideWindowDays ?? null,
+        });
+        if (error) throw new Error(`Could not resolve referral dispute: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'RESOLVE_REFERRAL_DISPUTE',
+        referralId,
+        status,
+        note: trimmedNote,
+        overrideWindowDays,
+        actor: state.session,
+      });
+    },
+    refreshBookingFxQuote: async (bookingId, quoteCurrency) => {
+      if (!state.session) throw new Error('Sign in before refreshing a booking currency quote.');
+      if (supabase) {
+        const { error } = await supabase.rpc('refresh_booking_fx_quote', {
+          target_booking_id: bookingId,
+          target_currency: quoteCurrency,
+        });
+        if (error) throw new Error(`Could not refresh currency quote: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      const booking = state.bookings.find(b => b.id === bookingId);
+      if (!booking) throw new Error('Booking not found.');
+      const fxConfig = quoteCurrency !== 'NGN'
+        ? state.exchangeRates.find(r => r.currency === quoteCurrency) ?? null
+        : null;
+      const fxQuote = calculateBookingCurrencyQuote({
+        ownerListedPriceNgn: booking.ownerListedPriceNgn ?? booking.accommodationSubtotal,
+        mandatoryChargesTotalNgn: booking.mandatoryTotal,
+        refundableDepositNgn: booking.deposit,
+        quoteCurrency,
+        exchangeRateConfig: fxConfig,
+        hasClosingAgent: Boolean(booking.closingAgentId),
+        hasQualifyingDirectReferrer: Boolean(booking.directReferrerId),
+      });
+      dispatch({
+        type: 'REFRESH_BOOKING_QUOTE',
+        bookingId,
+        patch: {
+          quoteCurrency: fxQuote.quoteCurrency,
+          fxRatePair: fxQuote.fxRatePair ?? undefined,
+          fxRate: fxQuote.fxRate ?? undefined,
+          fxRateSource: fxQuote.fxRateSource ?? undefined,
+          fxQuotedAt: fxQuote.fxQuotedAt ?? undefined,
+          quoteExpiresAt: fxQuote.quoteExpiresAt ?? undefined,
+          internationalConvertedBaseMinor: fxQuote.convertedBaseMinor ?? undefined,
+          internationalBufferMinor: fxQuote.internationalBufferMinor ?? undefined,
+          internationalBufferNgnEquiv: fxQuote.internationalBufferNgnEquiv,
+          quotedStayTotalMinor: fxQuote.quotedStayTotalMinor,
+          quotedGrandTotalMinor: fxQuote.quotedGrandTotalMinor,
+          settlementTotalNgn: fxQuote.settlementTotalNgn,
+        },
+      });
+    },
+    transitionCautionDeposit: async (bookingId, status, opts) => {
+      if (!state.session) throw new Error('Sign in before updating a caution deposit.');
+      if (supabase) {
+        const { error } = await supabase.rpc('transition_caution_deposit', {
+          target_booking_id: bookingId,
+          next_status: status,
+          deducted_ngn: opts?.deductedAmountNgn ?? 0,
+          refunded_ngn: opts?.refundedAmountNgn ?? 0,
+          inspection_note: opts?.inspectionNotes?.trim() || null,
+          deduction_note: opts?.deductionReason?.trim() || null,
+          refund_ref: opts?.refundReference?.trim() || null,
+          evidence_items: opts?.evidence ?? null,
+        });
+        if (error) throw new Error(`Could not update caution deposit: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'TRANSITION_CAUTION_DEPOSIT',
+        bookingId,
+        status,
+        deductedAmountNgn: opts?.deductedAmountNgn,
+        refundedAmountNgn: opts?.refundedAmountNgn,
+        inspectionNotes: opts?.inspectionNotes,
+        deductionReason: opts?.deductionReason,
+        refundReference: opts?.refundReference,
+        evidence: opts?.evidence,
+        actor: state.session,
+      });
+    },
+    updateExchangeRateConfig: async (input) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can configure FX exchange rates.');
+      }
+      if (!Number.isFinite(input.ngnPerUnit) || input.ngnPerUnit <= 0) {
+        throw new Error('Exchange rate must be a positive number of Naira per unit.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('upsert_exchange_rate_config', {
+          target_currency: input.currency,
+          next_ngn_per_unit: input.ngnPerUnit,
+          rate_source: input.source.trim(),
+          next_is_active: input.isActive ?? true,
+          next_expires_at: input.expiresAt ?? null,
+        });
+        if (error) throw new Error(`Could not update exchange rate: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      const config: ExchangeRateConfig = {
+        currency: input.currency,
+        currencyPair: `${input.currency}_NGN`,
+        ngnPerUnit: input.ngnPerUnit,
+        source: input.source.trim(),
+        quoteTtlMinutes: input.quoteTtlMinutes ?? 30,
+        isActive: input.isActive ?? true,
+        quotedAt: nowIso(),
+        expiresAt: input.expiresAt ?? null,
+        updatedBy: state.session.userId,
+      };
+      dispatch({ type: 'UPDATE_EXCHANGE_RATE', config, actor: state.session });
+    },
+    updatePayoutStatus: async (entryId, payoutStatus, note) => {
+      if (!state.session || state.session.role !== 'admin') {
+        throw new Error('Only administrators can update commission or settlement payout status.');
+      }
+      if (supabase) {
+        const { error } = await supabase.rpc('update_payout_status', {
+          target_entry_id: entryId,
+          next_payout_status: payoutStatus,
+          payout_note: note?.trim() || null,
+        });
+        if (error) throw new Error(`Could not update payout status: ${error.message}`);
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(authError.message);
+        dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+        return;
+      }
+      dispatch({
+        type: 'UPDATE_PAYOUT_STATUS',
+        entryId,
+        payoutStatus,
+        note: note?.trim() || undefined,
+        actor: state.session,
+      });
+    },
     getUnavailablePropertyIds: async (checkIn, checkOut) => {
       if (!checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) return [];
       if (supabase) {
@@ -2268,20 +3468,29 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         return (data as string[] | null) ?? [];
       }
       const now = Date.now();
-      return [
-        ...new Set(
-          state.bookings
-            .filter(
-              b =>
-                new Date(b.checkIn) < new Date(checkOut) &&
-                new Date(b.checkOut) > new Date(checkIn) &&
-                (b.status === 'confirmed' ||
-                  (b.status === 'awaiting_payment' &&
-                    (!b.paymentDeadline || new Date(b.paymentDeadline).getTime() > now))),
-            )
-            .map(b => b.propertyId),
-        ),
-      ];
+      const unavailable = new Set<string>();
+      for (const b of state.bookings) {
+        if (
+          b.checkIn < checkOut &&
+          b.checkOut > checkIn &&
+          (b.status === 'confirmed' ||
+            (b.status === 'awaiting_payment' &&
+              (!b.paymentDeadline || new Date(b.paymentDeadline).getTime() > now)))
+        ) {
+          unavailable.add(b.propertyId);
+        }
+      }
+      for (const p of state.properties) {
+        if (p.firstAvailableDate && checkIn < p.firstAvailableDate) {
+          unavailable.add(p.id);
+        }
+        for (const bl of p.unavailableBlocks ?? []) {
+          if (bl.startDate < checkOut && bl.endDate > checkIn) {
+            unavailable.add(p.id);
+          }
+        }
+      }
+      return [...unavailable];
     },
     refreshState: async () => {
       if (!supabase) return;
@@ -2296,14 +3505,12 @@ export function HamletProvider({ children }: { children: ReactNode }) {
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components -- Keep context hooks beside the provider they consume.
 export function useHamlet() {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error('useHamlet must be used within HamletProvider');
   return ctx;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components -- Keep context hooks beside the provider they consume.
 export function useRequireRole(role: AccountRole): Session | null {
   const { state } = useHamlet();
   return state.session?.role === role ? state.session : null;
