@@ -1,7 +1,8 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState, type ReactNode } from 'react';
-import { Menu, X, LogOut, RotateCcw, ExternalLink } from 'lucide-react';
+import { Menu, X, LogOut, RotateCcw, ExternalLink, Sparkles } from 'lucide-react';
 import { HamletMark } from './Logo';
+import { useHoratio } from './HoratioDrawer';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { formatLagosHeadlineDate } from '../lib/pricing';
@@ -26,6 +27,7 @@ export function WorkspaceShell({
 }) {
   const { state, signOut, resetDemo, backendConfigured } = useHamlet();
   const { toast } = useToast();
+  const { openHoratio } = useHoratio();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -106,11 +108,23 @@ export function WorkspaceShell({
       )}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-ink-800 bg-ink-950 px-4 lg:px-6">
-          <button className="shrink-0 rounded-lg p-2 text-ink-300 hover:bg-ink-800 lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <p className="hidden truncate text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-500 lg:block">HAMLET · {title} · Lagos pilot</p>
-          <p className="truncate text-[10.5px] font-semibold text-ink-500">{formatLagosHeadlineDate()} · WAT</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <button className="shrink-0 rounded-lg p-2 text-ink-300 hover:bg-ink-800 lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
+              {open ? <X size={20} /> : <Menu size={20} />}
+            </button>
+            <p className="hidden truncate text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400 lg:block">HAMLET · {title} · Lagos operations</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => openHoratio()}
+              className="inline-flex items-center gap-1.5 rounded-full border border-brass-500/40 bg-ink-900 px-3 py-1 text-[11px] font-bold text-brass-300 transition hover:border-brass-400 hover:text-white [&>svg]:shrink-0"
+            >
+              <Sparkles size={12} className="text-brass-400" />
+              <span>Horatio</span>
+            </button>
+            <p className="truncate text-[10.5px] font-semibold text-ink-400">{formatLagosHeadlineDate()} · WAT</p>
+          </div>
         </div>
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain dark-scroll">{children}</main>
       </div>

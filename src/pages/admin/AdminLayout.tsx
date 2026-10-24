@@ -28,7 +28,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <WorkspaceGuard expected="admin">
-      <WorkspaceShell title="Admin Console" subtitle="HAMLET operations · full accountability" accent="border-red-400/40 bg-red-400/10 text-red-300" nav={nav}>
+      <WorkspaceShell
+        title="Admin Console"
+        subtitle="Elsinore · HAMLET operations"
+        accent="border-brass-500/40 bg-brass-500/15 text-brass-300"
+        nav={nav}
+      >
         {children}
       </WorkspaceShell>
     </WorkspaceGuard>

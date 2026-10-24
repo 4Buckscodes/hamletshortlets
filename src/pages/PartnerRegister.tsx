@@ -2,12 +2,25 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Users, BadgePercent, ShieldCheck, ArrowRight, CheckCircle2, ChevronLeft, CircleAlert,
-  RefreshCcw, Eye, EyeOff, LogIn, AlertTriangle, Clock3, Gift,
+  Building2,
+  Users,
+  BadgePercent,
+  ShieldCheck,
+  ArrowRight,
+  CheckCircle2,
+  ChevronLeft,
+  CircleAlert,
+  RefreshCcw,
+  Eye,
+  EyeOff,
+  LogIn,
+  AlertTriangle,
+  Clock3,
+  Gift,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
 import { useHamlet, getPersistedPartnerRefCode } from '../lib/store';
-import { usePageMeta } from '../lib/brand';
+import { HAMLET_PARENT_COMPANY, usePageMeta } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import { AREAS } from '../lib/seed';
 import { formatDateTime } from '../lib/pricing';
@@ -20,6 +33,13 @@ const ROLES = [
   { value: 'Co-host / Hospitality Operator', blurb: 'Guest-facing hosting services' },
   { value: 'Closing Agent', blurb: 'Close guest bookings — earn 10% commission' },
   { value: 'Referral Partner', blurb: 'Refer partners — earn 2.5% for 90 days after activation' },
+];
+
+const ECONOMICS_STATS = [
+  { stat: '100%', label: 'Owner share of listed B', detail: 'Owners receive 100% of their NGN accommodation rate' },
+  { stat: '0%', label: 'Owner listing fee', detail: 'HAMLET adds 20% domestic guest markup on top of B' },
+  { stat: '10% of B', label: 'Closing agent share', detail: 'Standard closing agent commission (or agreed mandate)' },
+  { stat: '2.5% of B', label: '90-day referral reward', detail: 'Direct partner referrer share during active window' },
 ];
 
 export default function PartnerRegister() {
@@ -90,8 +110,10 @@ export default function PartnerRegister() {
     return () => { active = false; };
   }, [referralCode, resolveReferralCode]);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm(f => ({ ...f, [k]: k === 'propertiesCount' ? Number(e.target.value) : e.target.value }));
+  const set =
+    (k: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(f => ({ ...f, [k]: k === 'propertiesCount' ? Number(e.target.value) : e.target.value }));
 
   const toggleArea = (a: string) =>
     setAreas(prev => (prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]));
@@ -188,42 +210,95 @@ export default function PartnerRegister() {
   };
 
   return (
-    <div className="grid min-h-screen bg-ink-950 lg:grid-cols-5">
-      {/* Value panel */}
-      <div className="relative hidden overflow-hidden lg:col-span-2 lg:block">
-        <img src="/images/prop/penthouse.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
-        <div className="absolute inset-0 bg-gradient-to-br from-ink-950/85 via-ink-950/60 to-ink-950" />
-        <div className="relative flex h-full flex-col justify-between p-10">
-          <Link to="/" className="flex items-center gap-2.5"><HamletMark size={30} light /><span className="font-display text-xl font-bold tracking-[0.06em] text-white">HAMLET<span className="text-brass-500">.</span></span></Link>
+    <div className="grid min-h-screen bg-ink-950 lg:grid-cols-12">
+      {/* Value & Economics Panel */}
+      <div className="relative overflow-hidden border-b border-ink-800 p-6 sm:p-10 lg:col-span-5 lg:border-b-0 lg:border-r">
+        <img
+          src="/images/prop/penthouse.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-ink-950/92 via-ink-950/80 to-ink-950" />
+        <div className="relative flex h-full flex-col justify-between gap-10">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2.5">
+              <HamletMark size={32} light />
+              <span className="font-display text-xl font-bold tracking-[0.06em] text-white">
+                HAMLET<span className="text-brass-500">.</span>
+              </span>
+            </Link>
+            <span className="rounded-full border border-white/15 bg-white/8 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-brass-300">
+              Partner Network
+            </span>
+          </div>
+
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">HAMLET Partner Network</p>
-            <h1 className="mt-3 font-display text-4xl font-black leading-[1.06] text-paper">Bring your property<br />to the right guests.</h1>
-            <p className="mt-4 max-w-sm text-[13px] font-medium leading-relaxed text-ink-100">Own or manage a shortlet in Lagos? HAMLET helps property owners, managers, and hospitality partners showcase their spaces clearly, connect with serious guests, and manage bookings in one organised place.</p>
-            <ul className="mt-6 space-y-3 text-[12px] font-semibold text-ink-100">
+            <p className="eyebrow-light">Owners · Managers · Agents · Referrers</p>
+            <h1 className="mt-2.5 font-display text-3xl font-bold leading-[1.08] text-white sm:text-4xl">
+              List free. Keep{' '}
+              <span className="italic text-brass-300">100% of your rate.</span>
+            </h1>
+            <p className="mt-3 max-w-md text-xs font-medium leading-relaxed text-ink-200 sm:text-[13px]">
+              HAMLET helps Lagos owners, authorised agents, property managers, and booking partners publish verified apartments, protect against duplicate listings, and track controlled ledger settlements.
+            </p>
+
+            {/* The economics, plainly */}
+            <div className="mt-6">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-300">
+                The economics, plainly
+              </p>
+              <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                {ECONOMICS_STATS.map(item => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/12 bg-white/[0.05] p-3.5 backdrop-blur-sm"
+                  >
+                    <p className="font-display text-xl font-bold text-brass-300 sm:text-2xl">
+                      {item.stat}
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-bold text-white">{item.label}</p>
+                    <p className="mt-1 text-[10.5px] leading-snug text-ink-300">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <ul className="mt-6 space-y-2.5 text-xs font-semibold text-ink-100">
               {[
-                { Icon: BadgePercent, t: '0% owner fee — owners receive 100% of their listed rate; guests pay HAMLET’s 20% domestic markup' },
-                { Icon: ShieldCheck, t: 'List even if currently occupied — publish now for future available dates' },
-                { Icon: Users, t: 'Closing agents earn 10% · Direct partner referrers earn 2.5% for 90 days after activation' },
-                { Icon: Building2, t: 'All attributions & commissions recorded independently in the controlled ledger' },
+                { Icon: BadgePercent, t: 'Owner-defined commercial terms & recorded agent-sharing mandates supported' },
+                { Icon: ShieldCheck, t: 'Duplicate-listing screening ensures one canonical listing per physical apartment' },
+                { Icon: Users, t: 'List even if currently occupied — publish now for future available dates' },
+                { Icon: Building2, t: 'Refundable caution deposits tracked separately and released post-inspection' },
               ].map(({ Icon, t }) => (
-                <li key={t} className="flex items-start gap-2.5"><Icon size={16} className="mt-0.5 shrink-0 text-brass-400" />{t}</li>
+                <li key={t} className="flex items-start gap-2.5">
+                  <Icon size={15} className="mt-0.5 shrink-0 text-brass-400" />
+                  {t}
+                </li>
               ))}
             </ul>
           </div>
-          <p className="text-[10.5px] font-semibold text-ink-500">Lagos pilot · Applications reviewed manually · No admin access is ever granted publicly</p>
+
+          <p className="text-[10.5px] font-semibold text-ink-400">
+            {HAMLET_PARENT_COMPANY} · Applications reviewed manually · No admin access is ever granted publicly
+          </p>
         </div>
       </div>
 
-      {/* Form / Status panel */}
-      <div className="flex items-center justify-center overflow-y-auto p-4 py-10 sm:p-8 lg:col-span-3">
+      {/* Form / Status Panel */}
+      <div className="flex items-center justify-center overflow-y-auto p-4 py-10 sm:p-8 lg:col-span-7">
         <AnimatePresence mode="wait">
           {session && (session.role === 'partner' || session.role === 'admin') ? (
-            <motion.div key="already-partner" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md rounded-3xl border border-ink-800 bg-ink-900 p-6 text-center sm:p-8">
-              <CheckCircle2 size={52} className="mx-auto text-jade-400" />
+            <motion.div
+              key="already-partner"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-md rounded-3xl border border-ink-800 bg-ink-900 p-6 text-center sm:p-8"
+            >
+              <CheckCircle2 size={52} className="mx-auto text-emerald-400" />
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
                 {session.role === 'admin' ? 'Administrator active' : 'Approved partner active'}
               </p>
-              <h2 className="mt-1.5 font-display text-2xl font-black text-paper">
+              <h2 className="mt-1.5 font-display text-2xl font-bold text-paper">
                 {session.role === 'admin' ? 'Your Admin Console is ready' : 'Your Partner Workspace is active'}
               </h2>
               <p className="mt-2 text-[13px] font-medium leading-relaxed text-ink-300">
@@ -233,17 +308,24 @@ export default function PartnerRegister() {
                 <button
                   type="button"
                   onClick={() => navigate(session.role === 'admin' ? '/admin' : '/partner')}
-                  className="btn-brass"
+                  className="btn-brass !rounded-full"
                 >
                   Open {session.role === 'admin' ? 'Admin Console' : 'Partner Workspace'} <ArrowRight size={16} />
                 </button>
-                <Link to="/" className="btn-ghost-dark">Back to site</Link>
+                <Link to="/" className="btn-ghost-dark !rounded-full">
+                  Back to site
+                </Link>
               </div>
             </motion.div>
           ) : done ? (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md text-center">
-              <CheckCircle2 size={56} className="mx-auto text-jade-400" />
-              <h2 className="mt-5 font-display text-3xl font-black text-paper">
+            <motion.div
+              key="done"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-md text-center"
+            >
+              <CheckCircle2 size={56} className="mx-auto text-emerald-400" />
+              <h2 className="mt-5 font-display text-3xl font-bold text-paper">
                 {needsEmailConfirm ? 'Confirm your email' : 'Application in review.'}
               </h2>
               <p className="mt-3 text-[13px] font-medium leading-relaxed text-ink-200">
@@ -252,23 +334,48 @@ export default function PartnerRegister() {
                   : `Thank you, ${form.name.split(' ')[0]}. Your partner application for ${form.company} is in the HAMLET operations review queue.`}
               </p>
               <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">
-                {backendConfigured
-                  ? 'You can track your application review status anytime from your HAMLET account. As soon as HAMLET operations approves your application, your Partner Workspace unlocks automatically.'
-                  : <>You are signed in to your demo partner workspace. Properties you submit will enter <span className="text-brass-300">submitted</span> status until reviewed.</>}
+                {backendConfigured ? (
+                  'You can track your application review status anytime from your HAMLET account. As soon as HAMLET operations approves your application, your Partner Workspace unlocks automatically.'
+                ) : (
+                  <>
+                    You are signed in to your demo partner workspace. Properties you submit will enter{' '}
+                    <span className="text-brass-300">submitted</span> status until reviewed.
+                  </>
+                )}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => navigate(needsEmailConfirm ? '/signin?redirect=%2Fpartner%2Fregister' : backendConfigured ? '/account' : '/partner')}
-                  className="btn-brass"
+                  onClick={() =>
+                    navigate(
+                      needsEmailConfirm
+                        ? '/signin?redirect=%2Fpartner%2Fregister'
+                        : backendConfigured
+                          ? '/account'
+                          : '/partner',
+                    )
+                  }
+                  className="btn-brass !rounded-full"
                 >
-                  {needsEmailConfirm ? 'Go to sign in' : backendConfigured ? 'Track status in my account' : 'Go to workspace'} <ArrowRight size={16} />
+                  {needsEmailConfirm
+                    ? 'Go to sign in'
+                    : backendConfigured
+                      ? 'Track status in my account'
+                      : 'Go to workspace'}{' '}
+                  <ArrowRight size={16} />
                 </button>
-                <Link to="/" className="btn-ghost-dark">Back to site</Link>
+                <Link to="/" className="btn-ghost-dark !rounded-full">
+                  Back to site
+                </Link>
               </div>
             </motion.div>
           ) : existingApplication && existingApplication.status === 'pending' ? (
-            <motion.div key="pending-tracker" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-lg rounded-3xl border border-ink-800 bg-ink-900 p-6 sm:p-8">
+            <motion.div
+              key="pending-tracker"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-lg rounded-3xl border border-ink-800 bg-ink-900 p-6 sm:p-8"
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-amber-300">
                   <Clock3 size={13} /> Pending manual review
@@ -278,35 +385,52 @@ export default function PartnerRegister() {
                     type="button"
                     disabled={refreshing}
                     onClick={() => void handleRefreshStatus()}
-                    className="btn-ghost-dark !border !border-ink-700 !px-3 !py-1.5 text-[11px] disabled:opacity-50"
+                    className="btn-ghost-dark !rounded-full !border !border-ink-700 !px-3 !py-1.5 text-[11px] disabled:opacity-50"
                   >
                     <RefreshCcw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh status
                   </button>
                 )}
               </div>
-              <h2 className="mt-4 font-display text-2xl font-black text-paper">{existingApplication.company}</h2>
-              <p className="mt-1 text-[12px] font-medium text-ink-300">
-                {existingApplication.role} · {existingApplication.propertiesCount} propert{existingApplication.propertiesCount === 1 ? 'y' : 'ies'} · {existingApplication.areas.join(', ')}
+              <h2 className="mt-4 font-display text-2xl font-bold text-paper">
+                {existingApplication.company}
+              </h2>
+              <p className="mt-1 text-xs font-medium text-ink-300">
+                {existingApplication.role} · {existingApplication.propertiesCount} propert
+                {existingApplication.propertiesCount === 1 ? 'y' : 'ies'} · {existingApplication.areas.join(', ')}
               </p>
               <p className="mt-1 text-[11px] font-semibold text-ink-500">
                 Submitted {formatDateTime(existingApplication.submittedAt)}
               </p>
-              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-950/70 p-4 text-[12px] font-medium leading-relaxed text-ink-200">
+              <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-950/70 p-4 text-xs font-medium leading-relaxed text-ink-200">
                 HAMLET operations is reviewing your identity, company details and authority scope. Once approved, refreshing this page or signing in will take you straight into the Partner Workspace.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link to="/account" className="btn-brass !py-2.5 text-[12px]">Go to my account <ArrowRight size={14} /></Link>
-                <Link to="/" className="btn-ghost-dark !py-2.5 text-[12px]">Back to site</Link>
+                <Link to="/account" className="btn-brass !rounded-full !py-2.5 text-xs">
+                  Go to my account <ArrowRight size={14} />
+                </Link>
+                <Link to="/" className="btn-ghost-dark !rounded-full !py-2.5 text-xs">
+                  Back to site
+                </Link>
               </div>
             </motion.div>
           ) : (
-            <motion.form key="form" exit={{ opacity: 0, y: -12 }} onSubmit={submit} className="w-full max-w-xl">
+            <motion.form
+              key="form"
+              exit={{ opacity: 0, y: -12 }}
+              onSubmit={submit}
+              className="w-full max-w-xl"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Link to="/" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={13} /> Back to HAMLET</Link>
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-400 hover:text-ink-100"
+                >
+                  <ChevronLeft size={13} /> Back to HAMLET
+                </Link>
                 {!session && (
                   <Link
                     to="/signin?redirect=%2Fpartner%2Fregister"
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-ink-800 bg-ink-900 px-3 py-1.5 text-[11px] font-bold text-brass-300 hover:border-brass-500/40"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-ink-800 bg-ink-900 px-3.5 py-1.5 text-[11px] font-bold text-brass-300 hover:border-brass-500/40"
                   >
                     <LogIn size={13} /> Already have an account? Sign in
                   </Link>
@@ -316,10 +440,12 @@ export default function PartnerRegister() {
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">
                 {isCorrectionMode ? 'Respond to reviewer feedback' : 'Apply to join'}
               </p>
-              <h2 className="mt-1.5 font-display text-3xl font-black text-paper">
-                {isCorrectionMode ? 'Update & resubmit partner application' : 'Partner registration & application'}
+              <h2 className="mt-1.5 font-display text-3xl font-bold text-white">
+                {isCorrectionMode
+                  ? 'Update & resubmit partner application'
+                  : 'Partner registration & application'}
               </h2>
-              <p className="mt-1 text-[12px] font-medium text-ink-300">
+              <p className="mt-1 text-xs font-medium text-ink-300">
                 {isCorrectionMode
                   ? 'Address the correction note from HAMLET operations below and resubmit your application for review.'
                   : !session && backendConfigured
@@ -328,10 +454,15 @@ export default function PartnerRegister() {
               </p>
 
               {isCorrectionMode && existingApplication?.reviewNote && (
-                <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-2xl border border-orange-500/45 bg-orange-950/35 p-4 text-[12px] font-semibold text-orange-200">
+                <div
+                  role="alert"
+                  className="mt-4 flex items-start gap-2.5 rounded-2xl border border-orange-500/45 bg-orange-950/35 p-4 text-xs font-semibold text-orange-200"
+                >
                   <AlertTriangle size={17} className="mt-0.5 shrink-0 text-orange-400" />
                   <div>
-                    <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-300">Correction requested by HAMLET operations</p>
+                    <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-300">
+                      Correction requested by HAMLET operations
+                    </p>
                     <p className="mt-1 leading-relaxed">{existingApplication.reviewNote}</p>
                   </div>
                 </div>
@@ -344,17 +475,29 @@ export default function PartnerRegister() {
               )}
 
               {session?.role === 'guest' && !isCorrectionMode && (
-                <p className="mt-3 rounded-xl border border-jade-700 bg-jade-900/40 p-3 text-[11px] font-semibold text-jade-100">
+                <p className="mt-3 rounded-2xl border border-emerald-700 bg-emerald-900/35 p-3 text-[11px] font-semibold text-emerald-100">
                   Signed in as <strong>{session.email}</strong> — your partner application will be linked directly to this account.
                 </p>
               )}
 
-              {errors.account && <p role="alert" className="mt-3 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-[11px] font-semibold text-red-200">{errors.account}</p>}
+              {errors.account && (
+                <p
+                  role="alert"
+                  className="mt-3 rounded-2xl border border-red-500/40 bg-red-950/40 p-3 text-[11px] font-semibold text-red-200"
+                >
+                  {errors.account}
+                </p>
+              )}
 
               <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
                 <label className="sm:col-span-2">
                   <span className="label-dark">Full name</span>
-                  <input className={`input-dark ${errors.name ? '!border-red-500' : ''}`} value={form.name} onChange={set('name')} placeholder="Tunde Adeyemi" />
+                  <input
+                    className={`input-dark ${errors.name ? '!border-red-500' : ''}`}
+                    value={form.name}
+                    onChange={set('name')}
+                    placeholder="Tunde Adeyemi"
+                  />
                   {errors.name && <Err msg={errors.name} />}
                 </label>
 
@@ -373,7 +516,12 @@ export default function PartnerRegister() {
 
                 <label>
                   <span className="label-dark">Phone (reachable WhatsApp / mobile)</span>
-                  <input className={`input-dark ${errors.phone ? '!border-red-500' : ''}`} value={form.phone} onChange={set('phone')} placeholder="+234 800 000 0000" />
+                  <input
+                    className={`input-dark ${errors.phone ? '!border-red-500' : ''}`}
+                    value={form.phone}
+                    onChange={set('phone')}
+                    placeholder="+234 800 000 0000"
+                  />
                   {errors.phone && <Err msg={errors.phone} />}
                 </label>
 
@@ -419,12 +567,17 @@ export default function PartnerRegister() {
 
                 <label className="sm:col-span-2">
                   <span className="label-dark">Company / trading name (or private owner name)</span>
-                  <input className={`input-dark ${errors.company ? '!border-red-500' : ''}`} value={form.company} onChange={set('company')} placeholder="e.g. Adeyemi Estates Ltd / Private Deeded Owner" />
+                  <input
+                    className={`input-dark ${errors.company ? '!border-red-500' : ''}`}
+                    value={form.company}
+                    onChange={set('company')}
+                    placeholder="e.g. Adeyemi Estates Ltd / Private Deeded Owner"
+                  />
                   {errors.company && <Err msg={errors.company} />}
                 </label>
 
                 <div className="sm:col-span-2">
-                  <span className="label-dark">Your partner role</span>
+                  <span className="label-dark">Select your partner lane</span>
                   <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:grid-cols-3">
                     {ROLES.map(r => {
                       const nonInventory = r.value === 'Closing Agent' || r.value === 'Referral Partner';
@@ -443,10 +596,16 @@ export default function PartnerRegister() {
                                   : f.propertiesCount,
                             }))
                           }
-                          className={`rounded-xl border px-3 py-2.5 text-left transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
+                          className={`rounded-2xl border px-3 py-2.5 text-left transition ${
+                            form.role === r.value
+                              ? 'border-brass-500 bg-brass-500/15 text-brass-200'
+                              : 'border-ink-800 bg-ink-900/50 text-ink-300 hover:border-ink-600'
+                          }`}
                         >
                           <span className="block text-[11px] font-bold leading-tight">{r.value}</span>
-                          <span className="mt-0.5 block text-[9.5px] font-medium leading-snug text-ink-400">{r.blurb}</span>
+                          <span className="mt-0.5 block text-[9.5px] font-medium leading-snug text-ink-400">
+                            {r.blurb}
+                          </span>
                         </button>
                       );
                     })}
@@ -455,19 +614,32 @@ export default function PartnerRegister() {
 
                 <label>
                   <span className="label-dark">Properties to list (0 if closing/referral only)</span>
-                  <input type="number" min={0} className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`} value={form.propertiesCount} onChange={set('propertiesCount')} />
+                  <input
+                    type="number"
+                    min={0}
+                    className={`input-dark ${errors.propertiesCount ? '!border-red-500' : ''}`}
+                    value={form.propertiesCount}
+                    onChange={set('propertiesCount')}
+                  />
                   {errors.propertiesCount && <Err msg={errors.propertiesCount} />}
                 </label>
 
                 <div className="sm:col-span-1">
-                  <span className="label-dark">Lagos areas of operation {errors.areas && <span className="normal-case text-red-400">— {errors.areas}</span>}</span>
+                  <span className="label-dark">
+                    Lagos areas of operation{' '}
+                    {errors.areas && <span className="normal-case text-red-400">— {errors.areas}</span>}
+                  </span>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {AREAS.map(a => (
                       <button
                         key={a}
                         type="button"
                         onClick={() => toggleArea(a)}
-                        className={`rounded-full border px-2.5 py-1.5 text-[10px] font-bold transition ${areas.includes(a) ? 'border-brass-500 bg-brass-500 text-ink-950' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
+                        className={`rounded-full border px-2.5 py-1.5 text-[10px] font-bold transition ${
+                          areas.includes(a)
+                            ? 'border-brass-500 bg-brass-500 text-ink-950'
+                            : 'border-ink-800 text-ink-300 hover:border-ink-600'
+                        }`}
                       >
                         {a}
                       </button>
@@ -476,7 +648,9 @@ export default function PartnerRegister() {
                 </div>
 
                 <label className="sm:col-span-2">
-                  <span className="label-dark flex items-center gap-1.5"><Gift size={12} className="text-brass-400" /> Partner referral code (optional)</span>
+                  <span className="label-dark flex items-center gap-1.5">
+                    <Gift size={12} className="text-brass-400" /> Partner referral code (optional)
+                  </span>
                   <input
                     className="input-dark font-mono uppercase"
                     value={referralCode}
@@ -484,7 +658,11 @@ export default function PartnerRegister() {
                     placeholder="e.g. HML-ADEWALE-1A2B"
                   />
                   {referralCode.trim() && resolvedReferrer && (
-                    <span className={`mt-1 block text-[10.5px] font-bold ${resolvedReferrer.valid ? 'text-jade-400' : 'text-amber-300'}`}>
+                    <span
+                      className={`mt-1 block text-[10.5px] font-bold ${
+                        resolvedReferrer.valid ? 'text-emerald-400' : 'text-amber-300'
+                      }`}
+                    >
                       {resolvedReferrer.valid
                         ? `Referred by ${resolvedReferrer.referrerName}${resolvedReferrer.referrerCompany ? ` (${resolvedReferrer.referrerCompany})` : ''} — verified server-side on approval.`
                         : 'Code not matched to an active approved partner (self-referrals and unrecognised codes are ignored).'}
@@ -493,7 +671,7 @@ export default function PartnerRegister() {
                 </label>
 
                 <label className="sm:col-span-2">
-                  <span className="label-dark">Portfolio, authority basis & operational experience</span>
+                  <span className="label-dark">Portfolio, authority basis &amp; operational experience</span>
                   <textarea
                     className={`input-dark min-h-[88px] ${errors.motivation ? '!border-red-500' : ''}`}
                     value={form.motivation}
@@ -504,11 +682,15 @@ export default function PartnerRegister() {
                 </label>
               </div>
 
-              <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500">
+              <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-400">
                 <CircleAlert size={12} className="mt-0.5 shrink-0" /> By applying you consent to a manual review of your identity, authority and documentation. Providing false information leads to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).
               </p>
 
-              <button type="submit" disabled={submitting} className="btn-brass mt-4 w-full !py-4 text-[15px]">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn-brass mt-4 w-full !rounded-full !py-4 text-[15px]"
+              >
                 {submitting
                   ? 'Submitting…'
                   : isCorrectionMode

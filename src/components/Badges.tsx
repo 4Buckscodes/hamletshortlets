@@ -8,7 +8,7 @@ export function PropertyStatusPill({ status }: { status: PropertyStatus }) {
     draft: { cls: 'bg-stone-100 text-stone-700 border-stone-300', label: 'Draft', Icon: Circle },
     submitted: { cls: 'bg-amber-50 text-amber-800 border-amber-200', label: 'Submitted · In review', Icon: Clock },
     pending_review: { cls: 'bg-amber-50 text-amber-800 border-amber-200', label: 'Pending review', Icon: Clock },
-    approved: { cls: 'bg-jade-50 text-jade-800 border-jade-200', label: 'Approved · Published', Icon: BadgeCheck },
+    approved: { cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', label: 'Approved · Published', Icon: BadgeCheck },
     paused: { cls: 'bg-stone-100 text-stone-800 border-stone-300', label: 'Paused by host', Icon: PauseCircle },
     needs_correction: { cls: 'bg-orange-50 text-orange-800 border-orange-200', label: 'Needs correction', Icon: FileWarning },
     rejected: { cls: 'bg-red-50 text-red-800 border-red-200', label: 'Rejected', Icon: XCircle },
@@ -24,7 +24,7 @@ export function BookingStatusPill({ status }: { status: BookingStatus }) {
     requested: { cls: 'bg-sky-50 text-sky-800 border-sky-200', label: 'Requested', Icon: Circle },
     checking: { cls: 'bg-violet-50 text-violet-800 border-violet-200', label: 'Checking availability & terms', Icon: Loader2 },
     awaiting_payment: { cls: 'bg-amber-50 text-amber-900 border-amber-300', label: 'Accepted · Awaiting payment', Icon: CalendarClock },
-    confirmed: { cls: 'bg-jade-50 text-jade-800 border-jade-300', label: 'Confirmed', Icon: CheckCircle2 },
+    confirmed: { cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', label: 'Confirmed', Icon: CheckCircle2 },
     completed: { cls: 'bg-ink-100 text-ink-800 border-ink-200', label: 'Completed', Icon: CheckCircle2 },
     cancelled: { cls: 'bg-red-50 text-red-800 border-red-200', label: 'Cancelled', Icon: Ban },
     expired: { cls: 'bg-stone-100 text-stone-700 border-stone-300', label: 'Expired — payment deadline passed', Icon: Clock },
@@ -62,7 +62,7 @@ export function LedgerStatusPill({ status }: { status: LedgerStatus }) {
 
 export function DocStatusBadge({ status }: { status: DocStatus }) {
   const map: Record<DocStatus, { cls: string; label: string }> = {
-    verified: { cls: 'bg-jade-50 text-jade-800 border-jade-200', label: 'Verified' },
+    verified: { cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', label: 'Verified' },
     pending_review: { cls: 'bg-amber-50 text-amber-900 border-amber-200', label: 'Pending review' },
     missing: { cls: 'bg-red-50 text-red-800 border-red-200', label: 'Missing' },
     self_reported: { cls: 'bg-violet-50 text-violet-800 border-violet-200', label: 'Self-reported' },
@@ -73,8 +73,8 @@ export function DocStatusBadge({ status }: { status: DocStatus }) {
 
 export function TrustBadge({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/50 bg-gradient-to-r from-brass-500/15 to-transparent py-1 pl-1.5 pr-3 text-[11px] font-bold text-brass-700 [&>svg]:shrink-0">
-      <ShieldCheck size={13} strokeWidth={2.5} className="shrink-0" />{label}
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/55 bg-gradient-to-r from-brass-500/18 to-brass-200/10 py-1 pl-2 pr-3 text-[11px] font-bold text-ink-900 [&>svg]:shrink-0">
+      <ShieldCheck size={13} strokeWidth={2.4} className="shrink-0 text-emerald-700" />{label}
     </span>
   );
 }

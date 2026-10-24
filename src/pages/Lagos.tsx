@@ -1,67 +1,97 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Banknote, KeyRound, Lock, MapPin, ShieldCheck, Wifi, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Building2,
+  Compass,
+  Plane,
+  ShieldCheck,
+  Wifi,
+} from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { PropertyCard } from '../components/PropertyCard';
 import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet } from '../lib/store';
+import { useCurrency } from '../lib/currency';
+import { matchesLagosAreaFilter } from '../lib/areas';
 import { usePageMeta } from '../lib/brand';
 import { buildLagosGuideStructuredData } from '../lib/seo';
 
 const MAINLAND_GUIDES = [
   {
     name: 'Yaba & Environs',
+    matchArea: 'Yaba',
     subareas: 'Sabo · Alagomeji · Akoka · Ebute Metta · Jibowu',
-    tagline: 'For tech hubs, campuses & central Mainland access',
+    tagline: 'Tech hubs, campuses & fast Third Mainland Bridge links',
     body: 'Searching for shortlets in Yaba? Stay close to Lagos’s technology corridor, universities, medical centres, and quick Third Mainland Bridge links to Lagos Island.',
     href: '/stays?area=Yaba',
+    img: '/images/prop/studio-1.jpg',
   },
   {
     name: 'Surulere & Environs',
+    matchArea: 'Surulere',
     subareas: 'Bode Thomas · Adeniran Ogunsanya · Eric Moore · Aguda · Iponri',
-    tagline: 'For vibrant residential streets, studios & family visits',
+    tagline: 'Residential calm, creative studios & central connectivity',
     body: 'Explore serviced apartments in Surulere with easy access to shopping, dining, stadiums, creative studios, and central routes connecting both Mainland and Island.',
     href: '/stays?area=Surulere',
+    img: '/images/prop/bed-1.jpg',
   },
   {
     name: 'Shomolu & Environs',
+    matchArea: 'Shomolu',
     subareas: 'Palmgrove · Onipanu · Pedro · Fadeyi · Gbagada · Anthony · Ilupeju',
-    tagline: 'For central Ikorodu Road & Gbagada expressway links',
+    tagline: 'Central Ikorodu Road & Gbagada expressway corridor',
     body: 'Need a practical Mainland base around Shomolu, Palmgrove, Onipanu, or nearby Gbagada and Ilupeju? Compare power arrangements, gated parking, and proximity to commercial hubs.',
     href: '/stays?area=Shomolu',
+    img: '/images/prop/kitchen-1.jpg',
   },
   {
     name: 'Ikeja & Northern Mainland',
+    matchArea: 'Ikeja GRA',
     subareas: 'Ikeja GRA · Maryland · Opebi · Ogudu · Magodo',
-    tagline: 'For airport proximity, corporate offices & quiet GRAs',
+    tagline: 'Airport proximity, corporate offices & quiet gated GRAs',
     body: 'Consider apartments in Ikeja GRA, Maryland, Ogudu, and Magodo for seamless Murtala Muhammed Airport transfers, mainland business districts, and family stays.',
-    href: '/stays?q=Ikeja',
+    href: '/stays?area=Ikeja+GRA',
+    img: '/images/prop/duplex.jpg',
   },
 ];
 
 const ISLAND_GUIDES = [
   {
-    name: 'Lekki',
-    tagline: 'For the lifestyle and the plans around it',
-    body: 'Explore apartments close to dining spots, shopping, entertainment, and social destinations across Lekki Phase 1 and Oniru.',
-    href: '/stays?q=Lekki',
-  },
-  {
     name: 'Victoria Island',
-    tagline: 'For business and city convenience',
-    body: 'Explore accommodation suited to corporate visits, meetings, conferences, and stays close to Lagos Island’s business districts.',
+    matchArea: 'Victoria Island',
+    subareas: 'Adeola Odeku · Ahmadu Bello Way · Saka Tinubu · Oniru border',
+    tagline: 'Corporate & diplomatic visits, conferences & city dining',
+    body: 'Explore accommodation suited to corporate visits, meetings, conferences, and stays close to Lagos Island’s primary business districts.',
     href: '/stays?area=Victoria+Island',
+    img: '/images/prop/living-1.jpg',
   },
   {
-    name: 'Ikoyi',
-    tagline: 'For a more private city stay',
-    body: 'Compare quieter residential apartments across Ikoyi and Banana Island with clear building access, security, and parking.',
+    name: 'Ikoyi & Banana Island',
+    matchArea: 'Ikoyi',
+    subareas: 'Old Ikoyi · Awolowo Road · Banana Island · Falomo',
+    tagline: 'Private residential stays, controlled access & lagoon calm',
+    body: 'Compare quieter residential apartments and penthouses across Ikoyi and Banana Island with documented building security, power, and parking.',
     href: '/stays?area=Ikoyi',
+    img: '/images/prop/penthouse.jpg',
   },
   {
-    name: 'Ajah',
-    tagline: 'For residential stays and room to settle in',
-    body: 'Explore shortlets in Ajah for family visits, longer stays, and plans centred around the Lekki–Ajah corridor.',
+    name: 'Lekki Phase 1 & Oniru',
+    matchArea: 'Lekki Phase 1',
+    subareas: 'Admiralty Way · Freedom Way · Oniru waterfront',
+    tagline: 'Serviced apartments near dining, lifestyle & coastal venues',
+    body: 'Explore apartments close to dining spots, retail, entertainment, and coastal destinations across Lekki Phase 1 and Oniru.',
+    href: '/stays?area=Lekki+Phase+1',
+    img: '/images/prop/pool-1.jpg',
+  },
+  {
+    name: 'Ajah Corridor',
+    matchArea: 'Ajah',
+    subareas: 'Chevron · Orchid Road · Sangotedo · Lekki–Epe axis',
+    tagline: 'Spacious residential duplexes & longer family stays',
+    body: 'Explore shortlets in Ajah for family visits, longer stays, and plans centred around the residential Lekki–Ajah corridor.',
     href: '/stays?area=Ajah',
+    img: '/images/prop/exterior-1.jpg',
   },
 ];
 
@@ -79,6 +109,25 @@ const MAINLAND_ENVIRONS_CHIPS = [
   { label: 'Ikeja GRA', to: '/stays?area=Ikeja+GRA' },
 ];
 
+const CORRIDOR_ANCHORS = [
+  {
+    title: 'Third Mainland & Carter spine',
+    detail: 'Links Yaba, Ebute Metta, Shomolu & Gbagada directly into Lagos Island and Victoria Island.',
+  },
+  {
+    title: 'Murtala Muhammed Airport axis',
+    detail: 'Ikeja GRA, Maryland, Magodo & Ilupeju provide practical access for domestic and international flights.',
+  },
+  {
+    title: 'Lekki–Oniru–Ajah corridor',
+    detail: 'Stretches from Victoria Island and Oniru through Lekki Phase 1 into residential Ajah.',
+  },
+  {
+    title: 'Verified power & access',
+    detail: 'Every HAMLET listing records power backup, house rules, and Wayfinder arrival readiness upfront.',
+  },
+];
+
 const LAGOS_GUIDE_SCHEMA = buildLagosGuideStructuredData([
   ...MAINLAND_GUIDES,
   ...ISLAND_GUIDES,
@@ -92,204 +141,275 @@ export default function Lagos() {
   );
 
   const { state, backendReady, backendError } = useHamlet();
+  const { formatStayPrice } = useCurrency();
   const approved = state.properties.filter(p => p.status === 'approved');
+
+  const floorPriceFor = (matchArea: string): string | null => {
+    const matches = approved.filter(p => matchesLagosAreaFilter(p, matchArea));
+    if (matches.length === 0) return null;
+    const minRate = Math.min(...matches.map(p => p.nightlyRate));
+    return formatStayPrice(Math.round(minRate * 1.2));
+  };
 
   return (
     <GuestLayout>
-      {/* Hero */}
+      {/* Editorial Hero */}
       <section className="relative overflow-hidden bg-ink-950 text-paper">
         <img
           src="/images/lagos-hero.jpg"
           alt="Lagos cityscape"
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover opacity-38"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/75 to-ink-950/35" />
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-brass-300">
-            Lagos Mainland & Island shortlets
-          </p>
-          <h1 className="mt-3 max-w-2xl font-display text-4xl font-black leading-tight sm:text-5xl">
-            Find your place in Lagos.
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/80 to-ink-950/45" />
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+          <p className="eyebrow-light">The Lagos shortlet field guide</p>
+          <h1 className="mt-3 max-w-3xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+            Where to stay across Lagos Mainland &amp; Island.
           </h1>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-100 sm:text-base">
-            Whether your plans are centred around <strong className="text-brass-200">Lagos Mainland</strong> — Yaba, Shomolu, Surulere, Gbagada, Maryland, and Ikeja — or <strong className="text-brass-200">Lagos Island & Lekki</strong>, explore apartments with upfront pricing and confirmed arrival details.
+          <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+            Eight corridors, one standard: every home published on HAMLET completes manual verification before listing. Choose your axis —{' '}
+            <strong className="text-brass-300">Lagos Mainland</strong> (Yaba, Shomolu, Surulere &amp; Ikeja) or{' '}
+            <strong className="text-brass-300">Lagos Island &amp; Lekki</strong> — with upfront pricing in ₦, $ and £.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link to="/stays?area=Lagos+Mainland" className="btn-brass min-h-12">
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link to="/stays?area=Lagos+Mainland" className="btn-brass !rounded-full !px-6">
               Explore Lagos Mainland <ArrowRight size={15} />
             </Link>
-            <Link to="/stays" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-4 py-3 text-sm font-bold text-paper transition hover:bg-white/10">
-              Browse all Lagos stays
+            <Link
+              to="/stays?side=Island"
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/8 px-5 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/15 [&>svg]:shrink-0"
+            >
+              Explore Lagos Island
             </Link>
             <CurrencyToggle variant="dark" />
+          </div>
+
+          {/* 4 Axis Anchors */}
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {CORRIDOR_ANCHORS.map(anchor => (
+              <div
+                key={anchor.title}
+                className="rounded-2xl border border-white/12 bg-ink-900/75 p-4 backdrop-blur-md"
+              >
+                <p className="text-xs font-extrabold text-brass-300">{anchor.title}</p>
+                <p className="mt-1 text-[11.5px] leading-relaxed text-ink-200">{anchor.detail}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Lagos Mainland Spotlight: Yaba, Shomolu, Surulere & Environs */}
-      <section id="lagos-mainland" className="border-b border-ink-100 bg-paper py-12 sm:py-14">
+      {/* Lagos Mainland Spotlight */}
+      <section id="lagos-mainland" className="border-b border-ink-100 bg-paper py-14 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-2xl">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">
-                Lagos Mainland & Environs
-              </p>
-              <h2 className="mt-1.5 font-display text-2xl font-black text-ink-900 sm:text-3xl">
-                Yaba, Shomolu, Surulere & surrounding hubs
+              <p className="eyebrow">Value · connectivity · airport axis</p>
+              <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+                Lagos Mainland &amp; environs
               </h2>
               <p className="mt-1.5 text-sm font-medium text-ink-600">
-                Stay close to Mainland business corridors, universities, family addresses, Murtala Muhammed Airport, and fast bridge connections to the Island.
+                Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja GRA, and surrounding Mainland hubs.
               </p>
             </div>
-            <Link to="/stays?area=Lagos+Mainland" className="btn-jade !py-2.5 text-xs">
-              View all Mainland stays <ArrowRight size={14} />
+            <Link to="/stays?area=Lagos+Mainland" className="btn-jade !rounded-full !px-5 !py-2.5 text-xs">
+              All Mainland stays <ArrowRight size={14} />
             </Link>
           </div>
 
-          {/* Quick Environs Chips */}
           <div className="mt-5 flex flex-wrap gap-2">
             {MAINLAND_ENVIRONS_CHIPS.map(chip => (
               <Link
                 key={chip.label}
                 to={chip.to}
-                className="rounded-full border border-jade-200 bg-jade-50/70 px-3.5 py-1.5 text-xs font-bold text-jade-900 transition hover:border-jade-600 hover:bg-jade-700 hover:text-white"
+                className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-xs font-bold text-ink-800 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
               >
                 {chip.label}
               </Link>
             ))}
           </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {MAINLAND_GUIDES.map(n => (
-              <article key={n.name} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-2xs">
-                <div className="flex items-center gap-2 text-jade-700">
-                  <MapPin size={16} className="shrink-0" />
-                  <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em]">Lagos Mainland</span>
-                </div>
-                <h3 className="mt-2 font-display text-lg font-black text-ink-900">{n.name}</h3>
-                <p className="mt-0.5 text-[11px] font-bold text-jade-800">{n.subareas}</p>
-                <p className="mt-2 text-[12px] font-bold text-ink-800">{n.tagline}</p>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
-                <Link
-                  to={n.href}
-                  className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[12px] font-extrabold text-jade-800 hover:text-jade-900"
+          <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {MAINLAND_GUIDES.map(n => {
+              const floor = floorPriceFor(n.matchArea);
+              return (
+                <article
+                  key={n.name}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition hover:-translate-y-1 hover:shadow-md"
                 >
-                  Explore {n.name.split(' ')[0]} stays <ArrowRight size={13} className="shrink-0" />
-                </Link>
-              </article>
-            ))}
+                  <div className="relative h-40 overflow-hidden bg-clay">
+                    <img
+                      src={n.img}
+                      alt={n.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/65 to-transparent" />
+                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
+                      Mainland
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="font-display text-xl font-bold text-ink-900">{n.name}</h3>
+                    <p className="mt-1 text-[11px] font-bold text-brass-700">{n.subareas}</p>
+                    <p className="mt-2 text-xs font-bold text-ink-800">{n.tagline}</p>
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
+                    <Link
+                      to={n.href}
+                      className="mt-auto inline-flex items-center justify-between border-t border-ink-100 pt-3.5 text-xs font-extrabold text-ink-900 group-hover:text-brass-700"
+                    >
+                      <span>{floor ? `from ${floor} / night` : `Explore ${n.name.split(' ')[0]}`}</span>
+                      <ArrowUpRight size={14} className="shrink-0" />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Lagos Island & Lekki Corridor */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
-        <div className="max-w-2xl">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Lagos Island & Lekki Corridor</p>
-          <h2 className="mt-1.5 font-display text-2xl font-black text-ink-900 sm:text-3xl">
-            Victoria Island, Ikoyi, Lekki & Ajah
-          </h2>
-        </div>
+      <section className="border-b border-ink-100 bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="eyebrow">Corporate · coastal · residential</p>
+              <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+                Lagos Island &amp; Lekki corridor
+              </h2>
+              <p className="mt-1.5 text-sm font-medium text-ink-600">
+                Victoria Island, Ikoyi, Banana Island, Lekki Phase 1, Oniru, and the Ajah corridor.
+              </p>
+            </div>
+            <Link to="/stays?side=Island" className="btn-outline !rounded-full !px-5 !py-2.5 text-xs">
+              All Island stays <ArrowRight size={14} />
+            </Link>
+          </div>
 
-        <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {ISLAND_GUIDES.map(n => (
-            <article key={n.name} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-2xs">
-              <div className="flex items-center gap-2 text-jade-700">
-                <MapPin size={16} className="shrink-0" />
-                <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em]">Lagos Island / Lekki</span>
-              </div>
-              <h3 className="mt-2 font-display text-lg font-black text-ink-900">{n.name}</h3>
-              <p className="mt-0.5 text-[12px] font-bold text-ink-700">{n.tagline}</p>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
-              <Link
-                to={n.href}
-                className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[12px] font-extrabold text-jade-800 hover:text-jade-900"
-              >
-                Explore {n.name} stays <ArrowRight size={13} className="shrink-0" />
-              </Link>
-            </article>
-          ))}
+          <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {ISLAND_GUIDES.map(n => {
+              const floor = floorPriceFor(n.matchArea);
+              return (
+                <article
+                  key={n.name}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-paper/55 shadow-2xs transition hover:-translate-y-1 hover:bg-white hover:shadow-md"
+                >
+                  <div className="relative h-40 overflow-hidden bg-clay">
+                    <img
+                      src={n.img}
+                      alt={n.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/65 to-transparent" />
+                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
+                      Lagos Island
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="font-display text-xl font-bold text-ink-900">{n.name}</h3>
+                    <p className="mt-1 text-[11px] font-bold text-brass-700">{n.subareas}</p>
+                    <p className="mt-2 text-xs font-bold text-ink-800">{n.tagline}</p>
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600">{n.body}</p>
+                    <Link
+                      to={n.href}
+                      className="mt-auto inline-flex items-center justify-between border-t border-ink-100 pt-3.5 text-xs font-extrabold text-ink-900 group-hover:text-brass-700"
+                    >
+                      <span>{floor ? `from ${floor} / night` : `Explore ${n.name}`}</span>
+                      <ArrowUpRight size={14} className="shrink-0" />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* Available Lagos stays */}
-      <section className="border-y border-ink-100 bg-clay/60 py-12 sm:py-14">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Available inventory</p>
-              <h2 className="mt-1.5 font-display text-3xl font-black text-ink-900 sm:text-4xl">
-                Shortlets across Lagos
-              </h2>
-              <p className="mt-1.5 text-sm font-medium text-ink-600">
-                Compare prices in Naira (₦), US Dollars ($), or British Pounds (£) and inspect full property details before requesting to book.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <CurrencyToggle />
-              <Link to="/stays" className="btn-dark !py-2.5 text-[12px]">
-                Filter by area & dates <ArrowRight size={14} />
+      {/* Traveller Decision Cards */}
+      <section className="border-b border-ink-100 bg-clay/50 py-12 sm:py-14">
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 sm:px-6 md:grid-cols-3">
+          <div className="rounded-3xl border border-ink-100 bg-white p-6">
+            <Compass size={20} className="text-brass-600" />
+            <h3 className="mt-3 font-display text-lg font-bold text-ink-900">First visit to Lagos?</h3>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
+              Compare Victoria Island or Lekki Phase 1 for business and coastal dining, or Yaba and Surulere for central Mainland access across bridges.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-ink-100 bg-white p-6">
+            <Wifi size={20} className="text-brass-600" />
+            <h3 className="mt-3 font-display text-lg font-bold text-ink-900">Working remotely?</h3>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
+              Filter by <strong>24/7 Power</strong> + <strong>Workspace</strong> + <strong>Wi-Fi</strong> on the search page to verify backup power and desk setup before requesting dates.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-ink-100 bg-white p-6">
+            <Plane size={20} className="text-brass-600" />
+            <h3 className="mt-3 font-display text-lg font-bold text-ink-900">Arriving via MMIA?</h3>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
+              Ikeja GRA, Maryland, and Magodo keep airport transfers short — and every confirmed stay includes Wayfinder arrival instructions.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Inventory Preview */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Available inventory</p>
+            <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+              Shortlets across Lagos
+            </h2>
+            <p className="mt-1 text-sm font-medium text-ink-600">
+              Compare prices in Naira (₦), US Dollars ($), or British Pounds (£) and review full property details before requesting to book.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <CurrencyToggle />
+            <Link to="/stays" className="btn-dark !rounded-full !px-5 !py-2.5 text-xs">
+              Filter by area &amp; dates <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+
+        {backendError ? (
+          <div
+            role="alert"
+            className="mt-7 rounded-2xl border border-red-200 bg-red-50 px-6 py-5 text-sm font-semibold text-red-800"
+          >
+            Something didn’t go as planned loading Lagos stays: {backendError}
+          </div>
+        ) : !backendReady ? (
+          <div className="mt-7 rounded-3xl border border-ink-100 bg-white px-6 py-10 text-center text-sm font-semibold text-ink-500">
+            Finding spaces that fit your plans…
+          </div>
+        ) : approved.length > 0 ? (
+          <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {approved.slice(0, 6).map(p => (
+              <PropertyCard key={p.id} p={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-7 rounded-3xl border border-ink-100 bg-white px-6 py-12 text-center sm:px-10">
+            <ShieldCheck size={30} className="mx-auto text-emerald-700" />
+            <h3 className="mt-3 font-display text-2xl font-bold text-ink-900">
+              We’re still adding stays in this area.
+            </h3>
+            <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-500">
+              Try another neighbourhood or check back as more verified properties across Lagos Mainland and Island complete inspection.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link to="/partner/register" className="btn-jade !rounded-full">
+                <Building2 size={15} /> List your Lagos property
+              </Link>
+              <Link to="/how-it-works" className="btn-outline !rounded-full">
+                How HAMLET works
               </Link>
             </div>
           </div>
-
-          {backendError ? (
-            <div role="alert" className="mt-7 rounded-2xl border border-red-200 bg-red-50 px-6 py-5 text-sm font-semibold text-red-800">
-              Something didn’t go as planned loading Lagos stays: {backendError}
-            </div>
-          ) : !backendReady ? (
-            <div className="mt-7 rounded-2xl border border-ink-100 bg-white px-6 py-10 text-center text-sm font-semibold text-ink-500">
-              Finding spaces that fit your plans…
-            </div>
-          ) : approved.length > 0 ? (
-            <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {approved.slice(0, 6).map(p => (
-                <PropertyCard key={p.id} p={p} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-7 rounded-3xl border border-ink-100 bg-white px-6 py-12 text-center sm:px-10">
-              <ShieldCheck size={30} className="mx-auto text-jade-700" />
-              <h3 className="mt-3 font-display text-2xl font-black text-ink-900">
-                We’re still adding stays in this area.
-              </h3>
-              <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-500">
-                Try another neighbourhood or check back as more properties across Lagos Mainland and Island become available.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link to="/partner/register" className="btn-jade">List your Lagos property</Link>
-                <Link to="/how-it-works" className="btn-outline">How HAMLET works</Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* What to look for when booking a Lagos shortlet */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
-        <div className="max-w-3xl">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-jade-700">Practical booking checklist</p>
-          <h2 className="mt-2 font-display text-2xl font-black text-ink-900 sm:text-3xl">
-            What to check before booking in Lagos
-          </h2>
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            { Icon: MapPin, title: 'Location & bridge routes', body: 'Check proximity to your Mainland or Island meetings, events, or family.' },
-            { Icon: Zap, title: 'Power backup', body: 'Confirm whether 24/7 estate power, inverter, or generator backup is included.' },
-            { Icon: Wifi, title: 'Internet', body: 'Check whether Wi-Fi or workspace arrangements suit remote work.' },
-            { Icon: Lock, title: 'Access & security', body: 'Review gated street/estate entry procedures and security.' },
-            { Icon: Banknote, title: 'Total price', body: 'Review cleaning charges, the 20% domestic stay markup, and refundable caution deposit upfront.' },
-            { Icon: KeyRound, title: 'Check-in window', body: 'Confirm arrival hours and host or manager contact arrangements.' },
-          ].map(({ Icon, title, body }) => (
-            <div key={title} className="rounded-2xl border border-ink-100 bg-white p-5">
-              <Icon size={20} className="shrink-0 text-jade-700" />
-              <h3 className="mt-3 font-display text-base font-black text-ink-900">{title}</h3>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">{body}</p>
-            </div>
-          ))}
-        </div>
+        )}
       </section>
     </GuestLayout>
   );

@@ -42,6 +42,15 @@
   /* Warm Ivory & secondary warm surface (#F8F5EE) */
   --color-paper: #F8F5EE;
   --color-clay: #EFEADE;
+
+  /* Restrained Emerald — semantic verification & inspection accents */
+  --color-emerald-50:  #ECFDF3;
+  --color-emerald-100: #D1FADF;
+  --color-emerald-200: #A6F4C5;
+  --color-emerald-600: #0F6E43;
+  --color-emerald-700: #0B5534;
+  --color-emerald-800: #083F27;
+  --color-emerald-900: #062C1B;
 }
 
 @layer base {
@@ -101,6 +110,8 @@
   .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold [&>svg]:shrink-0; }
   .th { @apply px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-ink-400; }
   .td { @apply px-4 py-3 align-middle text-sm; }
+  .eyebrow { @apply inline-flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-brass-600; }
+  .eyebrow-light { @apply inline-flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-brass-300; }
 }
 
 ::selection { background: var(--color-brass-300); color: var(--color-ink-950); }
@@ -112,3 +123,21 @@
 
 @keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
 .live-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+@keyframes hamlet-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.hamlet-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: hamlet-marquee 38s linear infinite;
+}
+.hamlet-marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hamlet-marquee-track {
+    animation: none;
+  }
+}
