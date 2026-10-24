@@ -108,13 +108,17 @@ export default function PartnerProperties() {
     }
   };
 
-  const submitCorrections = async () => {
+  const submitCorrections = async (saveAsDraft = false) => {
     if (!editing) return;
     if (title.trim().length < 8 || address.trim().length < 10) {
       toast('Provide a valid property title (min 8 chars) and full Lagos address (min 10 chars).', 'error');
       return;
     }
-    if (authorityBasis.trim().length < 9) {
+    const effectiveAuthority =
+      saveAsDraft && authorityBasis.trim().length < 9
+        ? 'Draft authority declaration pending completion'
+        : authorityBasis.trim();
+    if (!saveAsDraft && effectiveAuthority.length < 9) {
       toast('Describe your authority to list (min 9 chars).', 'error');
       return;
     }
@@ -122,8 +126,8 @@ export default function PartnerProperties() {
       toast('Nightly rate must be at least ₦20,000.', 'error');
       return;
     }
-    if (editImages.length < 1) {
-      toast('Attach at least 1 property photo before resubmitting.', 'error');
+    if (!saveAsDraft && editImages.length < 1) {
+      toast('Attach at least 1 property photo before submitting for review.', 'error');
       return;
     }
     setSaving(true);
@@ -131,6 +135,7 @@ export default function PartnerProperties() {
       await updateAndResubmitProperty(
         editing.id,
         {
+          saveAsDraft,
           title: title.trim(),
           type,
           area,
@@ -147,7 +152,10 @@ export default function PartnerProperties() {
           images: editImages,
           houseRules: houseRulesText.split('\n').map(s => s.trim()).filter(Boolean),
           submittedRole: editing.submittedRole,
-          authorityBasis: authorityBasis.trim(),
+          authorityBasis: effectiveAuthority,
+          firstAvailableDate: editing.firstAvailableDate ?? null,
+          availabilityConfirmationStatus: editing.availabilityConfirmationStatus ?? 'manual_confirmation',
+          calendarResponsiblePerson: editing.calendarResponsiblePerson ?? state.session?.name,
           docs: editing.docs.length > 0 ? editing.docs : [
             { label: 'Certificate of occupancy / title deed', status: 'self_reported' },
             { label: 'Government-issued ID of owner', status: 'self_reported' },
@@ -157,10 +165,17 @@ export default function PartnerProperties() {
         },
         correctionSummary.trim() || undefined,
       );
-      toast('Corrections saved and listing resubmitted for review.', 'info');
+      toast(
+        saveAsDraft
+          ? 'Draft saved. You can submit for HAMLET review whenever ready.'
+          : editing.status === 'draft'
+            ? 'Draft completed and submitted for HAMLET review.'
+            : 'Corrections saved and listing resubmitted for review.',
+        'info',
+      );
       setEditing(null);
     } catch (error) {
-      toast(error instanceof Error ? error.message : 'Could not resubmit corrections.', 'error');
+      toast(error instanceof Error ? error.message : 'Could not save listing changes.', 'error');
     } finally {
       setSaving(false);
     }
@@ -197,7 +212,13 @@ export default function PartnerProperties() {
           return (
           <article key={p.id} className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900">
             <div className="flex flex-col gap-4 p-5 sm:flex-row">
-              <img src={p.images[0]} alt={p.title} className="h-40 w-full shrink-0 rounded-xl object-cover sm:w-52" />
+              {p.images[0] ? (
+                <img src={p.images[0]} alt={p.title} className="h-40 w-full shrink-0 rounded-xl object-cover sm:w-52" />
+              ) : (
+                <div className="flex h-40 w-full shrink-0 items-center justify-center rounded-xl border border-dashed border-ink-700 bg-ink-950 text-[11px] font-bold text-ink-500 sm:w-52">
+                  No photo attached yet
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <PropertyStatusPill status={p.status} />
@@ -274,20 +295,29 @@ export default function PartnerProperties() {
                   </button>
                 )}
 
-                {p.status === 'needs_correction' && !isSuspended && (
+                {(p.status === 'needs_correction' || p.status === 'draft') && !isSuspended && (
                   <div className="flex flex-wrap gap-2 sm:justify-end">
                     <button onClick={() => openEditor(p)} className="btn-brass !px-3.5 !py-2 text-[11px]">
-                      <Pencil size={13} /> Edit & resubmit
+                      <Pencil size={13} /> {p.status === 'draft' ? 'Edit draft' : 'Edit & resubmit'}
                     </button>
                     <button onClick={async () => {
+                      if (p.images.length < 1) {
+                        toast('Attach at least 1 property photo before submitting for review.', 'error');
+                        openEditor(p);
+                        return;
+                      }
                       try {
-                        await reviewProperty(p.id, 'submitted', 'Resubmitted by partner after corrections');
-                        toast('Resubmitted for review.', 'info');
+                        await reviewProperty(
+                          p.id,
+                          'submitted',
+                          p.status === 'draft' ? 'Submitted from draft for HAMLET review' : 'Resubmitted by partner after corrections',
+                        );
+                        toast(p.status === 'draft' ? 'Draft submitted for HAMLET review.' : 'Resubmitted for review.', 'info');
                       } catch (error) {
-                        toast(error instanceof Error ? error.message : 'Could not resubmit property.', 'error');
+                        toast(error instanceof Error ? error.message : 'Could not submit property.', 'error');
                       }
                     }} className="btn-ghost-dark !border !border-ink-700 !px-3 !py-2 text-[11px]">
-                      <RefreshCcw size={13} /> Quick resubmit
+                      <RefreshCcw size={13} /> {p.status === 'draft' ? 'Submit for review' : 'Quick resubmit'}
                     </button>
                   </div>
                 )}
@@ -589,8 +619,13 @@ export default function PartnerProperties() {
 
               <div className="mt-5 flex flex-wrap justify-end gap-2">
                 <button disabled={saving} onClick={() => setEditing(null)} className="btn-ghost-dark !py-2.5 text-[12px]">Cancel</button>
-                <button disabled={saving} onClick={() => void submitCorrections()} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
-                  <ShieldCheck size={14} /> {saving ? 'Submitting…' : 'Save & resubmit for review'}
+                {editing.status === 'draft' && (
+                  <button disabled={saving} onClick={() => void submitCorrections(true)} className="btn-ghost-dark !border !border-ink-700 !px-4 !py-2.5 text-[12px] disabled:opacity-50">
+                    Save as draft
+                  </button>
+                )}
+                <button disabled={saving} onClick={() => void submitCorrections(false)} className="btn-brass !py-2.5 text-[12px] disabled:opacity-50">
+                  <ShieldCheck size={14} /> {saving ? 'Submitting…' : editing.status === 'draft' ? 'Submit draft for review' : 'Save & resubmit for review'}
                 </button>
               </div>
             </motion.div>

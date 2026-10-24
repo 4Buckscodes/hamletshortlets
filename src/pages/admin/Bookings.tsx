@@ -104,7 +104,7 @@ export default function AdminBookings() {
         b.hamletAllocationNgn ?? 0,
         b.paymentReserveNgn ?? 0,
         b.quoteCurrency ?? 'NGN',
-        b.settlementTotalNgn ?? (b.guestTotal + b.deposit),
+        b.settlementTotalNgn ?? b.guestTotal,
         b.deposit,
         b.paymentRef ?? '',
         b.refundStatus ?? 'none',
@@ -146,7 +146,7 @@ export default function AdminBookings() {
     setPendingAction({ bookingId: booking.id, kind });
     setActionNote('');
     if (kind === 'refund') {
-      setRefundAmount(booking.guestTotal);
+      setRefundAmount(booking.settlementTotalNgn ?? booking.guestTotal);
       setRefundRef('');
     }
   };
@@ -304,11 +304,11 @@ export default function AdminBookings() {
                   {activePrompt.kind === 'refund' && (
                     <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
                       <label>
-                        <span className="label-dark">Refund amount (₦, max {formatNaira(b.guestTotal + b.deposit)})</span>
+                        <span className="label-dark">Refund amount (₦, max {formatNaira(Math.max(b.guestTotal, b.settlementTotalNgn ?? b.guestTotal) + b.deposit)})</span>
                         <input
                           type="number"
                           min={1}
-                          max={b.guestTotal + b.deposit}
+                          max={Math.max(b.guestTotal, b.settlementTotalNgn ?? b.guestTotal) + b.deposit}
                           className="input-dark !py-2 text-[12px]"
                           value={refundAmount}
                           onChange={e => setRefundAmount(Number(e.target.value))}

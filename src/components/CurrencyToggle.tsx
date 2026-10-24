@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 import { CURRENCY_ORDER, CURRENCY_SYMBOLS, useCurrency, type DisplayCurrency } from '../lib/currency';
+import { useToast } from '../lib/toast';
 
 const CURRENCY_LABELS: Record<DisplayCurrency, string> = {
   NGN: 'Nigerian Naira (₦)',
@@ -16,15 +18,38 @@ export function CurrencyToggle({
   compact?: boolean;
   className?: string;
 }) {
-  const { currency, setCurrency, toggleCurrency } = useCurrency();
+  const { currency, exchangeRates, setCurrency } = useCurrency();
+  const { toast } = useToast();
+  const [mountMs] = useState(() => Date.now());
   const effectiveVariant = compact ? 'compact' : variant;
 
+  const isCodeAvailable = (code: DisplayCurrency): boolean => {
+    if (code === 'NGN') return true;
+    const cfg = exchangeRates.find(r => r.currency === code);
+    if (!cfg || !cfg.isActive || !(cfg.ngnPerUnit > 0)) return false;
+    if (cfg.expiresAt && new Date(cfg.expiresAt).getTime() <= mountMs) return false;
+    return true;
+  };
+
+  const availableCurrencies = CURRENCY_ORDER.filter(isCodeAvailable);
+
+  const handleSelect = (code: DisplayCurrency) => {
+    if (!isCodeAvailable(code)) {
+      setCurrency('NGN');
+      toast(`${CURRENCY_LABELS[code]} exchange rate is currently unavailable — showing verified Naira (₦) pricing.`, 'info');
+      return;
+    }
+    setCurrency(code);
+  };
+
   if (effectiveVariant === 'compact') {
-    const nextCurrency = CURRENCY_ORDER[(CURRENCY_ORDER.indexOf(currency) + 1) % CURRENCY_ORDER.length];
+    const cycleList: DisplayCurrency[] = availableCurrencies.length > 0 ? availableCurrencies : ['NGN'];
+    const currentIdx = cycleList.indexOf(currency);
+    const nextCurrency = cycleList[(currentIdx >= 0 ? currentIdx + 1 : 0) % cycleList.length];
     return (
       <button
         type="button"
-        onClick={toggleCurrency}
+        onClick={() => handleSelect(nextCurrency)}
         aria-label={`Switch stay currency (currently ${CURRENCY_LABELS[currency]}). Click for ${CURRENCY_LABELS[nextCurrency]}`}
         title="Switch between Naira (₦), US Dollar ($), and British Pound (£) stay prices"
         className={`inline-flex items-center gap-1.5 rounded-xl border border-ink-200 bg-white px-2.5 py-1.5 text-[11.5px] font-extrabold text-ink-800 transition hover:border-jade-400 hover:text-jade-800 [&>svg]:shrink-0 ${className}`}
@@ -49,21 +74,28 @@ export function CurrencyToggle({
     >
       {CURRENCY_ORDER.map(code => {
         const active = currency === code;
+        const available = isCodeAvailable(code);
         return (
           <button
             key={code}
             type="button"
-            onClick={() => setCurrency(code)}
+            onClick={() => handleSelect(code)}
             aria-pressed={active}
-            title={`Show stay prices in ${CURRENCY_LABELS[code]}`}
+            title={
+              available
+                ? `Show stay prices in ${CURRENCY_LABELS[code]}`
+                : `${CURRENCY_LABELS[code]} rate temporarily unavailable — showing Naira (₦)`
+            }
             className={`rounded-lg px-2 py-1 text-[11px] font-extrabold tracking-wide transition sm:px-2.5 ${
               active
                 ? isDark
                   ? 'bg-brass-500 text-ink-950'
                   : 'bg-jade-700 text-white'
-                : isDark
-                  ? 'text-ink-300 hover:text-white'
-                  : 'text-ink-600 hover:text-ink-900'
+                : !available
+                  ? 'opacity-45 hover:opacity-75'
+                  : isDark
+                    ? 'text-ink-300 hover:text-white'
+                    : 'text-ink-600 hover:text-ink-900'
             }`}
           >
             {CURRENCY_SYMBOLS[code]} {code}

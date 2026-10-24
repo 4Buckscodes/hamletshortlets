@@ -75,7 +75,7 @@ export default function PartnerOverview() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                   <BookingStatusPill status={b.status} />
-                  <Link to="/partner/bookings" className="btn-ghost-dark !px-3 !py-2 text-[11px]">Review</Link>
+                  <Link to={`/partner/bookings/${encodeURIComponent(b.id)}`} className="btn-ghost-dark !px-3 !py-2 text-[11px]">Review</Link>
                 </div>
               </div>
             ))}
@@ -91,7 +91,11 @@ export default function PartnerOverview() {
           <div className="divide-y divide-ink-800">
             {myProps.slice(0, 5).map(p => (
               <Link to="/partner/properties" key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3.5 transition hover:bg-ink-850 sm:flex-nowrap sm:px-5">
-                <img src={p.images[0]} alt="" className="h-12 w-14 shrink-0 rounded-lg object-cover" />
+                {p.images[0] ? (
+                  <img src={p.images[0]} alt="" className="h-12 w-14 shrink-0 rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-ink-700 bg-ink-950 text-[9px] font-bold text-ink-500">Draft</div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12.5px] font-bold text-ink-50">{p.title}</p>
                   <p className="text-[10.5px] font-semibold text-ink-400">{p.area} · {formatNaira(p.nightlyRate)}/night</p>

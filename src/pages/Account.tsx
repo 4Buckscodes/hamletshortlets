@@ -93,7 +93,7 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
                 <span className="text-[12px] font-bold text-ink-500">Paying HAMLET for booking</span>
                 <span className="shrink-0 rounded-md bg-ink-100 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-600">{booking.ref}</span>
               </div>
-              <p className="mt-2 font-display text-3xl font-black tracking-tight tabular-nums text-ink-900 sm:text-4xl">{formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}</p>
+              <p className="mt-2 font-display text-3xl font-black tracking-tight tabular-nums text-ink-900 sm:text-4xl">{formatNaira(booking.settlementTotalNgn ?? booking.guestTotal)}</p>
               {booking.quoteCurrency && booking.quoteCurrency !== 'NGN' && booking.quotedStayTotalMinor && (
                 <p className="mt-1 text-[11.5px] font-semibold text-sky-900">
                   Quoted stay: {formatMinorCurrency(booking.quotedStayTotalMinor, booking.quoteCurrency)} (incl. 10% buffer @ ₦{booking.fxRate?.toLocaleString('en-NG')}) · Settled in NGN
@@ -106,17 +106,17 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
                 {(booking.internationalBufferNgnEquiv ?? 0) > 0 && (
                   <div className="flex justify-between gap-3"><dt className="min-w-0">International currency buffer (10%)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.internationalBufferNgnEquiv ?? 0)}</dd></div>
                 )}
+                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Paystack NGN Stay Settlement Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.settlementTotalNgn ?? booking.guestTotal)}</dd></div>
                 {booking.deposit > 0 && (
-                  <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.deposit)}</dd></div>
+                  <div className="flex justify-between gap-3 pt-1 text-[11px] text-ink-500"><dt className="min-w-0">Separate refundable caution deposit (tracked post-inspection)</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.deposit)}</dd></div>
                 )}
-                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1.5 font-bold text-ink-900"><dt>Paystack NGN Settlement Total</dt><dd className="shrink-0 tabular-nums">{formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}</dd></div>
               </dl>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <div className="rounded-xl border-2 border-[#0BA4DB] bg-sky-50 p-3 text-center"><CreditCard size={18} className="mx-auto shrink-0 text-[#0BA4DB]" /><p className="mt-1 text-[11px] font-black text-ink-800">Card</p><p className="text-[9px] font-semibold text-ink-400">4084 •••• 4081</p></div>
                 <div className="rounded-xl border border-ink-200 p-3 text-center"><Receipt size={18} className="mx-auto shrink-0 text-ink-500" /><p className="mt-1 text-[11px] font-black text-ink-800">Bank transfer</p><p className="text-[9px] font-semibold text-ink-400">pay with your bank app</p></div>
               </div>
               <button onClick={pay} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0BA4DB] py-4 font-display text-[15px] font-black text-white transition hover:bg-[#0993c3] [&>svg]:shrink-0">
-                <Lock size={15} /> Pay {formatNaira(booking.settlementTotalNgn ?? (booking.guestTotal + booking.deposit))}
+                <Lock size={15} /> Pay {formatNaira(booking.settlementTotalNgn ?? booking.guestTotal)}
               </button>
               <p className="mt-2 text-center text-[10px] font-medium leading-snug text-ink-400">Confirmation is issued only after Paystack's webhook is verified server-side. A redirect or screenshot is never accepted as proof of payment.</p>
             </>
@@ -556,7 +556,7 @@ export default function Account() {
                 const linkedProperty = state.properties.find(p => p.id === b.propertyId);
                 const cautionRecord = state.cautionDeposits.find(cd => cd.bookingId === b.id);
                 const quoteExpired = b.status === 'awaiting_payment' && b.quoteCurrency && b.quoteCurrency !== 'NGN' && isQuoteExpired(b.quoteExpiresAt ?? null);
-                const payableTotalNgn = b.settlementTotalNgn ?? (b.guestTotal + b.deposit);
+                const payableTotalNgn = b.settlementTotalNgn ?? b.guestTotal;
 
                 return (
                   <article key={b.id} className="card overflow-hidden">
@@ -680,9 +680,11 @@ export default function Account() {
                                 {b.quoteCurrency && b.quoteCurrency !== 'NGN' && b.quotedStayTotalMinor && (
                                   <div className="flex justify-between gap-3 text-sky-900"><dt className="min-w-0">Quoted international stay ({b.quoteCurrency} incl. 10% buffer)</dt><dd className="shrink-0 tabular-nums font-bold">{formatMinorCurrency(b.quotedStayTotalMinor, b.quoteCurrency)}</dd></div>
                                 )}
-                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Stay total (NGN)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
-                                <div className="flex justify-between gap-3 text-ink-500"><dt className="min-w-0">Refundable caution deposit (held separately)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
-                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-jade-800"><dt>Paystack NGN settlement total</dt><dd className="shrink-0 tabular-nums">{formatNaira(payableTotalNgn)}</dd></div>
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-ink-900"><dt>Domestic stay base (NGN)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.guestTotal)}</dd></div>
+                                <div className="flex justify-between gap-3 border-t border-ink-100 pt-1 font-bold text-jade-800"><dt>Paystack NGN stay settlement</dt><dd className="shrink-0 tabular-nums">{formatNaira(payableTotalNgn)}</dd></div>
+                                {b.deposit > 0 && (
+                                  <div className="flex justify-between gap-3 pt-1 text-[11.5px] text-ink-500"><dt className="min-w-0">Separate refundable caution deposit (tracked post-inspection)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.deposit)}</dd></div>
+                                )}
                               </dl>
                               {cautionRecord && (
                                 <div className="mt-3 rounded-xl border border-ink-200 bg-ink-50/70 p-3 text-[11.5px]">

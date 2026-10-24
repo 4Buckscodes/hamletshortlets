@@ -18,10 +18,10 @@ export default function PartnerReferrals() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedAgentLink, setCopiedAgentLink] = useState(false);
 
-  const referralCode = myAccount?.referralCode || generatedCode || '';
+  const referralCode = myAccount?.referralCode || session.referralCode || generatedCode || '';
 
   useEffect(() => {
-    if (myAccount?.referralCode) return;
+    if (myAccount?.referralCode || session.referralCode) return;
     let active = true;
     void ensureMyReferralCode()
       .then(code => {
@@ -29,7 +29,7 @@ export default function PartnerReferrals() {
       })
       .catch(() => { /* surfaced if user clicks copy */ });
     return () => { active = false; };
-  }, [myAccount?.referralCode, ensureMyReferralCode]);
+  }, [myAccount?.referralCode, session.referralCode, ensureMyReferralCode]);
 
   const referralUrl = referralCode ? buildCanonicalReferralUrl(referralCode) : '';
   const whatsappShareUrl = referralCode

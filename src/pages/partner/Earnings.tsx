@@ -17,8 +17,43 @@ export default function PartnerEarnings() {
   const totalNights = settleable.reduce((s, b) => s + b.nights, 0);
 
   // Closing agent commissions (10% of owner listed price B) where this partner closed the booking
-  const myClosedBookings = state.bookings.filter(b => b.closingAgentId === userId && ['confirmed', 'completed'].includes(b.status));
-  const totalClosingCommission = myClosedBookings.reduce((s, b) => s + (b.closingAgentCommissionNgn ?? 0), 0);
+  const myClosedBookings = useMemo(() => {
+    const map = new Map<string, {
+      id: string;
+      ref: string;
+      propertyTitle: string;
+      ownerListedPriceNgn: number;
+      closingAgentCommissionNgn: number;
+      status: typeof state.bookings[number]['status'];
+    }>();
+    for (const b of state.bookings) {
+      if (b.closingAgentId === userId && ['confirmed', 'completed'].includes(b.status)) {
+        map.set(b.id, {
+          id: b.id,
+          ref: b.ref,
+          propertyTitle: b.propertyTitle,
+          ownerListedPriceNgn: b.ownerListedPriceNgn ?? b.accommodationSubtotal,
+          closingAgentCommissionNgn: b.closingAgentCommissionNgn ?? 0,
+          status: b.status,
+        });
+      }
+    }
+    const closedSummaries = state.closedAgentBookings ?? [];
+    for (const cb of closedSummaries) {
+      if (['confirmed', 'completed'].includes(cb.status) && !map.has(cb.bookingId)) {
+        map.set(cb.bookingId, {
+          id: cb.bookingId,
+          ref: cb.bookingRef,
+          propertyTitle: cb.propertyTitle,
+          ownerListedPriceNgn: cb.ownerListedPriceNgn,
+          closingAgentCommissionNgn: cb.closingAgentCommissionNgn,
+          status: cb.status,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [state, userId]);
+  const totalClosingCommission = myClosedBookings.reduce((s, b) => s + b.closingAgentCommissionNgn, 0);
 
   // Recurring referral rewards (2.5% of owner listed price B within 90-day window)
   const myReferralRewards = state.partnerReferralRewards.filter(rw => rw.referrerPartnerId === userId && rw.payoutStatus !== 'reversed');
@@ -93,8 +128,8 @@ export default function PartnerEarnings() {
                   <tr key={b.id} className="transition hover:bg-ink-850">
                     <td className="td font-mono text-[10.5px] font-bold text-brass-300">{b.ref}</td>
                     <td className="td text-[12px] font-semibold text-ink-100">{b.propertyTitle}</td>
-                    <td className="td tabular-nums text-ink-200">{formatNaira(b.ownerListedPriceNgn ?? b.accommodationSubtotal)}</td>
-                    <td className="td font-bold tabular-nums text-jade-300">{formatNaira(b.closingAgentCommissionNgn ?? 0)}</td>
+                    <td className="td tabular-nums text-ink-200">{formatNaira(b.ownerListedPriceNgn)}</td>
+                    <td className="td font-bold tabular-nums text-jade-300">{formatNaira(b.closingAgentCommissionNgn)}</td>
                     <td className="td"><BookingStatusPill status={b.status} /></td>
                   </tr>
                 ))}

@@ -13,12 +13,13 @@ import { AREAS } from '../lib/seed';
 import { formatDateTime } from '../lib/pricing';
 
 const ROLES = [
-  { value: 'Property Owner', blurb: 'List homes you own' },
+  { value: 'Property Owner', blurb: 'List homes you own directly' },
   { value: 'Agent (authorised)', blurb: 'Manage listings for owners — with mandate' },
   { value: 'Property Manager', blurb: 'Full management — check-in, maintenance, issues' },
   { value: 'Shortlet Operator', blurb: 'Operate multiple units as a business' },
   { value: 'Co-host / Hospitality Operator', blurb: 'Guest-facing hosting services' },
-  { value: 'Referral Partner', blurb: 'Refer owners — commission only when specifically agreed' },
+  { value: 'Closing Agent', blurb: 'Close guest bookings — earn 10% commission' },
+  { value: 'Referral Partner', blurb: 'Refer partners — earn 2.5% for 90 days after activation' },
 ];
 
 export default function PartnerRegister() {
@@ -148,6 +149,7 @@ export default function PartnerRegister() {
           areas,
           propertiesCount: form.propertiesCount,
           motivation: form.motivation.trim(),
+          referralCode: referralCode.trim(),
         });
         toast('Updated partner application resubmitted for HAMLET review.');
         setDone(true);
@@ -424,17 +426,30 @@ export default function PartnerRegister() {
                 <div className="sm:col-span-2">
                   <span className="label-dark">Your partner role</span>
                   <div className="grid grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 sm:grid-cols-3">
-                    {ROLES.map(r => (
-                      <button
-                        key={r.value}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, role: r.value }))}
-                        title={r.blurb}
-                        className={`rounded-xl border px-3 py-2.5 text-left text-[11px] font-bold leading-tight transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
-                      >
-                        {r.value}
-                      </button>
-                    ))}
+                    {ROLES.map(r => {
+                      const nonInventory = r.value === 'Closing Agent' || r.value === 'Referral Partner';
+                      return (
+                        <button
+                          key={r.value}
+                          type="button"
+                          onClick={() =>
+                            setForm(f => ({
+                              ...f,
+                              role: r.value,
+                              propertiesCount: nonInventory
+                                ? 0
+                                : f.propertiesCount === 0
+                                  ? 1
+                                  : f.propertiesCount,
+                            }))
+                          }
+                          className={`rounded-xl border px-3 py-2.5 text-left transition ${form.role === r.value ? 'border-brass-500 bg-brass-500/15 text-brass-200' : 'border-ink-800 text-ink-300 hover:border-ink-600'}`}
+                        >
+                          <span className="block text-[11px] font-bold leading-tight">{r.value}</span>
+                          <span className="mt-0.5 block text-[9.5px] font-medium leading-snug text-ink-400">{r.blurb}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
