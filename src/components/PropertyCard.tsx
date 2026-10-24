@@ -4,16 +4,13 @@ import {
   BedDouble,
   Bath,
   ShieldCheck,
-  Wifi,
   Zap,
   ArrowUpRight,
   CalendarClock,
-  Compass,
-  MapPin,
   Heart,
 } from 'lucide-react';
 import type { Property } from '../lib/types';
-import { estimateAllInclusiveNightly, formatNaira } from '../lib/pricing';
+import { estimateAllInclusiveNightly } from '../lib/pricing';
 import { computePropertyAvailabilitySummary } from '../lib/availability';
 import { isMainlandProperty } from '../lib/areas';
 import { useCurrency } from '../lib/currency';
@@ -51,21 +48,18 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
 
   const verificationLabel =
     p.verification.inspection === 'verified'
-      ? 'Hamlet Verified · Inspected'
+      ? 'Verified'
       : hasVerifiedPillar
-        ? 'Hamlet Verified · Docs reviewed'
+        ? 'Docs reviewed'
         : null;
 
-  const corridorLabel = isMainlandProperty(p) ? 'Lagos Mainland' : 'Lagos Island';
+  const corridorLabel = isMainlandProperty(p) ? 'Mainland' : 'Island';
   const hasPowerBackup = p.amenities.includes('24/7 Power') || p.amenities.includes('Generator');
   const powerLabel = p.amenities.includes('24/7 Power')
     ? '24/7 Power'
     : p.amenities.includes('Generator')
       ? 'Backup Power'
       : null;
-  const hasWifi = p.amenities.includes('Wifi');
-  const hasVerifiedEntrance = p.locationAccuracy === 'verified_entrance';
-  const publicLandmark = p.publicLandmarks?.[0];
 
   const availabilityPillTone =
     availability.selectedDatesStatus === 'unavailable'
@@ -155,14 +149,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
           {p.title}
         </h3>
 
-        {publicLandmark && (
-          <p className="mt-1 flex items-center gap-1 truncate text-[11.5px] font-medium text-ink-500">
-            <MapPin size={11} className="shrink-0 text-brass-600" />
-            <span className="truncate">{publicLandmark}</span>
-          </p>
-        )}
-
-        {/* Editorial Spec Strip */}
+        {/* Spec Strip */}
         <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-ink-700">
           <span className="inline-flex items-center gap-1 rounded-full border border-ink-100 bg-paper/80 px-2.5 py-1">
             <BedDouble size={12} className="shrink-0 text-ink-500" />
@@ -174,23 +161,12 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
           </span>
           <span className="inline-flex items-center gap-1 rounded-full border border-ink-100 bg-paper/80 px-2.5 py-1">
             <Users size={12} className="shrink-0 text-ink-500" />
-            Up to {p.capacity}
+            {p.capacity} guests
           </span>
           {hasPowerBackup && powerLabel && (
             <span className="inline-flex items-center gap-1 rounded-full border border-brass-300/60 bg-brass-200/25 px-2.5 py-1 font-bold text-ink-900">
               <Zap size={11} className="shrink-0 text-brass-700" />
               {powerLabel}
-            </span>
-          )}
-          {hasWifi && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-ink-100 bg-paper/80 px-2.5 py-1">
-              <Wifi size={11} className="shrink-0 text-ink-600" /> Wi-Fi
-            </span>
-          )}
-          {hasVerifiedEntrance && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-bold text-emerald-800">
-              <Compass size={11} className="shrink-0 text-emerald-700" />
-              {p.wayfinderStatus === 'guide_ready' ? 'Wayfinder' : 'Pin verified'}
             </span>
           )}
         </div>
@@ -205,11 +181,12 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
                 </span>
                 <span className="text-[11.5px] font-semibold text-ink-500">/ night</span>
               </div>
-              <p className="mt-0.5 truncate text-[10.5px] font-medium text-ink-500">
-                All-in ~{formatStayPrice(est)}/nt
-                {p.deposit > 0 ? ` · + ${formatNaira(p.deposit)} caution deposit` : ''}
-                {currency !== 'NGN' && activeRateIsAvailable ? ' · 10% FX buffer' : ''}
-              </p>
+              {(est > guestNightlyNgn || (currency !== 'NGN' && activeRateIsAvailable)) && (
+                <p className="mt-0.5 truncate text-[10.5px] font-medium text-ink-500">
+                  {est > guestNightlyNgn ? `~${formatStayPrice(est)}/nt with fees` : 'Quoted stay rate'}
+                  {currency !== 'NGN' && activeRateIsAvailable ? ' · incl. 10% FX buffer' : ''}
+                </p>
+              )}
             </div>
             <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-paper text-ink-900 transition group-hover:border-ink-900 group-hover:bg-ink-900 group-hover:text-white">
               <ArrowUpRight size={15} className="shrink-0" />

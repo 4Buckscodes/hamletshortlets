@@ -238,9 +238,6 @@ export default function PartnerRegister() {
               List free. Keep{' '}
               <span className="italic text-brass-300">100% of your rate.</span>
             </h1>
-            <p className="mt-3 max-w-md text-xs font-medium leading-relaxed text-ink-200 sm:text-[13px]">
-              HAMLET helps Lagos owners, authorised agents, property managers, and booking partners publish verified apartments, protect against duplicate listings, and track controlled ledger settlements.
-            </p>
 
             {/* The economics, plainly */}
             <div className="mt-6">
@@ -263,12 +260,12 @@ export default function PartnerRegister() {
               </div>
             </div>
 
-            <ul className="mt-6 space-y-2.5 text-xs font-semibold text-ink-100">
+            <ul className="mt-6 space-y-2 text-xs font-semibold text-ink-100">
               {[
-                { Icon: BadgePercent, t: 'Owner-defined commercial terms & recorded agent-sharing mandates supported' },
-                { Icon: ShieldCheck, t: 'Duplicate-listing screening ensures one canonical listing per physical apartment' },
-                { Icon: Users, t: 'List even if currently occupied — publish now for future available dates' },
-                { Icon: Building2, t: 'Refundable caution deposits tracked separately and released post-inspection' },
+                { Icon: BadgePercent, t: 'Recorded owner & agent-sharing mandates' },
+                { Icon: ShieldCheck, t: 'One canonical listing per apartment' },
+                { Icon: Users, t: 'List now for current or future open dates' },
+                { Icon: Building2, t: 'Caution deposits held & inspected separately' },
               ].map(({ Icon, t }) => (
                 <li key={t} className="flex items-start gap-2.5">
                   <Icon size={15} className="mt-0.5 shrink-0 text-brass-400" />
