@@ -9,9 +9,6 @@ import {
   ChevronDown,
   Heart,
   Sparkles,
-  ShieldCheck,
-  Lock,
-  Banknote,
 } from 'lucide-react';
 import { HamletWordmark } from './Logo';
 import { CurrencyToggle } from './CurrencyToggle';
@@ -21,9 +18,7 @@ import { useToast } from '../lib/toast';
 import { useWishlist } from '../lib/wishlist';
 import {
   HAMLET_BRAND_NAME,
-  HAMLET_MANTRA,
   HAMLET_PARENT_COMPANY,
-  HAMLET_POSITIONING,
   HAMLET_TAGLINE,
   HAMLET_USP,
 } from '../lib/brand';
@@ -312,82 +307,63 @@ export function GuestNavbar() {
 export function Footer() {
   return (
     <footer className="border-t border-ink-800 bg-ink-950 text-ink-200">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
-        <div className="grid gap-10 md:grid-cols-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="grid gap-8 md:grid-cols-12">
           <div className="md:col-span-4">
             <HamletWordmark light />
-            <p className="mt-3 text-[11.5px] font-bold uppercase tracking-[0.18em] text-brass-400">
-              {HAMLET_BRAND_NAME} · {HAMLET_USP}
+            <p className="mt-3 max-w-xs text-[13px] font-medium leading-relaxed text-ink-300">
+              {HAMLET_BRAND_NAME} — {HAMLET_USP}
             </p>
-            <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-ink-300">
-              <strong className="text-paper">{HAMLET_TAGLINE}</strong> You have plans to make. We help you find a verified place to stay in Lagos, understand every naira before you commit, and arrive with fewer unanswered questions.
-            </p>
-            <p className="mt-3 text-[12px] font-medium italic text-ink-300">
-              “{HAMLET_MANTRA}”
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-[10.5px] font-bold text-ink-300">
-              <span className="inline-flex items-center gap-1 rounded-full border border-ink-800 bg-ink-900 px-2.5 py-1">
-                <ShieldCheck size={12} className="shrink-0 text-brass-400" /> NDPR-aligned
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-ink-800 bg-ink-900 px-2.5 py-1">
-                <Lock size={12} className="shrink-0 text-brass-400" /> Paystack webhook-secured
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-ink-800 bg-ink-900 px-2.5 py-1">
-                <Banknote size={12} className="shrink-0 text-brass-400" /> 0% owner fee
-              </span>
-            </div>
-            <p className="mt-4 text-[11px] font-semibold text-ink-400">
-              By {HAMLET_PARENT_COMPANY} · {HAMLET_POSITIONING}
+            <p className="mt-2 text-[11px] font-semibold text-ink-400">
+              By {HAMLET_PARENT_COMPANY} · Lagos
             </p>
           </div>
 
           <div className="md:col-span-3">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Discover Lagos
+              Lagos stays
             </p>
-            <ul className="mt-3.5 space-y-2.5 text-[13px] font-medium">
-              <li><Link to="/stays" className="transition hover:text-white">Explore available stays</Link></li>
-              <li><Link to="/stays?area=Lagos+Mainland" className="transition hover:text-white">Lagos Mainland (Yaba, Surulere, Shomolu)</Link></li>
+            <ul className="mt-3 space-y-2 text-[13px] font-medium">
+              <li><Link to="/stays" className="transition hover:text-white">All stays</Link></li>
+              <li><Link to="/stays?area=Lagos+Mainland" className="transition hover:text-white">Lagos Mainland</Link></li>
               <li><Link to="/stays?area=Victoria+Island" className="transition hover:text-white">Victoria Island & Ikoyi</Link></li>
-              <li><Link to="/stays?area=Lekki+Phase+1" className="transition hover:text-white">Lekki Phase 1, Oniru & Ajah</Link></li>
-              <li><Link to="/lagos" className="transition hover:text-white">Lagos neighbourhood field guide</Link></li>
+              <li><Link to="/stays?area=Lekki+Phase+1" className="transition hover:text-white">Lekki & Ajah</Link></li>
+              <li><Link to="/lagos" className="transition hover:text-white">Area guide</Link></li>
             </ul>
           </div>
 
           <div className="md:col-span-2">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Ceremony & trust
+              Guests
             </p>
-            <ul className="mt-3.5 space-y-2.5 text-[13px] font-medium">
-              <li><Link to="/how-it-works" className="transition hover:text-white">How HAMLET works</Link></li>
-              <li><Link to="/safety" className="transition hover:text-white">Safety & protection</Link></li>
-              <li><Link to="/about" className="transition hover:text-white">About & four pillars</Link></li>
-              <li><Link to="/faqs" className="transition hover:text-white">Shortlet FAQs</Link></li>
-              <li><Link to="/account" className="transition hover:text-white">My bookings & support</Link></li>
+            <ul className="mt-3 space-y-2 text-[13px] font-medium">
+              <li><Link to="/how-it-works" className="transition hover:text-white">How it works</Link></li>
+              <li><Link to="/safety" className="transition hover:text-white">Safety</Link></li>
+              <li><Link to="/about" className="transition hover:text-white">About</Link></li>
+              <li><Link to="/faqs" className="transition hover:text-white">FAQs</Link></li>
+              <li><Link to="/account" className="transition hover:text-white">My bookings</Link></li>
             </ul>
           </div>
 
           <div className="md:col-span-3">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Partners & owners
+              Partners
             </p>
-            <ul className="mt-3.5 space-y-2.5 text-[13px] font-medium">
-              <li><Link to="/partner/register" className="transition hover:text-white">List a property · 0% owner fee</Link></li>
-              <li><Link to="/partner/register" className="transition hover:text-white">Closing agents & referral partners</Link></li>
-              <li><Link to="/signin" className="transition hover:text-white">Open partner workspace</Link></li>
-              <li><Link to="/legal/pricing" className="transition hover:text-white">Fees, FX buffer & caution deposits</Link></li>
-              <li><Link to="/legal/trust" className="transition hover:text-white">Verification & mandate rules</Link></li>
+            <ul className="mt-3 space-y-2 text-[13px] font-medium">
+              <li><Link to="/partner/register" className="transition hover:text-white">List a property (0% fee)</Link></li>
+              <li><Link to="/signin" className="transition hover:text-white">Partner sign in</Link></li>
+              <li><Link to="/legal/pricing" className="transition hover:text-white">Pricing & fees</Link></li>
+              <li><Link to="/legal/trust" className="transition hover:text-white">Verification rules</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-ink-800 pt-6 text-[11.5px] text-ink-400 sm:flex-row sm:items-center">
-          <p>© 2026 HAMLET Marketplace Ltd · {HAMLET_PARENT_COMPANY} · {HAMLET_TAGLINE}</p>
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-ink-800 pt-5 text-[11.5px] text-ink-400 sm:flex-row sm:items-center">
+          <p>© 2026 HAMLET Marketplace Ltd · {HAMLET_TAGLINE}</p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link to="/legal/privacy" className="transition hover:text-white">Privacy & NDPR</Link>
-            <Link to="/legal/terms" className="transition hover:text-white">Booking terms</Link>
-            <Link to="/legal/pricing" className="transition hover:text-white">Fees & settlement</Link>
-            <Link to="/safety" className="transition hover:text-white">Guest protection</Link>
+            <Link to="/legal/privacy" className="transition hover:text-white">Privacy</Link>
+            <Link to="/legal/terms" className="transition hover:text-white">Terms</Link>
+            <Link to="/legal/pricing" className="transition hover:text-white">Fees</Link>
             <a href="/llms.txt" className="transition hover:text-white">LLMs.txt</a>
             <a href="/sitemap.xml" className="transition hover:text-white">Sitemap</a>
           </div>

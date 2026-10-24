@@ -51,13 +51,12 @@ export default function AdminOverview() {
           <div>
             <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400"><Gauge size={13} className="shrink-0" /> Elsinore · Lagos launch scoreboard</p>
             <h1 className="mt-1.5 font-display text-2xl font-bold text-paper sm:text-3xl">Launch operations, live</h1>
-            <p className="mt-1 max-w-md text-[12px] font-medium text-ink-300">Success is measured by completed bookings, trustworthy supply, reconciled transactions, resolved issues and repeat demand — not registrations.</p>
             <button
               type="button"
               onClick={() => openHoratio('Summarize open ops queues')}
               className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-brass-500/35 bg-brass-500/12 px-3.5 py-1.5 text-[11px] font-bold text-brass-300 transition hover:bg-brass-500/20"
             >
-              <Sparkles size={13} /> Ask Horatio for queue summary
+              <Sparkles size={13} /> Ask Horatio
             </button>
           </div>
           <div className="flex items-center gap-5">

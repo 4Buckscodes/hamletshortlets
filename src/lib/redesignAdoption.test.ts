@@ -21,12 +21,16 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
     expect(HAMLET_MANTRA).toBe('Make it easy. Make it trustworthy. Make it accountable.');
   });
 
-  it('uses central pricing engine on Home interactive transparency breakdown without duplicating formulas', () => {
+  it('keeps Home concise and marketplace-focused while preserving central pricing engine', () => {
     const homeSrc = readFileSync(join(ROOT, 'src/pages/Home.tsx'), 'utf8');
-    expect(homeSrc).toContain('calculateGuestPricing');
-    expect(homeSrc).toContain('calculateMarkupAllocation');
-    expect(homeSrc).toContain('Every naira');
-    expect(homeSrc).toContain('Booking ceremony walkthrough');
+    const detailSrc = readFileSync(join(ROOT, 'src/pages/PropertyDetail.tsx'), 'utf8');
+
+    expect(homeSrc).toContain('Available stays');
+    expect(homeSrc).toContain('Browse by area');
+    expect(homeSrc).not.toContain('Booking ceremony walkthrough');
+    expect(homeSrc).not.toContain('Every naira, accounted for');
+    expect(detailSrc).toContain('priceStay');
+    expect(detailSrc).toContain('calculateBookingCurrencyQuote');
 
     const allocation = calculateMarkupAllocation({
       ownerListedPriceNgn: 200_000,

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Home, CalendarDays, Banknote, PlusCircle, Clock3, ArrowRight, Inbox, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
+import { Home, CalendarDays, Banknote, PlusCircle, Clock3, ArrowRight, Inbox, CheckCircle2, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useHoratio } from '../../components/HoratioDrawer';
 import { useHamlet } from '../../lib/store';
@@ -37,7 +37,7 @@ export default function PartnerOverview() {
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner workspace</p>
           <h1 className="mt-1.5 font-display text-2xl font-bold text-ink-50 sm:text-3xl">Welcome, {state.session!.name.split(' ')[0]}</h1>
-          <p className="mt-1 text-[12px] font-medium text-ink-300">{state.session!.partnerRole} · {state.session!.company} · Role-based access — you see only your own profile, authorised properties and permitted booking data.</p>
+          <p className="mt-1 text-[12px] font-medium text-ink-300">{state.session!.partnerRole} · {state.session!.company}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <button
@@ -51,14 +51,6 @@ export default function PartnerOverview() {
             <PlusCircle size={16} /> List a new property
           </Link>
         </div>
-      </div>
-
-      {/* Commercial terms & duplicate protection strip */}
-      <div className="mt-5 flex flex-wrap items-start gap-2.5 rounded-2xl border border-ink-800 bg-ink-900/80 px-4 py-3 text-[11.5px] font-medium text-ink-300">
-        <ShieldCheck size={16} className="mt-0.5 shrink-0 text-emerald-400" />
-        <span>
-          <strong className="text-ink-100">Commercial &amp; canonical listing protection:</strong> Owners receive 100% of their listed rate (<code className="font-mono text-brass-300">B</code>, 0% owner fee). Property-specific agent/manager sharing mandates are recorded under Assignments &amp; Mandates, caution deposits are inspected post-checkout, and duplicate-address screening prevents duplicate public listings for the same unit.
-        </span>
       </div>
 
       {/* KPI cards */}

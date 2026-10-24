@@ -267,14 +267,11 @@ export default function SignIn() {
               <br />
               <span className="italic text-brass-300">sorted before you arrive.</span>
             </h1>
-            <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-ink-200">
-              Compare locations, power &amp; Wi-Fi backup, house rules, and total upfront pricing before you commit — with clear booking status and Wayfinder arrival support.
-            </p>
             <div className="mt-6 space-y-2.5 text-xs font-semibold text-ink-100">
               {[
-                'Manual four-pillar verification before any listing goes live',
-                'Upfront pricing — 20% domestic markup, 0% owner fee, separate caution deposit',
-                'Payment confirmed only by server-side Paystack verification',
+                'Four-pillar verification on every listing',
+                'Upfront pricing — 0% owner fee, separate caution deposit',
+                'Paystack server-verified confirmation',
               ].map(t => (
                 <p key={t} className="flex items-start gap-2.5">
                   <ShieldCheck size={15} className="mt-0.5 shrink-0 text-brass-400" />
@@ -378,14 +375,14 @@ export default function SignIn() {
                   ? 'Set a new password'
                   : 'Sign in'}
           </h2>
-          <p className="mt-1 text-xs font-medium leading-relaxed text-ink-500">
+          <p className="mt-1 text-xs font-medium text-ink-500">
             {activeMode === 'signup'
-              ? 'Request verified Lagos stays, track booking status, complete checkout and contact support. Pre-authorised HAMLET operators are routed directly to the Admin Console.'
+              ? 'Book verified Lagos stays and manage your reservations.'
               : activeMode === 'forgot'
-                ? 'Enter the email address on your HAMLET account to receive a secure password reset link.'
+                ? 'Enter your email to receive a password reset link.'
                 : activeMode === 'reset'
-                  ? 'Enter and confirm your new password (at least 6 characters) to finish securing your account.'
-                  : 'One account experience for guests, partners and HAMLET operations — access is strictly role-based.'}
+                  ? 'Choose a new password (at least 6 characters).'
+                  : 'Sign in as a guest, partner, or operator.'}
           </p>
 
           {activeMode === 'signin' && !backendConfigured && (

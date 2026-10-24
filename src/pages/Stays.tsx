@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import {
   SlidersHorizontal,
   SearchX,
-  ShieldCheck,
   Building2,
   Search,
   Heart,
@@ -183,42 +182,40 @@ export default function Stays() {
   if (guests > 1) forwardQuery.set('guests', String(guests));
 
   const headingText = savedOnly
-    ? 'Saved Lagos stays'
+    ? 'Saved stays'
     : keyword.trim()
-      ? `Stays matching “${keyword.trim()}”`
+      ? `“${keyword.trim()}”`
       : area === 'Lagos Mainland' || side.toLowerCase() === 'mainland'
-        ? 'Shortlets in Lagos Mainland (Yaba, Shomolu, Surulere & environs)'
+        ? 'Lagos Mainland stays'
         : side.toLowerCase() === 'island'
-          ? 'Shortlets in Lagos Island & Lekki corridor'
+          ? 'Lagos Island stays'
           : area
-            ? `Shortlets in ${area}`
-            : 'Explore verified stays';
+            ? `Stays in ${area}`
+            : 'Explore stays';
 
   return (
     <GuestLayout>
       {/* Editorial Top Header */}
       <div className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-brass-600">
                 <Link to="/lagos" className="hover:underline">
-                  Lagos, Nigeria
+                  Lagos
                 </Link>
-                <span>·</span>
-                <span>Your stay, sorted.</span>
               </div>
-              <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
                 {headingText}
               </h1>
-              <p className="mt-1.5 text-[13px] font-medium text-ink-500">
+              <p className="mt-1 text-[13px] font-medium text-ink-500">
                 {!backendReady
-                  ? 'Finding spaces that fit your plans…'
-                  : `${results.length} of ${totalApproved} approved home${totalApproved === 1 ? '' : 's'} match your brief${area ? ` in ${area}` : ''}${checkIn && checkOut ? ` · ${checkIn} → ${checkOut}` : ''} · ${guests}+ guest${guests === 1 ? '' : 's'}`}
+                  ? 'Loading stays…'
+                  : `${results.length} stay${results.length === 1 ? '' : 's'}${checkIn && checkOut ? ` · ${checkIn} → ${checkOut}` : ''}`}
               </p>
               {backendError && (
                 <p role="alert" className="mt-2 text-sm font-semibold text-red-700">
-                  Something didn’t go as planned ({backendError}). Please refresh the page and try again.
+                  Could not load stays ({backendError}).
                 </p>
               )}
             </div>
@@ -411,15 +408,10 @@ export default function Stays() {
                 />
               </label>
             </div>
-            {checkIn && checkOut && (
-              <p className="mt-1.5 text-[10px] font-medium leading-snug text-ink-500">
-                Excludes homes with confirmed or held bookings on these dates. Final availability is still verified by the host on request.
-              </p>
-            )}
 
             <div className="mt-4">
               <label className="label" htmlFor="f-guests">
-                Guests (min capacity)
+                Guests
               </label>
               <select
                 id="f-guests"
@@ -509,11 +501,6 @@ export default function Stays() {
                 ))}
               </div>
             </div>
-
-            <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3.5 text-[10.5px] font-semibold leading-relaxed text-emerald-900">
-              <ShieldCheck size={14} className="mb-1 shrink-0 text-emerald-700" />
-              Only approved, non-suspended listings appear here. Verification outcomes are recorded honestly per pillar.
-            </div>
           </div>
         </aside>
 
@@ -522,7 +509,7 @@ export default function Stays() {
           {isMainlandActive && (
             <div className="mb-5 rounded-2xl border border-ink-200 bg-white p-4 shadow-2xs">
               <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-brass-700">
-                Lagos Mainland &amp; Environs
+                Lagos Mainland
               </p>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {MAINLAND_QUICK_HUBS.map(hub => {
@@ -550,25 +537,25 @@ export default function Stays() {
           {!backendReady ? (
             <div className="card flex flex-col items-center gap-2 px-6 py-16 text-center">
               <p role="status" className="font-display text-lg font-bold text-ink-800">
-                Finding spaces that fit your plans…
+                Loading stays…
               </p>
             </div>
           ) : results.length === 0 ? (
-            <div className="card flex flex-col items-center gap-3 px-6 py-16 text-center">
-              <SearchX size={40} className="text-ink-300" />
+            <div className="card flex flex-col items-center gap-3 px-6 py-14 text-center">
+              <SearchX size={36} className="text-ink-300" />
               <h2 className="font-display text-2xl font-bold text-ink-900">
                 {savedOnly
-                  ? 'You haven’t saved any stays yet.'
+                  ? 'No saved stays yet.'
                   : totalApproved === 0
-                    ? 'We’re still adding stays in this area.'
-                    : 'Nothing matches your search right now.'}
+                    ? 'More stays arriving soon.'
+                    : 'No stays match these filters.'}
               </h2>
-              <p className="max-w-md text-[13px] font-medium leading-relaxed text-ink-500">
+              <p className="max-w-sm text-[13px] font-medium text-ink-500">
                 {savedOnly
-                  ? 'Tap the heart icon on any approved Lagos listing to save it here for quick comparison.'
+                  ? 'Tap the heart icon on any listing to save it here.'
                   : totalApproved === 0
-                    ? 'Try another neighbourhood or check back as more properties become available. Property owners and managers across Lagos Mainland and Island can apply to list now.'
-                    : 'Try adjusting your dates, location, or filters to see more available stays.'}
+                    ? 'Check back soon or list a property in Lagos.'
+                    : 'Adjust your dates, area, or filters.'}
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2.5">
                 {totalApproved === 0 && !savedOnly ? (

@@ -514,12 +514,12 @@ export default function PropertyDetail() {
                     {formatConfirmationStatusLabel(availabilitySummary.confirmationStatus)}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[12.5px] font-medium text-ink-600">
+                <p className="mt-1 text-[12px] font-medium text-ink-600">
                   {availabilitySummary.currentStatus === 'currently_booked'
-                    ? `Currently booked on a confirmed HAMLET stay. ${availabilitySummary.nextAvailableLabel ?? ''}${availabilitySummary.relativeDaysUntilAvailable ? ` (${availabilitySummary.relativeDaysUntilAvailable})` : ''}.`
+                    ? `Currently booked. ${availabilitySummary.nextAvailableLabel ?? ''}.`
                     : availabilitySummary.currentStatus === 'currently_unavailable'
-                      ? `Currently unavailable due to an owner/external calendar block. ${availabilitySummary.nextAvailableLabel ?? ''}${availabilitySummary.relativeDaysUntilAvailable ? ` (${availabilitySummary.relativeDaysUntilAvailable})` : ''}.`
-                      : 'Available now for upcoming dates — select a day below or choose your check-in and check-out dates to request a stay.'}
+                      ? `Currently blocked. ${availabilitySummary.nextAvailableLabel ?? ''}.`
+                      : 'Open for upcoming dates.'}
                 </p>
                 {upcomingDays.length > 0 && (
                   <div className="mt-4">
@@ -614,16 +614,13 @@ export default function PropertyDetail() {
             <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50/55 p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
-                  <ShieldCheck size={19} className="shrink-0 text-emerald-700" /> Four-pillar verification record
+                  <ShieldCheck size={19} className="shrink-0 text-emerald-700" /> Verification status
                 </h2>
                 <Link to="/safety" className="text-xs font-extrabold text-emerald-800 underline hover:text-ink-900">
-                  Read safety guide
+                  Safety guide
                 </Link>
               </div>
-              <p className="mt-1 text-xs font-medium text-ink-600">
-                Evidence reviewed by HAMLET operations. Outcomes are recorded honestly per pillar — self-reported items are labelled as such.
-              </p>
-              <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              <div className="mt-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                 {[
                   { label: 'Ownership', s: property.verification.ownership },
                   { label: 'Identity', s: property.verification.identity },
@@ -771,11 +768,9 @@ export default function PropertyDetail() {
                   </Link>
                 </div>
               ) : (
-                <p className="mt-3 flex items-start gap-1.5 text-[11px] font-medium leading-relaxed text-ink-500">
-                  <Lock size={13} className="mt-0.5 shrink-0 text-ink-400" />
-                  <span>
-                    For resident safety, exact entrance coordinates, internal compound directions, apartment numbers, and check-in codes are shared exclusively after your booking is confirmed.
-                  </span>
+                <p className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-ink-500">
+                  <Lock size={12} className="shrink-0 text-ink-400" />
+                  <span>Exact gate pin and check-in codes unlock after booking confirmation.</span>
                 </p>
               )}
             </div>
@@ -784,13 +779,13 @@ export default function PropertyDetail() {
             <div className="mt-7 rounded-3xl border border-ink-100 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
-                  <Banknote size={18} className="shrink-0 text-brass-600" /> Caution deposit &amp; mandatory charges
+                  <Banknote size={18} className="shrink-0 text-brass-600" /> Caution deposit &amp; charges
                 </h2>
                 <CurrencyToggle compact />
               </div>
               <dl className="mt-3 space-y-2 text-[13px] font-medium text-ink-800">
                 <div className="flex justify-between gap-3">
-                  <dt className="min-w-0">Refundable caution deposit (unbuffered, tracked separately)</dt>
+                  <dt className="min-w-0">Refundable caution deposit</dt>
                   <dd className="shrink-0 font-mono font-bold tabular-nums">{formatUnbufferedMoney(property.deposit)}</dd>
                 </div>
                 {property.mandatoryCharges.map(c => (
@@ -800,8 +795,8 @@ export default function PropertyDetail() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-3 text-[11px] font-medium leading-relaxed text-ink-500">
-                The refundable caution deposit is itemised and tracked separately from accommodation revenue, is never included in HAMLET’s 20% markup or 10% international currency buffer, and is refunded after post-checkout inspection.
+              <p className="mt-2.5 text-[11px] font-medium text-ink-500">
+                Held separately (0% markup / FX buffer) and refunded after post-checkout inspection.
               </p>
             </div>
           </div>
@@ -988,10 +983,6 @@ export default function PropertyDetail() {
                     )}
                   </dl>
                 )}
-                <p className="mt-3 text-[10.5px] font-medium leading-snug text-ink-400">
-                  20% domestic accommodation markup (0% owner fee). International USD/GBP quotes include a single 10% currency buffer on stay pricing and never on the refundable caution deposit.
-                </p>
-
                 {guestCanBook ? (
                   <button
                     className="btn-jade mt-4 w-full !rounded-full !py-4 text-[15px]"
@@ -1009,7 +1000,7 @@ export default function PropertyDetail() {
                   </button>
                 )}
                 <p className="mt-2 text-center text-[10.5px] font-semibold text-ink-400">
-                  You won’t be charged yet. Availability and terms are confirmed first.
+                  No charge until availability is confirmed.
                 </p>
               </div>
             </div>
@@ -1038,11 +1029,8 @@ export default function PropertyDetail() {
                 <div className="min-w-0">
                   <p className="eyebrow">{property.title}</p>
                   <h2 className="mt-1 font-display text-xl font-bold text-ink-900">
-                    One last look before you book.
+                    Confirm booking request
                   </h2>
-                  <p className="mt-1 text-xs font-medium text-ink-500">
-                    Check your dates, guest count, quote breakdown, house rules, and refundable caution deposit terms before sending your request.
-                  </p>
                 </div>
                 <button
                   onClick={closeModal}
@@ -1187,7 +1175,7 @@ export default function PropertyDetail() {
                 </div>
               )}
               <p className="mt-2 text-center text-[10.5px] font-medium text-ink-400">
-                Request → host checks availability &amp; terms → accepted with a payment deadline → confirmed only after verified provider payment.
+                You pay only after the host confirms your dates.
               </p>
             </motion.div>
           </motion.div>

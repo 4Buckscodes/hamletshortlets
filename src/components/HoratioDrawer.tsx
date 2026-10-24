@@ -396,7 +396,7 @@ function HoratioDrawer({
               </span>
             </div>
             <p className="mt-1 text-[11.5px] font-medium text-ink-300">
-              Grounded in live authorised HAMLET inventory, pricing & policy — never invented availability.
+              Live HAMLET stays, pricing &amp; booking help.
             </p>
           </div>
           <button
@@ -414,12 +414,9 @@ function HoratioDrawer({
           <div className="rounded-2xl border border-ink-200 bg-white p-4 shadow-2xs">
             <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500">
               <ShieldCheck size={14} className="shrink-0 text-emerald-600" />
-              <span>Accountable assistance</span>
+              <span>Quick questions</span>
             </div>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-700">
-              Ask about approved stays across <strong>Lagos Mainland</strong> or <strong>Lagos Island</strong>, exact fee & caution-deposit rules, or your authorised workspace records.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               {quickPrompts.map(prompt => (
                 <button
                   key={prompt}
