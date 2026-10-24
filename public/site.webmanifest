@@ -1,0 +1,19 @@
+{
+  "name": "HAMLET Shortlets — Lagos",
+  "short_name": "HAMLET",
+  "description": "Explore verified shortlets across Lagos Mainland and Lagos Island on HAMLET. Your stay, sorted.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F3",
+  "theme_color": "#101D16",
+  "lang": "en-NG",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -11,9 +11,11 @@ import { CurrencyToggle } from '../components/CurrencyToggle';
 import { useHamlet, getPersistedClosingAgentCode } from '../lib/store';
 import { useCurrency, formatMinorCurrency } from '../lib/currency';
 import { usePageMeta } from '../lib/brand';
+import { buildPropertyStructuredData } from '../lib/seo';
 import { useToast } from '../lib/toast';
 import {
   priceStay,
+  guestFacingNightlyNgn,
   nightsBetween,
   formatNaira,
   formatDate,
@@ -45,11 +47,23 @@ export default function PropertyDetail() {
 
   const property = state.properties.find(p => p.id === id);
 
+  const propertyStructuredData = useMemo(() => {
+    if (!property || property.status !== 'approved') return null;
+    return buildPropertyStructuredData(property, guestFacingNightlyNgn(property.nightlyRate));
+  }, [property]);
+
   usePageMeta(
     property ? `${property.title} · ${property.area}, Lagos | HAMLET` : 'Shortlet Details in Lagos | HAMLET',
     property
       ? `Explore ${property.title} in ${property.area}, Lagos. Review availability calendar, amenities, house rules, verification status, and upfront total pricing on HAMLET.`
       : undefined,
+    {
+      canonicalPath: property ? `/stays/${property.id}` : '/stays',
+      noindex: !property || property.status !== 'approved',
+      ogImage: property?.images[0],
+      ogImageAlt: property ? `${property.title} in ${property.area}, Lagos on HAMLET` : undefined,
+      structuredData: propertyStructuredData,
+    },
   );
 
   const baseAvailabilitySummary = useMemo(() => {

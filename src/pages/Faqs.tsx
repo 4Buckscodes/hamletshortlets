@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { GuestLayout } from '../components/Navbar';
 import { usePageMeta } from '../lib/brand';
+import { buildFaqStructuredData } from '../lib/seo';
 
 const FAQ_ITEMS = [
   {
@@ -55,10 +56,13 @@ const FAQ_ITEMS = [
   },
 ];
 
+const FAQ_SCHEMA = buildFaqStructuredData(FAQ_ITEMS);
+
 export default function Faqs() {
   usePageMeta(
     'Shortlet Booking FAQs | HAMLET',
     'Answers to common questions about booking shortlets in Lagos on HAMLET — photos, power backup, transparent fees, check-in, payments, and support.',
+    { canonicalPath: '/faqs', structuredData: FAQ_SCHEMA },
   );
 
   const [openIndex, setOpenIndex] = useState<number | null>(0);

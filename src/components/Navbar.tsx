@@ -157,6 +157,8 @@ export function Footer() {
             <Link to="/legal/terms" className="hover:text-white">Booking terms</Link>
             <Link to="/safety" className="hover:text-white">Guest protection</Link>
             <Link to="/faqs" className="hover:text-white">FAQs</Link>
+            <a href="/llms.txt" className="hover:text-white">LLMs.txt</a>
+            <a href="/sitemap.xml" className="hover:text-white">Sitemap</a>
           </div>
         </div>
       </div>

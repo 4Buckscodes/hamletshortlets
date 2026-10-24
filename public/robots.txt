@@ -1,0 +1,38 @@
+# HAMLET Shortlets — Verified Lagos Shortlets (https://www.hamlet.rest)
+# AI / LLM Context Index: https://www.hamlet.rest/llms.txt
+# Full AI / LLM Reference: https://www.hamlet.rest/llms-full.txt
+
+User-agent: *
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://www.hamlet.rest/sitemap.xml

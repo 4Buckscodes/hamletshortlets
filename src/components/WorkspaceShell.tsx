@@ -1,10 +1,11 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState, type ReactNode } from 'react';
 import { Menu, X, LogOut, RotateCcw, ExternalLink } from 'lucide-react';
 import { HamletMark } from './Logo';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { formatLagosHeadlineDate } from '../lib/pricing';
+import { usePageMeta } from '../lib/brand';
 
 export interface NavItem {
   to: string;
@@ -26,8 +27,18 @@ export function WorkspaceShell({
   const { state, signOut, resetDemo, backendConfigured } = useHamlet();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const s = state.session;
+
+  const activeNav = nav.find(item =>
+    item.end ? location.pathname === item.to : location.pathname.startsWith(item.to),
+  );
+  usePageMeta(
+    activeNav ? `${activeNav.label} · ${title} | HAMLET` : `${title} | HAMLET`,
+    `${title} workspace on HAMLET.`,
+    { noindex: true, structuredData: null },
+  );
 
   const initials = (s?.name ?? '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
