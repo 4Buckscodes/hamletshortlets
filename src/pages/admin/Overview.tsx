@@ -61,8 +61,8 @@ export default function AdminOverview() {
             </div>
             <div className="h-14 w-14 shrink-0">
               <svg viewBox="0 0 56 56">
-                <circle cx="28" cy="28" r="24" stroke="#1C2F24" strokeWidth="7" fill="none" />
-                <circle cx="28" cy="28" r="24" stroke="#C9A227" strokeWidth="7" fill="none" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 24}`} strokeDashoffset={`${2 * Math.PI * 24 * (1 - approved.length / 50)}`} transform="rotate(-90 28 28)" className="transition-all duration-700" />
+                <circle cx="28" cy="28" r="24" stroke="#1B3560" strokeWidth="7" fill="none" />
+                <circle cx="28" cy="28" r="24" stroke="#C9A44A" strokeWidth="7" fill="none" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 24}`} strokeDashoffset={`${2 * Math.PI * 24 * (1 - approved.length / 50)}`} transform="rotate(-90 28 28)" className="transition-all duration-700" />
               </svg>
             </div>
           </div>

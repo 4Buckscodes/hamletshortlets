@@ -4,6 +4,7 @@ import { HamletProvider, useHamlet, captureUrlAttributionParams } from './lib/st
 import { CurrencyProvider } from './lib/currency';
 import { ToastProvider } from './lib/toast';
 import { buildAuthPath } from './lib/authRedirect';
+import { HamletWordmark } from './components/Logo';
 import Home from './pages/Home';
 import Lagos from './pages/Lagos';
 import About from './pages/About';
@@ -45,9 +46,9 @@ function WorkspaceFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ink-950 px-4 text-center">
       <div>
-        <p className="font-display text-lg font-black tracking-wide text-paper">
-          HAMLET<span className="text-brass-500">.</span>
-        </p>
+        <div className="flex justify-center">
+          <HamletWordmark light />
+        </div>
         <p role="status" className="mt-1.5 text-xs font-semibold text-ink-300">
           Loading workspace…
         </p>

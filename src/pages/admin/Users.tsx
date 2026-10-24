@@ -319,7 +319,7 @@ export default function AdminUsers() {
                   </label>
                   {acc.role === 'partner' && govAccount.nextStatus === 'suspended' && (
                     <label className="mt-2.5 flex items-center gap-2 text-[11.5px] font-medium text-ink-300">
-                      <input type="checkbox" className="accent-[#C9A227]" checked={cascadeProperties} onChange={e => setCascadeProperties(e.target.checked)} />
+                      <input type="checkbox" className="accent-[#C9A44A]" checked={cascadeProperties} onChange={e => setCascadeProperties(e.target.checked)} />
                       Also suspend all currently approved properties owned by this partner
                     </label>
                   )}

@@ -223,7 +223,7 @@ export default function AdminApplications() {
               <label className="mt-2.5 flex items-start gap-2.5 text-[11.5px] font-semibold text-ink-200">
                 <input
                   type="checkbox"
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A227]"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#C9A44A]"
                   checked={cascadeSuspend}
                   onChange={e => setCascadeSuspend(e.target.checked)}
                 />

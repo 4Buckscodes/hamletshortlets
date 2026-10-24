@@ -230,7 +230,7 @@ export default function SignIn() {
         <img src="/images/lagos-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-br from-ink-950/80 via-ink-950/55 to-ink-950/90" />
         <div className="relative flex h-full flex-col justify-between p-12">
-          <Link to="/"><div className="flex items-center gap-3"><HamletMark size={40} light /><span className="font-display text-3xl font-black text-paper">HAMLET<span className="text-brass-500">.</span></span></div></Link>
+          <Link to="/"><div className="flex items-center gap-3"><HamletMark size={40} light /><span className="font-display text-3xl font-bold tracking-[0.06em] text-white">HAMLET<span className="text-brass-500">.</span></span></div></Link>
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-brass-300">{HAMLET_TAGLINE}</p>
             <h1 className="mt-2 font-display text-5xl font-black leading-[1.05] text-paper">Shortlet stays,<br /><span className="italic text-brass-400">sorted before you arrive.</span></h1>
@@ -248,7 +248,7 @@ export default function SignIn() {
       {/* Form panel */}
       <div className="flex items-center justify-center bg-paper px-4 py-12 sm:px-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 inline-flex items-center gap-2 lg:hidden"><HamletMark size={32} /><span className="font-display text-2xl font-black text-ink-900">HAMLET<span className="text-brass-500">.</span></span></Link>
+          <Link to="/" className="mb-8 inline-flex items-center gap-2 lg:hidden"><HamletMark size={32} /><span className="font-display text-2xl font-bold tracking-[0.06em] text-ink-900">HAMLET<span className="text-brass-500">.</span></span></Link>
 
           {/* Prominent Sign in / Guest sign up mode switcher */}
           <div role="tablist" aria-label="Account mode" className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl border border-ink-200 bg-white p-1.5 shadow-xs">
