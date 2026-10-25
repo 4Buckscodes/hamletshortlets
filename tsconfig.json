@@ -30,12 +30,16 @@
   },
   "include": [
     "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/lib/supabase-public.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "src"
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/App.tsx",
+    "src/main.tsx"
   ]
 }
