@@ -23,7 +23,7 @@ export default async function StaysPage({searchParams}:{searchParams:SearchParam
   <section className="shell" style={{paddingBlock:'30px 70px'}}>
    <p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:800,fontSize:11}}>Explore Lagos</p>
    <h1 className="serif" style={{fontSize:'clamp(34px,7vw,58px)',fontWeight:500,letterSpacing:'-.04em',margin:'8px 0 12px'}}>Find your kind of stay.</h1>
-   <p style={{color:'var(--muted)',lineHeight:1.65,maxWidth:620}}>Explore approved property listings. Availability is confirmed through the booking process.</p>
+   <p style={{color:'var(--muted)',lineHeight:1.65,maxWidth:620}}>Explore approved property listings. Dates are carried through your search, but calendar-level availability filtering is still being connected; a property partner must confirm your dates.</p>
    <form action="/stays" method="get" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,190px),1fr))',alignItems:'end',gap:12,padding:16,background:'#fff',border:'1px solid var(--line)',borderRadius:22,marginTop:22}}>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Neighbourhood<select name="area" defaultValue={area} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Anywhere in Lagos</option>{areas.map(a=><option key={a} value={a}>{a}</option>)}</select></label>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Check-in<input name="checkIn" type="date" defaultValue={params.checkIn??''} className="pill" style={{width:'100%',borderRadius:12}}/></label>
