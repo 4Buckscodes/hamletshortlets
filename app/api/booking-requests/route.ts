@@ -12,7 +12,7 @@ type RequestBody = {
   specialRequests?: string;
 };
 
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;\n\nfunction isValidDate(value: string) {\n  if (!datePattern.test(value)) return false;\n  const parsed = new Date(value + 'T00:00:00.000Z');\n  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;\n}\n\nfunction lagosToday() {\n  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());\n  return parts;\n}
 
 function errorResponse(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
@@ -37,10 +37,10 @@ export async function POST(request: Request) {
   const guests = Number(body.guests);
   const specialRequests = typeof body.specialRequests === 'string' ? body.specialRequests.trim().slice(0, 1000) : '';
 
-  if (!propertyId || !checkIn || !checkOut || !datePattern.test(checkIn) || !datePattern.test(checkOut)) {
+  if (!propertyId || !checkIn || !checkOut || !isValidDate(checkIn) || !isValidDate(checkOut)) {
     return errorResponse('Choose a property, check-in date and check-out date.');
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = lagosToday();
   if (checkIn < today || checkOut <= checkIn) return errorResponse('Choose valid future dates with check-out after check-in.');
   const nights = nightsBetween(checkIn, checkOut);
   if (!Number.isInteger(nights) || nights < 1 || nights > 60) return errorResponse('Bookings must be between 1 and 60 nights.');
