@@ -13,6 +13,8 @@ export default function HomePage() {
           </Link>
           <nav aria-label="Main navigation" style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 14, fontWeight: 650 }}>
             <Link href="/stays">Explore stays</Link>
+            <Link href="/lagos" className="desktop-link" style={{ display: 'none' }}>Lagos guide</Link>
+            <Link href="/faqs" className="desktop-link" style={{ display: 'none' }}>FAQs</Link>
             <Link href="/partners/apply">Become a partner</Link>
             <Link href="/signin" className="secondary-button" style={{ minHeight: 42, paddingInline: 16 }}>Sign in</Link>
           </nav>
@@ -39,7 +41,7 @@ export default function HomePage() {
             <div style={{ height: 1, background: 'var(--line)' }} />
             <label style={{ display: 'grid', gap: 7, padding: '8px 10px' }}>
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Check-in</span>
-              <input name="checkIn" type="date" aria-label="Check-in date" min={new Date().toLocaleDateString('en-CA')} style={{ minHeight: 38, border: 0, background: 'transparent', color: 'var(--navy)', width: '100%' }} />
+              <input name="checkIn" type="date" aria-label="Check-in date" style={{ minHeight: 38, border: 0, background: 'transparent', color: 'var(--navy)', width: '100%' }} />
             </label>
             <div style={{ height: 1, background: 'var(--line)' }} />
             <label style={{ display: 'grid', gap: 7, padding: '8px 10px' }}>
@@ -80,7 +82,7 @@ export default function HomePage() {
       <footer style={{ background: 'var(--navy-deep)', color: '#fff', paddingBlock: 28 }}>
         <div className="shell" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16, fontSize: 13 }}>
           <span>© {new Date().getFullYear()} HAMLET.REST · Your stay, sorted.</span>
-          <div style={{ display: 'flex', gap: 18 }}><Link href="/safety">Our approach to trust</Link><Link href="/how-it-works">How it works</Link></div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18 }}><Link href="/lagos">Lagos neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/safety">Our approach to trust</Link><Link href="/how-it-works">How it works</Link></div>
         </div>
       </footer>
       <style>{`@media (min-width: 760px) { .desktop-link { display: inline-flex !important; } form[action="/stays"] { grid-template-columns: 1.2fr 1fr 1fr auto !important; align-items: center; border-radius: 999px !important; padding: 8px 10px !important; } form[action="/stays"] > div { width: 1px; height: 42px; } form[action="/stays"] button { width: auto !important; } }`}</style>
