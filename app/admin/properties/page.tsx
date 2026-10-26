@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import AdminNav from '../admin-nav';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -54,7 +55,7 @@ export default function AdminPropertiesPage() {
   }
   const money = (n:number) => '₦'+Number(n||0).toLocaleString('en-NG');
   return <main style={{ minHeight:'100svh',background:'var(--paper)' }}>
-    <header style={{ background:'#fff',borderBottom:'1px solid var(--line)' }}><div className="shell" style={{ minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between' }}><Link href="/" style={{ fontWeight:850,fontSize:19 }}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><Link href="/admin/issues" className="secondary-button">Guest issue desk</Link><Link href="/admin/settlements" className="secondary-button">Settlement ledger</Link><Link href="/legacy" className="secondary-button">Full admin console</Link></div></div></header>
+    <header style={{ background:'#fff',borderBottom:'1px solid var(--line)' }}><div className="shell" style={{ minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between' }}><Link href="/" style={{ fontWeight:850,fontSize:19 }}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><AdminNav current="properties" /></div></header>
     <section className="shell" style={{ maxWidth:1100,paddingBlock:34 }}>
       <p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontSize:11,fontWeight:800}}>Operations</p><h1 className="serif" style={{fontSize:'clamp(34px,6vw,52px)',fontWeight:500,margin:'8px 0 12px'}}>Property review queue</h1>
       <p style={{color:'var(--muted)',lineHeight:1.7}}>Review evidence declarations and listing details. HAMLET will not mark a listing verified until all four verification outcomes are explicitly verified.</p>
