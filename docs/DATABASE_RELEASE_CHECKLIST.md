@@ -1,65 +1,81 @@
-# HAMLET.REST — Supabase Database Release Checklist
+# HAMLET.REST — Supabase Database Compatibility & Release Checklist
 
 **Live Project Ref:** `jopnnevqnwrpldrojmdu`  
 **Important Governance Rule:** Never apply production schema migrations without explicit owner approval, a verified backup/snapshot, and staging rehearsal.
 
 ---
 
-## 1. Migration Inventory (Live Deployed vs. Repository Pending)
+## 1. Audited Live Schema Compatibility Summary (2026-10-26)
 
-### Currently Applied on Live `jopnnevqnwrpldrojmdu` (8 Migrations)
-1. `20261022120000` (`initial_schema`)
-2. `20261022130000` (`app_workflows`)
-3. `20261022140000` (`partner_property_submission`)
-4. `20261022141000` (`admin_property_review`)
-5. `20261023100000` (`payments_ledger_and_operations`)
-6. `20261023120000` (`pilot_feedback_partner_governance_and_corrections`)
-7. `20261023180000` (`booking_notifications_and_resend_outbox`)
-8. `20261024073312` (live consolidation through `mvp_live_readiness` + `availability_referrals_pricing_fx_settlement` + `property-media` storage bucket)
+**Key Finding:** The merged Next.js App Router codebase (`main` @ `b2877c47`+) is **100% compatible with the unmodified live production database today** — **zero SQL migrations are required prior to custom-domain cutover**:
 
-### Local Repository Migrations Pending Staging / Production Review
-- `20261024140000_endpoint_bugfixes_and_ux_parity.sql` — Expands `update_and_resubmit_partner_property` to support `draft` status edits directly, enriches `resubmit_partner_application` for `0`-property agent/referrer lanes, and enriches outbox notification payloads.
-- `20261024160000_seed_sample_listings_optional.sql` — Guarded behind `app.seed_demo_data = 'true'` (no-op on production unless explicitly enabled; **do not enable demo seed data on production**).
-- `20261024180000_hamlet_wayfinder_arrival_guidance.sql` — Adds Wayfinder tables (`property_wayfinder_guides`, `waypoints`, `steps`, `secrets`, `verifications`, `wayfinder_events`) and optional `properties` columns (`city`, `public_location_summary`, `public_landmarks`, `location_accuracy`, `wayfinder_status`).
-- `20261026100000_booking_overlap_rpc.sql` — Initial boolean `has_booking_overlap` helper.
-- `20261026120000_nextjs_mvp_rpc_and_overlap_hardening.sql` — Reconciles `has_booking_overlap` with `get_unavailable_property_ids` (honouring `first_available_date`, `property_availability_blocks`, `confirmed`/`disputed` stays, and non-expired `awaiting_payment` holds).
-
-> **Backward Compatibility Note:** The Next.js App Router codebase in this branch is **100% compatible with the current live 8-migration schema today** (`PUBLIC_PROPERTY_SELECT` avoids unapplied Wayfinder columns, and `isMissingSchemaObjectError` gates Wayfinder RPC probes cleanly). Applying the pending migrations unlocks draft re-saving via `update_and_resubmit_partner_property` and Wayfinder arrival guides.
+- **All `17` core tables exist with `RLS = true`:** `admin_audit_log`, `admin_bootstrap_emails`, `booking_caution_deposits`, `booking_feedback`, `booking_issues`, `booking_notifications`, `booking_payment_records`, `bookings`, `currency_exchange_rates`, `partner_applications`, `partner_referral_rewards`, `partner_referrals`, `profiles`, `properties`, `property_access`, `property_availability_blocks`, `property_private_records`.
+- **Storage bucket `property-media` is live (`public: true`).**
+- **All `58` core RPCs & triggers called by Next.js are live:**
+  - `submit_partner_property` & `update_and_resubmit_partner_property` already support `'draft'` status listings on live `jopnnevqnwrpldrojmdu`.
+  - `get_unavailable_property_ids` & `enforce_booking_request_integrity` already enforce `pg_advisory_xact_lock`, `first_available_date`, `property_availability_blocks`, `confirmed` bookings, non-expired `awaiting_payment` 48h holds, and authoritative `v2_20pct_markup_10pct_fx_buffer` pricing.
+  - `confirm_booking_payment_webhook`, `transition_booking`, `transition_booking_issue`, `record_booking_refund`, `update_payout_status`, `transition_caution_deposit`, `review_partner_property`, `review_partner_application`, `set_partner_account_status`, and `set_guest_account_status` are all live.
+- **Unapplied Wayfinder columns are safely gated:** `PUBLIC_PROPERTY_SELECT` queries only guaranteed live columns, and `isMissingSchemaObjectError` gracefully gates `probePropertyWayfinderMeta` and `get_guest_booking_wayfinder` until `20261024180000` is applied.
 
 ---
 
-## 2. Pre-Migration Checklist
+## 2. Migration History Mapping & Critical CLI Repair Note
 
-1. **Confirm Owner Approval** in writing before touching `jopnnevqnwrpldrojmdu`.
-2. **Verify Local PGlite Suite Passes**:
+### Why Raw `npx supabase db push` Must Not Be Run Without `migration repair`
+On live `jopnnevqnwrpldrojmdu`, the first 14 repository migrations (`20261022120000_initial_schema.sql` through `20261024140000_endpoint_bugfixes_and_ux_parity.sql`) are **already applied**, but `supabase_migrations.schema_migrations` records the 8 tracked migrations under server-assigned UTC timestamps:
+
+| Local Repository Migration File | Live Status on `jopnnevqnwrpldrojmdu` | Recorded Remote Version in `schema_migrations` |
+| --- | --- | --- |
+| `20261022120000_initial_schema.sql` .. `20261022143000_booking_lifecycle.sql` (6 files) | **Applied** (initial SQL bootstrap) | *(predates `schema_migrations` rows)* |
+| `20261023100000_payments_ledger_and_operations.sql` | **Applied** | `20261023134953` |
+| `20261023120000_pilot_feedback_partner_governance_and_corrections.sql` | **Applied** | `20261023135103` |
+| `20261023150000_guest_signup_profile_phone.sql` | **Applied** | `20261023135113` |
+| `20261023180000_booking_notifications_and_resend_outbox.sql` | **Applied** | `20261023135157` |
+| `20261023200000_endpoint_hardening_and_parity.sql` | **Applied** | `20261023135222` |
+| `20261023220000_mvp_live_readiness.sql` | **Applied** | `20261023145604` |
+| `20261024100000_availability_referrals_pricing_fx_settlement.sql` | **Applied** | `20261024065745` |
+| `20261024140000_endpoint_bugfixes_and_ux_parity.sql` | **Applied** | `20261024073312` |
+| `20261024180000_hamlet_wayfinder_arrival_guidance.sql` | **Pending (Optional Feature)** | — |
+| `20261026100000_booking_overlap_rpc.sql` | **Pending (Superseded by `20261026120000`)** | — |
+| `20261026120000_nextjs_mvp_rpc_and_overlap_hardening.sql` | **Pending (Optional Helper RPC)** | — |
+
+---
+
+## 3. Safe Procedure When Applying the Optional Pending Migrations
+
+When the owner approves enabling **Wayfinder Arrival Guides** (`20261024180000`) and the standalone `has_booking_overlap` helper (`20261026120000`):
+
+1. **Take a manual Supabase Database Backup** in Supabase Dashboard (`Database → Backups`).
+2. **Verify local PGlite test suite passes**:
    ```bash
    npm test
    ```
-3. **Create a Supabase Database Backup / Point-in-Time Snapshot** in the Supabase Dashboard (`Database → Backups`).
-4. **Rehearse on a Staging Project / Branch** first:
+3. **Align `schema_migrations` tracking table** (marks already-live local versions as `applied` and retires the server-timestamped duplicate IDs without re-executing SQL):
+   ```bash
+   npx supabase link --project-ref jopnnevqnwrpldrojmdu
+
+   npx supabase migration repair --status reverted \
+     20261023134953 20261023135103 20261023135113 20261023135157 \
+     20261023135222 20261023145604 20261024065745 20261024073312
+
+   npx supabase migration repair --status applied \
+     20261022120000 20261022130000 20261022140000 20261022141000 \
+     20261022142000 20261022143000 20261023100000 20261023120000 \
+     20261023150000 20261023180000 20261023200000 20261023220000 \
+     20261024100000 20261024140000
+   ```
+4. **Dry-run first (`--dry-run`)** and confirm **only** `20261024180000`, `20261026100000`, and `20261026120000` are queued:
    ```bash
    npx supabase db push --dry-run
+   npx supabase db push
    ```
-5. **Confirm Demo Seed Flag Is Off**: Verify `app.seed_demo_data` is unset/`false` so `20261024160000` remains a strict no-op in production.
 
 ---
 
-## 3. Controlled Application Steps
-
-```bash
-npx supabase link --project-ref jopnnevqnwrpldrojmdu
-npx supabase migration list
-npx supabase db push
-```
-
----
-
-## 4. Post-Migration Verification Queries
-
-Run these read-only verification checks in the Supabase SQL Editor after pushing:
+## 4. Post-Migration Read-Only Verification Queries
 
 ```sql
--- 1. Confirm RLS is enabled on every public table
+-- 1. Confirm RLS remains enabled on every public table
 select tablename, rowsecurity
 from pg_tables
 where schemaname = 'public'
@@ -75,16 +91,11 @@ where n.nspname = 'public'
 -- 3. Confirm active FX reference rates
 select currency, ngn_per_unit, buffer_rate, is_active
 from public.currency_exchange_rates;
-
--- 4. Confirm property-media storage bucket limits
-select id, public, file_size_limit, allowed_mime_types
-from storage.buckets
-where id = 'property-media';
 ```
 
 ---
 
-## 5. Rollback Plan
+## 5. Database Rollback Compatibility
 
-- Because Next.js queries use `PUBLIC_PROPERTY_SELECT` (base schema columns) and graceful `isMissingSchemaObjectError` probes, rolling back the frontend deployment does **not** require dropping newly added nullable columns.
-- If an RPC regression occurs, re-apply the prior `create or replace function` definition from git history (`20261024100000_availability_referrals_pricing_fx_settlement.sql`) or restore from the pre-migration Supabase backup snapshot.
+- Both `20261024180000` (Wayfinder tables + nullable `properties` columns) and `20261026120000` (`has_booking_overlap` function) are **strictly additive** — neither alters existing column types, drops constraints, nor changes `bookings` / `properties` RLS policies.
+- Rolling back the frontend between Next.js (`hamletshortlets-jonn`) and Vite (`hamletshortlets`) requires **zero database rollback**.

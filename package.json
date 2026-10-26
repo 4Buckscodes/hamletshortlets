@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:pgtap": "supabase test db",
+    "verify:cutover": "node scripts/verify-cutover-readiness.mjs",
     "legacy:dev": "vite",
     "legacy:build": "tsc -b && vite build",
     "legacy:preview": "vite preview"

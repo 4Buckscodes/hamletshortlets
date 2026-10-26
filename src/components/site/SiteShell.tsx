@@ -40,6 +40,7 @@ import {
 } from '@/lib/currency';
 import { guestFacingNightlyNgn } from '@/lib/pricing';
 import { isMainlandArea } from '@/lib/areas';
+import { resolveLegacyHashRoute } from '@/lib/authRedirect';
 import {
   getBrowserSupabase,
   loadActiveExchangeRates,
@@ -302,6 +303,21 @@ export function SiteProviders({ children }: { children: ReactNode }) {
   const [rates, setRates] = useState<ExchangeRateConfig[] | undefined>(undefined);
   const [horatioOpen, setHoratioOpen] = useState(false);
   const [initialPrompt, setInitialPrompt] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncLegacyHash = () => {
+      if (typeof window === 'undefined') return;
+      const target = resolveLegacyHashRoute(window.location.hash, window.location.pathname);
+      if (target) {
+        window.location.replace(target);
+      }
+    };
+    syncLegacyHash();
+    window.addEventListener('hashchange', syncLegacyHash);
+    return () => {
+      window.removeEventListener('hashchange', syncLegacyHash);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
