@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import PropertySubmissionForm from './property-submission-form';
 
 type ManagedProperty = { property_id: string; access_role: string; scope: string; status: string; properties?: { title?: string; area?: string; status?: string; nightly_rate?: number } | null };
 export default function PartnerWorkspacePage() {
