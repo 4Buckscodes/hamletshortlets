@@ -608,14 +608,11 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
     ) as { imports?: Record<string, string> };
     expect(denoConfig.imports?.['@supabase/supabase-js']).toBe('npm:@supabase/supabase-js@2');
 
-    // 2. Vercel SPA rewrite preserves /assets/* and /images/* while routing SPA paths to /index.html
+    // 2. Next.js owns application routing; the legacy Vite SPA rewrite must be absent.
     const vercelConfig = JSON.parse(
       fs.readFileSync(path.join(REPO_ROOT, 'vercel.json'), 'utf8'),
     ) as { rewrites?: Array<{ source: string; destination: string }> };
-    expect(vercelConfig.rewrites).toHaveLength(1);
-    expect(vercelConfig.rewrites?.[0]?.destination).toBe('/index.html');
-    expect(vercelConfig.rewrites?.[0]?.source).toContain('assets/');
-    expect(vercelConfig.rewrites?.[0]?.source).toContain('images/');
+    expect(vercelConfig.rewrites).toBeUndefined();
 
     // 3. Every /images/... and /favicon.svg reference in src/ points to a real non-empty file in public/
     const walk = (dir: string): string[] =>
