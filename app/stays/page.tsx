@@ -11,14 +11,16 @@ export default async function StaysPage({searchParams}:{searchParams:SearchParam
  const area=params.area&&areas.includes(params.area)?params.area:'';
  const supabase=getPublicSupabase();
  let stays:Stay[]=[];
- let connected=false;\n let availabilityVerified=false;\n let availabilityMessage='';
+ let connected=false;
+ let availabilityVerified=false;
+ let availabilityMessage='';
  if(supabase){
   let query=supabase.from('properties').select('id,title,property_type,area,city,nightly_rate,bedrooms,bathrooms,capacity,image_urls,trust_label').eq('status','approved').order('created_at',{ascending:false}).limit(100);
   if(area) query=query.ilike('area',area);
   const result=await query;
   if(!result.error){
    stays=(result.data??[]) as Stay[];connected=true;
-   if(params.checkIn && params.checkOut && /^\\d{4}-\\d{2}-\\d{2}$/.test(params.checkIn) && /^\\d{4}-\\d{2}-\\d{2}$/.test(params.checkOut) && params.checkOut > params.checkIn){
+   if(params.checkIn && params.checkOut && /^\d{4}-\d{2}-\d{2}$/.test(params.checkIn) && /^\d{4}-\d{2}-\d{2}$/.test(params.checkOut) && params.checkOut > params.checkIn){
     const calendar=await supabase.rpc('get_unavailable_property_ids',{requested_check_in:params.checkIn,requested_check_out:params.checkOut});
     if(!calendar.error){
      const unavailable=new Set((calendar.data??[]) as string[]);
