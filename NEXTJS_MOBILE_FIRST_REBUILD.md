@@ -89,3 +89,27 @@ HAMLET.REST should feel app-like on a phone and remain polished on tablet and de
 - Maintain a short blocker list. Security/payment issues that can cause unauthorized financial changes or incorrect bookings block release; unrelated lower-risk findings are tracked without derailing UI work.
 - Do not alter production database, secrets, provider settings, branch protection or deployment configuration without explicit approval.
 - Do not merge or deploy this branch without explicit approval.
+
+
+## Implementation status — 26 October 2026
+
+The native Next.js branch now includes:
+- Public discovery, listing detail, booking-request form, Lagos guide, FAQs, About, safety, and how-it-works pages.
+- Guest booking history and issue reporting.
+- Partner property intake, draft/correction editing, publication pause/resume, booking review, and availability management.
+- Admin property and partner-application review, booking operations, issue resolution, settlement ledger, and a read-only audit trail.
+- Shared admin navigation, dynamic sitemap, robots rules, listing metadata, and booking date validation using Lagos local dates.
+- A `/legacy` bridge remains available for workflows that have not yet been rebuilt natively.
+
+## Release gates still requiring deliberate resolution
+
+These are not silently treated as complete merely because the Next.js build succeeds:
+1. **Commercial pricing:** `src/lib/pricing.ts` currently applies a 20% domestic markup and 10% international FX buffer. Earlier product decisions discussed a 3% guest-only fee, and the exact processing-fee decision was later left open. Confirm the intended commercial rule before launch; do not change it implicitly in a UI migration.
+2. **Database deployment:** migrations in source control are not proof that the live Supabase project has those objects. In particular, the booking-overlap RPC migration and Wayfinder schema status must be checked and deployed through an approved release process before enabling dependent features.
+3. **Payments and payouts:** verify trusted provider-webhook confirmation, refund reconciliation, and payout/reversal function execute permissions against the live schema. Admin UI status changes are not payment confirmation and do not execute transfers.
+4. **Full legacy parity:** account suspension/reinstatement, partner assignments, referrals/rewards, Wayfinder editing, and some earnings/notification workflows still need native parity or an explicit decision to keep them in the legacy bridge.
+5. **Production release:** no production deployment, live migration, payment execution, or domain change is part of this branch-only implementation.
+
+## Validation
+
+Use the latest GitHub Actions `HAMLET CI` run for test/build evidence. Vercel status checks currently report a build-rate limit, which is an integration/quota issue and should not be represented as a source-code test failure.
