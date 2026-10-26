@@ -1,52 +1,80 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { buildFaqStructuredData } from '@/lib/seo';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { FaqExplorer, type FaqEntry } from './faq-explorer';
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions',
+  title: 'Shortlet Booking FAQs',
   description:
-    'Clear answers about Lagos shortlet booking requests, pricing, USD/GBP currency quotes, caution deposits, cancellations and partner onboarding on HAMLET.REST.',
+    'Answers to common questions about booking shortlets in Lagos on HAMLET.REST — photos, power backup, transparent fees, check-in, payments, and support.',
   alternates: { canonical: '/faqs' },
 };
 
-const FAQS = [
+const FAQ_ITEMS: readonly FaqEntry[] = [
   {
-    q: '1. Is every booking on HAMLET instantly confirmed?',
-    a: 'No. Sending a booking request asks the property partner to confirm calendar availability and stay terms first. No card payment is taken until the partner accepts your dates.',
+    q: '1. Are the pictures on HAMLET real?',
+    a: 'Check the four verification pillars on each listing to see whether on-site physical inspection has been completed. Report any material mismatch from your booking page.',
+    category: 'trust',
   },
   {
-    q: '2. Does filtering by dates guarantee live availability?',
-    a: 'Filtering removes stays with recorded calendar blocks or active holds in HAMLET, but properties may also be managed across external channels. Partner confirmation is always required.',
+    q: '2. What happens if there is a power outage?',
+    a: 'Backup arrangements (24/7 power, inverter, or generator) are listed per property. Check the amenities section before booking.',
+    category: 'stay',
   },
   {
-    q: '3. How does stay pricing and currency switching work?',
-    a: 'Property cards and stay summaries show the guest-facing stay rate in NGN, USD, or GBP. USD and GBP quotes convert the domestic NGN stay total using the active reference rate and apply a single 10% international FX buffer (valid for 30 minutes).',
+    q: '3. How do I know if a shortlet is safe?',
+    a: 'Review the four verification pillars, house rules, and security amenities on the listing, and keep your check-in codes private.',
+    category: 'trust',
   },
   {
-    q: '4. How are refundable caution deposits handled?',
-    a: 'Refundable caution deposits are itemised separately from your accommodation price. HAMLET applies 0% markup and 0% international FX buffer to caution deposits, and release or documented deductions follow post-checkout inspection.',
+    q: '4. Are there hidden fees?',
+    a: 'No. Every quote itemises the stay price, mandatory charges, and any separate refundable caution deposit upfront. USD/GBP quotes include a single 10% stay buffer and settle in NGN.',
+    category: 'pricing',
   },
   {
-    q: '5. When is my booking officially confirmed?',
-    a: 'Only after the property partner accepts your request and HAMLET verifies the signed Paystack payment webhook on the server. Returning from a browser redirect alone does not mark a booking paid.',
+    q: '5. How does check-in work?',
+    a: 'Once confirmed, check-in instructions and arrival guidance unlock inside your HAMLET account.',
+    category: 'stay',
   },
   {
-    q: '6. Which cities does HAMLET currently cover?',
-    a: 'HAMLET is currently focused on Lagos, covering both Lagos Island & Lekki (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Ajah) and Lagos Mainland (Yaba, Shomolu, Surulere, Gbagada, Maryland, Ilupeju, Ikeja GRA and Magodo).',
+    q: '6. Is my booking confirmed when I send a request?',
+    a: 'No. The host confirms availability first, opening a 48-hour Paystack payment window. Confirmation happens only after server-verified payment.',
+    category: 'pricing',
   },
   {
-    q: '7. What if the apartment is not as described or I cannot check in?',
-    a: 'Sign in and open Report a Booking Issue under your account. Select your booking reference, choose the urgency level (including Critical for immediate access or safety problems), and submit details so HAMLET operations can intervene.',
+    q: '7. Can I cancel and get a refund?',
+    a: 'Requests can be cancelled free before confirmation. Confirmed bookings follow the cancellation terms shown on your reservation.',
+    category: 'pricing',
   },
   {
-    q: '8. How do owners, managers, closing agents and referrers join HAMLET?',
-    a: 'Create a free account and complete the short step-by-step Partner Application. Property owners list with 0% owner fee deducted from their base rate B; approved partners gain access after HAMLET review.',
+    q: '8. What if the apartment is not as described?',
+    a: 'Report the issue immediately from My Account → Report Issue so HAMLET operations can investigate.',
+    category: 'trust',
   },
-] as const;
+  {
+    q: '9. Are Wi-Fi and air conditioning included?',
+    a: 'Check each listing’s amenities strip for Wi-Fi, workspace, air conditioning, kitchen, and parking.',
+    category: 'stay',
+  },
+  {
+    q: '10. Can I book for a family or group?',
+    a: 'Yes, within the stated guest capacity. Unauthorised parties and events are prohibited.',
+    category: 'stay',
+  },
+  {
+    q: '11. Can I pay the owner directly?',
+    a: 'No. Always pay through the Paystack checkout inside your HAMLET account so your booking and deposit remain protected.',
+    category: 'pricing',
+  },
+  {
+    q: '12. How do I get help during my stay?',
+    a: 'Open My Account → Report Issue. For any physical safety emergency, contact local emergency services first.',
+    category: 'trust',
+  },
+];
 
 export default function FaqsPage() {
-  const faqSchema = buildFaqStructuredData([...FAQS]);
+  const faqSchema = buildFaqStructuredData([...FAQ_ITEMS]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
@@ -57,42 +85,17 @@ export default function FaqsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <main className="shell flex-1 py-10 sm:py-14">
-        <p className="eyebrow">Guest & Partner Help</p>
-        <h1 className="serif mt-2 max-w-3xl text-4xl font-medium tracking-tight text-ink-900 sm:text-6xl">
-          Frequently asked questions.
-        </h1>
-        <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-600">
-          Plain-language answers on how booking requests, pricing, caution deposits, verification and partner onboarding work on HAMLET.REST.
-        </p>
+      <main className="flex-1">
+        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+          <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+            <p className="eyebrow-light">Shortlet FAQs</p>
+            <h1 className="mt-2.5 font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+              Straight <span className="italic text-brass-300">answers.</span>
+            </h1>
+          </div>
+        </section>
 
-        <div className="mt-8 max-w-3xl space-y-3">
-          {FAQS.map(item => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-ink-100 bg-white px-5 py-4"
-            >
-              <summary className="flex min-h-[36px] cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-ink-900 sm:text-base">
-                <span>{item.q}</span>
-                <span className="text-lg font-normal text-brass-600 group-open:rotate-45 transition">
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 mb-0 border-t border-ink-100 pt-3 text-sm leading-relaxed text-ink-600">
-                {item.a}
-              </p>
-            </details>
-          ))}
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/stays" className="primary-button">
-            Explore Lagos stays
-          </Link>
-          <Link href="/account/issues" className="secondary-button">
-            Report a booking issue
-          </Link>
-        </div>
+        <FaqExplorer items={FAQ_ITEMS} />
       </main>
 
       <SiteFooter />

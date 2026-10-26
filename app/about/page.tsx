@@ -1,34 +1,61 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import {
+  ArrowRight,
+  BedDouble,
+  Building2,
+  KeyRound,
+  LifeBuoy,
+  ShieldCheck,
+  Wifi,
+} from 'lucide-react';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 
+const HAMLET_BRAND_NAME = 'HAMLET for Your Shortlets';
+const HAMLET_USP = 'Shortlets, with accountability.';
+const HAMLET_PARENT_COMPANY = 'Abundance Abodes';
+const HAMLET_POSITIONING = 'The Operating System for African Shortlets';
+const HAMLET_MANTRA = 'Make it easy. Make it trustworthy. Make it accountable.';
+
 export const metadata: Metadata = {
-  title: 'About HAMLET.REST',
+  title: 'About HAMLET — A Better Way to Book Shortlets in Lagos',
   description:
-    'Learn how HAMLET.REST by Abundance Abodes brings verification, transparent pricing and partner-confirmed accountability to Lagos shortlets.',
+    'HAMLET.REST is a Nigerian shortlet marketplace and property operating platform by Abundance Abodes. Discover our Four Pillars of a Better Stay.',
   alternates: { canonical: '/about' },
 };
 
-const PILLARS = [
+const FOUR_PILLARS = [
   {
     num: '01',
-    title: 'Clear verification status',
-    body: 'Every listing shows the actual review state of ownership, partner identity, authority to list and physical inspection — never assuming unreviewed claims are verified.',
+    Icon: BedDouble,
+    title: 'Know what you’re booking',
+    body: 'Clear photos, amenities, house rules, and four-pillar verification status upfront before you request.',
+    cta: 'Explore stays',
+    href: '/stays',
   },
   {
     num: '02',
-    title: 'Transparent stay pricing',
-    body: 'Guests see the itemised stay total upfront in NGN, USD or GBP, while refundable caution deposits remain separate and unbuffered.',
+    Icon: Wifi,
+    title: 'Power and Wi-Fi, explained',
+    body: 'Check 24/7 power, inverter or generator backup, and internet setup per apartment before booking.',
+    cta: 'Filter amenities',
+    href: '/stays',
   },
   {
     num: '03',
-    title: 'Partner-confirmed availability',
-    body: 'A search result or inquiry is never misrepresented as an instant booking. Partners confirm dates first, then a 48-hour payment window opens.',
+    Icon: KeyRound,
+    title: 'Clear booking steps',
+    body: 'Request dates first, pay via Paystack only once confirmed, and receive check-in guidance inside your account.',
+    cta: 'How it works',
+    href: '/how-it-works',
   },
   {
     num: '04',
-    title: 'Documented support & audit trail',
-    body: 'Guests can report issues directly against their booking reference, and every operational transition is recorded in an immutable audit log.',
+    Icon: LifeBuoy,
+    title: 'Help when you need it',
+    body: 'Log and track stay issues directly from your booking record with audited HAMLET operations oversight.',
+    cta: 'Safety & support',
+    href: '/safety',
   },
 ] as const;
 
@@ -37,70 +64,83 @@ export default function AboutPage() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="shell flex-1 py-10 sm:py-14">
-        <p className="eyebrow">About HAMLET · An Abundance Abodes Product</p>
-        <h1 className="serif mt-2 max-w-3xl text-4xl font-medium tracking-tight text-ink-900 sm:text-6xl">
-          Shortlets, with accountability.
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
-          A good stay is about more than beautiful pictures. Built in Lagos by Abundance Abodes, HAMLET.REST connects guests with vetted shortlet owners, managers and operators through a transparent request-to-confirm workflow.
-        </p>
-
-        {/* Four Pillars of a Better Stay (lives on /about per product rules) */}
-        <section className="mt-10">
-          <p className="eyebrow">Our standard</p>
-          <h2 className="serif mt-1.5 text-3xl font-medium text-ink-900">
-            Four pillars of a better stay
-          </h2>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {PILLARS.map(pillar => (
-              <article
-                key={pillar.num}
-                className="rounded-3xl border border-ink-100 bg-white p-6"
-              >
-                <span className="font-mono text-xs font-extrabold text-brass-600">
-                  {pillar.num}
-                </span>
-                <h3 className="serif mt-2 text-2xl font-medium text-ink-900">
-                  {pillar.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                  {pillar.body}
-                </p>
-              </article>
-            ))}
+      <main className="flex-1">
+        {/* Midnight Navy Hero */}
+        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+            <p className="eyebrow-light">
+              {HAMLET_BRAND_NAME} · By {HAMLET_PARENT_COMPANY}
+            </p>
+            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+              Shortlet stays,{' '}
+              <span className="italic text-brass-300">with accountability.</span>
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+              Built under <strong className="text-white">{HAMLET_PARENT_COMPANY}</strong> as{' '}
+              <strong className="text-white">{HAMLET_POSITIONING}</strong> — starting in Lagos with honest verification, upfront pricing, and clear check-in operations.
+            </p>
           </div>
         </section>
 
-        <section className="mt-12 rounded-3xl bg-ink-900 p-7 text-white sm:p-10">
-          <h2 className="serif m-0 text-3xl font-medium">Your stay, sorted.</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-200">
-            Explore Lagos stays across the Island and Mainland, read our{' '}
-            <Link href="/safety" className="underline">
-              trust & safety standards
-            </Link>
-            , or apply to join the{' '}
-            <Link href="/partners/apply" className="underline">
-              HAMLET partner network
-            </Link>
-            .
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/stays"
-              className="primary-button bg-brass-500 text-ink-950 hover:bg-brass-400"
-            >
-              Explore Lagos stays →
-            </Link>
-            <Link
-              href="/partners/apply"
-              className="secondary-button border-ink-700 bg-transparent text-white hover:bg-ink-800"
-            >
-              Become a partner
-            </Link>
+        {/* Four Pillars of a Better Stay */}
+        <section id="four-pillars" className="border-b border-ink-100 bg-clay/60 py-12 sm:py-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="max-w-2xl">
+              <p className="eyebrow">Four pillars of a better stay</p>
+              <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+                A good stay is about more than beautiful pictures.
+              </h2>
+            </div>
+
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {FOUR_PILLARS.map(({ num, Icon, title, body, cta, href }) => (
+                <article
+                  key={num}
+                  className="flex flex-col rounded-3xl border border-ink-100 bg-white p-6 shadow-2xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                      {num}
+                    </span>
+                    <Icon className="h-5 w-5 shrink-0 text-ink-900" strokeWidth={1.8} />
+                  </div>
+                  <h3 className="mt-3 font-display text-xl font-bold text-ink-900">{title}</h3>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">{body}</p>
+                  <Link
+                    href={href}
+                    className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-extrabold text-ink-900 transition hover:text-brass-700"
+                  >
+                    {cta} <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                  </Link>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
+
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
+          <section className="rounded-3xl bg-ink-950 p-7 text-paper sm:p-9">
+            <div className="flex flex-col items-start justify-between gap-5 lg:flex-row lg:items-center">
+              <div>
+                <p className="eyebrow-light">{HAMLET_USP}</p>
+                <h2 className="mt-1.5 font-display text-2xl font-bold text-white sm:text-3xl">
+                  {HAMLET_MANTRA}
+                </h2>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/stays" className="btn-brass !rounded-full !px-6">
+                  <ShieldCheck className="h-4 w-4 shrink-0" /> Explore stays
+                </Link>
+                <Link
+                  href="/partners/apply"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+                >
+                  <Building2 className="h-4 w-4 shrink-0" /> Partner with us
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
 
       <SiteFooter />

@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
-import { matchesLagosAreaFilter } from '@/lib/areas';
+import { isMainlandArea, matchesLagosAreaFilter } from '@/lib/areas';
 import { guestFacingNightlyNgn } from '@/lib/pricing';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { StaysExplorer } from './stays-explorer';
 
 type SearchParams = Promise<{
   area?: string;
+  side?: string;
   checkIn?: string;
   checkOut?: string;
   guests?: string;
@@ -35,6 +36,7 @@ export const metadata: Metadata = {
 export default async function StaysPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const area = (params.area || '').trim().slice(0, 80);
+  const side = (params.side || '').trim().toLowerCase();
   const guests = boundedInt(params.guests, 1, 50);
   const bedrooms = boundedInt(params.bedrooms, 0, 20);
   const maxPrice = boundedInt(params.maxPrice, 20000, 100000000);
@@ -65,6 +67,8 @@ export default async function StaysPage({ searchParams }: { searchParams: Search
     if (!result.error) {
       connected = true;
       stays = ((result.data ?? []) as PublicStayRecord[]).filter(stay => {
+        if (side === 'mainland' && !isMainlandArea(stay.area || '')) return false;
+        if (side === 'island' && isMainlandArea(stay.area || '')) return false;
         if (
           area &&
           !matchesLagosAreaFilter(
@@ -112,30 +116,37 @@ export default async function StaysPage({ searchParams }: { searchParams: Search
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
-        <p className="eyebrow">Explore Lagos</p>
-        <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
-          Find your kind of stay.
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Compare approved stays across Lagos Island and Lagos Mainland. Switch between ₦ NGN, $ USD, and £ GBP in the top bar anytime.
-        </p>
+      <main className="flex-1">
+        <section className="border-b border-ink-800 bg-ink-950 py-10 text-paper sm:py-14">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <p className="eyebrow-light">Lagos shortlets · Mainland &amp; Island</p>
+            <h1 className="mt-2 font-display text-3xl font-bold leading-[1.06] text-white sm:text-5xl">
+              Explore verified{' '}
+              <span className="italic text-brass-300">shortlet stays.</span>
+            </h1>
+            <p className="mt-2.5 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+              Compare approved stays across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) in ₦, $, or £.
+            </p>
+          </div>
+        </section>
 
-        <StaysExplorer
-          stays={stays}
-          connected={connected}
-          availabilityVerified={availabilityVerified}
-          availabilityMessage={availabilityMessage}
-          initialFilters={{
-            area,
-            checkIn,
-            checkOut,
-            guests,
-            bedrooms,
-            maxPrice,
-            type,
-          }}
-        />
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+          <StaysExplorer
+            stays={stays}
+            connected={connected}
+            availabilityVerified={availabilityVerified}
+            availabilityMessage={availabilityMessage}
+            initialFilters={{
+              area,
+              checkIn,
+              checkOut,
+              guests,
+              bedrooms,
+              maxPrice,
+              type,
+            }}
+          />
+        </div>
       </main>
 
       <SiteFooter />

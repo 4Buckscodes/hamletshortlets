@@ -30,13 +30,35 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
     });
   }
 
+  test('applies compiled Tailwind CSS responsive breakpoints and HAMLET theme styles', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const viewport = page.viewportSize();
+    const mobileMenuBtn = page.getByRole('button', { name: /Open navigation menu/i });
+    const desktopNav = page.getByRole('navigation', { name: 'Primary navigation' });
+
+    if (viewport && viewport.width >= 1024) {
+      await expect(desktopNav).toBeVisible();
+      await expect(mobileMenuBtn).toBeHidden();
+    } else {
+      await expect(mobileMenuBtn).toBeVisible();
+      await expect(desktopNav).toBeHidden();
+    }
+
+    const heroBg = await page
+      .locator('main section')
+      .first()
+      .evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(heroBg).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
   test('switches currency between NGN, USD and GBP cleanly', async ({ page }) => {
     await page.goto('/');
-    const usdBtn = page.getByRole('button', { name: 'Display prices in USD' }).first();
-    if (await usdBtn.isVisible()) {
-      await usdBtn.click();
-      await expect(usdBtn).toHaveAttribute('aria-pressed', 'true');
-    }
+    const usdBtn = page.locator('button[aria-label="Display prices in USD"]:visible').first();
+    await expect(usdBtn).toBeVisible();
+    await usdBtn.click();
+    await expect(usdBtn).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('walks progressive 2-step guest sign-up on /signin and preserves ?next= intent', async ({

@@ -140,7 +140,8 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     expect(signInForm).toContain('resolveNextAppPostSignInRedirect');
     expect(signInForm).toContain('StepProgressHeader');
 
-    const homePage = readRepoFile('app/page.tsx');
+    const homePage =
+      readRepoFile('app/page.tsx') + '\n' + readRepoFile('app/home-slideshow.tsx');
     const aboutPage = readRepoFile('app/about/page.tsx');
     const lagosPage = readRepoFile('app/lagos/page.tsx');
     expect(homePage.toLowerCase()).not.toContain('four pillars of a better stay');
@@ -192,6 +193,10 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     const adminAccounts = readRepoFile('app/admin/accounts/page.tsx');
     expect(adminAccounts).toContain("rpc('set_partner_account_status'");
     expect(adminAccounts).toContain("rpc('set_guest_account_status'");
+
+    // PostCSS must compile Tailwind CSS v4 (@tailwindcss/postcss) for Next.js
+    const postcssConfig = readRepoFile('postcss.config.mjs');
+    expect(postcssConfig).toContain('@tailwindcss/postcss');
 
     expect(signInForm).toContain('resetPasswordForEmail');
   });
