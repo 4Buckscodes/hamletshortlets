@@ -5,8 +5,8 @@ type SearchParams = Promise<{ area?: string; checkIn?: string; checkOut?: string
 type Stay = { id:string; title:string; property_type:string|null; area:string|null; city:string|null; nightly_rate:number|string|null; bedrooms:number|null; bathrooms:number|null; capacity:number|null; image_urls:string[]|null; trust_label:string|null };
 const areas=['Lekki','Victoria Island','Ikoyi','Yaba','Ikeja GRA','Surulere'];
 const propertyTypes=['Apartment','Serviced apartment','Studio apartment','Duplex','Penthouse','Villa','Terrace'];
-const validDate=(value:string|undefined)=>!!value&&/^\\d{4}-\\d{2}-\\d{2}$/.test(value);
-const boundedInt=(value:string|undefined,min:number,max:number)=>{if(!value||!/^\\d+$/.test(value))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=min&&n<=max?n:null;};
+const validDate=(value:string|undefined)=>!!value&&/^\d{4}-\d{2}-\d{2}$/.test(value);
+const boundedInt=(value:string|undefined,min:number,max:number)=>{if(!value||!/^\d+$/.test(value))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=min&&n<=max?n:null;};
 export const metadata={title:'Explore shortlets in Lagos',description:'Explore approved shortlets across Lagos on HAMLET.REST.'};
 
 export default async function StaysPage({searchParams}:{searchParams:SearchParams}) {
