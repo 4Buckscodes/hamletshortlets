@@ -54,11 +54,20 @@ export default function AdminIssuesPage() {
     setSaving(issue.id); setError(""); setMessage("");
     const { data: auth } = await db.auth.getSession();
     if (!auth.session) { window.location.assign("/signin?next=/admin/issues"); return; }
-    const { error: updateError } = await db.from("booking_issues").update({
-      status: draft.status, resolution: draft.resolution.trim() || null, assignee_id: auth.session.user.id, updated_at: new Date().toISOString(),
-    }).eq("id", issue.id);
-    if (updateError) setError("The issue could not be updated. Confirm your admin permissions and try again.");
-    else { setMessage("Updated " + issue.reference + "."); await load(); }
+    const resolution = draft.resolution.trim();
+    if (["resolved", "closed"].includes(draft.status) && resolution.length < 8) {
+      setError("Add a documented resolution summary of at least 8 characters before resolving or closing."); setSaving(""); return;
+    }
+    const { error: updateError } = await db.rpc("transition_booking_issue", {
+      target_issue_id: issue.id,
+      next_status: draft.status,
+      action_note: resolution || "Updated from the HAMLET admin issue desk.",
+      next_assignee_id: draft.status === "assigned" ? auth.session.user.id : null,
+      next_assignee_name: draft.status === "assigned" ? "HAMLET operations" : null,
+      resolution_summary: resolution || null,
+    });
+    if (updateError) setError(updateError.message || "The issue could not be updated. Confirm your admin permissions and try again.");
+    else { setMessage("Updated " + issue.reference + ". Status and audit timeline saved."); await load(); }
     setSaving("");
   }
 
