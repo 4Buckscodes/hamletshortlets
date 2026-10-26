@@ -32,6 +32,7 @@ export default function AdminAuditPage() {
     setLoading(false);
   }, [db]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data loading synchronizes the page with Supabase.
   useEffect(() => { void load(); }, [load]);
   const actions = useMemo(() => [...new Set(rows.map(row => row.action).filter(Boolean))].sort(), [rows]);
   const filtered = useMemo(() => {
