@@ -93,16 +93,31 @@ export default function SignInForm() {
     setError('');
     setMessage('');
 
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setError('Enter a valid email address.');
+      return;
+    }
+
+    if (mode !== 'reset' && password.length < 8) {
+      setError('Use a password with at least 8 characters.');
+      return;
+    }
+
+    if (mode === 'signup' && signupStep === 0) {
+      setSignupStep(1);
+      return;
+    }
+
+    if (mode === 'signup' && name.trim().length < 2) {
+      setError('Enter your full name (at least 2 characters).');
+      return;
+    }
+
     if (!client) {
       setError(
         'HAMLET account access is not configured on this deployment yet. Configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.',
       );
-      return;
-    }
-
-    const cleanEmail = email.trim();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Enter a valid email address.');
       return;
     }
 
@@ -130,21 +145,6 @@ export default function SignInForm() {
       } finally {
         setBusy(false);
       }
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Use a password with at least 8 characters.');
-      return;
-    }
-
-    if (mode === 'signup' && signupStep === 0) {
-      setSignupStep(1);
-      return;
-    }
-
-    if (mode === 'signup' && name.trim().length < 2) {
-      setError('Enter your full name (at least 2 characters).');
       return;
     }
 
