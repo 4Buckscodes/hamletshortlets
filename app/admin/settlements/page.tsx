@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AdminNav from "../admin-nav";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -72,7 +73,7 @@ export default function AdminSettlementsPage() {
   const payoutRows = filtered.filter((row) => row.payout_status !== "not_applicable");
   const outstanding = rows.filter((row) => ["pending", "approved"].includes(row.payout_status)).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   return <main style={{ minHeight: "100svh", background: "var(--paper)" }}>
-    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link href="/admin/issues" className="secondary-button">Issue desk</Link><Link href="/admin/properties" className="secondary-button">Property reviews</Link></div></div></header>
+    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><AdminNav current="settlements" /></div></header>
     <section className="shell" style={{ paddingBlock: 34, maxWidth: 1100 }}>
       <p style={{ color: "#806522", textTransform: "uppercase", letterSpacing: ".12em", fontSize: 11, fontWeight: 800 }}>Finance operations</p>
       <h1 className="serif" style={{ fontSize: "clamp(34px,6vw,52px)", fontWeight: 500, margin: "8px 0 12px" }}>Settlement ledger</h1>
