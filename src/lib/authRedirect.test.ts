@@ -3,6 +3,8 @@ import {
   buildAuthPath,
   buildWorkspaceSignInPath,
   normalizeDirectPathnameToHash,
+  resolveLegacyHashRoute,
+  resolveNextAppPostSignInRedirect,
   resolvePostSignInRedirect,
   resolvePostSignUpRedirect,
   sanitizeGuestRedirect,
@@ -93,6 +95,39 @@ describe('authRedirect helpers', () => {
     );
     expect(normalizeDirectPathnameToHash('/signin', '?mode=signup', '')).toBe(
       '/#/signin?mode=signup',
+    );
+  });
+
+  it('maps legacy HashRouter deep links and email URLs cleanly to Next.js App Router paths while ignoring OAuth/anchor hashes', () => {
+    expect(resolveLegacyHashRoute('#/stays?area=Yaba')).toBe('/stays?area=Yaba');
+    expect(resolveLegacyHashRoute('#/stays/prop-ikoyi-1')).toBe('/stays/prop-ikoyi-1');
+    expect(resolveLegacyHashRoute('#/partner/register?ref=HML-AB12')).toBe(
+      '/partners/apply?ref=HML-AB12',
+    );
+    expect(resolveLegacyHashRoute('#/partner/bookings/bkg-notify-001')).toBe(
+      '/partners/bookings?booking=bkg-notify-001',
+    );
+    expect(resolveLegacyHashRoute('#/account?booking=bkg-notify-001')).toBe(
+      '/account/bookings?booking=bkg-notify-001',
+    );
+    expect(resolveLegacyHashRoute('#/admin/bookings?booking=bkg-notify-001')).toBe(
+      '/admin/bookings?booking=bkg-notify-001',
+    );
+    expect(resolveLegacyHashRoute('#/admin/ledger')).toBe('/admin/settlements');
+    expect(resolveLegacyHashRoute('#/legal/pricing')).toBe('/legal');
+
+    // Never touch Supabase OAuth/recovery fragments, section anchors, external hashes, or /legacy
+    expect(resolveLegacyHashRoute('#access_token=eyJ&type=recovery')).toBeNull();
+    expect(resolveLegacyHashRoute('#faq-pricing')).toBeNull();
+    expect(resolveLegacyHashRoute('#//evil.example/phish')).toBeNull();
+    expect(resolveLegacyHashRoute('#/stays', '/legacy')).toBeNull();
+
+    // Next.js sign-in redirect also normalizes legacy partner/guest email redirect params
+    expect(
+      resolveNextAppPostSignInRedirect('partner', '/partner/bookings/bkg-notify-001'),
+    ).toBe('/partners/bookings?booking=bkg-notify-001');
+    expect(resolveNextAppPostSignInRedirect('guest', '/account?booking=bkg-notify-001')).toBe(
+      '/account/bookings?booking=bkg-notify-001',
     );
   });
 

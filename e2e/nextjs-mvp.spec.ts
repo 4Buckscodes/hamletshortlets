@@ -82,6 +82,14 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
     await page.getByRole('button', { name: /Close panel/i }).click();
   });
 
+  test('redirects legacy #/ hash deep links cleanly to Next.js App Router paths during cutover', async ({
+    page,
+  }) => {
+    await page.goto('/#/partner/register?ref=HML-CUTOVER1');
+    await page.waitForURL('**/partners/apply?ref=HML-CUTOVER1');
+    await expect(page.locator('h1').first()).toBeVisible();
+  });
+
   test('serves crawler endpoints and blocks unauthenticated API mutations', async ({
     request,
   }) => {

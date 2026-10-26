@@ -112,7 +112,11 @@ export function resolveNextAppPostSignInRedirect(
   role: AccountRole | string | undefined | null,
   nextOrRedirectParam: string | null | undefined,
 ): string {
-  const safeInternal = sanitizeInternalRedirect(nextOrRedirectParam);
+  const normalizedInput =
+    nextOrRedirectParam && nextOrRedirectParam.trim().startsWith('/')
+      ? resolveLegacyHashRoute(`#${nextOrRedirectParam.trim()}`, '/') ?? nextOrRedirectParam
+      : nextOrRedirectParam;
+  const safeInternal = sanitizeInternalRedirect(normalizedInput);
   const [pathname] = (safeInternal ?? '').split(/[?#]/);
 
   if (role === 'admin') {
@@ -133,7 +137,7 @@ export function resolveNextAppPostSignInRedirect(
     return '/partners';
   }
 
-  return sanitizeGuestRedirect(nextOrRedirectParam) ?? '/account';
+  return sanitizeGuestRedirect(normalizedInput) ?? '/account';
 }
 
 /**
@@ -181,6 +185,166 @@ export function buildWorkspaceSignInPath(targetPath: string | null | undefined):
   const params = new URLSearchParams();
   params.set('redirect', safe);
   return `/signin?${params.toString()}`;
+}
+
+/**
+ * Maps legacy Vite `<HashRouter>` fragments (e.g. `#/stays?area=Yaba`,
+ * `#/partner/register?ref=HML-1234`, `#/partner/bookings/bkg-1`,
+ * `#/account?booking=bkg-1`, `#/legal/pricing`) to their canonical Next.js
+ * App Router URLs during and after custom-domain cutover.
+ *
+ * Non-route hashes such as Supabase OAuth/recovery fragments (`#access_token=...`)
+ * or in-page section anchors (`#pricing`) return `null` and are untouched.
+ */
+export function resolveLegacyHashRoute(
+  rawHash: string | null | undefined,
+  currentPathname = '/',
+): string | null {
+  if (!rawHash) return null;
+  if (currentPathname === '/legacy' || currentPathname.startsWith('/legacy/')) {
+    return null;
+  }
+
+  const trimmed = rawHash.trim();
+  const withoutHash = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+  if (
+    !withoutHash.startsWith('/') ||
+    withoutHash.startsWith('//') ||
+    withoutHash.startsWith('/\\') ||
+    withoutHash.includes('://')
+  ) {
+    return null;
+  }
+
+  const qIndex = withoutHash.indexOf('?');
+  const rawPath = (qIndex >= 0 ? withoutHash.slice(0, qIndex) : withoutHash).replace(/\/+$/, '') || '/';
+  const rawQuery = qIndex >= 0 ? withoutHash.slice(qIndex + 1) : '';
+  const params = new URLSearchParams(rawQuery);
+  const appendSearch = (basePath: string, searchParams: URLSearchParams = params) => {
+    const qs = searchParams.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
+
+  if (rawPath === '/') {
+    return appendSearch('/');
+  }
+
+  if (
+    rawPath === '/stays' ||
+    rawPath.startsWith('/stays/') ||
+    rawPath === '/lagos' ||
+    rawPath === '/about' ||
+    rawPath === '/how-it-works' ||
+    rawPath === '/safety' ||
+    rawPath === '/faqs'
+  ) {
+    return appendSearch(rawPath);
+  }
+
+  if (rawPath === '/legal' || rawPath.startsWith('/legal/')) {
+    return appendSearch('/legal');
+  }
+
+  if (rawPath === '/signin' || rawPath === '/signup') {
+    if (rawPath === '/signup' && !params.has('mode')) {
+      params.set('mode', 'signup');
+    }
+    const legacyTarget = params.get('next') ?? params.get('redirect');
+    if (legacyTarget && legacyTarget.startsWith('/')) {
+      const mapped = resolveLegacyHashRoute(`#${legacyTarget}`, '/');
+      if (mapped) {
+        params.delete('redirect');
+        params.set('next', mapped);
+      }
+    }
+    return appendSearch('/signin');
+  }
+
+  if (rawPath === '/account') {
+    if (params.has('booking')) {
+      return appendSearch('/account/bookings');
+    }
+    return appendSearch('/account');
+  }
+
+  if (rawPath === '/account/bookings' || rawPath === '/account/issues') {
+    return appendSearch(rawPath);
+  }
+
+  if (rawPath === '/partner/register' || rawPath === '/partners/apply') {
+    return appendSearch('/partners/apply');
+  }
+
+  if (rawPath.startsWith('/partner/bookings/')) {
+    const bookingId = decodeURIComponent(rawPath.slice('/partner/bookings/'.length));
+    if (bookingId && !params.has('booking')) {
+      params.set('booking', bookingId);
+    }
+    return appendSearch('/partners/bookings');
+  }
+
+  if (rawPath === '/partner/bookings' || rawPath === '/partners/bookings') {
+    return appendSearch('/partners/bookings');
+  }
+
+  if (
+    rawPath === '/partner/new-property' ||
+    rawPath === '/partner/properties/new' ||
+    rawPath === '/partners/properties/new'
+  ) {
+    return appendSearch('/partners/properties/new');
+  }
+
+  if (
+    rawPath === '/partner/earnings' ||
+    rawPath === '/partner/referrals' ||
+    rawPath === '/partners/earnings'
+  ) {
+    return appendSearch('/partners/earnings');
+  }
+
+  if (
+    rawPath === '/partner/profile' ||
+    rawPath === '/partner/assignments' ||
+    rawPath === '/partners/profile'
+  ) {
+    return appendSearch('/partners/profile');
+  }
+
+  if (rawPath === '/partner' || rawPath.startsWith('/partner/') || rawPath === '/partners') {
+    return appendSearch('/partners');
+  }
+
+  if (rawPath === '/admin/applications' || rawPath === '/admin/referrals') {
+    return appendSearch('/admin/partners');
+  }
+
+  if (rawPath === '/admin/users') {
+    return appendSearch('/admin/accounts');
+  }
+
+  if (rawPath === '/admin/ledger') {
+    return appendSearch('/admin/settlements');
+  }
+
+  if (rawPath === '/admin/assignments') {
+    return appendSearch('/admin/properties');
+  }
+
+  if (
+    rawPath === '/admin' ||
+    rawPath === '/admin/properties' ||
+    rawPath === '/admin/partners' ||
+    rawPath === '/admin/bookings' ||
+    rawPath === '/admin/issues' ||
+    rawPath === '/admin/settlements' ||
+    rawPath === '/admin/audit' ||
+    rawPath === '/admin/accounts'
+  ) {
+    return appendSearch(rawPath);
+  }
+
+  return null;
 }
 
 /**

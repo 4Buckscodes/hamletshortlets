@@ -13,23 +13,20 @@ Key operational facts for AI assistants and search agents:
 ## Marketplace & Guest Guides
 
 - [HAMLET Home](https://www.hamlet.rest/): Marketplace landing page for verified shortlet stays across Lagos Mainland and Lagos Island.
-- [Explore Verified Lagos Shortlets](https://www.hamlet.rest/#/stays): Filter approved Lagos shortlets by neighbourhood, dates, guest capacity, property type, and currency (`NGN`, `USD`, `GBP`).
-- [Lagos Neighbourhood Guide](https://www.hamlet.rest/#/lagos): Guide to staying in Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA, Maryland, Gbagada, Magodo) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Banana Island, Ajah).
-- [How HAMLET Works](https://www.hamlet.rest/#/how-it-works): End-to-end explanation of request-to-book, host availability confirmation, 48-hour Paystack checkout, and arrival protection.
-- [Guest Safety & Protection](https://www.hamlet.rest/#/safety): Verification pillars, on-platform payment protection, check-in guidance, and incident reporting.
-- [About HAMLET & Four Pillars](https://www.hamlet.rest/#/about): Why HAMLET was built and the four pillars of a better shortlet stay in Lagos.
-- [Shortlet Booking FAQs](https://www.hamlet.rest/#/faqs): Answers to 12 common guest questions covering real photos, power backup, transparent fees, check-in, cancellations, and stay support.
+- [Explore Verified Lagos Shortlets](https://www.hamlet.rest/stays): Filter approved Lagos shortlets by neighbourhood, dates, guest capacity, property type, and currency (`NGN`, `USD`, `GBP`).
+- [Lagos Neighbourhood Guide](https://www.hamlet.rest/lagos): Guide to staying in Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA, Maryland, Gbagada, Magodo) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Banana Island, Ajah).
+- [How HAMLET Works](https://www.hamlet.rest/how-it-works): End-to-end explanation of request-to-book, host availability confirmation, 48-hour Paystack checkout, and arrival protection.
+- [Guest Safety & Protection](https://www.hamlet.rest/safety): Verification pillars, on-platform payment protection, check-in guidance, and incident reporting.
+- [About HAMLET & Four Pillars](https://www.hamlet.rest/about): Why HAMLET was built and the four pillars of a better shortlet stay in Lagos.
+- [Shortlet Booking FAQs](https://www.hamlet.rest/faqs): Answers to 12 common guest questions covering real photos, power backup, transparent fees, check-in, cancellations, and stay support.
 
 ## Partner Network
 
-- [Partner Registration & Application](https://www.hamlet.rest/#/partner/register): Apply as a Property Owner, Authorised Agent, Property Manager, Shortlet Operator, Co-host, Closing Agent (10% closing commission on `B`), or Referral Partner (2.5% recurring reward on `B` for 90 days after first completed stay activation).
+- [Partner Registration & Application](https://www.hamlet.rest/partners/apply): Apply as a Property Owner, Authorised Agent, Property Manager, Shortlet Operator, Co-host, Closing Agent (10% closing commission on `B`), or Referral Partner (2.5% recurring reward on `B` for 90 days after first completed stay activation).
 
 ## Legal, Trust & Pricing Policies
 
-- [Fees & Settlement Policy](https://www.hamlet.rest/#/legal/pricing): Complete domestic 20% markup allocation, worked NGN/USD/GBP examples, NGN Paystack settlement, and separate caution deposit accounting.
-- [Trust & Verification Policy](https://www.hamlet.rest/#/legal/trust): Manual evidence review, honest labelling of verified vs. self-reported items, duplicate screening, and suspension rules.
-- [Booking Terms of Service](https://www.hamlet.rest/#/legal/terms): Request-to-book rules, 48-hour payment window, cancellation outcomes, refunds, and dispute handling.
-- [Privacy & Data Protection](https://www.hamlet.rest/#/legal/privacy): Nigeria Data Protection Regulation (NDPR) alignment, zero card-number storage, row-level access controls, and data retention.
+- [Legal, Fees, Trust & Privacy Policies](https://www.hamlet.rest/legal): Complete domestic 20% markup allocation, worked NGN/USD/GBP examples, manual 4-pillar verification rules, booking terms of service, and Nigeria Data Protection Regulation (NDPR) disclosures.
 
 ## Optional
 
