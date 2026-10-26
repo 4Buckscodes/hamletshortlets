@@ -1,73 +1,155 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import { isMainlandArea, matchesLagosAreaFilter } from '@/lib/areas';
+import { guestFacingNightlyNgn } from '@/lib/pricing';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { StaysExplorer } from './stays-explorer';
 
-type SearchParams = Promise<{ area?: string; checkIn?: string; checkOut?: string; guests?: string; bedrooms?: string; maxPrice?: string; type?: string }>;
-type Stay = { id:string; title:string; property_type:string|null; area:string|null; city:string|null; nightly_rate:number|string|null; bedrooms:number|null; bathrooms:number|null; capacity:number|null; image_urls:string[]|null; trust_label:string|null };
-const areas=['Lekki','Victoria Island','Ikoyi','Yaba','Ikeja GRA','Surulere'];
-const propertyTypes=['Apartment','Serviced apartment','Studio apartment','Duplex','Penthouse','Villa','Terrace'];
-const validDate=(value:string|undefined)=>!!value&&/^\d{4}-\d{2}-\d{2}$/.test(value);
-const boundedInt=(value:string|undefined,min:number,max:number)=>{if(!value||!/^\d+$/.test(value))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=min&&n<=max?n:null;};
-export const metadata={title:'Explore shortlets in Lagos',description:'Explore approved shortlets across Lagos on HAMLET.REST.'};
+type SearchParams = Promise<{
+  area?: string;
+  side?: string;
+  checkIn?: string;
+  checkOut?: string;
+  guests?: string;
+  bedrooms?: string;
+  maxPrice?: string;
+  type?: string;
+}>;
 
-export default async function StaysPage({searchParams}:{searchParams:SearchParams}) {
- const params=await searchParams;
- const area=params.area&&areas.includes(params.area)?params.area:'';
- const guests=boundedInt(params.guests,1,50);
- const bedrooms=boundedInt(params.bedrooms,0,20);
- const maxPrice=boundedInt(params.maxPrice,20000,100000000);
- const type=params.type&&propertyTypes.includes(params.type)?params.type:'';
- const datesValid=validDate(params.checkIn)&&validDate(params.checkOut)&&params.checkOut!>params.checkIn!;
- const supabase=getPublicSupabase();
- let stays:Stay[]=[];
- let connected=false;
- let availabilityVerified=false;
- let availabilityMessage='';
- if(supabase){
-  let query=supabase.from('properties').select('id,title,property_type,area,city,nightly_rate,bedrooms,bathrooms,capacity,image_urls,trust_label').eq('status','approved').order('created_at',{ascending:false}).limit(100);
-  if(area) query=query.ilike('area',area);
-  if(type) query=query.ilike('property_type',type);
-  if(guests!==null) query=query.gte('capacity',guests);
-  if(bedrooms!==null) query=query.gte('bedrooms',bedrooms);
-  if(maxPrice!==null) query=query.lte('nightly_rate',maxPrice);
-  const result=await query;
-  if(!result.error){
-   stays=(result.data??[]) as Stay[];connected=true;
-   if(datesValid){
-    const calendar=await supabase.rpc('get_unavailable_property_ids',{requested_check_in:params.checkIn,requested_check_out:params.checkOut});
-    if(!calendar.error){
-     const unavailable=new Set((calendar.data??[]) as string[]);
-     stays=stays.filter(stay=>!unavailable.has(stay.id));
-     availabilityVerified=true;
-     availabilityMessage='Calendar conflicts filtered; partner confirmation is still required.';
-    }else{
-     availabilityMessage='We could not verify calendar availability for these dates. Contact the partner before making plans.';
+const validDate = (value: string | undefined): value is string =>
+  Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+
+const boundedInt = (value: string | undefined, min: number, max: number) => {
+  if (!value || !/^\d+$/.test(value)) return null;
+  const n = Number(value);
+  return Number.isSafeInteger(n) && n >= min && n <= max ? n : null;
+};
+
+export const metadata: Metadata = {
+  title: 'Explore Shortlets in Lagos',
+  description:
+    'Search approved shortlets across Lagos Island and Lagos Mainland — Victoria Island, Ikoyi, Lekki, Yaba, Shomolu, Surulere and Ikeja GRA.',
+  alternates: { canonical: '/stays' },
+};
+
+export default async function StaysPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const area = (params.area || '').trim().slice(0, 80);
+  const side = (params.side || '').trim().toLowerCase();
+  const guests = boundedInt(params.guests, 1, 50);
+  const bedrooms = boundedInt(params.bedrooms, 0, 20);
+  const maxPrice = boundedInt(params.maxPrice, 20000, 100000000);
+  const type = (params.type || '').trim().slice(0, 60);
+  const checkIn = validDate(params.checkIn) ? params.checkIn : '';
+  const checkOut = validDate(params.checkOut) ? params.checkOut : '';
+  const datesValid = Boolean(checkIn && checkOut && checkOut > checkIn);
+
+  const supabase = getPublicSupabase();
+  let stays: PublicStayRecord[] = [];
+  let connected = false;
+  let availabilityVerified = false;
+  let availabilityMessage = '';
+
+  if (supabase) {
+    let query = supabase
+      .from('properties')
+      .select(PUBLIC_PROPERTY_SELECT)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(150);
+
+    if (type) query = query.ilike('property_type', `%${type}%`);
+    if (guests !== null) query = query.gte('capacity', guests);
+    if (bedrooms !== null) query = query.gte('bedrooms', bedrooms);
+
+    const result = await query;
+    if (!result.error) {
+      connected = true;
+      stays = ((result.data ?? []) as PublicStayRecord[]).filter(stay => {
+        if (side === 'mainland' && !isMainlandArea(stay.area || '')) return false;
+        if (side === 'island' && isMainlandArea(stay.area || '')) return false;
+        if (
+          area &&
+          !matchesLagosAreaFilter(
+            {
+              area: stay.area || '',
+              address: stay.public_address || '',
+              title: stay.title || '',
+            },
+            area,
+          )
+        ) {
+          return false;
+        }
+        if (
+          maxPrice !== null &&
+          guestFacingNightlyNgn(Number(stay.nightly_rate || 0)) > maxPrice
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      if (datesValid) {
+        const calendar = await supabase.rpc('get_unavailable_property_ids', {
+          requested_check_in: checkIn,
+          requested_check_out: checkOut,
+        });
+        if (!calendar.error) {
+          const unavailable = new Set((calendar.data ?? []) as string[]);
+          stays = stays.filter(stay => !unavailable.has(stay.id));
+          availabilityVerified = true;
+          availabilityMessage = `Showing stays without recorded calendar conflicts for ${checkIn} → ${checkOut}. Property partner confirmation is still required.`;
+        } else {
+          availabilityMessage =
+            'We could not verify calendar blocks right now. Property partners confirm every booking request directly.';
+        }
+      } else if (params.checkIn || params.checkOut) {
+        availabilityMessage =
+          'Select both check-in and check-out (with check-out after check-in) to check calendar conflicts.';
+      }
     }
-   }else if(params.checkIn||params.checkOut){
-    availabilityMessage='Choose a valid check-in and check-out date to check calendar conflicts.';
-   }
   }
- }
- return <main style={{minHeight:'100vh',background:'var(--paper)'}}>
-  <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between'}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/" className="secondary-button" style={{minHeight:42}}>Home</Link></div></header>
-  <section className="shell" style={{paddingBlock:'30px 70px'}}>
-   <p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:800,fontSize:11}}>Explore Lagos</p>
-   <h1 className="serif" style={{fontSize:'clamp(34px,7vw,58px)',fontWeight:500,letterSpacing:'-.04em',margin:'8px 0 12px'}}>Find your kind of stay.</h1>
-   <p style={{color:'var(--muted)',lineHeight:1.65,maxWidth:620}}>Filter approved property listings by neighbourhood, guests, bedrooms, property type and nightly budget. Dates can be checked against recorded calendar conflicts; a property partner must still confirm your dates.</p>{availabilityMessage&&<p role="status" style={{fontSize:13,color:'var(--muted)',marginTop:10}}>{availabilityMessage}</p>}
-   <form action="/stays" method="get" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,180px),1fr))',alignItems:'end',gap:12,padding:16,background:'#fff',border:'1px solid var(--line)',borderRadius:22,marginTop:22}}>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Neighbourhood<select name="area" defaultValue={area} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Anywhere in Lagos</option>{areas.map(a=><option key={a} value={a}>{a}</option>)}</select></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Check-in<input name="checkIn" type="date" defaultValue={params.checkIn??''} className="pill" style={{width:'100%',borderRadius:12}}/></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Check-out<input name="checkOut" type="date" min={params.checkIn||undefined} defaultValue={params.checkOut??''} className="pill" style={{width:'100%',borderRadius:12}}/></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Guests<select name="guests" defaultValue={guests?.toString()||''} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Any guest count</option>{[1,2,3,4,5,6,8,10,12,15,20].map(n=><option key={n} value={n}>{n} {n===1?'guest':'guests'}</option>)}</select></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Bedrooms<select name="bedrooms" defaultValue={bedrooms?.toString()||''} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Any</option>{[0,1,2,3,4,5,6,8,10].map(n=><option key={n} value={n}>{n===0?'Studio':n+'+'}</option>)}</select></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Property type<select name="type" defaultValue={type} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Any type</option>{propertyTypes.map(t=><option key={t} value={t}>{t}</option>)}</select></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Max nightly budget (₦)<input name="maxPrice" type="number" min="20000" max="100000000" step="5000" defaultValue={maxPrice??''} placeholder="Any budget" className="pill" style={{width:'100%',borderRadius:12}}/></label>
-    <button className="primary-button" type="submit">Update search →</button>
-   </form>
-   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap',margin:'28px 0 16px'}}><h2 style={{margin:0,fontSize:17}}>{stays.length} {stays.length===1?'stay':'stays'}{area?' in '+area:' to explore'}</h2><span style={{color:'var(--muted)',fontSize:12}}>{connected?(availabilityVerified?'Calendar checked for selected dates':'Live approved listings'):'Listings connection not configured'}</span></div>
-   {stays.length>0?<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,260px),1fr))',gap:18}}>{stays.map(p=><Link key={p.id} href={'/stays/'+p.id} style={{background:'#fff',border:'1px solid var(--line)',borderRadius:20,overflow:'hidden',minWidth:0}}>
-    {p.image_urls?.[0]?<div style={{aspectRatio:'4/3',background:'#e8e4da'}}><img src={p.image_urls[0]} alt={p.title} loading="lazy" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>:<div style={{aspectRatio:'4/3',display:'grid',placeItems:'center',background:'linear-gradient(135deg,#e7dfce,#f7f3e9)',color:'#806522',fontSize:42}}>⌂</div>}
-    <div style={{padding:16}}><div style={{display:'flex',gap:8,alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:11,fontWeight:800,textTransform:'uppercase',letterSpacing:'.08em',color:'#806522'}}>{p.area||p.city||'Lagos'}</span>{p.trust_label&&<span style={{fontSize:10,color:'#236b52',fontWeight:750}}>{p.trust_label}</span>}</div><h3 style={{fontSize:18,lineHeight:1.35,margin:'9px 0'}}>{p.title}</h3><p style={{margin:'0 0 12px',fontSize:12,color:'var(--muted)'}}>{p.property_type||'Shortlet'} · {p.bedrooms??'—'} bed · {p.bathrooms??'—'} bath · up to {p.capacity??'—'} guests</p><strong>₦{Number(p.nightly_rate||0).toLocaleString('en-NG')} <span style={{fontWeight:450,fontSize:12,color:'var(--muted)'}}>/ night before applicable fees</span></strong></div>
-   </Link>)}</div>:<div style={{marginTop:14,borderRadius:20,border:'1px dashed #c8c1b1',padding:'30px 20px',textAlign:'center',background:'rgba(255,255,255,.55)'}}><div aria-hidden="true" style={{fontSize:28,marginBottom:8}}>⌂</div><h2 className="serif" style={{fontSize:25,fontWeight:500,margin:'0 0 8px'}}>{connected?'No approved stays match this search yet':'Live listings need configuration'}</h2><p style={{maxWidth:520,margin:'0 auto 18px',color:'var(--muted)',fontSize:14,lineHeight:1.7}}>{connected?'Try adjusting your filters or clear the search. Only approved property records are shown.':'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in the Next.js environment to read approved properties. No sample listings are shown.'}</p><Link href="/stays" className="secondary-button">Clear search</Link></div>}
-  </section>
- </main>;
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="flex-1">
+        <section className="border-b border-ink-800 bg-ink-950 py-10 text-paper sm:py-14">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <p className="eyebrow-light">Lagos shortlets · Mainland &amp; Island</p>
+            <h1 className="mt-2 font-display text-3xl font-bold leading-[1.06] text-white sm:text-5xl">
+              Explore verified{' '}
+              <span className="italic text-brass-300">shortlet stays.</span>
+            </h1>
+            <p className="mt-2.5 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+              Compare approved stays across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) in ₦, $, or £.
+            </p>
+          </div>
+        </section>
+
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+          <StaysExplorer
+            stays={stays}
+            connected={connected}
+            availabilityVerified={availabilityVerified}
+            availabilityMessage={availabilityMessage}
+            initialFilters={{
+              area,
+              checkIn,
+              checkOut,
+              guests,
+              bedrooms,
+              maxPrice,
+              type,
+            }}
+          />
+        </div>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

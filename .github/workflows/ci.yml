@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Build and test
+    name: Lint, test and build Next.js MVP
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -28,9 +28,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Run tests
+          cache: npm
+      - name: Install dependencies cleanly from lockfile
+        run: npm ci
+      - name: Run linter
+        run: npm run lint
+      - name: Run unit and PGlite database tests
         run: npm test
-      - name: Build Next.js application
+      - name: Build Next.js production application
         run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run mobile and desktop Playwright E2E suite
+        run: npm run test:e2e

@@ -1,12 +1,104 @@
-import Link from 'next/link';
-export const metadata = { title: 'FAQs', description: 'Answers about finding a shortlet, requesting a booking, payments, availability and guest support on HAMLET.REST.', alternates: { canonical: '/faqs' } };
-const faqs = [
- {q:'Is every booking instantly confirmed?',a:'No. A booking request is not the same as a confirmed stay. The property partner must confirm the requested dates and the booking status must be updated through HAMLET’s workflow.'},
- {q:'Does the calendar guarantee availability?',a:'No. HAMLET can filter recorded calendar conflicts when the availability check is working, but a partner still needs to confirm your dates.'},
- {q:'How do I understand the total price?',a:'Review the price breakdown and mandatory charges before you commit. If a refundable caution deposit applies, check its amount and return conditions separately from the accommodation price.'},
- {q:'What if a property is not as described?',a:'Use your booking reference and report the issue through your account support page. Include clear details and any evidence you can safely provide.'},
- {q:'Can I change or cancel a booking request?',a:'Options depend on the booking status and the cancellation terms shown for that stay. Open your booking account to check the actions currently available.'},
- {q:'How can I list a property?',a:'Use the partner application page. Applications and submitted listings are reviewed; submitting a listing does not make it publicly bookable.'},
- {q:'Does HAMLET verify every property document?',a:'Do not assume a document is independently verified solely because a listing is submitted or displayed. Review the listing’s stated trust information and ask for clarification before paying.'},
+import type { Metadata } from 'next';
+import { buildFaqStructuredData } from '@/lib/seo';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { FaqExplorer, type FaqEntry } from './faq-explorer';
+
+export const metadata: Metadata = {
+  title: 'Shortlet Booking FAQs',
+  description:
+    'Answers to common questions about booking shortlets in Lagos on HAMLET.REST — photos, power backup, transparent fees, check-in, payments, and support.',
+  alternates: { canonical: '/faqs' },
+};
+
+const FAQ_ITEMS: readonly FaqEntry[] = [
+  {
+    q: '1. Are the pictures on HAMLET real?',
+    a: 'Check the four verification pillars on each listing to see whether on-site physical inspection has been completed. Report any material mismatch from your booking page.',
+    category: 'trust',
+  },
+  {
+    q: '2. What happens if there is a power outage?',
+    a: 'Backup arrangements (24/7 power, inverter, or generator) are listed per property. Check the amenities section before booking.',
+    category: 'stay',
+  },
+  {
+    q: '3. How do I know if a shortlet is safe?',
+    a: 'Review the four verification pillars, house rules, and security amenities on the listing, and keep your check-in codes private.',
+    category: 'trust',
+  },
+  {
+    q: '4. Are there hidden fees?',
+    a: 'No. Every quote itemises the stay price, mandatory charges, and any separate refundable caution deposit upfront. USD/GBP quotes include a single 10% stay buffer and settle in NGN.',
+    category: 'pricing',
+  },
+  {
+    q: '5. How does check-in work?',
+    a: 'Once confirmed, check-in instructions and arrival guidance unlock inside your HAMLET account.',
+    category: 'stay',
+  },
+  {
+    q: '6. Is my booking confirmed when I send a request?',
+    a: 'No. The host confirms availability first, opening a 48-hour Paystack payment window. Confirmation happens only after server-verified payment.',
+    category: 'pricing',
+  },
+  {
+    q: '7. Can I cancel and get a refund?',
+    a: 'Requests can be cancelled free before confirmation. Confirmed bookings follow the cancellation terms shown on your reservation.',
+    category: 'pricing',
+  },
+  {
+    q: '8. What if the apartment is not as described?',
+    a: 'Report the issue immediately from My Account → Report Issue so HAMLET operations can investigate.',
+    category: 'trust',
+  },
+  {
+    q: '9. Are Wi-Fi and air conditioning included?',
+    a: 'Check each listing’s amenities strip for Wi-Fi, workspace, air conditioning, kitchen, and parking.',
+    category: 'stay',
+  },
+  {
+    q: '10. Can I book for a family or group?',
+    a: 'Yes, within the stated guest capacity. Unauthorised parties and events are prohibited.',
+    category: 'stay',
+  },
+  {
+    q: '11. Can I pay the owner directly?',
+    a: 'No. Always pay through the Paystack checkout inside your HAMLET account so your booking and deposit remain protected.',
+    category: 'pricing',
+  },
+  {
+    q: '12. How do I get help during my stay?',
+    a: 'Open My Account → Report Issue. For any physical safety emergency, contact local emergency services first.',
+    category: 'trust',
+  },
 ];
-export default function FaqsPage(){return <main style={{minHeight:'100svh',background:'var(--paper)'}}><header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="secondary-button">Explore stays</Link></div></header><section className="shell" style={{paddingBlock:'42px 70px',maxWidth:850}}><p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>Guest help</p><h1 className="serif" style={{fontSize:'clamp(38px,7vw,62px)',fontWeight:500,lineHeight:1.05,margin:'8px 0 14px'}}>Frequently asked questions.</h1><p style={{color:'var(--muted)',lineHeight:1.75,maxWidth:680}}>Clear answers about how booking requests, availability and guest support work on HAMLET.</p><div style={{display:'grid',gap:12,marginTop:26}}>{faqs.map(item=><details key={item.q} style={{background:'#fff',border:'1px solid var(--line)',borderRadius:16,padding:'18px 20px'}}><summary style={{cursor:'pointer',fontWeight:800,lineHeight:1.5}}>{item.q}</summary><p style={{color:'var(--muted)',lineHeight:1.8,fontSize:14,margin:'12px 0 0'}}>{item.a}</p></details>)}</div><p style={{marginTop:24,color:'var(--muted)',lineHeight:1.7}}>Still need help? <Link href="/account/issues" style={{textDecoration:'underline'}}>Report an issue</Link> if you have a booking, or read <Link href="/safety" style={{textDecoration:'underline'}}>our safety guidance</Link>.</p></section></main>}
+
+export default function FaqsPage() {
+  const faqSchema = buildFaqStructuredData([...FAQ_ITEMS]);
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <main className="flex-1">
+        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+          <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+            <p className="eyebrow-light">Shortlet FAQs</p>
+            <h1 className="mt-2.5 font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+              Straight <span className="italic text-brass-300">answers.</span>
+            </h1>
+          </div>
+        </section>
+
+        <FaqExplorer items={FAQ_ITEMS} />
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
+}

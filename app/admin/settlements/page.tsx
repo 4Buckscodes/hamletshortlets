@@ -1,109 +1,427 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import AdminNav from "../admin-nav";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { getBrowserSupabase } from '@/lib/next-supabase';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  FocusedDrawer,
+  FormField,
+  FIELD_INPUT_CLASS,
+} from '@/components/forms/ProgressiveFormPrimitives';
+import { AdminNav } from '../admin-nav';
 
-type LedgerRow = {
-  id: string; booking_id: string; record_type: string; amount: number; provider_reference: string | null;
-  status: string; payout_status: string; beneficiary_user_id: string | null; created_at: string;
-  bookings?: { reference?: string } | null;
+type LedgerEntry = {
+  id: string;
+  booking_id: string;
+  booking_reference: string;
+  entry_type: string;
+  amount: number;
+  status: string;
+  payout_status: string | null;
+  provider_reference: string | null;
+  description: string | null;
+  created_at: string;
 };
-const payoutStates = ["pending", "approved", "paid", "reversed", "withheld"];
-const payoutLabels: Record<string, string> = { not_applicable: "Not a payout", not_ready: "Not ready", pending: "Pending", approved: "Approved", paid: "Paid", settled: "Settled", reversed: "Reversed", withheld: "Withheld" };
-const money = (amount: number) => "₦" + Number(amount || 0).toLocaleString("en-NG");
+
+type CautionRow = {
+  id: string;
+  booking_id: string;
+  booking_reference: string;
+  deposit_amount_ngn: number;
+  deducted_amount_ngn: number;
+  refunded_amount_ngn: number;
+  status: string;
+  inspection_note: string | null;
+};
 
 export default function AdminSettlementsPage() {
-  const db = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    return url && key ? createClient(url, key) : null;
-  }, []);
-  const [rows, setRows] = useState<LedgerRow[]>([]);
-  const [states, setStates] = useState<Record<string, string>>({});
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const [filter, setFilter] = useState("all");
+  const db = useMemo(() => getBrowserSupabase(), []);
+  const [allowed, setAllowed] = useState(false);
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
+  const [cautions, setCautions] = useState<CautionRow[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<LedgerEntry | null>(null);
+  const [nextPayoutStatus, setNextPayoutStatus] = useState('approved');
+  const [payoutNote, setPayoutNote] = useState('');
+
+  const [selectedCaution, setSelectedCaution] = useState<CautionRow | null>(null);
+  const [cautionStatus, setCautionStatus] = useState('released');
+  const [deductedNgn, setDeductedNgn] = useState(0);
+  const [inspectionNote, setInspectionNote] = useState('');
+
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
-    if (!db) { setError("Settlement tools are not configured on this deployment."); setLoading(false); return; }
-    const { data: auth } = await db.auth.getSession();
-    if (!auth.session) { window.location.assign("/signin?next=/admin/settlements"); return; }
-    const { data: profile, error: profileError } = await db.from("profiles").select("role").eq("id", auth.session.user.id).maybeSingle();
-    if (profileError || profile?.role !== "admin") { setError("Administrator access is required."); setLoading(false); return; }
-    const { data, error: queryError } = await db.from("booking_payment_records")
-      .select("id,booking_id,record_type,amount,provider_reference,status,payout_status,beneficiary_user_id,created_at,bookings(reference)")
-      .order("created_at", { ascending: false }).limit(250);
-    if (queryError) setError("Could not load the settlement ledger. Check database access and refresh.");
-    else {
-      const list = (data || []) as unknown as LedgerRow[];
-      setRows(list);
-      setStates(Object.fromEntries(list.map((row) => [row.id, row.payout_status])));
-      setError("");
+    if (!db) {
+      setError('Admin ledger is not configured.');
+      setLoading(false);
+      return;
+    }
+    const { data: session } = await db.auth.getSession();
+    const user = session.session?.user;
+    if (!user) {
+      window.location.assign('/signin?next=/admin/settlements');
+      return;
+    }
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.role !== 'admin') {
+      setAllowed(false);
+      setLoading(false);
+      return;
+    }
+    setAllowed(true);
+
+    const [ledgerRes, cautionRes] = await Promise.all([
+      db
+        .from('booking_payment_records')
+        .select(
+          'id,booking_id,booking_reference,entry_type,amount,status,payout_status,provider_reference,description,created_at',
+        )
+        .order('created_at', { ascending: false })
+        .limit(100),
+      db
+        .from('booking_caution_deposits')
+        .select(
+          'id,booking_id,booking_reference,deposit_amount_ngn,deducted_amount_ngn,refunded_amount_ngn,status,inspection_note',
+        )
+        .order('created_at', { ascending: false })
+        .limit(50),
+    ]);
+
+    if (!ledgerRes.error) {
+      setEntries((ledgerRes.data || []) as LedgerEntry[]);
+    }
+    if (!cautionRes.error) {
+      setCautions((cautionRes.data || []) as CautionRow[]);
     }
     setLoading(false);
   }, [db]);
 
-  // The async loader synchronizes UI state with Supabase; the updates occur after awaited I/O.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
-  async function save(row: LedgerRow) {
-    if (!db) return;
-    const next = states[row.id];
-    if (!payoutStates.includes(next)) { setError("Choose a valid payout status."); return; }
-    const note = (notes[row.id] || "").trim();
-    if (["paid", "withheld", "reversed"].includes(next) && note.length < 8) {
-      setError("Add a note of at least 8 characters for paid, withheld, or reversed payouts."); return;
+  async function savePayoutStatus(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !selectedEntry) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcError } = await db.rpc('update_payout_status', {
+        target_entry_id: selectedEntry.id,
+        next_payout_status: nextPayoutStatus,
+        payout_note: payoutNote.trim() || null,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(
+        `Updated ledger reconciliation status to ${nextPayoutStatus} (administrative ledger record only).`,
+      );
+      setSelectedEntry(null);
+      setPayoutNote('');
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : 'Could not update payout status.',
+      );
+    } finally {
+      setBusy(false);
     }
-    setBusy(row.id); setError(""); setNotice("");
-    const { error: rpcError } = await db.rpc("update_payout_status", {
-      target_entry_id: row.id, next_payout_status: next, payout_note: note || null,
-    });
-    if (rpcError) setError("The payout update was rejected. Confirm the entry is eligible and your admin account is active.");
-    else { setNotice("Saved payout status for " + (row.bookings?.reference || row.booking_id) + "."); await load(); }
-    setBusy("");
   }
 
-  const filtered = rows.filter((row) => filter === "all" || row.payout_status === filter || row.record_type === filter);
-  const payoutRows = filtered.filter((row) => row.payout_status !== "not_applicable");
-  const outstanding = rows.filter((row) => ["pending", "approved"].includes(row.payout_status)).reduce((sum, row) => sum + Number(row.amount || 0), 0);
-  return <main style={{ minHeight: "100svh", background: "var(--paper)" }}>
-    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><AdminNav current="settlements" /></div></header>
-    <section className="shell" style={{ paddingBlock: 34, maxWidth: 1100 }}>
-      <p style={{ color: "#806522", textTransform: "uppercase", letterSpacing: ".12em", fontSize: 11, fontWeight: 800 }}>Finance operations</p>
-      <h1 className="serif" style={{ fontSize: "clamp(34px,6vw,52px)", fontWeight: 500, margin: "8px 0 12px" }}>Settlement ledger</h1>
-      <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>Review recorded payment allocations and manage partner payout states. This screen does not initiate transfers or mark a guest payment as received; payment confirmation remains the responsibility of the verified provider webhook.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12, marginTop: 22 }}>
-        <div style={{ padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 16 }}><p style={{ color: "var(--muted)", margin: 0, fontSize: 12 }}>Ledger entries loaded</p><strong style={{ display: "block", fontSize: 28, marginTop: 6 }}>{rows.length}</strong></div>
-        <div style={{ padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 16 }}><p style={{ color: "var(--muted)", margin: 0, fontSize: 12 }}>Pending / approved allocation total</p><strong style={{ display: "block", fontSize: 25, marginTop: 6 }}>{money(outstanding)}</strong><span style={{ fontSize: 11, color: "var(--muted)" }}>Indicative ledger total, not a bank balance</span></div>
-      </div>
-      {error && <p role="alert" style={{ color: "#9c2f25" }}>{error}</p>}
-      {notice && <p role="status" style={{ color: "#24552b" }}>{notice}</p>}
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 22 }}>
-        <label style={{ fontSize: 13, fontWeight: 700 }}>Filter entries{" "}<select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ marginLeft: 8, padding: 10, border: "1px solid var(--line)", borderRadius: 10, background: "#fff" }}>
-          <option value="all">All types and statuses</option>{payoutStates.map((s) => <option key={s} value={s}>{payoutLabels[s]}</option>)}<option value="guest_charge">Guest charges</option><option value="partner_commission">Partner commissions</option><option value="closing_agent_commission">Closing agent commissions</option><option value="referral_reward">Referral rewards</option><option value="refund">Refund records</option><option value="caution_refund">Caution refunds</option>
-        </select></label><span style={{ color: "var(--muted)", fontSize: 12 }}>{payoutRows.length} payout/allocation records in current view</span>
-      </div>
-      {loading ? <p>Loading settlement ledger…</p> : filtered.length ? <div style={{ display: "grid", gap: 12, marginTop: 16 }}>{filtered.map((row) => <article key={row.id} style={{ padding: 18, border: "1px solid var(--line)", borderRadius: 16, background: "#fff" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div><p style={{ margin: 0, color: "#806522", fontSize: 11, fontWeight: 800 }}>{row.bookings?.reference || row.booking_id}</p><h2 style={{ margin: "6px 0", fontSize: 17 }}>{row.record_type.replaceAll("_", " ")}</h2><p style={{ margin: 0, color: "var(--muted)", fontSize: 12 }}>{new Date(row.created_at).toLocaleString()} · {row.provider_reference ? "Provider ref: " + row.provider_reference : "No provider reference recorded"}</p></div>
-          <div style={{ textAlign: "right" }}><strong style={{ fontSize: 21 }}>{money(row.amount)}</strong><p style={{ margin: "5px 0 0", color: "var(--muted)", fontSize: 12 }}>Record status: {row.status}</p></div>
+  async function saveCautionTransition(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !selectedCaution) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const total = Number(selectedCaution.deposit_amount_ngn || 0);
+      const cleanDeduct = Math.max(0, Math.min(total, Math.round(deductedNgn)));
+      const refunded = Math.max(0, total - cleanDeduct);
+
+      const { error: rpcError } = await db.rpc('transition_caution_deposit', {
+        target_booking_id: selectedCaution.booking_id,
+        next_status: cautionStatus,
+        deducted_ngn: cleanDeduct,
+        refunded_ngn: refunded,
+        inspection_note: inspectionNote.trim() || 'Inspection recorded by operations.',
+        deduction_note:
+          cleanDeduct > 0 ? inspectionNote.trim() : null,
+        refund_ref: null,
+        evidence_items: null,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(`Caution deposit for ${selectedCaution.booking_reference} updated to ${cautionStatus}.`);
+      setSelectedCaution(null);
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Could not update caution deposit.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="shell flex-1 py-8 sm:py-12">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Ledger, Settlements & Caution Deposits</p>
+            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+              Financial reconciliation
+            </h1>
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
+              Administrative ledger statuses record reconciliation state and audit trails — they do not trigger automated bank transfers.
+            </p>
+          </div>
+          {allowed && <AdminNav current="settlements" />}
         </div>
-        {row.payout_status !== "not_applicable" && <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 12, marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-          <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>Payout state
-            <select value={states[row.id] || row.payout_status} onChange={(e) => setStates((old) => ({ ...old, [row.id]: e.target.value }))} style={{ padding: 11, border: "1px solid var(--line)", borderRadius: 10, background: "#fff" }}>{payoutStates.map((s) => <option key={s} value={s}>{payoutLabels[s]}</option>)}</select>
-          </label>
-          <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700 }}>Audit note
-            <input maxLength={500} value={notes[row.id] || ""} onChange={(e) => setNotes((old) => ({ ...old, [row.id]: e.target.value }))} placeholder="Reason or transfer reference" style={{ padding: 11, border: "1px solid var(--line)", borderRadius: 10 }} />
-          </label>
-          <div style={{ display: "flex", alignItems: "end" }}><button className="primary-button" disabled={busy === row.id || states[row.id] === row.payout_status} onClick={() => void save(row)}>{busy === row.id ? "Saving…" : "Update payout state"}</button></div>
-        </div>}
-      </article>)}</div> : <div style={{ marginTop: 20, padding: 28, border: "1px dashed #c8c1b1", borderRadius: 18, background: "#fff" }}>No ledger entries match this filter.</div>}
-    </section>
-  </main>;
+
+        {error && (
+          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800">
+            {notice}
+          </p>
+        )}
+
+        {loading ? (
+          <p className="mt-8 text-sm text-ink-600">Loading ledger…</p>
+        ) : !allowed ? (
+          <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
+        ) : (
+          <div className="mt-8 space-y-8">
+            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                Payment & payout ledger ({entries.length})
+              </h2>
+              {entries.length > 0 ? (
+                <div className="mt-4 divide-y divide-ink-100 text-xs">
+                  {entries.map(item => (
+                    <div
+                      key={item.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3.5"
+                    >
+                      <div>
+                        <strong className="font-mono text-ink-900">
+                          {item.booking_reference}
+                        </strong>{' '}
+                        · <span className="capitalize">{item.entry_type.replace(/_/g, ' ')}</span>
+                        <p className="m-0 mt-0.5 text-ink-500">
+                          {item.description || 'Ledger entry'}
+                          {item.provider_reference
+                            ? ` · Ref: ${item.provider_reference}`
+                            : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <strong className="font-mono text-sm text-ink-900">
+                          ₦{Number(item.amount || 0).toLocaleString('en-NG')}
+                        </strong>
+                        <span className="rounded-full bg-paper px-2.5 py-1 font-bold text-ink-700">
+                          {item.payout_status || item.status}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedEntry(item);
+                            setNextPayoutStatus(item.payout_status || 'approved');
+                            setPayoutNote('');
+                          }}
+                          className="secondary-button min-h-[36px] px-3 text-xs"
+                        >
+                          Reconcile
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-xs text-ink-500">
+                  No payment ledger entries recorded yet.
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                Refundable caution deposits ({cautions.length})
+              </h2>
+              {cautions.length > 0 ? (
+                <div className="mt-4 divide-y divide-ink-100 text-xs">
+                  {cautions.map(c => (
+                    <div
+                      key={c.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3.5"
+                    >
+                      <div>
+                        <strong className="font-mono text-ink-900">
+                          {c.booking_reference}
+                        </strong>{' '}
+                        · Deposit: ₦{Number(c.deposit_amount_ngn || 0).toLocaleString('en-NG')}
+                        <p className="m-0 mt-0.5 text-ink-500">
+                          Status: <strong>{c.status}</strong> · Deducted: ₦
+                          {Number(c.deducted_amount_ngn || 0).toLocaleString('en-NG')}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCaution(c);
+                          setCautionStatus('released');
+                          setDeductedNgn(Number(c.deducted_amount_ngn || 0));
+                          setInspectionNote(c.inspection_note || '');
+                        }}
+                        className="secondary-button min-h-[36px] px-3 text-xs"
+                      >
+                        Inspect / release
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-xs text-ink-500">
+                  No caution deposit records yet.
+                </p>
+              )}
+            </section>
+          </div>
+        )}
+
+        <FocusedDrawer
+          open={Boolean(selectedEntry)}
+          title="Update payout reconciliation status"
+          subtitle={selectedEntry?.booking_reference}
+          onClose={() => setSelectedEntry(null)}
+        >
+          {selectedEntry && (
+            <form onSubmit={savePayoutStatus} className="space-y-4">
+              <FormField label="Reconciliation status">
+                {fieldProps => (
+                  <select
+                    {...fieldProps}
+                    value={nextPayoutStatus}
+                    onChange={e => setNextPayoutStatus(e.target.value)}
+                    className={FIELD_INPUT_CLASS}
+                  >
+                    <option value="pending">pending</option>
+                    <option value="approved">approved (ready for bank payout)</option>
+                    <option value="paid">paid (bank transfer completed)</option>
+                    <option value="withheld">withheld (under dispute)</option>
+                    <option value="reversed">reversed</option>
+                  </select>
+                )}
+              </FormField>
+
+              <FormField label="Reconciliation note" optional>
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    rows={3}
+                    value={payoutNote}
+                    onChange={e => setPayoutNote(e.target.value)}
+                    placeholder="Bank batch ID or reconciliation note…"
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="primary-button min-h-[48px] w-full"
+              >
+                {busy ? 'Saving…' : 'Record ledger status'}
+              </button>
+            </form>
+          )}
+        </FocusedDrawer>
+
+        <FocusedDrawer
+          open={Boolean(selectedCaution)}
+          title="Caution deposit inspection"
+          subtitle={selectedCaution?.booking_reference}
+          onClose={() => setSelectedCaution(null)}
+        >
+          {selectedCaution && (
+            <form onSubmit={saveCautionTransition} className="space-y-4">
+              <FormField label="Next caution status">
+                {fieldProps => (
+                  <select
+                    {...fieldProps}
+                    value={cautionStatus}
+                    onChange={e => setCautionStatus(e.target.value)}
+                    className={FIELD_INPUT_CLASS}
+                  >
+                    <option value="inspecting">inspecting</option>
+                    <option value="released">released (full return)</option>
+                    <option value="partially_deducted">partially_deducted</option>
+                    <option value="forfeited">forfeited</option>
+                  </select>
+                )}
+              </FormField>
+
+              <FormField label="Documented deduction (NGN)">
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    type="number"
+                    min={0}
+                    max={selectedCaution.deposit_amount_ngn}
+                    value={deductedNgn}
+                    onChange={e => setDeductedNgn(Number(e.target.value))}
+                    className={FIELD_INPUT_CLASS}
+                  />
+                )}
+              </FormField>
+
+              <FormField label="Inspection / deduction note">
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    required
+                    minLength={6}
+                    rows={3}
+                    value={inspectionNote}
+                    onChange={e => setInspectionNote(e.target.value)}
+                    placeholder="Post-checkout inspection outcome…"
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="primary-button min-h-[48px] w-full"
+              >
+                {busy ? 'Saving…' : 'Save caution decision'}
+              </button>
+            </form>
+          )}
+        </FocusedDrawer>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

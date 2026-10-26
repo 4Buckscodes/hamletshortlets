@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/playfair-display';
 import './globals.css';
+import { SiteProviders } from '@/components/site/SiteShell';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
@@ -10,16 +11,42 @@ export const metadata: Metadata = {
     template: '%s | HAMLET.REST',
   },
   description:
-    'Find your next shortlet in Lagos. Explore stays, compare the details and request your booking with confidence.',
+    'Find your next shortlet in Lagos across Victoria Island, Ikoyi, Lekki, Yaba, Shomolu, Surulere and Ikeja GRA. Transparent pricing and verified booking steps.',
   applicationName: 'HAMLET.REST',
-  alternates: { canonical: '/' },
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  alternates: {
+    canonical: '/',
+    types: {
+      'text/plain': '/llms.txt',
+    },
+  },
   openGraph: {
     type: 'website',
     siteName: 'HAMLET.REST',
     locale: 'en_NG',
     title: 'HAMLET.REST — Your stay, sorted.',
-    description: 'Find your next shortlet in Lagos.',
+    description:
+      'Find your next shortlet in Lagos across Island and Mainland neighbourhoods with transparent pricing and partner-confirmed bookings.',
     url: 'https://www.hamlet.rest/',
+    images: [
+      {
+        url: '/images/lagos-hero.jpg',
+        width: 867,
+        height: 650,
+        alt: 'HAMLET.REST — Shortlet stays in Lagos',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HAMLET.REST — Your stay, sorted.',
+    description: 'Find your next shortlet in Lagos. Transparent pricing and accountable stays.',
+    images: ['/images/lagos-hero.jpg'],
   },
   robots: { index: true, follow: true },
 };
@@ -30,10 +57,14 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-NG">
-      <body>{children}</body>
+      <body>
+        <SiteProviders>{children}</SiteProviders>
+      </body>
     </html>
   );
 }

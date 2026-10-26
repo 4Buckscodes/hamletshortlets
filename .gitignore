@@ -10,6 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.next
+out
+playwright-report
+test-results
+*.tsbuildinfo
 *.local
 .env
 .env.*

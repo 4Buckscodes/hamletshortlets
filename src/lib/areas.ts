@@ -84,6 +84,15 @@ const AREA_SYNONYMS: Record<string, readonly string[]> = {
   ikeja: ['ikeja', 'ikeja gra', 'opebi', 'allen', 'adeniyi jones'],
 };
 
+export function isMainlandArea(area: string): boolean {
+  const areaNorm = area.trim().toLowerCase();
+  if (!areaNorm) return false;
+  if (MAINLAND_AREAS.some(a => a.toLowerCase() === areaNorm)) {
+    return true;
+  }
+  return MAINLAND_ENVIRONS_KEYWORDS.some(keyword => areaNorm.includes(keyword));
+}
+
 export function isMainlandProperty(property: Pick<Property, 'area' | 'address' | 'title'>): boolean {
   const areaNorm = property.area.trim().toLowerCase();
   if (MAINLAND_AREAS.some(a => a.toLowerCase() === areaNorm)) {

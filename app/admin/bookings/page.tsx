@@ -1,36 +1,328 @@
 'use client';
 
-import Link from 'next/link';
-import AdminNav from '../admin-nav';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  getBrowserSupabase,
+  triggerBookingNotificationDispatchBestEffort,
+} from '@/lib/next-supabase';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  FocusedDrawer,
+  FormField,
+  FIELD_INPUT_CLASS,
+} from '@/components/forms/ProgressiveFormPrimitives';
+import { AdminNav } from '../admin-nav';
 
-type Booking = {
- id:string; reference:string; property_id:string; guest_id:string; check_in:string; check_out:string; payment_deadline?:string|null;
- guest_count:number; guest_total:number; refundable_deposit:number; status:string; created_at:string;
- properties?:{title?:string;area?:string}|null;
+type AdminBooking = {
+  id: string;
+  reference: string;
+  property_id: string;
+  check_in: string;
+  check_out: string;
+  guest_count: number;
+  accommodation_subtotal: number;
+  guest_total: number;
+  refundable_deposit: number;
+  status: string;
+  payment_reference: string | null;
+  properties?: { title?: string; area?: string } | null;
+  profiles?: { full_name?: string; phone?: string } | null;
 };
-const statuses=['requested','checking','awaiting_payment','confirmed','completed','cancelled','expired','disputed','declined','no_show'];
-const allowedNext=(b:Booking,now=Date.now()):string[]=>{switch(b.status){case'requested':return['checking','awaiting_payment','declined','cancelled'];case'checking':return['awaiting_payment','declined','cancelled'];case'awaiting_payment':return[...(b.payment_deadline&&new Date(b.payment_deadline).getTime()<=now?['expired']:[]),'cancelled'];case'confirmed':return['completed','no_show','disputed','cancelled'];case'completed':return['disputed'];case'disputed':return['cancelled'];default:return[];}};
-const labels:Record<string,string>={requested:'New request',checking:'Checking availability',awaiting_payment:'Awaiting payment',confirmed:'Confirmed',completed:'Completed',cancelled:'Cancelled',expired:'Expired',refunded:'Refunded',disputed:'Under review',declined:'Declined',no_show:'No-show'};
-const money=(n:number)=>'₦'+Number(n||0).toLocaleString('en-NG');
-export default function AdminBookingsPage(){
- const db=useMemo(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.VITE_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.VITE_SUPABASE_PUBLISHABLE_KEY;return url&&key?createClient(url,key):null;},[]);
- const [items,setItems]=useState<Booking[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [notice,setNotice]=useState('');const [filter,setFilter]=useState('all');const [notes,setNotes]=useState<Record<string,string>>({});const [next,setNext]=useState<Record<string,string>>({});const [busy,setBusy]=useState('');
- const load=useCallback(async()=>{if(!db){setError('Admin booking operations are not configured.');setLoading(false);return;}const {data:auth}=await db.auth.getSession();if(!auth.session){window.location.assign('/signin?next=/admin/bookings');return;}const {data:profile,error:pe}=await db.from('profiles').select('role').eq('id',auth.session.user.id).maybeSingle();if(pe||profile?.role!=='admin'){setError('Administrator access is required.');setLoading(false);return;}const {data,error:qe}=await db.from('bookings').select('id,reference,property_id,guest_id,check_in,check_out,payment_deadline,guest_count,guest_total,refundable_deposit,status,created_at,properties(title,area)').order('created_at',{ascending:false}).limit(250);if(qe)setError('Could not load bookings. Check administrator access and try again.');else{const rows=(data||[]) as unknown as Booking[];setItems(rows);setNext(Object.fromEntries(rows.map(b=>[b.id,b.status])));setError('');}setLoading(false);},[db]);
- // Async loader syncs the page with database state.
- // eslint-disable-next-line react-hooks/set-state-in-effect
- useEffect(()=>{void load();},[load]);
- async function transition(b:Booking){if(!db)return;const target=next[b.id]||b.status;if(target===b.status){setError('Choose a different status first.');return;}const note=(notes[b.id]||'').trim();if(!allowedNext(b).includes(target)){setError('That transition is not available for the booking’s current status.');return;}if(['cancelled','declined','disputed','no_show'].includes(target)&&note.length<8){setError('Add a reason of at least 8 characters for this status change.');return;}setBusy(b.id);setError('');setNotice('');try{const {error:rpcError}=await db.rpc('transition_booking',{target_booking_id:b.id,next_status:target,transition_note:note||null});if(rpcError)throw new Error(rpcError.message);setNotice('Booking '+b.reference+' updated. The booking workflow recorded the status change.');await load();}catch(e){setError(e instanceof Error?e.message:'Could not update booking.');}finally{setBusy('');}}
- const visible=filter==='all'?items:items.filter(b=>b.status===filter);
- return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
- <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><AdminNav current="bookings" /></div></header>
- <section className="shell" style={{maxWidth:1100,paddingBlock:34}}><p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontSize:11,fontWeight:800}}>Operations</p><h1 className="serif" style={{fontSize:'clamp(34px,6vw,52px)',fontWeight:500,margin:'8px 0 12px'}}>Booking operations</h1><p style={{color:'var(--muted)',lineHeight:1.7,maxWidth:760}}>Review booking status and record exceptional operations decisions. This console does not take payments or execute refunds; payment confirmation must come through the trusted provider workflow.</p>
- <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBlock:20}}><label style={{fontSize:13,fontWeight:750}}>Filter <select value={filter} onChange={e=>setFilter(e.target.value)} style={{marginLeft:8,minHeight:40,border:'1px solid var(--line)',borderRadius:9,padding:'8px 10px',background:'#fff'}}><option value="all">All statuses ({items.length})</option>{statuses.map(s=><option key={s} value={s}>{labels[s]||s} ({items.filter(b=>b.status===s).length})</option>)}</select></label><button type="button" className="secondary-button" onClick={()=>void load()}>Refresh</button></div>
- {error&&<p role="alert" style={{padding:12,borderRadius:10,background:'#fff0ee',color:'#9f2d20'}}>{error}</p>}{notice&&<p role="status" style={{padding:12,borderRadius:10,background:'#edf7ef',color:'#236238'}}>{notice}</p>}
- {loading?<p role="status">Loading booking records…</p>:visible.length===0?<div style={{padding:28,background:'#fff',borderRadius:18,textAlign:'center'}}><h2 className="serif" style={{fontWeight:500}}>No bookings in this view</h2><p style={{color:'var(--muted)'}}>Try another status filter.</p></div>:<div style={{display:'grid',gap:14,marginTop:18}}>{visible.map(b=><article key={b.id} style={{padding:20,border:'1px solid var(--line)',borderRadius:18,background:'#fff'}}><div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><div><p style={{margin:0,color:'#806522',fontSize:11,fontWeight:800}}>{b.reference}</p><h2 style={{fontSize:19,margin:'6px 0'}}>{b.properties?.title||'HAMLET stay'}</h2><p style={{margin:0,color:'var(--muted)',fontSize:13}}>{b.properties?.area||'Nigeria'} · {b.check_in} → {b.check_out} · {b.guest_count} guest(s)</p></div><span style={{alignSelf:'start',background:'#f1eee7',borderRadius:999,padding:'7px 10px',fontSize:12,fontWeight:750}}>{labels[b.status]||b.status}</span></div>
- <div style={{display:'flex',gap:18,flexWrap:'wrap',marginTop:14,fontSize:13}}><span>Guest total <strong>{money(b.guest_total)}</strong></span>{Number(b.refundable_deposit)>0&&<span>Refundable deposit <strong>{money(b.refundable_deposit)}</strong></span>}<span style={{color:'var(--muted)'}}>Created {new Date(b.created_at).toLocaleString()}</span></div>
- <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',gap:10,marginTop:16}}><label style={{display:'grid',gap:5,fontSize:12,fontWeight:750}}>Next status<select value={next[b.id]||b.status} onChange={e=>setNext(v=>({...v,[b.id]:e.target.value}))} style={{minHeight:42,border:'1px solid var(--line)',borderRadius:9,padding:9,background:'#fff'}}><option value={b.status}>{labels[b.status]||b.status} (current)</option>{allowedNext(b).map(s=><option key={s} value={s}>{labels[s]||s}</option>)}</select></label><label style={{display:'grid',gap:5,fontSize:12,fontWeight:750}}>Decision note<input value={notes[b.id]||''} onChange={e=>setNotes(v=>({...v,[b.id]:e.target.value}))} maxLength={500} placeholder="Reason for an exceptional status change" style={{minHeight:42,border:'1px solid var(--line)',borderRadius:9,padding:9}}/></label></div>
- <p style={{fontSize:12,color:'var(--muted)',lineHeight:1.6,margin:'10px 0'}}>Status changes are validated by the database workflow. Never use this control to claim a payment has been received.</p><button type="button" className="primary-button" disabled={busy===b.id||((next[b.id]||b.status)===b.status)} onClick={()=>void transition(b)} style={{marginTop:2}}>{busy===b.id?'Saving…':'Save status change'}</button></article>)}</div>}
- </section></main>;
+
+export default function AdminBookingsPage() {
+  const db = useMemo(() => getBrowserSupabase(), []);
+  const [allowed, setAllowed] = useState(false);
+  const [items, setItems] = useState<AdminBooking[]>([]);
+  const [selected, setSelected] = useState<AdminBooking | null>(null);
+  const [mode, setMode] = useState<'transition' | 'refund'>('transition');
+  const [nextStatus, setNextStatus] = useState('checking');
+  const [note, setNote] = useState('');
+  const [refundAmount, setRefundAmount] = useState(0);
+  const [refundRef, setRefundRef] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const load = useCallback(async () => {
+    if (!db) {
+      setError('Admin bookings are not configured.');
+      setLoading(false);
+      return;
+    }
+    const { data: session } = await db.auth.getSession();
+    const user = session.session?.user;
+    if (!user) {
+      window.location.assign('/signin?next=/admin/bookings');
+      return;
+    }
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.role !== 'admin') {
+      setAllowed(false);
+      setLoading(false);
+      return;
+    }
+    setAllowed(true);
+
+    const { data, error: queryError } = await db
+      .from('bookings')
+      .select(
+        'id,reference,property_id,check_in,check_out,guest_count,accommodation_subtotal,guest_total,refundable_deposit,status,payment_reference,properties(title,area),profiles!bookings_guest_id_fkey(full_name,phone)',
+      )
+      .order('created_at', { ascending: false });
+
+    if (queryError) {
+      setError('Could not load bookings.');
+    } else {
+      setItems((data || []) as unknown as AdminBooking[]);
+    }
+    setLoading(false);
+  }, [db]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
+
+  async function handleAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !selected) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      if (mode === 'refund') {
+        if (refundAmount <= 0 || note.trim().length < 6) {
+          throw new Error(
+            'Enter a positive NGN refund amount and reconciliation note.',
+          );
+        }
+        const { error: rpcError } = await db.rpc('record_booking_refund', {
+          target_booking_id: selected.id,
+          refund_amount_naira: Math.round(refundAmount),
+          provider_ref: refundRef.trim() || null,
+          refund_note: note.trim(),
+        });
+        if (rpcError) throw new Error(rpcError.message);
+        setNotice(
+          `Recorded ledger refund entry for ${selected.reference}. Remember: execute the external bank/Paystack reversal separately if not already processed.`,
+        );
+      } else {
+        const { error: rpcError } = await db.rpc('transition_booking', {
+          target_booking_id: selected.id,
+          next_status: nextStatus,
+          transition_note: note.trim() || `Transitioned to ${nextStatus} by admin.`,
+        });
+        if (rpcError) throw new Error(rpcError.message);
+        void triggerBookingNotificationDispatchBestEffort(db, selected.id);
+        setNotice(`Booking ${selected.reference} moved to ${nextStatus}.`);
+      }
+      setSelected(null);
+      setNote('');
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Action failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="shell flex-1 py-8 sm:py-12">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Booking & Hold Oversight</p>
+            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+              All bookings
+            </h1>
+          </div>
+          {allowed && <AdminNav current="bookings" />}
+        </div>
+
+        {error && (
+          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800">
+            {notice}
+          </p>
+        )}
+
+        {loading ? (
+          <p className="mt-8 text-sm text-ink-600">Loading bookings…</p>
+        ) : !allowed ? (
+          <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
+        ) : items.length > 0 ? (
+          <div className="mt-6 space-y-3.5">
+            {items.map(b => (
+              <article
+                key={b.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-100 bg-white p-5"
+              >
+                <div>
+                  <span className="font-mono text-xs font-extrabold text-brass-700">
+                    {b.reference}
+                  </span>{' '}
+                  · <strong className="text-sm text-ink-900">{b.properties?.title || 'Stay'}</strong>
+                  <p className="m-0 mt-1 text-xs text-ink-500">
+                    Guest: {b.profiles?.full_name || 'Guest'} · {b.check_in} → {b.check_out} · Stay total: ₦
+                    {Number(b.guest_total || 0).toLocaleString('en-NG')}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
+                    {b.status}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(b);
+                      setMode('transition');
+                      setNextStatus('checking');
+                      setRefundAmount(Number(b.guest_total || 0));
+                      setNote('');
+                    }}
+                    className="secondary-button min-h-[40px]"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center text-sm text-ink-500">
+            No bookings recorded yet.
+          </div>
+        )}
+
+        <FocusedDrawer
+          open={Boolean(selected)}
+          title={selected?.reference || 'Manage booking'}
+          subtitle={
+            selected
+              ? `${selected.profiles?.full_name || 'Guest'} · Current: ${selected.status}`
+              : undefined
+          }
+          onClose={() => setSelected(null)}
+        >
+          {selected && (
+            <form onSubmit={handleAction} className="space-y-4">
+              <div className="flex gap-1.5 rounded-full bg-paper p-1">
+                <button
+                  type="button"
+                  onClick={() => setMode('transition')}
+                  className={`min-h-[40px] flex-1 cursor-pointer rounded-full text-xs font-bold ${
+                    mode === 'transition' ? 'bg-white text-ink-900 shadow-xs' : 'text-ink-600'
+                  }`}
+                >
+                  Status transition
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('refund')}
+                  className={`min-h-[40px] flex-1 cursor-pointer rounded-full text-xs font-bold ${
+                    mode === 'refund' ? 'bg-white text-ink-900 shadow-xs' : 'text-ink-600'
+                  }`}
+                >
+                  Record ledger refund
+                </button>
+              </div>
+
+              {mode === 'transition' ? (
+                <FormField
+                  label="Next booking status"
+                  hint="Confirmed status is normally set by verified Paystack webhook."
+                >
+                  {fieldProps => (
+                    <select
+                      {...fieldProps}
+                      value={nextStatus}
+                      onChange={e => setNextStatus(e.target.value)}
+                      className={FIELD_INPUT_CLASS}
+                    >
+                      <option value="checking">checking</option>
+                      <option value="awaiting_payment">awaiting_payment (48h hold)</option>
+                      <option value="completed">completed</option>
+                      <option value="disputed">disputed</option>
+                      <option value="cancelled">cancelled</option>
+                      <option value="declined">declined</option>
+                      <option value="no_show">no_show</option>
+                    </select>
+                  )}
+                </FormField>
+              ) : (
+                <>
+                  <p className="m-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                    <strong>Reconciliation notice:</strong> Recording a refund updates HAMLET’s internal ledger and reverses un-disbursed commission rows. Execute actual Paystack/bank money movement separately.
+                  </p>
+                  <FormField label="Refund amount (NGN)">
+                    {fieldProps => (
+                      <input
+                        {...fieldProps}
+                        required
+                        type="number"
+                        min={1}
+                        value={refundAmount}
+                        onChange={e => setRefundAmount(Number(e.target.value))}
+                        className={FIELD_INPUT_CLASS}
+                      />
+                    )}
+                  </FormField>
+                  <FormField label="Paystack / bank refund reference" optional>
+                    {fieldProps => (
+                      <input
+                        {...fieldProps}
+                        value={refundRef}
+                        onChange={e => setRefundRef(e.target.value)}
+                        placeholder="Optional external refund reference"
+                        className={FIELD_INPUT_CLASS}
+                      />
+                    )}
+                  </FormField>
+                </>
+              )}
+
+              <FormField label="Audit note">
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    required
+                    minLength={4}
+                    rows={3}
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                    placeholder="Reason recorded in admin_audit_log…"
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="primary-button min-h-[48px] w-full"
+              >
+                {busy ? 'Recording…' : 'Confirm audited action'}
+              </button>
+            </form>
+          )}
+        </FocusedDrawer>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

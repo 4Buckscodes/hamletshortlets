@@ -1,21 +1,258 @@
 'use client';
 
-import Link from 'next/link';
-import AdminNav from '../admin-nav';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-type Application={id:string;applicant_id:string;full_name:string;email:string;phone:string;company:string;role:string;areas:string[];properties_count:number;motivation:string;status:string;review_note?:string|null;submitted_at:string};
-const field:React.CSSProperties={width:'100%',minHeight:44,border:'1px solid var(--line)',borderRadius:10,padding:'10px 12px',background:'#fff',color:'var(--navy)'};
-export default function AdminPartnerApplicationsPage(){
- const db=useMemo(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.VITE_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.VITE_SUPABASE_PUBLISHABLE_KEY;return url&&key?createClient(url,key):null;},[]);
- const [items,setItems]=useState<Application[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [notice,setNotice]=useState('');const [notes,setNotes]=useState<Record<string,string>>({});const [busy,setBusy]=useState('');
- const load=useCallback(async()=>{if(!db){setError('Admin tools are not configured.');setLoading(false);return;}const {data:session}=await db.auth.getSession();if(!session.session){window.location.assign('/signin?next=/admin/partners');return;}const {data:profile,error:pe}=await db.from('profiles').select('role').eq('id',session.session.user.id).maybeSingle();if(pe||profile?.role!=='admin'){setError('Administrator access is required.');setLoading(false);return;}const {data,error:qe}=await db.from('partner_applications').select('id,applicant_id,full_name,email,phone,company,role,areas,properties_count,motivation,status,review_note,submitted_at').in('status',['pending','needs_correction']).order('submitted_at',{ascending:true}).limit(100);if(qe)setError('Could not load partner applications.');else setItems((data||[]) as Application[]);setLoading(false);},[db]);
- // eslint-disable-next-line react-hooks/set-state-in-effect
- useEffect(()=>{void load();},[load]);
- async function review(app:Application,decision:'approved'|'needs_correction'|'rejected'){setError('');setNotice('');const note=notes[app.id]?.trim()||'';if(note.length<10){setError('Add a review note of at least 10 characters for '+app.full_name+'.');return;}setBusy(app.id);try{const {data:session}=await db!.auth.getSession();const token=session.session?.access_token;if(!token)throw new Error('Your session expired. Sign in again.');const {error:rpcError}=await db!.rpc('review_partner_application',{target_application_id:app.id,next_status:decision,reviewer_note:note});if(rpcError)throw new Error(rpcError.message);setNotice(decision==='approved'?app.full_name+' approved. Their profile is now promoted to partner by the database workflow.':'Application decision saved for '+app.full_name+'.');await load();}catch(e){setError(e instanceof Error?e.message:'Review failed.');}finally{setBusy('');}}
- return <main style={{minHeight:'100svh',background:'var(--paper)'}}><header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between'}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><AdminNav current="partners" /></div></header>
- <section className="shell" style={{maxWidth:1000,paddingBlock:34}}><p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontSize:11,fontWeight:800}}>Operations</p><h1 className="serif" style={{fontSize:'clamp(34px,6vw,52px)',fontWeight:500,margin:'8px 0 12px'}}>Partner applications</h1><p style={{color:'var(--muted)',lineHeight:1.7}}>Review owners, property managers, operators, co-hosts, closing agents and referral partners. Approving an application activates partner permissions through the existing database workflow.</p>
- {error&&<p role="alert" style={{padding:12,borderRadius:10,background:'#fff0ee',color:'#9f2d20'}}>{error}</p>}{notice&&<p role="status" style={{padding:12,borderRadius:10,background:'#edf7ef',color:'#236238'}}>{notice}</p>}
- {loading?<p role="status">Loading applications…</p>:items.length===0?<div style={{marginTop:22,padding:28,background:'#fff',borderRadius:18,textAlign:'center'}}>No partner applications are waiting for review.</div>:<div style={{display:'grid',gap:14,marginTop:22}}>{items.map(a=><article key={a.id} style={{padding:20,border:'1px solid var(--line)',borderRadius:20,background:'#fff'}}><div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><div><p style={{margin:0,color:'#806522',fontSize:11,fontWeight:800,textTransform:'uppercase'}}>{a.status.replace('_',' ')}</p><h2 style={{margin:'6px 0',fontSize:21}}>{a.full_name}</h2><p style={{margin:0,color:'var(--muted)',fontSize:13,lineHeight:1.7}}>{a.company} · {a.role.replaceAll('_',' ')}<br/>{a.email} · {a.phone}<br/>Coverage: {a.areas.join(', ')} · Properties available: {a.properties_count}</p></div><time style={{color:'var(--muted)',fontSize:12}}>{new Date(a.submitted_at).toLocaleDateString('en-NG')}</time></div><p style={{lineHeight:1.7,whiteSpace:'pre-wrap'}}>{a.motivation}</p>{a.review_note&&<p style={{color:'#9f2d20',fontSize:12}}>Previous review note: {a.review_note}</p>}<label style={{display:'grid',gap:6,fontSize:12,fontWeight:750}}>Reviewer note (required)<textarea value={notes[a.id]||''} onChange={e=>setNotes(v=>({...v,[a.id]:e.target.value}))} minLength={10} maxLength={1000} rows={3} placeholder="Document the decision and any outstanding checks…" style={{...field,resize:'vertical'}}/></label><div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}}><button className="primary-button" disabled={busy===a.id} onClick={()=>void review(a,'approved')}>Approve partner</button><button className="secondary-button" disabled={busy===a.id} onClick={()=>void review(a,'needs_correction')}>Request corrections</button><button className="secondary-button" disabled={busy===a.id} onClick={()=>void review(a,'rejected')}>Reject</button></div></article>)}</div>}
- </section></main>;
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { getBrowserSupabase } from '@/lib/next-supabase';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  FocusedDrawer,
+  FormField,
+  FIELD_INPUT_CLASS,
+} from '@/components/forms/ProgressiveFormPrimitives';
+import { AdminNav } from '../admin-nav';
+
+type PartnerApp = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  company: string;
+  role: string;
+  areas: string[];
+  properties_count: number;
+  motivation: string;
+  referred_by_code?: string | null;
+  status: string;
+  review_note: string | null;
+  submitted_at: string;
+};
+
+export default function AdminPartnersPage() {
+  const db = useMemo(() => getBrowserSupabase(), []);
+  const [allowed, setAllowed] = useState(false);
+  const [apps, setApps] = useState<PartnerApp[]>([]);
+  const [selected, setSelected] = useState<PartnerApp | null>(null);
+  const [decision, setDecision] = useState('approved');
+  const [note, setNote] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const load = useCallback(async () => {
+    if (!db) {
+      setError('Admin partner queue is not configured.');
+      setLoading(false);
+      return;
+    }
+    const { data: session } = await db.auth.getSession();
+    const user = session.session?.user;
+    if (!user) {
+      window.location.assign('/signin?next=/admin/partners');
+      return;
+    }
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.role !== 'admin') {
+      setAllowed(false);
+      setLoading(false);
+      return;
+    }
+    setAllowed(true);
+
+    const { data, error: queryError } = await db
+      .from('partner_applications')
+      .select(
+        'id,full_name,email,phone,company,role,areas,properties_count,motivation,referred_by_code,status,review_note,submitted_at',
+      )
+      .order('submitted_at', { ascending: false });
+
+    if (queryError) {
+      setError('Could not load partner applications.');
+    } else {
+      setApps((data || []) as PartnerApp[]);
+    }
+    setLoading(false);
+  }, [db]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
+
+  async function submitDecision(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !selected) return;
+    if (note.trim().length < 10) {
+      setError('Include a reviewer note of at least 10 characters for the audit log.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcError } = await db.rpc('review_partner_application', {
+        target_application_id: selected.id,
+        next_status: decision,
+        reviewer_note: note.trim(),
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(`Application for ${selected.company} marked ${decision}.`);
+      setSelected(null);
+      setNote('');
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Review failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="shell flex-1 py-8 sm:py-12">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Partner Onboarding Review</p>
+            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+              Partner applications
+            </h1>
+          </div>
+          {allowed && <AdminNav current="partners" />}
+        </div>
+
+        {error && (
+          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800">
+            {notice}
+          </p>
+        )}
+
+        {loading ? (
+          <p className="mt-8 text-sm text-ink-600">Loading applications…</p>
+        ) : !allowed ? (
+          <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
+        ) : apps.length > 0 ? (
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {apps.map(app => (
+              <article
+                key={app.id}
+                className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-6"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                        {app.role}
+                      </span>
+                      <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
+                        {app.company}
+                      </h2>
+                    </div>
+                    <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-900">
+                      {app.status}
+                    </span>
+                  </div>
+                  <p className="m-0 mt-2 text-xs text-ink-600">
+                    {app.full_name} · {app.email} · {app.phone}
+                  </p>
+                  <p className="m-0 mt-1 text-xs text-ink-500">
+                    Areas: {(app.areas || []).join(', ')} · Units: {app.properties_count}
+                    {app.referred_by_code ? ` · Ref: ${app.referred_by_code}` : ''}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex justify-end border-t border-ink-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(app);
+                      setDecision('approved');
+                      setNote(app.review_note || '');
+                    }}
+                    className="primary-button min-h-[42px]"
+                  >
+                    Review application
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center text-sm text-ink-500">
+            No partner applications submitted yet.
+          </div>
+        )}
+
+        <FocusedDrawer
+          open={Boolean(selected)}
+          title={selected?.company || 'Review partner application'}
+          subtitle={selected ? `${selected.full_name} · ${selected.role}` : undefined}
+          onClose={() => setSelected(null)}
+        >
+          {selected && (
+            <form onSubmit={submitDecision} className="space-y-4">
+              <div className="rounded-2xl bg-paper p-4 text-xs leading-relaxed text-ink-700">
+                <p className="m-0 font-bold text-ink-900">Applicant summary</p>
+                <p className="m-0 mt-1 whitespace-pre-wrap">{selected.motivation}</p>
+              </div>
+
+              <FormField label="Decision">
+                {fieldProps => (
+                  <select
+                    {...fieldProps}
+                    value={decision}
+                    onChange={e => setDecision(e.target.value)}
+                    className={FIELD_INPUT_CLASS}
+                  >
+                    <option value="approved">Approve & grant partner access</option>
+                    <option value="needs_correction">Request correction from applicant</option>
+                    <option value="rejected">Reject application</option>
+                  </select>
+                )}
+              </FormField>
+
+              <FormField
+                label="Reviewer note"
+                optional={decision === 'approved'}
+              >
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    rows={3}
+                    maxLength={600}
+                    required={decision !== 'approved'}
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                    placeholder="Verification notes or requested corrections…"
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="primary-button min-h-[48px] w-full"
+              >
+                {busy ? 'Saving…' : 'Record partner decision'}
+              </button>
+            </form>
+          )}
+        </FocusedDrawer>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

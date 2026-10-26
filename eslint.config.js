@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '.next', 'out', 'next-env.d.ts', 'playwright-report', 'test-results']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -20,11 +20,11 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/legacy-pages/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/lib/**/*.{ts,tsx}', 'src/App.tsx'],
+    files: ['src/legacy-pages/**/*.{ts,tsx}', 'src/components/*.{ts,tsx}', 'src/lib/*.{ts,tsx}', 'src/App.tsx'],
     extends: [reactRefresh.configs.vite],
   },
   {
-    files: ['vite.config.ts', 'vitest.config.ts', 'supabase/tests/**/*.ts'],
+    files: ['vite.config.ts', 'vitest.config.ts', 'playwright.config.ts', 'supabase/tests/**/*.ts', 'e2e/**/*.ts'],
     languageOptions: {
       globals: globals.node,
     },
