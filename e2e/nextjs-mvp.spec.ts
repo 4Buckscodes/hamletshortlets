@@ -45,11 +45,11 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
     await page.goto(
       '/signin?mode=signup&next=%2Fstays%2Fsample-id%3FcheckIn%3D2026-12-01%26checkOut%3D2026-12-04%26guests%3D2%26step%3D2',
     );
-    await expect(page.getByText(/Step 1 of 2/i)).toBeVisible();
+    await expect(page.getByText(/Step 1 of 2/i).first()).toBeVisible();
     await page.getByLabel(/Email address/i).fill('guest@example.com');
     await page.getByLabel('Password', { exact: true }).fill('ValidPass123!');
     await page.getByRole('button', { name: /Continue/i }).click();
-    await expect(page.getByText(/Step 2 of 2/i)).toBeVisible();
+    await expect(page.getByText(/Step 2 of 2/i).first()).toBeVisible();
     await expect(page.getByLabel(/Full name/i)).toBeVisible();
   });
 
