@@ -18,7 +18,8 @@ export default function PartnerApplicationPage() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setMessage('');
     if (!db) { setError('Partner applications are not configured on this deployment.'); return; }
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const userResult = await db.auth.getUser();
     const user = userResult.data.user;
     if (!user) { window.location.assign('/signin?next=/partners/apply'); return; }
@@ -34,15 +35,13 @@ export default function PartnerApplicationPage() {
     }
     setBusy(true);
     try {
-      const { error: profileError } = await db.from('profiles').update({ full_name: fullName, phone, company, partner_role: role }).eq('id', user.id);
-      if (profileError) throw profileError;
       const { error: appError } = await db.from('partner_applications').insert({
         applicant_id: user.id, full_name: fullName, email: user.email || '', phone, company, role, areas,
         properties_count: count, motivation, status: 'pending',
       });
       if (appError) throw appError;
       setMessage('Your partner application has been submitted for review. Your account remains a guest account until HAMLET approves the application.');
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'We could not submit your application.'); }
     finally { setBusy(false); }
   }
