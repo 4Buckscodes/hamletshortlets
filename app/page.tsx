@@ -12,8 +12,8 @@ export default function HomePage() {
             <span style={{ fontWeight: 850, letterSpacing: '-.04em', fontSize: 20 }}>HAMLET<span style={{ color: 'var(--gold)' }}>.REST</span></span>
           </Link>
           <nav aria-label="Main navigation" style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 14, fontWeight: 650 }}>
-            <Link href="/stays" style={{ display: 'none' }} className="desktop-link">Explore stays</Link>
-            <Link href="/partners" style={{ display: 'none' }} className="desktop-link">Become a partner</Link>
+            <Link href="/stays">Explore stays</Link>
+            <Link href="/partners/apply">Become a partner</Link>
             <Link href="/signin" className="secondary-button" style={{ minHeight: 42, paddingInline: 16 }}>Sign in</Link>
           </nav>
         </div>
