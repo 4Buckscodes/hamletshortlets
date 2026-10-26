@@ -1,28 +1,39 @@
+import type { Metadata } from 'next';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import SignInForm from './signin-form';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Sign in or create an account',
-  description: 'Sign in to your HAMLET account or create an account to get started with shortlet stays.',
+  description:
+    'Sign in to your HAMLET.REST account or create a guest account in two quick steps to request shortlet stays in Lagos.',
   robots: { index: false, follow: false },
 };
 
 export default function SignInPage() {
   return (
-    <main className="shell" style={{ minHeight: '100svh', display: 'grid', alignContent: 'center', paddingBlock: 32 }}>
-      <a href="/" style={{ fontWeight: 850, fontSize: 20, marginBottom: 24, width: 'fit-content' }}>
-        HAMLET<span style={{ color: 'var(--gold)' }}>.REST</span>
-      </a>
-      <section style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 24, padding: 'clamp(22px, 5vw, 36px)', maxWidth: 480, width: '100%', boxShadow: '0 18px 55px rgba(14,31,59,.06)' }}>
-        <p style={{ color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 11, fontWeight: 800, margin: '0 0 10px' }}>Your stay, sorted.</p>
-        <h1 className="serif" style={{ fontSize: 38, fontWeight: 500, margin: '0 0 10px' }}>Welcome to HAMLET.</h1>
-        <p style={{ color: 'var(--muted)', lineHeight: 1.7, margin: '0 0 24px' }}>
-          Sign in to continue or create an account to start planning your next stay.
-        </p>
-        <SignInForm />
-      </section>
-      <p style={{ maxWidth: 480, color: 'var(--muted)', fontSize: 12, lineHeight: 1.6, marginTop: 16 }}>
-        Need partner access? Create your account first, then submit a partner application through the HAMLET workspace.
-      </p>
-    </main>
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="shell flex flex-1 items-center justify-center py-10 sm:py-16">
+        <div className="w-full max-w-md">
+          <section className="rounded-3xl border border-ink-200 bg-white p-6 shadow-md sm:p-8">
+            <p className="eyebrow">Your stay, sorted.</p>
+            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-4xl">
+              Welcome to HAMLET.
+            </h1>
+            <p className="mt-2 mb-6 text-sm leading-relaxed text-ink-500">
+              Sign in to manage bookings and workspaces, or create your account in two short steps.
+            </p>
+            <SignInForm />
+          </section>
+
+          <p className="mt-4 text-center text-xs leading-relaxed text-ink-500">
+            Applying as an owner, property manager, operator, closing agent or referrer? Create your account first, then complete the short Partner Application.
+          </p>
+        </div>
+      </main>
+
+      <SiteFooter />
+    </div>
   );
 }

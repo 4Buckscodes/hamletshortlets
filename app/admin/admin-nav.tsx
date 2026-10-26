@@ -1,17 +1,43 @@
 import Link from 'next/link';
 
-const links = [
-  { href: '/admin/properties', label: 'Properties', id: 'properties' },
+const ADMIN_LINKS = [
+  { href: '/admin', label: 'Overview', id: 'overview' },
+  { href: '/admin/properties', label: 'Property review', id: 'properties' },
+  { href: '/admin/partners', label: 'Partner queue', id: 'partners' },
   { href: '/admin/bookings', label: 'Bookings', id: 'bookings' },
-  { href: '/admin/partners', label: 'Partners', id: 'partners' },
-  { href: '/admin/accounts', label: 'Accounts', id: 'accounts' },
   { href: '/admin/issues', label: 'Issues', id: 'issues' },
-  { href: '/admin/settlements', label: 'Settlements', id: 'settlements' },
-  { href: '/admin/audit', label: 'Audit trail', id: 'audit' },
+  { href: '/admin/settlements', label: 'Ledger & caution', id: 'settlements' },
+  { href: '/admin/accounts', label: 'Accounts', id: 'accounts' },
+  { href: '/admin/audit', label: 'Audit log', id: 'audit' },
 ] as const;
 
-export default function AdminNav({ current }: { current: (typeof links)[number]['id'] }) {
-  return <nav aria-label="Admin workspace" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-    {links.map((item) => <Link key={item.id} href={item.href} aria-current={current === item.id ? 'page' : undefined} className={current === item.id ? 'primary-button' : 'secondary-button'} style={{ minHeight: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.label}</Link>)}
-  </nav>;
+export function AdminNav({
+  current,
+}: {
+  current: (typeof ADMIN_LINKS)[number]['id'];
+}) {
+  return (
+    <nav
+      aria-label="Administrator navigation"
+      className="flex flex-wrap gap-2"
+    >
+      {ADMIN_LINKS.map(item => {
+        const active = item.id === current;
+        return (
+          <Link
+            key={item.id}
+            href={item.href}
+            aria-current={active ? 'page' : undefined}
+            className={
+              active
+                ? 'primary-button min-h-[40px] px-4 text-xs'
+                : 'secondary-button min-h-[40px] px-4 text-xs'
+            }
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 }

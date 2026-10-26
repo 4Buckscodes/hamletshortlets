@@ -1,31 +1,233 @@
 'use client';
 
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import AdminNav from '../admin-nav';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { getBrowserSupabase } from '@/lib/next-supabase';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  FocusedDrawer,
+  FormField,
+  FIELD_INPUT_CLASS,
+} from '@/components/forms/ProgressiveFormPrimitives';
+import { AdminNav } from '../admin-nav';
 
-type Account = { id:string; email:string; full_name:string; phone:string; role:string; partner_role:string; company:string; account_status:string; suspension_reason:string; created_at:string };
-const inputStyle:React.CSSProperties={width:'100%',minHeight:42,border:'1px solid var(--line)',borderRadius:9,padding:'9px 10px',background:'#fff',color:'var(--navy)'};
-const labelStatus=(status:string)=>status==='suspended'?'Suspended':'Active';
+type DirectoryUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  role: string;
+  partner_role: string | null;
+  company: string | null;
+  account_status: string;
+  suspension_reason: string | null;
+  created_at: string;
+};
 
-export default function AdminAccountsPage(){
- const db=useMemo(()=>{const url=process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.VITE_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.VITE_SUPABASE_PUBLISHABLE_KEY;return url&&key?createClient(url,key):null;},[]);
- const [accounts,setAccounts]=useState<Account[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [notice,setNotice]=useState('');const [query,setQuery]=useState('');const [role,setRole]=useState('all');const [status,setStatus]=useState('all');const [notes,setNotes]=useState<Record<string,string>>({});const [busy,setBusy]=useState('');
- const load=useCallback(async()=>{if(!db){setError('Admin account tools are not configured.');setLoading(false);return;}const {data:auth}=await db.auth.getSession();if(!auth.session){window.location.assign('/signin?next=/admin/accounts');return;}const {data:profile,error:pe}=await db.from('profiles').select('role').eq('id',auth.session.user.id).maybeSingle();if(pe||profile?.role!=='admin'){setError('Administrator access is required.');setLoading(false);return;}const {data,error:qe}=await db.rpc('get_admin_directory');if(qe){setError('Could not load the account directory. Confirm the admin directory migration is deployed.');setLoading(false);return;}setAccounts((data||[]) as Account[]);setError('');setLoading(false);},[db]);
- // eslint-disable-next-line react-hooks/set-state-in-effect -- async data loading synchronizes the page with Supabase.
- useEffect(()=>{void load();},[load]);
- const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return accounts.filter(a=>(role==='all'||a.role===role)&&(status==='all'||a.account_status===status)&&(!q||[a.full_name,a.email,a.phone,a.company,a.partner_role,a.id].some(v=>String(v||'').toLowerCase().includes(q))));},[accounts,query,role,status]);
- async function changeStatus(account:Account){if(!db)return;const nextStatus=account.account_status==='suspended'?'active':'suspended';const reason=(notes[account.id]||'').trim();if(reason.length<10){setError('Enter a documented reason of at least 10 characters.');return;}if(!window.confirm(`${nextStatus==='suspended'?'Suspend':'Reinstate'} ${account.full_name||account.email||'this account'}?${account.role==='partner'&&nextStatus==='suspended'?' Approved listings assigned to this partner may also be suspended.':''}`))return;setBusy(account.id);setError('');setNotice('');try{const rpc=account.role==='guest'?'set_guest_account_status':'set_partner_account_status';const args=account.role==='guest'?{target_guest_id:account.id,next_status:nextStatus,reason_note:reason}:{target_partner_id:account.id,next_status:nextStatus,reason_note:reason,cascade_suspend_properties:true};const {error:rpcError}=await db.rpc(rpc,args);if(rpcError)throw new Error(rpcError.message);setNotice(`${account.full_name||account.email||'Account'} is now ${nextStatus}. The operation was recorded by the database workflow.`);setNotes(v=>({...v,[account.id]:''}));await load();}catch(e){setError(e instanceof Error?e.message:'Could not update account status.');}finally{setBusy('');}}
- return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
-  <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,flexWrap:'wrap'}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><AdminNav current="accounts"/></div></header>
-  <section className="shell" style={{maxWidth:1120,paddingBlock:34}}><p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontSize:11,fontWeight:800}}>Operations · Controlled access</p><h1 className="serif" style={{fontSize:'clamp(34px,6vw,52px)',fontWeight:500,margin:'8px 0 12px'}}>Account governance</h1><p style={{color:'var(--muted)',lineHeight:1.7,maxWidth:780}}>Review guest and partner accounts. Suspension and reinstatement use permission-checked database functions and require a documented reason. Suspending a partner can also suspend approved listings linked to that partner.</p>
-  {error&&<p role="alert" style={{background:'#fff0ed',color:'#8a3025',padding:12,borderRadius:10}}>{error}</p>}{notice&&<p role="status" style={{background:'#edf8f1',color:'#205c39',padding:12,borderRadius:10}}>{notice}</p>}
-  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:10,marginBlock:20}}><input aria-label="Search accounts" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search name, email, phone or ID" style={inputStyle}/><select aria-label="Filter role" value={role} onChange={e=>setRole(e.target.value)} style={inputStyle}><option value="all">All roles</option><option value="guest">Guests</option><option value="partner">Partners</option><option value="admin">Administrators (read only)</option></select><select aria-label="Filter account status" value={status} onChange={e=>setStatus(e.target.value)} style={inputStyle}><option value="all">All account statuses</option><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
-  {loading?<p>Loading account directory…</p>:filtered.length===0?<div style={{background:'#fff',border:'1px solid var(--line)',borderRadius:14,padding:24}}><h2 style={{marginTop:0}}>No matching accounts</h2><p style={{color:'var(--muted)'}}>Try another search or filter.</p></div>:<div style={{display:'grid',gap:12}}>{filtered.map(a=><article key={a.id} style={{background:'#fff',border:'1px solid var(--line)',borderRadius:14,padding:16}}><div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',alignItems:'flex-start'}}><div><h2 style={{fontSize:18,margin:'0 0 5px'}}>{a.full_name||'Unnamed account'}</h2><p style={{margin:0,color:'var(--muted)',fontSize:13}}>{a.email||'No email'}{a.phone?' · '+a.phone:''}</p><p style={{margin:'7px 0',fontSize:12}}><strong>Role:</strong> {a.role}{a.partner_role?' · '+a.partner_role:''}{a.company?' · '+a.company:''}</p><p style={{margin:0,color:'var(--muted)',fontSize:12}}>Created {new Date(a.created_at).toLocaleDateString('en-NG')} · ID {a.id}</p></div><span style={{fontSize:12,fontWeight:800,border:'1px solid var(--line)',borderRadius:999,padding:'6px 10px'}}>{labelStatus(a.account_status)}</span></div>
-  {a.suspension_reason&&<p style={{fontSize:13,color:'var(--muted)',margin:'10px 0'}}>Last suspension reason: {a.suspension_reason}</p>}
-  {(a.role==='guest'||a.role==='partner')?<div style={{display:'grid',gridTemplateColumns:'minmax(220px,1fr) auto',gap:10,marginTop:14,alignItems:'end'}}><label style={{display:'grid',gap:5,fontSize:12,fontWeight:750}}>Required reason / reinstatement note<textarea value={notes[a.id]||''} onChange={e=>setNotes(v=>({...v,[a.id]:e.target.value}))} minLength={10} maxLength={500} placeholder="At least 10 characters; this will be recorded in the audit log." style={{...inputStyle,minHeight:74,resize:'vertical'}}/></label><button type="button" className={a.account_status==='suspended'?'primary-button':'secondary-button'} disabled={busy===a.id} onClick={()=>void changeStatus(a)} style={{minHeight:44}}>{busy===a.id?'Saving…':a.account_status==='suspended'?'Reinstate account':'Suspend account'}</button></div>:<p style={{color:'var(--muted)',fontSize:12,marginBottom:0}}>Administrator accounts are visible for review but cannot be suspended here.</p>}</article>)}</div>}
-  <p style={{fontSize:12,color:'var(--muted)',marginTop:18}}>Showing {filtered.length} of {accounts.length} accounts. Status changes are performed only through database RPCs.</p>
-  </section>
- </main>;
+export default function AdminAccountsPage() {
+  const db = useMemo(() => getBrowserSupabase(), []);
+  const [allowed, setAllowed] = useState(false);
+  const [users, setUsers] = useState<DirectoryUser[]>([]);
+  const [selected, setSelected] = useState<DirectoryUser | null>(null);
+  const [reason, setReason] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const load = useCallback(async () => {
+    if (!db) {
+      setError('Admin directory is not configured.');
+      setLoading(false);
+      return;
+    }
+    const { data: session } = await db.auth.getSession();
+    const user = session.session?.user;
+    if (!user) {
+      window.location.assign('/signin?next=/admin/accounts');
+      return;
+    }
+    const { data: profile } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.role !== 'admin') {
+      setAllowed(false);
+      setLoading(false);
+      return;
+    }
+    setAllowed(true);
+
+    const { data, error: rpcError } = await db.rpc('get_admin_directory');
+    if (rpcError) {
+      setError(rpcError.message);
+    } else {
+      setUsers((data || []) as DirectoryUser[]);
+    }
+    setLoading(false);
+  }, [db]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
+
+  async function toggleSuspension(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !selected) return;
+    const nextSuspended = selected.account_status !== 'suspended';
+    const nextStatus = nextSuspended ? 'suspended' : 'active';
+    const cleanReason =
+      reason.trim() ||
+      (nextSuspended ? '' : 'Account reinstated by HAMLET operations.');
+    if (cleanReason.length < 10) {
+      setError('Provide a documented reason of at least 10 characters.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcError } =
+        selected.role === 'partner'
+          ? await db.rpc('set_partner_account_status', {
+              target_partner_id: selected.id,
+              next_status: nextStatus,
+              reason_note: cleanReason,
+              cascade_suspend_properties: true,
+            })
+          : await db.rpc('set_guest_account_status', {
+              target_guest_id: selected.id,
+              next_status: nextStatus,
+              reason_note: cleanReason,
+            });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(
+        `${selected.email} is now ${nextSuspended ? 'suspended' : 'active'}.`,
+      );
+      setSelected(null);
+      setReason('');
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : 'Account status update failed.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <main className="shell flex-1 py-8 sm:py-12">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">User & Partner Governance</p>
+            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+              Account directory
+            </h1>
+          </div>
+          {allowed && <AdminNav current="accounts" />}
+        </div>
+
+        {error && (
+          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800">
+            {notice}
+          </p>
+        )}
+
+        {loading ? (
+          <p className="mt-8 text-sm text-ink-600">Loading directory…</p>
+        ) : !allowed ? (
+          <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
+        ) : (
+          <div className="mt-6 space-y-3">
+            {users.map(u => (
+              <article
+                key={u.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ink-100 bg-white p-5"
+              >
+                <div>
+                  <strong className="text-sm text-ink-900">
+                    {u.full_name || u.email}
+                  </strong>{' '}
+                  · <span className="text-xs text-ink-500">{u.email}</span>
+                  <p className="m-0 mt-1 text-xs text-ink-500">
+                    Role: <strong className="uppercase text-ink-800">{u.role}</strong>
+                    {u.company ? ` · ${u.company}` : ''} · Status:{' '}
+                    <strong className="text-ink-900">{u.account_status}</strong>
+                  </p>
+                </div>
+
+                {u.role !== 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(u);
+                      setReason(u.suspension_reason || '');
+                    }}
+                    className="secondary-button min-h-[40px]"
+                  >
+                    {u.account_status === 'suspended' ? 'Restore account' : 'Suspend'}
+                  </button>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+
+        <FocusedDrawer
+          open={Boolean(selected)}
+          title={
+            selected?.account_status === 'suspended'
+              ? 'Restore account access'
+              : 'Suspend account'
+          }
+          subtitle={selected?.email}
+          onClose={() => setSelected(null)}
+        >
+          {selected && (
+            <form onSubmit={toggleSuspension} className="space-y-4">
+              <FormField label="Audit reason">
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    required={selected.account_status !== 'suspended'}
+                    rows={3}
+                    value={reason}
+                    onChange={e => setReason(e.target.value)}
+                    placeholder="Documented governance reason…"
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="primary-button min-h-[48px] w-full"
+              >
+                {busy
+                  ? 'Updating…'
+                  : selected.account_status === 'suspended'
+                    ? 'Confirm restore'
+                    : 'Confirm suspension'}
+              </button>
+            </form>
+          )}
+        </FocusedDrawer>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

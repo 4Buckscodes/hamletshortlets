@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { calculateGuestPricing, nightsBetween } from '@/lib/pricing';
+import {
+  calculateGuestPricing,
+  calculateInternationalStayQuote,
+  nightsBetween,
+  PRICING_RULES_VERSION,
+} from '@/lib/pricing';
+import { loadActiveExchangeRates } from '@/lib/next-supabase';
+import type { SupportedCurrency } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +17,7 @@ type RequestBody = {
   checkOut?: string;
   guests?: number;
   specialRequests?: string;
+  quoteCurrency?: string;
 };
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -21,8 +29,14 @@ function isValidDate(value: string) {
 }
 
 function lagosToday() {
-  const parts = new Intl.DateTimeFormat('en', { timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(item => item.type === type)?.value || '';
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'Africa/Lagos',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find(item => item.type === type)?.value || '';
   return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
@@ -31,8 +45,12 @@ function errorResponse(message: string, status = 400) {
 }
 
 export async function POST(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || process.env.VITE_SUPABASE_URL?.trim();
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    process.env.VITE_SUPABASE_URL?.trim();
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !key) return errorResponse('Booking is not configured yet.', 503);
 
   const authorization = request.headers.get('authorization') || '';
@@ -40,54 +58,105 @@ export async function POST(request: Request) {
   if (!token) return errorResponse('Sign in to send a booking request.', 401);
 
   let body: RequestBody;
-  try { body = await request.json() as RequestBody; }
-  catch { return errorResponse('The booking request was not valid JSON.'); }
+  try {
+    body = (await request.json()) as RequestBody;
+  } catch {
+    return errorResponse('The booking request was not valid JSON.');
+  }
 
   const propertyId = body.propertyId?.trim();
   const checkIn = body.checkIn;
   const checkOut = body.checkOut;
   const guests = Number(body.guests);
-  const specialRequests = typeof body.specialRequests === 'string' ? body.specialRequests.trim().slice(0, 1000) : '';
+  const specialRequests =
+    typeof body.specialRequests === 'string' ? body.specialRequests.trim().slice(0, 1000) : '';
+  const requestedCurrency: SupportedCurrency =
+    body.quoteCurrency === 'USD' || body.quoteCurrency === 'GBP' ? body.quoteCurrency : 'NGN';
 
   if (!propertyId || !checkIn || !checkOut || !isValidDate(checkIn) || !isValidDate(checkOut)) {
     return errorResponse('Choose a property, check-in date and check-out date.');
   }
   const today = lagosToday();
-  if (checkIn < today || checkOut <= checkIn) return errorResponse('Choose valid future dates with check-out after check-in.');
+  if (checkIn < today || checkOut <= checkIn) {
+    return errorResponse('Choose valid future dates with check-out after check-in.');
+  }
   const nights = nightsBetween(checkIn, checkOut);
-  if (!Number.isInteger(nights) || nights < 1 || nights > 60) return errorResponse('Bookings must be between 1 and 60 nights.');
-  if (!Number.isInteger(guests) || guests < 1 || guests > 20) return errorResponse('Choose between 1 and 20 guests.');
+  if (!Number.isInteger(nights) || nights < 1 || nights > 60) {
+    return errorResponse('Bookings must be between 1 and 60 nights.');
+  }
+  if (!Number.isInteger(guests) || guests < 1 || guests > 20) {
+    return errorResponse('Choose between 1 and 20 guests.');
+  }
 
   const db = createClient(url, key, {
     global: { headers: { Authorization: 'Bearer ' + token } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data: authData, error: authError } = await db.auth.getUser(token);
-  if (authError || !authData.user) return errorResponse('Your session has expired. Sign in and try again.', 401);
+  if (authError || !authData.user) {
+    return errorResponse('Your session has expired. Sign in and try again.', 401);
+  }
   const user = authData.user;
 
-  const { data: profile, error: profileError } = await db.from('profiles').select('role,account_status').eq('id', user.id).maybeSingle();
-  if (profileError || !profile) return errorResponse('We could not verify your account permissions. Complete guest account setup and try again.', 403);
-  if (profile.role !== 'guest') return errorResponse('Booking requests require a guest account.', 403);
-  if (profile.account_status && profile.account_status !== 'active') return errorResponse('Your account is currently suspended. Contact HAMLET support.', 403);
+  const { data: profile, error: profileError } = await db
+    .from('profiles')
+    .select('role,account_status')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profileError || !profile) {
+    return errorResponse(
+      'We could not verify your account permissions. Complete guest account setup and try again.',
+      403,
+    );
+  }
+  if (profile.role !== 'guest') {
+    return errorResponse('Booking requests require a guest account.', 403);
+  }
+  if (profile.account_status && profile.account_status !== 'active') {
+    return errorResponse(
+      'Your account is currently suspended. Contact HAMLET support.',
+      403,
+    );
+  }
 
   const { data: property, error: propertyError } = await db
     .from('properties')
-    .select('id,status,nightly_rate,cleaning_fee,refundable_deposit,capacity')
+    .select('id,status,nightly_rate,cleaning_fee,refundable_deposit,capacity,first_available_date')
     .eq('id', propertyId)
     .eq('status', 'approved')
     .maybeSingle();
-  if (propertyError || !property) return errorResponse('This stay is not currently available to request.', 404);
+  if (propertyError || !property) {
+    return errorResponse('This stay is not currently available to request.', 404);
+  }
   const capacity = Number(property.capacity || 0);
-  if (capacity > 0 && guests > capacity) return errorResponse('This stay does not accommodate that many guests.');
+  if (capacity > 0 && guests > capacity) {
+    return errorResponse('This stay does not accommodate that many guests.');
+  }
+  if (property.first_available_date && checkIn < String(property.first_available_date)) {
+    return errorResponse(
+      `This stay is available from ${String(property.first_available_date)} onwards.`,
+      409,
+    );
+  }
 
-  const { data: unavailable, error: availabilityError } = await db.rpc('get_unavailable_property_ids', {
-    requested_check_in: checkIn,
-    requested_check_out: checkOut,
-  });
-  if (availabilityError) return errorResponse('We could not verify the property calendar. Please try again later.', 503);
+  const { data: unavailable, error: availabilityError } = await db.rpc(
+    'get_unavailable_property_ids',
+    {
+      requested_check_in: checkIn,
+      requested_check_out: checkOut,
+    },
+  );
+  if (availabilityError) {
+    return errorResponse(
+      'We could not verify the property calendar. Please try again later.',
+      503,
+    );
+  }
   if ((unavailable as string[] | null)?.includes(propertyId)) {
-    return errorResponse('These dates are blocked or already booked for this property. Please choose different dates.', 409);
+    return errorResponse(
+      'These dates are blocked or already booked for this property. Please choose different dates.',
+      409,
+    );
   }
 
   const nightlyRate = Math.max(0, Math.round(Number(property.nightly_rate || 0)));
@@ -98,8 +167,20 @@ export async function POST(request: Request) {
     mandatoryCharges: cleaningFee > 0 ? [{ label: 'Cleaning fee', amount: cleaningFee }] : [],
     refundableDeposit: deposit,
   });
-  const reference = 'HML-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
-  const { data: booking, error: insertError } = await db.from('bookings').insert({
+
+  const activeRates = await loadActiveExchangeRates(db);
+  const matchingRate = activeRates.find(r => r.currency === requestedCurrency) ?? null;
+  const fxQuote = calculateInternationalStayQuote({
+    domesticGuestAmountNgn: pricing.guestTotal,
+    refundableDepositNgn: pricing.refundableDeposit,
+    currency: requestedCurrency,
+    rateConfig: matchingRate,
+  });
+
+  const reference =
+    'HML-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
+
+  const fullInsertPayload = {
     reference,
     property_id: propertyId,
     guest_id: user.id,
@@ -114,24 +195,76 @@ export async function POST(request: Request) {
     refundable_deposit: pricing.refundableDeposit,
     status: 'requested',
     special_requests: specialRequests || null,
-  }).select('id,reference,status,guest_total,refundable_deposit').single();
+    pricing_rules_version: PRICING_RULES_VERSION,
+    owner_listed_price_ngn: pricing.ownerListedPriceNgn,
+    domestic_markup_rate: pricing.serviceFeeRate,
+    domestic_markup_ngn: pricing.domesticMarkupNgn,
+    domestic_guest_price_ngn: pricing.domesticGuestPriceNgn,
+    quote_currency: fxQuote.currency,
+    currency_pair: fxQuote.currencyPair,
+    exchange_rate_ngn_per_unit: fxQuote.exchangeRateNgnPerUnit,
+    exchange_rate_source: fxQuote.exchangeRateSource,
+    exchange_rate_timestamp: fxQuote.exchangeRateTimestamp,
+    international_buffer_rate: fxQuote.internationalBufferRate,
+    converted_base_amount: fxQuote.convertedBaseAmount,
+    international_buffer_amount: fxQuote.internationalBufferAmount,
+    international_buffer_ngn_equiv: fxQuote.internationalBufferNgnEquiv,
+    quoted_guest_total: fxQuote.quotedGuestTotal,
+    settlement_total_ngn: fxQuote.settlementTotalNgn,
+    quote_expires_at: fxQuote.currency === 'NGN' ? null : fxQuote.quoteExpiresAt,
+  };
+
+  const { data: booking, error: insertError } = await db
+    .from('bookings')
+    .insert(fullInsertPayload)
+    .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
+    .single();
 
   if (insertError || !booking) {
     const detail = insertError?.message || '';
     if (/date conflict|dates conflict|overlap|unavailable|calendar/i.test(detail)) {
-      return errorResponse('Those dates are no longer available. Please choose different dates.', 409);
+      return errorResponse(
+        'Those dates are no longer available. Please choose different dates.',
+        409,
+      );
     }
-    if (/suspend/i.test(detail)) return errorResponse('Your account is currently suspended. Contact HAMLET support.', 403);
-    return errorResponse(insertError?.code === '23505' ? 'A booking with these details already exists.' : 'We could not save the booking request. Please try again.', 400);
+    if (/suspend/i.test(detail)) {
+      return errorResponse(
+        'Your account is currently suspended. Contact HAMLET support.',
+        403,
+      );
+    }
+    return errorResponse(
+      insertError?.code === '23505'
+        ? 'A booking with these details already exists.'
+        : 'We could not save the booking request. Please try again.',
+      400,
+    );
   }
-  return NextResponse.json({
-    booking: {
-      id: booking.id,
-      reference: booking.reference,
-      status: booking.status,
-      guestTotal: Number(booking.guest_total),
-      refundableDeposit: Number(booking.refundable_deposit),
+
+  // Best-effort trigger of notification outbox (never blocks request creation)
+  try {
+    await db.functions.invoke('booking-notifications', {
+      body: { booking_id: booking.id },
+    });
+  } catch {
+    // Outbox entries remain durable in booking_notifications if provider is unconfigured.
+  }
+
+  return NextResponse.json(
+    {
+      booking: {
+        id: booking.id,
+        reference: booking.reference,
+        status: booking.status,
+        guestTotal: Number(booking.guest_total),
+        refundableDeposit: Number(booking.refundable_deposit),
+        quoteCurrency: booking.quote_currency,
+        quotedGuestTotal: Number(booking.quoted_guest_total),
+      },
+      message:
+        'Request received. The property partner will review your dates and confirm availability before payment opens.',
     },
-    message: 'Request received. The property partner must confirm availability before payment.',
-  }, { status: 201 });
+    { status: 201 },
+  );
 }

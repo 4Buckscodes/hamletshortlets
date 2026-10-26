@@ -1,41 +1,339 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  BedDouble,
+  Bath,
+  Users,
+  MapPin,
+  ShieldCheck,
+  Clock,
+} from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import {
+  PUBLIC_PROPERTY_SELECT,
+  probePropertyWayfinderMeta,
+  type PublicStayRecord,
+} from '@/lib/next-supabase';
+import { guestFacingNightlyNgn } from '@/lib/pricing';
+import { buildPropertyStructuredData } from '@/lib/seo';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
 
-type Props={params:Promise<{id:string}>};
-type Stay={id:string;title:string;property_type:string|null;area:string|null;city:string|null;public_address:string|null;nightly_rate:number|string|null;bedrooms:number|null;bathrooms:number|null;capacity:number|null;bed_setup:string|null;image_urls:string[]|null;amenities:string[]|null;house_rules:string[]|null;trust_label:string|null;public_location_summary:string|null;cleaning_fee:number|string|null;refundable_deposit:number|string|null};
-export async function generateMetadata({params}:Props):Promise<Metadata>{
- const {id}=await params;
- const db=getPublicSupabase();
- if(!db)return {title:'Stay details | HAMLET.REST',robots:{index:false,follow:false}};
- const {data}=await db.from('properties').select('title,area,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
- if(!data)return {title:'Stay unavailable | HAMLET.REST',robots:{index:false,follow:false}};
- const title=`${data.title} in ${data.area||'Lagos'} | HAMLET.REST`;
- const description=`Explore ${data.title} in ${data.area||'Lagos'} on HAMLET.REST. View stay details, guest capacity and booking request steps before you commit.`;
- const image=Array.isArray(data.image_urls)&&data.image_urls[0]&&/^https:\/\//i.test(data.image_urls[0])?data.image_urls[0]:undefined;
- return {
-  title,description,alternates:{canonical:`/stays/${encodeURIComponent(id)}`},
-  openGraph:{type:'website',siteName:'HAMLET.REST',title,description,url:`https://www.hamlet.rest/stays/${encodeURIComponent(id)}`,images:image?[{url:image,alt:data.title}]:[]},
-  twitter:{card:image?'summary_large_image':'summary',title,description,images:image?[image]:[]},
- };
+type Props = { params: Promise<{ id: string }> };
+
+const PILLAR_LABELS: Array<{ key: string; label: string }> = [
+  { key: 'ownership', label: 'Ownership / title evidence' },
+  { key: 'identity', label: 'Partner identity check' },
+  { key: 'authority', label: 'Authority to list' },
+  { key: 'inspection', label: 'Physical property inspection' },
+];
+
+const STATUS_BADGE: Record<string, { text: string; cls: string }> = {
+  verified: {
+    text: 'Verified by HAMLET',
+    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  },
+  self_reported: {
+    text: 'Self-reported',
+    cls: 'border-ink-200 bg-paper text-ink-700',
+  },
+  pending_review: {
+    text: 'Pending review',
+    cls: 'border-brass-300 bg-brass-200/40 text-brass-700',
+  },
+  missing: {
+    text: 'Not yet provided',
+    cls: 'border-ink-200 bg-ink-50 text-ink-500',
+  },
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const db = getPublicSupabase();
+  if (!db) {
+    return {
+      title: 'Stay details',
+      robots: { index: false, follow: false },
+    };
+  }
+  const { data } = await db
+    .from('properties')
+    .select('title,area,property_type,bedrooms,capacity,image_urls')
+    .eq('id', id)
+    .eq('status', 'approved')
+    .maybeSingle();
+
+  if (!data) {
+    return {
+      title: 'Stay unavailable',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = `${data.title} in ${data.area || 'Lagos'}`;
+  const description = `Explore ${data.title} in ${data.area || 'Lagos'} on HAMLET.REST. Compare stay details, verification status, house rules and transparent pricing before requesting to book.`;
+  const image =
+    Array.isArray(data.image_urls) &&
+    data.image_urls[0] &&
+    /^https:\/\//i.test(data.image_urls[0])
+      ? data.image_urls[0]
+      : '/images/lagos-hero.jpg';
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/stays/${encodeURIComponent(id)}` },
+    openGraph: {
+      type: 'website',
+      siteName: 'HAMLET.REST',
+      title: `${title} | HAMLET.REST`,
+      description,
+      url: `https://www.hamlet.rest/stays/${encodeURIComponent(id)}`,
+      images: [{ url: image, alt: data.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | HAMLET.REST`,
+      description,
+      images: [image],
+    },
+  };
 }
-export default async function PropertyDetailPage({params}:Props){
- const {id}=await params;const db=getPublicSupabase();
- if(!db)return <main className="shell" style={{paddingBlock:40}}><Link href="/stays">← Back to stays</Link><h1 className="serif">Stay details</h1><p>Configure the public Supabase environment to load approved listing details.</p></main>;
- const {data,error}=await db.from('properties').select('id,title,property_type,area,city,public_address,nightly_rate,bedrooms,bathrooms,capacity,bed_setup,image_urls,amenities,house_rules,trust_label,public_location_summary,cleaning_fee,refundable_deposit').eq('id',id).eq('status','approved').maybeSingle();
- if(error||!data)notFound();const p=data as Stay;const images=p.image_urls??[];
- return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
- <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',justifyContent:'space-between',alignItems:'center'}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="secondary-button" style={{minHeight:42}}>← All stays</Link></div></header>
- <section className="shell" style={{paddingBlock:24}}>
- <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>{p.area||p.city||'Lagos'}{p.trust_label?' · '+p.trust_label:''}</p>
- <h1 className="serif" style={{fontSize:'clamp(34px,6vw,56px)',fontWeight:500,letterSpacing:'-.035em',margin:'8px 0 18px'}}>{p.title}</h1>
- <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,250px),1fr))',gap:10}}>{images.length?images.slice(0,5).map((url,i)=><img key={url} src={url} alt={p.title+' photo '+(i+1)} style={{width:'100%',height:230,objectFit:'cover',borderRadius:16}}/>):<div style={{minHeight:250,borderRadius:18,background:'linear-gradient(135deg,#e7dfce,#f7f3e9)',display:'grid',placeItems:'center',color:'#806522',fontSize:56}}>⌂</div>}</div>
- <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,290px),1fr))',gap:24,marginTop:24}}>
- <div><h2 style={{fontSize:20}}>About this stay</h2><p style={{color:'var(--muted)',lineHeight:1.7}}>{p.public_location_summary||p.public_address||'Located in '+(p.area||p.city||'Lagos')+'.'}</p><p style={{color:'var(--muted)',lineHeight:1.7}}>{p.property_type||'Shortlet'} · {p.bedrooms??'—'} bedrooms · {p.bathrooms??'—'} bathrooms · up to {p.capacity??'—'} guests{p.bed_setup?' · '+p.bed_setup:''}</p>
- {p.amenities?.length?<><h2 style={{fontSize:20,marginTop:26}}>What this place offers</h2><div style={{display:'flex',flexWrap:'wrap',gap:8}}>{p.amenities.map(a=><span key={a} className="pill">{a}</span>)}</div></>:null}
- {p.house_rules?.length?<><h2 style={{fontSize:20,marginTop:26}}>House rules</h2><ul style={{color:'var(--muted)',lineHeight:1.8}}>{p.house_rules.map(r=><li key={r}>{r}</li>)}</ul></>:null}</div>
- <aside style={{alignSelf:'start',background:'#fff',border:'1px solid var(--line)',borderRadius:22,padding:22}}><p style={{margin:'0 0 8px',color:'var(--muted)',fontSize:12}}>Nightly rate before applicable fees</p><strong style={{fontSize:26}}>₦{Number(p.nightly_rate||0).toLocaleString('en-NG')} <span style={{fontWeight:450,fontSize:12,color:'var(--muted)'}}>/ night</span></strong>{Number(p.cleaning_fee||0)>0&&<p style={{color:'var(--muted)',fontSize:13}}>Cleaning fee: ₦{Number(p.cleaning_fee).toLocaleString('en-NG')}</p>}{Number(p.refundable_deposit||0)>0&&<p style={{color:'var(--muted)',fontSize:13}}>Refundable caution deposit: ₦{Number(p.refundable_deposit).toLocaleString('en-NG')}</p>}<p style={{color:'var(--muted)',fontSize:12,lineHeight:1.7}}>Choose your dates to see an estimate and send a request to the property partner.</p><BookingRequestForm propertyId={p.id} nightlyRate={Number(p.nightly_rate||0)} cleaningFee={Number(p.cleaning_fee||0)} deposit={Number(p.refundable_deposit||0)} capacity={p.capacity}/></aside>
- </div></section></main>;
+
+export default async function PropertyDetailPage({ params }: Props) {
+  const { id } = await params;
+  const db = getPublicSupabase();
+
+  if (!db) {
+    notFound();
+  }
+
+  const { data, error } = await db
+    .from('properties')
+    .select(PUBLIC_PROPERTY_SELECT)
+    .eq('id', id)
+    .eq('status', 'approved')
+    .maybeSingle();
+
+  if (error || !data) {
+    notFound();
+  }
+
+  const stay = data as PublicStayRecord;
+  const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
+  const images = stay.image_urls ?? [];
+  const verification = stay.verification ?? {};
+  const structuredData = buildPropertyStructuredData(
+    {
+      id: stay.id,
+      title: stay.title,
+      type: stay.property_type || 'Apartment',
+      area: stay.area || 'Lagos',
+      address: stay.public_address || stay.area || 'Lagos',
+      bedrooms: stay.bedrooms ?? 1,
+      bathrooms: stay.bathrooms ?? 1,
+      capacity: stay.capacity ?? 2,
+      amenities: stay.amenities ?? [],
+      images,
+    },
+    guestFacingNightlyNgn(Number(stay.nightly_rate || 0)),
+  );
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
+      <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
+        <div className="mb-4">
+          <Link
+            href="/stays"
+            className="inline-flex min-h-[42px] items-center gap-1.5 text-xs font-bold text-ink-600 hover:text-ink-900"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" /> All Lagos stays
+          </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-brass-700">
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            {stay.area || wayfinderMeta.city || 'Lagos'}
+          </span>
+          {stay.trust_label && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold normal-case text-emerald-800">
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
+              {stay.trust_label}
+            </span>
+          )}
+        </div>
+
+        <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
+          {stay.title}
+        </h1>
+
+        <div className="mt-6">
+          <StayGallery title={stay.title} images={images} />
+        </div>
+
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">
+          <div className="space-y-8 lg:col-span-7">
+            {/* Key Specs */}
+            <div className="flex flex-wrap gap-3 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-ink-800">
+              <span>{stay.property_type || 'Shortlet'}</span>
+              <span>·</span>
+              <span className="inline-flex items-center gap-1.5">
+                <BedDouble className="h-4 w-4 shrink-0 text-brass-600" />
+                {stay.bedrooms ?? 0} {stay.bedrooms === 1 ? 'bedroom' : 'bedrooms'}
+              </span>
+              <span>·</span>
+              <span className="inline-flex items-center gap-1.5">
+                <Bath className="h-4 w-4 shrink-0 text-brass-600" />
+                {stay.bathrooms ?? 1} {stay.bathrooms === 1 ? 'bathroom' : 'bathrooms'}
+              </span>
+              <span>·</span>
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="h-4 w-4 shrink-0 text-brass-600" />
+                Up to {stay.capacity ?? 2} guests
+              </span>
+              {stay.bed_setup && (
+                <>
+                  <span>·</span>
+                  <span className="text-ink-600">{stay.bed_setup}</span>
+                </>
+              )}
+            </div>
+
+            {/* Location & Overview */}
+            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                Location & stay overview
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                {wayfinderMeta.public_location_summary ||
+                  stay.public_address ||
+                  `Located in ${stay.area || 'Lagos'}. Exact check-in instructions are shared only after a booking is confirmed.`}
+              </p>
+              {wayfinderMeta.public_landmarks && wayfinderMeta.public_landmarks.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {wayfinderMeta.public_landmarks.map(lm => (
+                    <span key={lm} className="pill text-xs font-medium text-ink-700">
+                      Near {lm}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4 flex items-center gap-2 text-xs text-ink-500">
+                <Clock className="h-4 w-4 shrink-0 text-brass-600" />
+                <span>
+                  {stay.availability_confirmation_status === 'confirmed' ||
+                  stay.availability_confirmation_status === 'confirmed_calendar'
+                    ? 'Partner calendar recently reviewed — partner still confirms every booking request.'
+                    : 'Partner reconfirms calendar dates on every booking request before payment.'}
+                </span>
+              </div>
+            </section>
+
+            {/* Amenities */}
+            {stay.amenities && stay.amenities.length > 0 && (
+              <section className="rounded-3xl border border-ink-100 bg-white p-6">
+                <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                  Amenities & facilities
+                </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {stay.amenities.map(amenity => (
+                    <span
+                      key={amenity}
+                      className="pill text-xs font-semibold text-ink-800"
+                    >
+                      {amenity}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Honest 4-Pillar Verification Breakdown */}
+            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-emerald-700" />
+                <div>
+                  <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                    Four-pillar review status
+                  </h2>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-500">
+                    HAMLET displays the actual review status recorded for each verification pillar — never assuming unreviewed evidence is verified.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                {PILLAR_LABELS.map(({ key, label }) => {
+                  const raw = verification[key] || 'pending_review';
+                  const badge = STATUS_BADGE[raw] || STATUS_BADGE.pending_review;
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-paper/50 px-3.5 py-3"
+                    >
+                      <span className="text-xs font-bold text-ink-900">{label}</span>
+                      <span
+                        className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${badge.cls}`}
+                      >
+                        {badge.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* House Rules & Refundable Caution Terms */}
+            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                House rules & caution deposit terms
+              </h2>
+              {stay.house_rules && stay.house_rules.length > 0 ? (
+                <ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
+                  {stay.house_rules.map(rule => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-sm text-ink-600">
+                  Standard shortlet conduct applies: valid government ID at check-in, guest count within stated capacity, and no unauthorized events.
+                </p>
+              )}
+              {Number(stay.refundable_deposit || 0) > 0 && (
+                <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
+                  <strong>Refundable caution deposit:</strong> Itemised separately from your stay price with 0% HAMLET markup and 0% FX buffer. Subject to post-checkout inspection and documented condition review.
+                </p>
+              )}
+            </section>
+          </div>
+
+          <aside className="lg:sticky lg:top-24 lg:col-span-5">
+            <BookingRequestForm
+              propertyId={stay.id}
+              propertyTitle={stay.title}
+              nightlyRate={Number(stay.nightly_rate || 0)}
+              cleaningFee={Number(stay.cleaning_fee || 0)}
+              deposit={Number(stay.refundable_deposit || 0)}
+              capacity={stay.capacity}
+              firstAvailableDate={stay.first_available_date}
+            />
+          </aside>
+        </div>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

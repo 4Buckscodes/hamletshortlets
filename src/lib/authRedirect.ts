@@ -46,8 +46,13 @@ export function sanitizeGuestRedirect(raw: string | null | undefined): string | 
     return null;
   }
 
-  // Allow public /partner/register while rejecting protected /partner workspace routes
-  if (pathname === '/partner' || (pathname.startsWith('/partner/') && pathname !== '/partner/register')) {
+  // Allow public /partner/register and /partners/apply while rejecting protected partner workspace routes
+  if (
+    pathname === '/partner' ||
+    (pathname.startsWith('/partner/') && pathname !== '/partner/register') ||
+    pathname === '/partners' ||
+    (pathname.startsWith('/partners/') && pathname !== '/partners/apply')
+  ) {
     return null;
   }
 
@@ -55,8 +60,8 @@ export function sanitizeGuestRedirect(raw: string | null | undefined): string | 
 }
 
 /**
- * Resolves where to navigate after Guest Sign Up:
- * - If the guest came from a particular property (e.g. `/stays/prop-1?...`) or valid guest route, go there.
+ * Resolves where to navigate after Guest Sign Up (Legacy & Next.js):
+ * - If the guest came from a particular property (e.g. `/stays/prop-1?...`), `/partners/apply`, or valid guest route, go there.
  * - Otherwise default to `/stays` (Explore stays).
  */
 export function resolvePostSignUpRedirect(redirectParam: string | null | undefined): string {
@@ -64,10 +69,10 @@ export function resolvePostSignUpRedirect(redirectParam: string | null | undefin
 }
 
 /**
- * Resolves where to navigate after Sign In:
+ * Resolves where to navigate after Sign In (Legacy SPA compatibility):
  * - Admins go to a requested `/admin/...` deep link if valid, otherwise `/admin`.
- * - Partners go to a requested `/partner/...` workspace deep link (e.g. `/partner/bookings/:bookingId`) if valid, otherwise `/partner`.
- * - Guests go to their requested guest `redirect` (e.g. `/stays/prop-1?...` or `/account?booking=...`), or `/account` by default.
+ * - Partners go to a requested `/partner/...` workspace deep link if valid, otherwise `/partner`.
+ * - Guests go to their requested guest `redirect`, or `/account` by default.
  */
 export function resolvePostSignInRedirect(
   role: AccountRole | undefined,
@@ -95,6 +100,63 @@ export function resolvePostSignInRedirect(
   }
 
   return sanitizeGuestRedirect(redirectParam) ?? '/account';
+}
+
+/**
+ * Resolves where to navigate after Sign In inside the primary Next.js App Router:
+ * - Admins go to a requested `/admin/...` deep link if valid, otherwise `/admin`.
+ * - Partners go to a requested `/partners/...` deep link (or booking intent on `/stays/...` if explicitly requested? No — partner workspace deep link or `/partners`), otherwise `/partners`.
+ * - Guests go to their requested guest `next`/`redirect` path (such as `/stays/[id]?checkIn=...`, `/partners/apply`, `/account/bookings`), or `/account` by default.
+ */
+export function resolveNextAppPostSignInRedirect(
+  role: AccountRole | string | undefined | null,
+  nextOrRedirectParam: string | null | undefined,
+): string {
+  const safeInternal = sanitizeInternalRedirect(nextOrRedirectParam);
+  const [pathname] = (safeInternal ?? '').split(/[?#]/);
+
+  if (role === 'admin') {
+    if (safeInternal && (pathname === '/admin' || pathname.startsWith('/admin/'))) {
+      return safeInternal;
+    }
+    return '/admin';
+  }
+
+  if (role === 'partner') {
+    if (
+      safeInternal &&
+      (pathname === '/partners' ||
+        (pathname.startsWith('/partners/') && pathname !== '/partners/apply'))
+    ) {
+      return safeInternal;
+    }
+    return '/partners';
+  }
+
+  return sanitizeGuestRedirect(nextOrRedirectParam) ?? '/account';
+}
+
+/**
+ * Reads either `?next=` or `?redirect=` from a search string safely.
+ */
+export function readRequestedRedirectFromSearch(search: string): string | null {
+  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+  return sanitizeInternalRedirect(params.get('next') ?? params.get('redirect'));
+}
+
+/**
+ * Builds a `/signin` path for Next.js preserving `mode=signup` and a validated `next` target.
+ */
+export function buildNextSignInPath(opts: {
+  signup?: boolean;
+  next?: string | null;
+}): string {
+  const params = new URLSearchParams();
+  if (opts.signup) params.set('mode', 'signup');
+  const safe = sanitizeInternalRedirect(opts.next);
+  if (safe) params.set('next', safe);
+  const qs = params.toString();
+  return qs ? `/signin?${qs}` : '/signin';
 }
 
 /**
@@ -138,4 +200,3 @@ export function normalizeDirectPathnameToHash(
   const cleanSearch = search && search !== '?' ? search : '';
   return `/#${pathname}${cleanSearch}`;
 }
-

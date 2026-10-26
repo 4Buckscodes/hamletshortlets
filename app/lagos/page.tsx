@@ -1,27 +1,219 @@
 import Link from 'next/link';
-export const metadata = {
-  title: 'Lagos Shortlets by Neighbourhood',
-  description: 'Explore Lagos shortlet areas, from Lekki and Ikoyi to Victoria Island, Yaba and Ikeja. Compare location, stay details and booking steps with HAMLET.REST.',
+import type { Metadata } from 'next';
+import { ArrowRight, MapPin } from 'lucide-react';
+import { buildLagosGuideStructuredData } from '@/lib/seo';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+
+export const metadata: Metadata = {
+  title: 'Lagos Shortlets by Neighbourhood — Island & Mainland Guide',
+  description:
+    'Explore Lagos shortlet corridors across Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Yaba, Shomolu, Surulere, Gbagada and Ikeja GRA on HAMLET.REST.',
   alternates: { canonical: '/lagos' },
-  openGraph: { title: 'Explore Lagos Shortlets | HAMLET.REST', description: 'A practical guide to choosing a shortlet area in Lagos.', url: 'https://www.hamlet.rest/lagos' },
+  openGraph: {
+    title: 'Lagos Shortlets Neighbourhood Guide | HAMLET.REST',
+    description:
+      'Compare Lagos Island and Lagos Mainland shortlet neighbourhoods before you book.',
+    url: 'https://www.hamlet.rest/lagos',
+  },
 };
-const areas = [
-  { name: 'Lekki', detail: 'A broad choice of apartments for leisure stays, visits with friends and longer work trips. Check the exact estate, access route and power arrangements before booking.' },
-  { name: 'Victoria Island', detail: 'A useful base for many business meetings, restaurants and Island activities. Compare the address and likely travel time to your specific destination.' },
-  { name: 'Ikoyi', detail: 'Often considered for quieter, premium stays. Confirm house rules, guest access, parking and the facilities included in the listed rate.' },
-  { name: 'Yaba', detail: 'A practical option for university visits, technology hubs and Mainland plans. Check commute time to appointments on the Island.' },
-  { name: 'Ikeja GRA', detail: 'Worth considering for airport-related trips, Mainland meetings and plans around Ikeja. Confirm distance to the airport for your travel time.' },
-  { name: 'Surulere', detail: 'A central Mainland option for family visits, events and local plans. Check traffic routes and the exact property location before choosing.' },
-];
+
+const ISLAND_CORRIDORS = [
+  {
+    name: 'Victoria Island',
+    subareas: 'Adeola Odeku · Oniru border · Ahmadu Bello · Eko Atlantic axis',
+    detail:
+      'Convenient for corporate offices, dining, waterfront meetings and Island venues. Always check estate access rules and commute timing.',
+  },
+  {
+    name: 'Ikoyi',
+    subareas: 'Old Ikoyi · Bourdillon · Parkview · Banana Island',
+    detail:
+      'Calm residential avenues suited to executive stays and longer visits. Review visitor policies, parking and power arrangements on each listing.',
+  },
+  {
+    name: 'Lekki Phase 1 & Oniru',
+    subareas: 'Admiralty Way · Freedom Way · Oniru Private Estate · Marwa',
+    detail:
+      'Wide choice of modern apartments, duplexes and group stays. Confirm estate gate protocols, power backup hours and quiet-hour rules.',
+  },
+  {
+    name: 'Chevron & Ajah Corridor',
+    subareas: 'Chevron Drive · Osapa · Ikate · Sangotedo axis',
+    detail:
+      'Residential estates with spacious duplexes and family shortlets. Factor Lekki-Epe Expressway travel windows into your daily schedule.',
+  },
+] as const;
+
+const MAINLAND_CORRIDORS = [
+  {
+    name: 'Yaba',
+    subareas: 'Alagomeji · Sabo · Akoka · Ebute Metta · Herbert Macaulay',
+    detail:
+      'Central Lagos Mainland base near universities, technology studios and the Third Mainland Bridge link to Victoria Island.',
+  },
+  {
+    name: 'Shomolu',
+    subareas: 'Palmgrove · Onipanu · Pedro · Ikorodu Road corridor',
+    detail:
+      'Direct Mainland arterial connectivity along Ikorodu Road with quick access to Yaba, Anthony, Maryland and Ikeja.',
+  },
+  {
+    name: 'Surulere',
+    subareas: 'Bode Thomas · Adeniran Ogunsanya · Eric Moore · Aguda',
+    detail:
+      'Established residential streets popular for family visits, creative productions, stadium events and central Lagos access.',
+  },
+  {
+    name: 'Ikeja GRA, Maryland & Gbagada',
+    subareas: 'Ikeja GRA · Maryland · Ilupeju · Gbagada Phase 1 & 2 · Magodo',
+    detail:
+      'Ideal for Murtala Muhammed Airport (MMIA) arrivals, Mainland corporate headquarters and gated residential estates.',
+  },
+] as const;
+
 export default function LagosGuidePage() {
- return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
-  <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="primary-button">Explore stays</Link></div></header>
-  <section className="shell" style={{paddingBlock:'42px 70px',maxWidth:1000}}>
-   <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>Neighbourhood guide</p>
-   <h1 className="serif" style={{fontSize:'clamp(38px,7vw,64px)',fontWeight:500,lineHeight:1.05,margin:'8px 0 18px'}}>Choose your Lagos base.</h1>
-   <p style={{maxWidth:720,color:'var(--muted)',fontSize:17,lineHeight:1.8}}>The best shortlet is not only about the apartment. It is also about where you need to be, how you will get around, and which house rules and facilities fit your plans. Start with the neighbourhood, then compare the actual listing details.</p>
-   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,280px),1fr))',gap:14,marginTop:28}}>{areas.map(area=><article key={area.name} style={{background:'#fff',border:'1px solid var(--line)',borderRadius:18,padding:20}}><h2 className="serif" style={{fontSize:25,fontWeight:500,margin:'0 0 9px'}}>{area.name}</h2><p style={{color:'var(--muted)',lineHeight:1.75,fontSize:14,margin:'0 0 14px'}}>{area.detail}</p><Link href={'/stays?area='+encodeURIComponent(area.name)} style={{fontWeight:750,color:'var(--navy)'}}>Explore {area.name} →</Link></article>)}</div>
-   <section style={{marginTop:34,padding:22,background:'#fff',borderRadius:18,border:'1px solid var(--line)'}}><h2 className="serif" style={{fontSize:27,fontWeight:500,margin:'0 0 10px'}}>Before you request a booking</h2><ul style={{paddingLeft:20,color:'var(--muted)',lineHeight:1.9}}><li>Confirm the full address and travel time to your main destination.</li><li>Read guest limits, check-in rules, cancellation terms and house rules.</li><li>Review the itemised price, mandatory charges and any refundable caution deposit.</li><li>Ask the partner to confirm your dates; calendar checks do not replace host confirmation.</li></ul><Link href="/how-it-works" className="secondary-button">How HAMLET bookings work</Link></section>
-  </section>
- </main>;
+  const structuredData = buildLagosGuideStructuredData(
+    [...ISLAND_CORRIDORS, ...MAINLAND_CORRIDORS].map(item => ({
+      name: item.name,
+      body: item.detail,
+      href: `/stays?area=${encodeURIComponent(item.name)}`,
+    })),
+  );
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
+      <main className="shell flex-1 py-10 sm:py-14">
+        <p className="eyebrow">Lagos Field Guide</p>
+        <h1 className="serif mt-2 max-w-3xl text-4xl font-medium tracking-tight text-ink-900 sm:text-6xl">
+          Choose the right Lagos base — Island or Mainland.
+        </h1>
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
+          In Lagos, choosing the right corridor near your meetings, family or flights matters as much as the apartment itself. Start with the axis that fits your week, then compare approved stays.
+        </p>
+
+        {/* Lagos Mainland & Environs */}
+        <section className="mt-10">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow">Mainland Corridors</p>
+              <h2 className="serif mt-1 text-2xl font-medium text-ink-900 sm:text-3xl">
+                Lagos Mainland — Yaba, Shomolu, Surulere & environs
+              </h2>
+            </div>
+            <Link
+              href="/stays?area=Lagos+Mainland"
+              className="secondary-button min-h-[42px]"
+            >
+              Browse all Lagos Mainland →
+            </Link>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {MAINLAND_CORRIDORS.map(area => (
+              <article
+                key={area.name}
+                className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-6"
+              >
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {area.subareas}
+                  </span>
+                  <h3 className="serif mt-2 text-2xl font-medium text-ink-900">
+                    {area.name}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                    {area.detail}
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <Link
+                    href={`/stays?area=${encodeURIComponent(area.name)}`}
+                    className="inline-flex min-h-[42px] items-center gap-1.5 text-sm font-bold text-ink-900 hover:text-jade-600"
+                  >
+                    Explore {area.name} stays <ArrowRight className="h-4 w-4 shrink-0" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Lagos Island & Lekki */}
+        <section className="mt-12">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="eyebrow">Island & Lekki Corridors</p>
+              <h2 className="serif mt-1 text-2xl font-medium text-ink-900 sm:text-3xl">
+                Victoria Island, Ikoyi, Lekki Phase 1 & Oniru
+              </h2>
+            </div>
+            <Link href="/stays" className="secondary-button min-h-[42px]">
+              Browse all stays →
+            </Link>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {ISLAND_CORRIDORS.map(area => (
+              <article
+                key={area.name}
+                className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-6"
+              >
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {area.subareas}
+                  </span>
+                  <h3 className="serif mt-2 text-2xl font-medium text-ink-900">
+                    {area.name}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                    {area.detail}
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <Link
+                    href={`/stays?area=${encodeURIComponent(area.name)}`}
+                    className="inline-flex min-h-[42px] items-center gap-1.5 text-sm font-bold text-ink-900 hover:text-jade-600"
+                  >
+                    Explore {area.name} stays <ArrowRight className="h-4 w-4 shrink-0" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Practical Checklist */}
+        <section className="mt-12 rounded-3xl border border-ink-100 bg-white p-6 sm:p-8">
+          <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+            Before you request a Lagos booking
+          </h2>
+          <ul className="mt-4 space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
+            <li>Check the neighbourhood relative to your daily appointments rather than distance on a map alone.</li>
+            <li>Review power backup arrangements (24/7 estate power, inverter or generator schedule) on the listing page.</li>
+            <li>Compare the total stay price and separate refundable caution deposit before sending a request.</li>
+            <li>Wait for partner date confirmation and server-verified payment before treating any stay as confirmed.</li>
+          </ul>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/stays" className="primary-button">
+              Search Lagos stays
+            </Link>
+            <Link href="/how-it-works" className="secondary-button">
+              How HAMLET bookings work
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
 }

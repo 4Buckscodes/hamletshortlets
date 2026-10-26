@@ -1,12 +1,101 @@
 import Link from 'next/link';
-export const metadata = { title: 'FAQs', description: 'Answers about finding a shortlet, requesting a booking, payments, availability and guest support on HAMLET.REST.', alternates: { canonical: '/faqs' } };
-const faqs = [
- {q:'Is every booking instantly confirmed?',a:'No. A booking request is not the same as a confirmed stay. The property partner must confirm the requested dates and the booking status must be updated through HAMLET’s workflow.'},
- {q:'Does the calendar guarantee availability?',a:'No. HAMLET can filter recorded calendar conflicts when the availability check is working, but a partner still needs to confirm your dates.'},
- {q:'How do I understand the total price?',a:'Review the price breakdown and mandatory charges before you commit. If a refundable caution deposit applies, check its amount and return conditions separately from the accommodation price.'},
- {q:'What if a property is not as described?',a:'Use your booking reference and report the issue through your account support page. Include clear details and any evidence you can safely provide.'},
- {q:'Can I change or cancel a booking request?',a:'Options depend on the booking status and the cancellation terms shown for that stay. Open your booking account to check the actions currently available.'},
- {q:'How can I list a property?',a:'Use the partner application page. Applications and submitted listings are reviewed; submitting a listing does not make it publicly bookable.'},
- {q:'Does HAMLET verify every property document?',a:'Do not assume a document is independently verified solely because a listing is submitted or displayed. Review the listing’s stated trust information and ask for clarification before paying.'},
-];
-export default function FaqsPage(){return <main style={{minHeight:'100svh',background:'var(--paper)'}}><header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="secondary-button">Explore stays</Link></div></header><section className="shell" style={{paddingBlock:'42px 70px',maxWidth:850}}><p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>Guest help</p><h1 className="serif" style={{fontSize:'clamp(38px,7vw,62px)',fontWeight:500,lineHeight:1.05,margin:'8px 0 14px'}}>Frequently asked questions.</h1><p style={{color:'var(--muted)',lineHeight:1.75,maxWidth:680}}>Clear answers about how booking requests, availability and guest support work on HAMLET.</p><div style={{display:'grid',gap:12,marginTop:26}}>{faqs.map(item=><details key={item.q} style={{background:'#fff',border:'1px solid var(--line)',borderRadius:16,padding:'18px 20px'}}><summary style={{cursor:'pointer',fontWeight:800,lineHeight:1.5}}>{item.q}</summary><p style={{color:'var(--muted)',lineHeight:1.8,fontSize:14,margin:'12px 0 0'}}>{item.a}</p></details>)}</div><p style={{marginTop:24,color:'var(--muted)',lineHeight:1.7}}>Still need help? <Link href="/account/issues" style={{textDecoration:'underline'}}>Report an issue</Link> if you have a booking, or read <Link href="/safety" style={{textDecoration:'underline'}}>our safety guidance</Link>.</p></section></main>}
+import type { Metadata } from 'next';
+import { buildFaqStructuredData } from '@/lib/seo';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+
+export const metadata: Metadata = {
+  title: 'Frequently Asked Questions',
+  description:
+    'Clear answers about Lagos shortlet booking requests, pricing, USD/GBP currency quotes, caution deposits, cancellations and partner onboarding on HAMLET.REST.',
+  alternates: { canonical: '/faqs' },
+};
+
+const FAQS = [
+  {
+    q: '1. Is every booking on HAMLET instantly confirmed?',
+    a: 'No. Sending a booking request asks the property partner to confirm calendar availability and stay terms first. No card payment is taken until the partner accepts your dates.',
+  },
+  {
+    q: '2. Does filtering by dates guarantee live availability?',
+    a: 'Filtering removes stays with recorded calendar blocks or active holds in HAMLET, but properties may also be managed across external channels. Partner confirmation is always required.',
+  },
+  {
+    q: '3. How does stay pricing and currency switching work?',
+    a: 'Property cards and stay summaries show the guest-facing stay rate in NGN, USD, or GBP. USD and GBP quotes convert the domestic NGN stay total using the active reference rate and apply a single 10% international FX buffer (valid for 30 minutes).',
+  },
+  {
+    q: '4. How are refundable caution deposits handled?',
+    a: 'Refundable caution deposits are itemised separately from your accommodation price. HAMLET applies 0% markup and 0% international FX buffer to caution deposits, and release or documented deductions follow post-checkout inspection.',
+  },
+  {
+    q: '5. When is my booking officially confirmed?',
+    a: 'Only after the property partner accepts your request and HAMLET verifies the signed Paystack payment webhook on the server. Returning from a browser redirect alone does not mark a booking paid.',
+  },
+  {
+    q: '6. Which cities does HAMLET currently cover?',
+    a: 'HAMLET is currently focused on Lagos, covering both Lagos Island & Lekki (Victoria Island, Ikoyi, Lekki Phase 1, Oniru, Ajah) and Lagos Mainland (Yaba, Shomolu, Surulere, Gbagada, Maryland, Ilupeju, Ikeja GRA and Magodo).',
+  },
+  {
+    q: '7. What if the apartment is not as described or I cannot check in?',
+    a: 'Sign in and open Report a Booking Issue under your account. Select your booking reference, choose the urgency level (including Critical for immediate access or safety problems), and submit details so HAMLET operations can intervene.',
+  },
+  {
+    q: '8. How do owners, managers, closing agents and referrers join HAMLET?',
+    a: 'Create a free account and complete the short step-by-step Partner Application. Property owners list with 0% owner fee deducted from their base rate B; approved partners gain access after HAMLET review.',
+  },
+] as const;
+
+export default function FaqsPage() {
+  const faqSchema = buildFaqStructuredData([...FAQS]);
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <main className="shell flex-1 py-10 sm:py-14">
+        <p className="eyebrow">Guest & Partner Help</p>
+        <h1 className="serif mt-2 max-w-3xl text-4xl font-medium tracking-tight text-ink-900 sm:text-6xl">
+          Frequently asked questions.
+        </h1>
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-600">
+          Plain-language answers on how booking requests, pricing, caution deposits, verification and partner onboarding work on HAMLET.REST.
+        </p>
+
+        <div className="mt-8 max-w-3xl space-y-3">
+          {FAQS.map(item => (
+            <details
+              key={item.q}
+              className="group rounded-2xl border border-ink-100 bg-white px-5 py-4"
+            >
+              <summary className="flex min-h-[36px] cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-ink-900 sm:text-base">
+                <span>{item.q}</span>
+                <span className="text-lg font-normal text-brass-600 group-open:rotate-45 transition">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 mb-0 border-t border-ink-100 pt-3 text-sm leading-relaxed text-ink-600">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/stays" className="primary-button">
+            Explore Lagos stays
+          </Link>
+          <Link href="/account/issues" className="secondary-button">
+            Report a booking issue
+          </Link>
+        </div>
+      </main>
+
+      <SiteFooter />
+    </div>
+  );
+}
