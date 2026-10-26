@@ -78,14 +78,6 @@ export async function POST(request: Request) {
     return errorResponse('These dates are blocked or already booked for this property. Please choose different dates.', 409);
   }
 
-  const { data: overlaps, error: overlapError } = await db.rpc('has_booking_overlap', {
-    target_property_id: propertyId,
-    target_check_in: checkIn,
-    target_check_out: checkOut,
-  });
-  if (overlapError) return errorResponse('Booking availability is not fully configured yet. Please try again later.', 503);
-  if (overlaps === true) return errorResponse('These dates overlap another active booking request. Please choose different dates.', 409);
-
   const nightlyRate = Math.max(0, Math.round(Number(property.nightly_rate || 0)));
   const cleaningFee = Math.max(0, Math.round(Number(property.cleaning_fee || 0)));
   const deposit = Math.max(0, Math.round(Number(property.refundable_deposit || 0)));
@@ -113,6 +105,11 @@ export async function POST(request: Request) {
   }).select('id,reference,status,guest_total,refundable_deposit').single();
 
   if (insertError || !booking) {
+    const detail = insertError?.message || '';
+    if (/date conflict|dates conflict|overlap|unavailable|calendar/i.test(detail)) {
+      return errorResponse('Those dates are no longer available. Please choose different dates.', 409);
+    }
+    if (/suspend/i.test(detail)) return errorResponse('Your account is currently suspended. Contact HAMLET support.', 403);
     return errorResponse(insertError?.code === '23505' ? 'A booking with these details already exists.' : 'We could not save the booking request. Please try again.', 400);
   }
   return NextResponse.json({
