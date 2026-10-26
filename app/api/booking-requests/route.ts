@@ -13,7 +13,6 @@ type RequestBody = {
 };
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-const activeStatuses = ['requested', 'checking', 'awaiting_payment', 'confirmed', 'disputed'];
 
 function errorResponse(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
@@ -69,16 +68,13 @@ export async function POST(request: Request) {
   const capacity = Number(property.capacity || 0);
   if (capacity > 0 && guests > capacity) return errorResponse('This stay does not accommodate that many guests.');
 
-  const { data: overlaps, error: overlapError } = await db
-    .from('bookings')
-    .select('id')
-    .eq('property_id', propertyId)
-    .in('status', activeStatuses)
-    .lt('check_in', checkOut)
-    .gt('check_out', checkIn)
-    .limit(1);
-  if (overlapError) return errorResponse('We could not verify date availability. Please try again.', 503);
-  if (overlaps?.length) return errorResponse('These dates overlap another active booking request. Please choose different dates.', 409);
+  const { data: overlaps, error: overlapError } = await db.rpc('has_booking_overlap', {
+    target_property_id: propertyId,
+    target_check_in: checkIn,
+    target_check_out: checkOut,
+  });
+  if (overlapError) return errorResponse('Booking availability is not fully configured yet. Please try again later.', 503);
+  if (overlaps === true) return errorResponse('These dates overlap another active booking request. Please choose different dates.', 409);
 
   const nightlyRate = Math.max(0, Math.round(Number(property.nightly_rate || 0)));
   const cleaningFee = Math.max(0, Math.round(Number(property.cleaning_fee || 0)));
