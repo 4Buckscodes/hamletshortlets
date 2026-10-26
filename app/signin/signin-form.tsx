@@ -5,6 +5,11 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 type Mode = 'signin' | 'signup';
 
+function getSafeNextPath(): string {
+  const next = new URLSearchParams(window.location.search).get('next');
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/legacy';
+}
+
 function makeBrowserClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || process.env.VITE_SUPABASE_URL?.trim();
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
@@ -50,7 +55,7 @@ export default function SignInForm() {
         });
         if (authError) throw authError;
         if (data.session) {
-          window.location.assign('/legacy');
+          window.location.assign(getSafeNextPath());
           return;
         }
         setMessage('Your account request was created. Check your email for a confirmation link, then return here to sign in.');
