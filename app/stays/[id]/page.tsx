@@ -1,11 +1,26 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import BookingRequestForm from './booking-request-form';
 
 type Props={params:Promise<{id:string}>};
 type Stay={id:string;title:string;property_type:string|null;area:string|null;city:string|null;public_address:string|null;nightly_rate:number|string|null;bedrooms:number|null;bathrooms:number|null;capacity:number|null;bed_setup:string|null;image_urls:string[]|null;amenities:string[]|null;house_rules:string[]|null;trust_label:string|null;public_location_summary:string|null;cleaning_fee:number|string|null;refundable_deposit:number|string|null};
-export async function generateMetadata({params}:Props){const {id}=await params;const db=getPublicSupabase();if(!db)return {title:'Stay details'};const {data}=await db.from('properties').select('title,area').eq('id',id).eq('status','approved').maybeSingle();return {title:data?data.title+' in '+(data.area||'Lagos'):'Stay details'};}
+export async function generateMetadata({params}:Props):Promise<Metadata>{
+ const {id}=await params;
+ const db=getPublicSupabase();
+ if(!db)return {title:'Stay details | HAMLET.REST',robots:{index:false,follow:false}};
+ const {data}=await db.from('properties').select('title,area,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
+ if(!data)return {title:'Stay unavailable | HAMLET.REST',robots:{index:false,follow:false}};
+ const title=`${data.title} in ${data.area||'Lagos'} | HAMLET.REST`;
+ const description=`Explore ${data.title} in ${data.area||'Lagos'} on HAMLET.REST. View stay details, guest capacity and booking request steps before you commit.`;
+ const image=Array.isArray(data.image_urls)&&data.image_urls[0]&&/^https:\/\//i.test(data.image_urls[0])?data.image_urls[0]:undefined;
+ return {
+  title,description,alternates:{canonical:`/stays/${encodeURIComponent(id)}`},
+  openGraph:{type:'website',siteName:'HAMLET.REST',title,description,url:`https://www.hamlet.rest/stays/${encodeURIComponent(id)}`,images:image?[{url:image,alt:data.title}]:[]},
+  twitter:{card:image?'summary_large_image':'summary',title,description,images:image?[image]:[]},
+ };
+}
 export default async function PropertyDetailPage({params}:Props){
  const {id}=await params;const db=getPublicSupabase();
  if(!db)return <main className="shell" style={{paddingBlock:40}}><Link href="/stays">← Back to stays</Link><h1 className="serif">Stay details</h1><p>Configure the public Supabase environment to load approved listing details.</p></main>;
