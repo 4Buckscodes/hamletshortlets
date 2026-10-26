@@ -10,6 +10,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${site}/stays`, lastModified: now, changeFrequency: 'hourly', priority: 0.95 },
     { url: `${site}/how-it-works`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${site}/safety`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${site}/lagos`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${site}/faqs`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${site}/partners/apply`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ];
   const db = getPublicSupabase();
