@@ -25,10 +25,12 @@ export async function POST(request: Request) {
   const bedrooms = Number(body.bedrooms);
   const bathrooms = Number(body.bathrooms);
   const capacity = Number(body.capacity);
-  const authorityBasis = text(body.authorityBasis, 600);\n  if (title.length < 8 || !propertyType || !area || address.length < 10 || authorityBasis.length < 9) return NextResponse.json({ error: 'Complete the listing details and explain your authority to list this property.' }, { status: 400 });
+  const authorityBasis = text(body.authorityBasis, 600);
+  if (title.length < 8 || !propertyType || !area || address.length < 10 || authorityBasis.length < 9) return NextResponse.json({ error: 'Complete the listing details and explain your authority to list this property.' }, { status: 400 });
   if (!Number.isInteger(nightlyRate) || nightlyRate < 1 || nightlyRate > 100000000 || !Number.isInteger(cleaningFee) || cleaningFee < 0 || !Number.isInteger(deposit) || deposit < 0 || !Number.isInteger(bedrooms) || bedrooms < 0 || !Number.isInteger(bathrooms) || bathrooms < 0 || !Number.isInteger(capacity) || capacity < 1 || capacity > 50) return NextResponse.json({ error: 'Check the nightly rate, charges, bedrooms, bathrooms and guest capacity.' }, { status: 400 });
   const imageUrls = list(body.imageUrls, 10, 500).filter(value => { try { const u = new URL(value); return u.protocol === 'https:'; } catch { return false; } });
-  if (imageUrls.length < 1) return NextResponse.json({ error: 'Add at least one HTTPS property photo before submitting.' }, { status: 400 });\n  const db = createClient(url, key, { global: { headers: { Authorization: 'Bearer ' + token } }, auth: { persistSession: false, autoRefreshToken: false } });
+  if (imageUrls.length < 1) return NextResponse.json({ error: 'Add at least one HTTPS property photo before submitting.' }, { status: 400 });
+  const db = createClient(url, key, { global: { headers: { Authorization: 'Bearer ' + token } }, auth: { persistSession: false, autoRefreshToken: false } });
   const { data: auth, error: authError } = await db.auth.getUser(token);
   if (authError || !auth.user) return NextResponse.json({ error: 'Your session expired. Sign in again.' }, { status: 401 });
   const { data: profile, error: profileError } = await db.from('profiles').select('role').eq('id', auth.user.id).maybeSingle();
