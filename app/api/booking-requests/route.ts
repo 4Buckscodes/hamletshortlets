@@ -12,7 +12,18 @@ type RequestBody = {
   specialRequests?: string;
 };
 
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;\n\nfunction isValidDate(value: string) {\n  if (!datePattern.test(value)) return false;\n  const parsed = new Date(value + 'T00:00:00.000Z');\n  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;\n}\n\nfunction lagosToday() {\n  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());\n  return parts;\n}
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDate(value: string) {
+  if (!datePattern.test(value)) return false;
+  const parsed = new Date(value + 'T00:00:00.000Z');
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function lagosToday() {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return parts;
+}
 
 function errorResponse(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
