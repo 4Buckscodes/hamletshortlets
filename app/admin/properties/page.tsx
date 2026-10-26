@@ -31,6 +31,7 @@ export default function AdminPropertiesPage() {
     else setItems((data || []) as Property[]);
     setLoading(false);
   }, [db]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
   async function review(property: Property, decision: string) {
     setError(''); setNotice('');
