@@ -26,7 +26,6 @@ export default function GuestBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState('');
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     let active = true;
     async function load() {
