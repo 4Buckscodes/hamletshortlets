@@ -22,8 +22,8 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
   });
 
   it('keeps Home concise and marketplace-focused while preserving central pricing engine', () => {
-    const homeSrc = readFileSync(join(ROOT, 'src/pages/Home.tsx'), 'utf8');
-    const detailSrc = readFileSync(join(ROOT, 'src/pages/PropertyDetail.tsx'), 'utf8');
+    const homeSrc = readFileSync(join(ROOT, 'src/legacy-pages/Home.tsx'), 'utf8');
+    const detailSrc = readFileSync(join(ROOT, 'src/legacy-pages/PropertyDetail.tsx'), 'utf8');
 
     expect(homeSrc).toContain('Available stays');
     expect(homeSrc).toContain('Browse by area');
@@ -61,8 +61,8 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
     const appSrc = readFileSync(join(ROOT, 'src/App.tsx'), 'utf8');
     const navbarSrc = readFileSync(join(ROOT, 'src/components/Navbar.tsx'), 'utf8');
     const horatioSrc = readFileSync(join(ROOT, 'src/components/HoratioDrawer.tsx'), 'utf8');
-    const adminLayoutSrc = readFileSync(join(ROOT, 'src/pages/admin/AdminLayout.tsx'), 'utf8');
-    const adminIssuesSrc = readFileSync(join(ROOT, 'src/pages/admin/Issues.tsx'), 'utf8');
+    const adminLayoutSrc = readFileSync(join(ROOT, 'src/legacy-pages/admin/AdminLayout.tsx'), 'utf8');
+    const adminIssuesSrc = readFileSync(join(ROOT, 'src/legacy-pages/admin/Issues.tsx'), 'utf8');
 
     expect(appSrc).toContain('WishlistProvider');
     expect(appSrc).toContain('HoratioProvider');
@@ -87,16 +87,16 @@ describe('HAMLET UI Adoption & Brand-Preserving Redesign', () => {
 
   it('never fabricates star ratings or reviews on PropertyCard or PropertyDetail', () => {
     const cardSrc = readFileSync(join(ROOT, 'src/components/PropertyCard.tsx'), 'utf8');
-    const detailSrc = readFileSync(join(ROOT, 'src/pages/PropertyDetail.tsx'), 'utf8');
+    const detailSrc = readFileSync(join(ROOT, 'src/legacy-pages/PropertyDetail.tsx'), 'utf8');
 
     expect(cardSrc).not.toMatch(/4\.9[0-9]|4\.8[0-9]|★\s*4\./);
     expect(detailSrc).not.toMatch(/4\.9[0-9]|4\.8[0-9]|★\s*4\./);
   });
 
   it('keeps duplicate-address screening and separate caution deposit messaging visible', () => {
-    const newPropSrc = readFileSync(join(ROOT, 'src/pages/partner/NewProperty.tsx'), 'utf8');
-    const partnerRegSrc = readFileSync(join(ROOT, 'src/pages/PartnerRegister.tsx'), 'utf8');
-    const detailSrc = readFileSync(join(ROOT, 'src/pages/PropertyDetail.tsx'), 'utf8');
+    const newPropSrc = readFileSync(join(ROOT, 'src/legacy-pages/partner/NewProperty.tsx'), 'utf8');
+    const partnerRegSrc = readFileSync(join(ROOT, 'src/legacy-pages/PartnerRegister.tsx'), 'utf8');
+    const detailSrc = readFileSync(join(ROOT, 'src/legacy-pages/PropertyDetail.tsx'), 'utf8');
 
     expect(newPropSrc).toContain('potentialAddressMatch');
     expect(partnerRegSrc).toContain('The economics, plainly');
