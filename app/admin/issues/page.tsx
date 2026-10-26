@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AdminNav from "../admin-nav";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -73,7 +74,7 @@ export default function AdminIssuesPage() {
 
   const priority = (severity: string) => severity === "critical" || severity === "high" ? "#9c2f25" : "var(--muted)";
   return <main style={{ minHeight: "100svh", background: "var(--paper)" }}>
-    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><Link href="/admin/properties" className="secondary-button">Admin workspace</Link></div></header>
+    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><AdminNav current="issues" /></div></header>
     <section className="shell" style={{ paddingBlock: 34, maxWidth: 1050 }}>
       <p style={{ color: "#806522", textTransform: "uppercase", letterSpacing: ".12em", fontSize: 11, fontWeight: 800 }}>Operations</p>
       <h1 className="serif" style={{ fontSize: "clamp(34px,6vw,52px)", fontWeight: 500, margin: "8px 0 12px" }}>Guest issue desk</h1>
