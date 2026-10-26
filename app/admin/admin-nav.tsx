@@ -4,6 +4,7 @@ const links = [
   { href: '/admin/properties', label: 'Properties', id: 'properties' },
   { href: '/admin/bookings', label: 'Bookings', id: 'bookings' },
   { href: '/admin/partners', label: 'Partners', id: 'partners' },
+  { href: '/admin/accounts', label: 'Accounts', id: 'accounts' },
   { href: '/admin/issues', label: 'Issues', id: 'issues' },
   { href: '/admin/settlements', label: 'Settlements', id: 'settlements' },
   { href: '/admin/audit', label: 'Audit trail', id: 'audit' },
