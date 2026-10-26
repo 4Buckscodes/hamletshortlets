@@ -29,6 +29,7 @@ export default function PropertySubmissionForm() {
           nightlyRate: Number(form.get('nightlyRate')), cleaningFee: Number(form.get('cleaningFee') || 0), deposit: Number(form.get('deposit') || 0),
           bedrooms: Number(form.get('bedrooms')), bathrooms: Number(form.get('bathrooms')), capacity: Number(form.get('capacity')),
           bedSetup: form.get('bedSetup'), amenities: csv('amenities'), imageUrls: csv('imageUrls'), houseRules: csv('houseRules'),
+          authorityBasis: form.get('authorityBasis'), submittedRole: 'Property partner',
         }),
       });
       const result = await response.json() as { error?: string; message?: string; property?: { id: string } };
@@ -61,6 +62,7 @@ export default function PropertySubmissionForm() {
     <label style={labelStyle}>Amenities, comma-separated<input name="amenities" maxLength={1000} placeholder="Wi-Fi, generator, pool, parking" style={field}/></label>
     <label style={labelStyle}>HTTPS image URLs, comma-separated<textarea name="imageUrls" rows={3} placeholder="https://…/living-room.jpg" style={{ ...field, resize: 'vertical' }}/></label>
     <label style={labelStyle}>House rules, comma-separated<textarea name="houseRules" rows={2} placeholder="No smoking, valid ID required" style={{ ...field, resize: 'vertical' }}/></label>
+    <label style={labelStyle}>Your authority to list this property<textarea name="authorityBasis" required minLength={9} maxLength={600} rows={3} placeholder="I own this property / I have written authority from the owner…" style={{ ...field, resize: 'vertical' }}/></label>
     {error && <p role="alert" style={{ margin: 0, color: '#9f2d20', fontSize: 13 }}>{error}</p>}
     {message && <p role="status" style={{ margin: 0, color: '#236238', fontSize: 13, lineHeight: 1.6 }}>{message}</p>}
     <button className="primary-button" type="submit" disabled={busy}>{busy ? 'Submitting…' : 'Submit for review'}</button>
