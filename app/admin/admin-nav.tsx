@@ -6,6 +6,7 @@ const links = [
   { href: '/admin/partners', label: 'Partners', id: 'partners' },
   { href: '/admin/issues', label: 'Issues', id: 'issues' },
   { href: '/admin/settlements', label: 'Settlements', id: 'settlements' },
+  { href: '/admin/audit', label: 'Audit trail', id: 'audit' },
 ] as const;
 
 export default function AdminNav({ current }: { current: (typeof links)[number]['id'] }) {
