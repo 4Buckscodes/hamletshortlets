@@ -9,7 +9,7 @@ export default function PropertySubmissionForm() {
   const [error, setError] = useState('');
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setMessage('');
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;\n    const form = new FormData(formElement);
     const csv = (key: string) => String(form.get(key) || '').split(',').map(v => v.trim()).filter(Boolean);
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -33,7 +33,7 @@ export default function PropertySubmissionForm() {
       const result = await response.json() as { error?: string; message?: string; property?: { id: string } };
       if (!response.ok) throw new Error(result.error || 'Submission failed.');
       setMessage((result.message || 'Listing submitted.') + (result.property?.id ? ' Listing ID: ' + result.property.id : ''));
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Could not submit this listing.'); }
     finally { setBusy(false); }
   }
