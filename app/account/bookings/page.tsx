@@ -62,7 +62,7 @@ export default function GuestBookingsPage() {
     <section className="shell" style={{ paddingBlock: 34, maxWidth: 900 }}>
       <p style={{ color: '#806522', textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 11, fontWeight: 800 }}>Your account</p>
       <h1 className="serif" style={{ fontSize: 'clamp(34px,6vw,52px)', fontWeight: 500, margin: '8px 0 12px' }}>Your booking requests</h1>
-      <p style={{ color: 'var(--muted)', lineHeight: 1.7 }}>Track the status of your stay requests. A request is not confirmed until the property partner accepts it.</p>
+      <p style={{ color: 'var(--muted)', lineHeight: 1.7 }}>Track the status of your stay requests. A request is not confirmed until the property partner accepts it.</p><p style={{ marginTop: 16 }}><Link href="/account/issues" className="secondary-button">Report or track a booking issue</Link></p>
       {loading ? <p role="status">Loading your bookings…</p> : message ? <p role="alert">{message}</p> : items.length ? <div style={{ display: 'grid', gap: 12, marginTop: 24 }}>{items.map(b => <article key={b.id} style={{ padding: 18, border: '1px solid var(--line)', borderRadius: 18, background: '#fff' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
           <div><p style={{ margin: 0, color: '#806522', fontSize: 11, fontWeight: 800 }}>{b.reference}</p><h2 style={{ margin: '6px 0', fontSize: 19 }}>{b.properties?.title || 'HAMLET stay'}</h2><p style={{ margin: 0, color: 'var(--muted)', fontSize: 13 }}>{b.properties?.area || 'Nigeria'} · {b.check_in} → {b.check_out} · {b.guest_count} guest(s)</p></div>
