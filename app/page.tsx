@@ -82,7 +82,7 @@ export default function HomePage() {
       <footer style={{ background: 'var(--navy-deep)', color: '#fff', paddingBlock: 28 }}>
         <div className="shell" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16, fontSize: 13 }}>
           <span>© {new Date().getFullYear()} HAMLET.REST · Your stay, sorted.</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18 }}><Link href="/lagos">Lagos neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/safety">Our approach to trust</Link><Link href="/how-it-works">How it works</Link></div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18 }}><Link href="/lagos">Lagos neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/about">About HAMLET</Link><Link href="/safety">Our approach to trust</Link><Link href="/how-it-works">How it works</Link></div>
         </div>
       </footer>
       <style>{`@media (min-width: 760px) { .desktop-link { display: inline-flex !important; } form[action="/stays"] { grid-template-columns: 1.2fr 1fr 1fr auto !important; align-items: center; border-radius: 999px !important; padding: 8px 10px !important; } form[action="/stays"] > div { width: 1px; height: 42px; } form[action="/stays"] button { width: auto !important; } }`}</style>
