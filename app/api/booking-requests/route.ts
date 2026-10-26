@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const today = new Date().toISOString().slice(0, 10);
   if (checkIn < today || checkOut <= checkIn) return errorResponse('Choose valid future dates with check-out after check-in.');
   const nights = nightsBetween(checkIn, checkOut);
-  if (!Number.isInteger(nights) || nights < 1 || nights > 90) return errorResponse('Bookings must be between 1 and 90 nights.');
+  if (!Number.isInteger(nights) || nights < 1 || nights > 60) return errorResponse('Bookings must be between 1 and 60 nights.');
   if (!Number.isInteger(guests) || guests < 1 || guests > 20) return errorResponse('Choose between 1 and 20 guests.');
 
   const db = createClient(url, key, {
@@ -54,9 +54,10 @@ export async function POST(request: Request) {
   if (authError || !authData.user) return errorResponse('Your session has expired. Sign in and try again.', 401);
   const user = authData.user;
 
-  const { data: profile, error: profileError } = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (profileError) return errorResponse('We could not verify your account permissions.', 403);
-  if (profile?.role && profile.role !== 'guest') return errorResponse('Booking requests require a guest account.', 403);
+  const { data: profile, error: profileError } = await db.from('profiles').select('role,account_status').eq('id', user.id).maybeSingle();
+  if (profileError || !profile) return errorResponse('We could not verify your account permissions. Complete guest account setup and try again.', 403);
+  if (profile.role !== 'guest') return errorResponse('Booking requests require a guest account.', 403);
+  if (profile.account_status && profile.account_status !== 'active') return errorResponse('Your account is currently suspended. Contact HAMLET support.', 403);
 
   const { data: property, error: propertyError } = await db
     .from('properties')
@@ -67,6 +68,15 @@ export async function POST(request: Request) {
   if (propertyError || !property) return errorResponse('This stay is not currently available to request.', 404);
   const capacity = Number(property.capacity || 0);
   if (capacity > 0 && guests > capacity) return errorResponse('This stay does not accommodate that many guests.');
+
+  const { data: unavailable, error: availabilityError } = await db.rpc('get_unavailable_property_ids', {
+    requested_check_in: checkIn,
+    requested_check_out: checkOut,
+  });
+  if (availabilityError) return errorResponse('We could not verify the property calendar. Please try again later.', 503);
+  if ((unavailable as string[] | null)?.includes(propertyId)) {
+    return errorResponse('These dates are blocked or already booked for this property. Please choose different dates.', 409);
+  }
 
   const { data: overlaps, error: overlapError } = await db.rpc('has_booking_overlap', {
     target_property_id: propertyId,
