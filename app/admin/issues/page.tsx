@@ -40,6 +40,8 @@ export default function AdminIssuesPage() {
     setLoading(false);
   }, [db]);
 
+  // The async loader synchronizes UI state with Supabase; the updates occur after awaited I/O.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
 
   async function save(issue: Issue) {
