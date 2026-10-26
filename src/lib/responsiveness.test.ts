@@ -23,7 +23,7 @@ describe('Global & Page-by-Page Responsiveness Invariants (Icons, Text & Scrolls
     expect(shell).toContain('max-w-[82vw]');
     expect(shell).toContain('overscroll-y-contain');
 
-    const issues = readSrc('pages/admin/Issues.tsx');
+    const issues = readSrc('legacy-pages/admin/Issues.tsx');
     expect(issues).toContain('h-dvh');
     expect(issues).toContain('overscroll-y-contain');
     expect(issues).toContain('overflow-hidden');
@@ -31,11 +31,11 @@ describe('Global & Page-by-Page Responsiveness Invariants (Icons, Text & Scrolls
 
   it('makes every modal dialog vertically scrollable within 92dvh on short and mobile viewports', () => {
     const modalFiles = [
-      'pages/PropertyDetail.tsx',
-      'pages/Account.tsx',
-      'pages/partner/Properties.tsx',
-      'pages/admin/Properties.tsx',
-      'pages/admin/Ledger.tsx',
+      'legacy-pages/PropertyDetail.tsx',
+      'legacy-pages/Account.tsx',
+      'legacy-pages/partner/Properties.tsx',
+      'legacy-pages/admin/Properties.tsx',
+      'legacy-pages/admin/Ledger.tsx',
     ];
 
     for (const file of modalFiles) {
@@ -45,29 +45,29 @@ describe('Global & Page-by-Page Responsiveness Invariants (Icons, Text & Scrolls
     }
 
     // Account.tsx has both PaymentModal and IssueModal; AdminLedger has both Reconcile and Record modals
-    expect(readSrc('pages/Account.tsx').match(/max-h-\[92dvh\]/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(readSrc('pages/admin/Ledger.tsx').match(/max-h-\[92dvh\]/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(readSrc('legacy-pages/Account.tsx').match(/max-h-\[92dvh\]/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(readSrc('legacy-pages/admin/Ledger.tsx').match(/max-h-\[92dvh\]/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
   it('keeps Stays and PropertyDetail sidebars non-sticky on mobile and scrollable when sticky on desktop', () => {
-    const stays = readSrc('pages/Stays.tsx');
+    const stays = readSrc('legacy-pages/Stays.tsx');
     expect(stays).toContain('lg:sticky lg:top-20');
     expect(stays).toContain('lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto');
     expect(stays).not.toContain('card sticky top-20');
 
-    const detail = readSrc('pages/PropertyDetail.tsx');
+    const detail = readSrc('legacy-pages/PropertyDetail.tsx');
     expect(detail).toContain('lg:sticky lg:top-20');
     expect(detail).not.toContain('card sticky top-20');
   });
 
   it('pairs every horizontal overflow-x-auto scroll container with overscroll-x-contain', () => {
     const horizontalScrollFiles = [
-      'pages/Home.tsx',
-      'pages/partner/NewProperty.tsx',
-      'pages/partner/Earnings.tsx',
-      'pages/admin/Ledger.tsx',
-      'pages/admin/Applications.tsx',
-      'pages/admin/Assignments.tsx',
+      'legacy-pages/Home.tsx',
+      'legacy-pages/partner/NewProperty.tsx',
+      'legacy-pages/partner/Earnings.tsx',
+      'legacy-pages/admin/Ledger.tsx',
+      'legacy-pages/admin/Applications.tsx',
+      'legacy-pages/admin/Assignments.tsx',
     ];
 
     for (const file of horizontalScrollFiles) {
@@ -79,7 +79,7 @@ describe('Global & Page-by-Page Responsiveness Invariants (Icons, Text & Scrolls
     }
 
     // Verify new PartnerBookingReview page enforces responsive padding and shrink-0 icons
-    const bookingReview = readSrc('pages/partner/BookingReview.tsx');
+    const bookingReview = readSrc('legacy-pages/partner/BookingReview.tsx');
     expect(bookingReview).toContain('p-4 sm:p-6 lg:p-8');
     expect(bookingReview).toContain('shrink-0');
     expect(bookingReview).toContain('min-w-0');

@@ -76,11 +76,11 @@ describe('Stay currency switcher (NGN ₦ <-> USD $ <-> GBP £)', () => {
     for (const rel of [
       'src/components/Navbar.tsx',
       'src/components/PropertyCard.tsx',
-      'src/pages/Home.tsx',
-      'src/pages/Lagos.tsx',
-      'src/pages/Stays.tsx',
-      'src/pages/PropertyDetail.tsx',
-      'src/pages/Account.tsx',
+      'src/legacy-pages/Home.tsx',
+      'src/legacy-pages/Lagos.tsx',
+      'src/legacy-pages/Stays.tsx',
+      'src/legacy-pages/PropertyDetail.tsx',
+      'src/legacy-pages/Account.tsx',
     ]) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
       expect(content, `${rel} should expose currency switching or formatting`).toMatch(/CurrencyToggle|useCurrency/);
@@ -122,7 +122,7 @@ describe('Lagos Mainland (Yaba, Shomolu, Surulere & environs) support', () => {
   });
 
   it('surfaces Lagos Mainland, Yaba, Shomolu, and Surulere across Home, Lagos guide, and Stays', () => {
-    for (const rel of ['src/pages/Home.tsx', 'src/pages/Lagos.tsx', 'src/pages/Stays.tsx']) {
+    for (const rel of ['src/legacy-pages/Home.tsx', 'src/legacy-pages/Lagos.tsx', 'src/legacy-pages/Stays.tsx']) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
       expect(content).toContain('Lagos Mainland');
       expect(content).toContain('Yaba');
@@ -145,8 +145,8 @@ describe('HAMLET Website Copy & Lagos-only scope', () => {
       expect(appSrc).toContain(`path="${route}"`);
     }
 
-    const homeSrc = readFileSync(join(ROOT, 'src/pages/Home.tsx'), 'utf8');
-    const aboutSrc = readFileSync(join(ROOT, 'src/pages/About.tsx'), 'utf8');
+    const homeSrc = readFileSync(join(ROOT, 'src/legacy-pages/Home.tsx'), 'utf8');
+    const aboutSrc = readFileSync(join(ROOT, 'src/legacy-pages/About.tsx'), 'utf8');
     expect(homeSrc).not.toMatch(/Four pillars of a better stay/i);
     expect(homeSrc).not.toContain('A good stay is about more than beautiful pictures.');
     expect(aboutSrc).toMatch(/Four pillars of a better stay/i);

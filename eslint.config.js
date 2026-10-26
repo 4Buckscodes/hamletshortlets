@@ -13,12 +13,15 @@ export default defineConfig([
       js.configs.recommended,
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+  },
+  {
+    files: ['src/legacy-pages/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/lib/**/*.{ts,tsx}', 'src/App.tsx'],
+    extends: [reactRefresh.configs.vite],
   },
   {
     files: ['vite.config.ts', 'vitest.config.ts', 'supabase/tests/**/*.ts'],

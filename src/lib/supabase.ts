@@ -1,21 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+// Read public Supabase settings from Next.js or Vite without exposing server secrets.
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+const runtimeEnv = typeof process !== 'undefined' ? process.env : undefined;
+const supabaseUrl =
+  runtimeEnv?.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+  runtimeEnv?.VITE_SUPABASE_URL?.trim() ||
+  viteEnv?.VITE_SUPABASE_URL?.trim();
+const supabasePublishableKey =
+  runtimeEnv?.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+  runtimeEnv?.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+  viteEnv?.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
 
 if (Boolean(supabaseUrl) !== Boolean(supabasePublishableKey)) {
-  throw new Error('Configure both VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to enable Supabase.');
+  throw new Error(
+    'Configure both NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or both VITE equivalents) to enable Supabase.',
+  );
 }
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabasePublishableKey!)
-  : null;
+export const supabase =
+  isSupabaseConfigured ? createClient(supabaseUrl!, supabasePublishableKey!) : null;
 
 /**
- * Extracts a structured `{ error, message }` message from a Supabase
- * `FunctionsHttpError` / `FunctionsRelayError` response context instead of
- * returning the generic `"Edge Function returned a non-2xx status code"` text.
+ * Extract a useful message from Supabase Edge Function errors where available.
  */
 export async function extractEdgeFunctionError(
   error: unknown,
@@ -29,29 +37,25 @@ export async function extractEdgeFunctionError(
       typeof (maybeContext as { clone?: unknown }).clone === 'function'
     ) {
       try {
-        const cloned = (maybeContext as Response).clone();
-        const body = (await cloned.json()) as { error?: unknown; message?: unknown };
-        if (typeof body?.error === 'string' && body.error.trim()) {
-          return body.error.trim();
-        }
-        if (typeof body?.message === 'string' && body.message.trim()) {
-          return body.message.trim();
-        }
+        const body = (await (maybeContext as Response).clone().json()) as {
+          error?: unknown;
+          message?: unknown;
+        };
+        if (typeof body?.error === 'string' && body.error.trim()) return body.error.trim();
+        if (typeof body?.message === 'string' && body.message.trim()) return body.message.trim();
       } catch {
-        // Fall through to standard error message inspection
+        // Use the normal error message below when the response is not JSON.
       }
     }
 
-    const rawMessage = (error as { message?: unknown }).message;
+    const message = (error as { message?: unknown }).message;
     if (
-      typeof rawMessage === 'string' &&
-      rawMessage.trim() &&
-      rawMessage.trim() !== 'Edge Function returned a non-2xx status code'
+      typeof message === 'string' &&
+      message.trim() &&
+      message.trim() !== 'Edge Function returned a non-2xx status code'
     ) {
-      return rawMessage.trim();
+      return message.trim();
     }
   }
-
   return fallbackMessage;
 }
-

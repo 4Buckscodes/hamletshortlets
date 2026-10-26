@@ -103,35 +103,15 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     expect(manifest.icons.some(icon => icon.src === '/favicon.svg')).toBe(true);
   });
 
-  it('excludes SEO and LLM static files from Vercel SPA index.html rewrite and serves UTF-8 Content-Type headers', () => {
+  it('uses Next.js routing without the legacy Vite SPA rewrite and serves UTF-8 Content-Type headers', () => {
     const vercelConfig = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8')) as {
       headers: Array<{ source: string; headers: Array<{ key: string; value: string }> }>;
-      rewrites: Array<{ source: string; destination: string }>;
+      rewrites?: Array<{ source: string; destination: string }>;
     };
 
-    expect(vercelConfig.rewrites).toHaveLength(1);
-    const rewriteRegex = new RegExp(`^${vercelConfig.rewrites[0]!.source}$`);
-
-    // Static SEO / LLM / asset paths MUST NOT be rewritten to /index.html
-    for (const staticPath of [
-      '/llms.txt',
-      '/llms-full.txt',
-      '/robots.txt',
-      '/sitemap.xml',
-      '/site.webmanifest',
-      '/favicon.svg',
-      '/images/lagos-hero.jpg',
-      '/assets/index-B12345.js',
-    ]) {
-      expect(rewriteRegex.test(staticPath)).toBe(false);
-    }
-
-    // Client-side routes MUST still rewrite to /index.html
-    for (const appRoute of ['/', '/stays', '/lagos', '/partner/register']) {
-      expect(rewriteRegex.test(appRoute)).toBe(true);
-    }
-
+    expect(vercelConfig.rewrites).toBeUndefined();
     expect(vercelConfig.headers.length).toBeGreaterThanOrEqual(3);
+    expect(vercelConfig.headers.some(rule => rule.source.includes('llms'))).toBe(true);
   });
 });
 
