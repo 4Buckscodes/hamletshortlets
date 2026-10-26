@@ -34,19 +34,17 @@ export default function BookingRequestForm({ propertyId, nightlyRate, cleaningFe
     try {
       const { data: { user } } = await db.auth.getUser();
       if (!user) { window.location.assign('/signin?next=' + encodeURIComponent(window.location.pathname)); return; }
-      const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
-      if (profile?.role && profile.role !== 'guest') { setError('Booking requests are for guest accounts. Please switch to a guest account.'); return; }
-      const reference = 'HML-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
-      const { error: insertError } = await db.from('bookings').insert({
-        reference, property_id: propertyId, guest_id: user.id, check_in: checkIn, check_out: checkOut,
-        guest_count: Number(guests), accommodation_subtotal: pricing.accommodationSubtotal,
-        mandatory_charges: pricing.mandatoryCharges, mandatory_total: pricing.mandatoryChargesTotal,
-        hamlet_guest_fee: pricing.hamletGuestServiceFee, guest_total: pricing.guestTotal,
-        refundable_deposit: pricing.refundableDeposit, status: 'requested',
-        special_requests: requests.trim() || null,
+      const { data: sessionData } = await db.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) { window.location.assign('/signin?next=' + encodeURIComponent(window.location.pathname)); return; }
+      const response = await fetch('/api/booking-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + accessToken },
+        body: JSON.stringify({ propertyId, checkIn, checkOut, guests: Number(guests), specialRequests: requests.trim() }),
       });
-      if (insertError) throw insertError;
-      setMessage('Request sent. This is not a confirmed booking; the property partner must confirm availability and final pricing before payment.');
+      const result = await response.json() as { error?: string; booking?: { reference?: string }; message?: string };
+      if (!response.ok) throw new Error(result.error || 'We could not submit the booking request.');
+      setMessage((result.message || 'Request sent.') + (result.booking?.reference ? ' Reference: ' + result.booking.reference + '.' : ''));
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'We could not submit the request. Please try again.'); }
     finally { setBusy(false); }
   }
