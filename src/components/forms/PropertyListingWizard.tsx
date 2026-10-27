@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { Upload, Star, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
-import { calculateGuestPricing, guestFacingNightlyNgn } from '@/lib/pricing';
+import { calculateGuestPricing, estimatePaystackLocalFee, guestFacingNightlyNgn } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
@@ -227,6 +227,11 @@ export function PropertyListingWizard({
       refundableDeposit: Math.max(0, Math.round(Number(values.deposit) || 0)),
     });
   }, [values.cleaningFee, values.deposit, values.nightlyRate]);
+
+  const samplePaystackFee = useMemo(
+    () => estimatePaystackLocalFee(samplePricing.guestTotal),
+    [samplePricing.guestTotal],
+  );
 
   async function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -873,10 +878,18 @@ export function PropertyListingWizard({
                   </strong>
                 </div>
                 <div className="flex justify-between border-t border-ink-200 pt-2 text-sm font-bold text-ink-900">
-                  <span>Sample 3-night guest stay total</span>
+                  <span>Sample 3-night accommodation + mandatory charges</span>
                   <span className="font-mono">
                     {formatPrice(samplePricing.guestTotal)}
                   </span>
+                </div>
+                <div className="flex justify-between text-ink-500">
+                  <span>Estimated local Paystack processing fee at checkout</span>
+                  <span className="font-mono">{formatPrice(samplePaystackFee.estimatedFeeNgn)}</span>
+                </div>
+                <div className="flex justify-between border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
+                  <span>Estimated guest payment total (before refundable deposit)</span>
+                  <span className="font-mono">{formatPrice(samplePaystackFee.estimatedGuestTotalNgn)}</span>
                 </div>
                 {samplePricing.refundableDeposit > 0 && (
                   <div className="flex justify-between text-ink-500">
