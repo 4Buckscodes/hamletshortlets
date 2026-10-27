@@ -28,7 +28,7 @@ export default function PartnerStartDashboard() {
       const { data: auth } = await db.auth.getSession();
       const user = auth.session?.user;
       if (!user) {
-        window.location.assign('/signin?mode=signup&next=%2Fpartners%2Fstart');
+        window.location.assign('/signin?mode=signup&next=%2Fpartners%2Fapply');
         return;
       }
       setEmail(user.email ?? '');
