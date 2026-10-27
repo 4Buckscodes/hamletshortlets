@@ -710,3 +710,37 @@ export function daysUntilLagosDate(targetIsoDate: string, fromIsoDate?: string):
   const end = new Date(`${targetIsoDate}T00:00:00Z`);
   return Math.round((end.getTime() - start.getTime()) / 86400000);
 }
+
+
+/**
+ * Pilot estimate for Nigerian local-card Paystack processing fees.
+ * Published standard pricing: 1.5% + ₦100, capped at ₦2,000;
+ * the ₦100 fixed component is waived for transactions below ₦2,500.
+ *
+ * This is a transparent estimate only. Production checkout must reconcile
+ * against Paystack's actual transaction fee and configured fee-pass-through.
+ */
+export interface PaystackLocalFeeEstimate {
+  transactionAmountNgn: number;
+  estimatedFeeNgn: number;
+  estimatedGuestTotalNgn: number;
+  capped: boolean;
+  fixedFeeApplied: boolean;
+}
+
+export function estimatePaystackLocalFee(transactionAmountNgn: number): PaystackLocalFeeEstimate {
+  const base = Math.max(0, Math.round(Number.isFinite(transactionAmountNgn) ? transactionAmountNgn : 0));
+  if (base === 0) {
+    return { transactionAmountNgn: 0, estimatedFeeNgn: 0, estimatedGuestTotalNgn: 0, capped: false, fixedFeeApplied: false };
+  }
+  const fixedFeeApplied = base >= 2_500;
+  const rawFee = base * 0.015 + (fixedFeeApplied ? 100 : 0);
+  const estimatedFeeNgn = Math.min(2_000, Math.ceil(rawFee));
+  return {
+    transactionAmountNgn: base,
+    estimatedFeeNgn,
+    estimatedGuestTotalNgn: base + estimatedFeeNgn,
+    capped: rawFee >= 2_000,
+    fixedFeeApplied,
+  };
+}
