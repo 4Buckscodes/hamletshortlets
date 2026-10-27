@@ -105,7 +105,7 @@ export default function PartnerStartDashboard() {
                 {isApprovedPartner ? (
                   <Link href="/partners" className="primary-button">Open partner workspace <ArrowRight className="h-4 w-4" /></Link>
                 ) : (
-                  <Link href="/partners/apply" className="primary-button">Continue partner application <ArrowRight className="h-4 w-4" /></Link>
+                  <Link href="/partners/apply/form" className="primary-button">Continue partner application <ArrowRight className="h-4 w-4" /></Link>
                 )}
                 <Link href="/stays" className="secondary-button">Explore stays</Link>
                 <Link href="/account" className="secondary-button">Guest account</Link>
