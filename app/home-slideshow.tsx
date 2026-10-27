@@ -224,12 +224,12 @@ export function HomeMarketplaceExperience({
               </div>
 
               <h1 className="mt-3.5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(8,15,30,0.65)] sm:text-5xl lg:text-6xl">
-                Lagos is big.{' '}
-                <span className="italic text-brass-300">Your stay, sorted.</span>
+                Find your{' '}
+                <span className="italic text-brass-300">stay.</span>
               </h1>
 
               <p className="mt-3 max-w-lg text-sm font-semibold leading-relaxed text-white/95 drop-shadow-[0_1px_10px_rgba(8,15,30,0.7)] sm:text-base">
-                Verified shortlets across Lagos Mainland &amp; Island. Pay only after availability is confirmed.
+                Shortlets across Lagos Island &amp; Mainland.
               </p>
             </div>
 
@@ -464,7 +464,7 @@ export function HomeMarketplaceExperience({
           <div>
             <p className="eyebrow">Lagos marketplace</p>
             <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-              Available stays
+              Stays you might love
             </h2>
           </div>
 
@@ -569,7 +569,7 @@ export function HomeMarketplaceExperience({
             <div>
               <p className="eyebrow">Mainland &amp; Island</p>
               <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-                Browse by area
+                Explore Lagos
               </h2>
             </div>
             <Link href="/lagos" className="btn-outline !rounded-full !px-5 !py-2 text-xs">
