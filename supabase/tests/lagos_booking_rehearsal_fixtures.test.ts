@@ -116,10 +116,10 @@ describe('isolated Lagos booking rehearsal fixtures', () => {
         [
           propertyId,
           JSON.stringify({
-            ownership: 'test_fixture',
-            identity: 'test_fixture',
-            authority: 'test_fixture',
-            inspection: 'test_fixture',
+            ownership: 'verified',
+            identity: 'verified',
+            authority: 'verified',
+            inspection: 'verified',
           }),
         ],
       ),
