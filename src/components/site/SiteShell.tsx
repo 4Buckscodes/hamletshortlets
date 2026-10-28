@@ -720,27 +720,27 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/10 bg-ink-950 text-ink-100">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr] md:items-start">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="grid gap-6 md:grid-cols-[0.8fr_1.2fr] md:items-start md:gap-12">
           <div className="max-w-sm">
             <Link href="/" aria-label="HAMLET.REST home" className="inline-flex items-center">
               <HamletWordmark light />
             </Link>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-300">
+            <p className="mt-2 max-w-xs text-sm leading-6 text-ink-300">
               Your stay, sorted. Thoughtfully selected shortlets across Lagos Island and Mainland.
             </p>
-            <Link href="/stays" className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-brass-500 px-4 py-2 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400">
+            <Link href="/stays" className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-brass-500 px-3.5 py-1.5 text-xs font-bold text-ink-950 transition hover:bg-brass-400">
               Explore stays <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2">
-            <details className="footer-menu group rounded-2xl border border-white/10 bg-white/[0.035] px-4">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">
+            <details className="footer-menu group rounded-xl border border-white/[0.09] bg-white/[0.025] px-3">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-[13px] font-semibold text-white marker:hidden [&::-webkit-details-marker]:hidden">
                 Explore
                 <span className="footer-menu-icon text-xl font-normal text-brass-300 transition-transform duration-200">+</span>
               </summary>
-              <div className="footer-menu-content pb-4 text-sm text-ink-300">
+              <div className="footer-menu-content pb-3 text-sm text-ink-300">
                 <Link className="footer-link" href="/stays">All Lagos stays</Link>
                 <Link className="footer-link" href="/stays?area=Lagos+Mainland">Lagos Mainland</Link>
                 <Link className="footer-link" href="/stays?area=Victoria+Island">Victoria Island &amp; Ikoyi</Link>
@@ -768,7 +768,7 @@ export function SiteFooter() {
                 Your account &amp; partners
                 <span className="footer-menu-icon text-xl font-normal text-brass-300 transition-transform duration-200">+</span>
               </summary>
-              <div className="footer-menu-content grid gap-x-6 pb-4 text-sm text-ink-300 sm:grid-cols-2">
+              <div className="footer-menu-content grid gap-x-6 pb-3 text-sm text-ink-300 sm:grid-cols-2">
                 <Link className="footer-link" href="/signin">Sign in or create an account</Link>
                 <Link className="footer-link" href="/account">My bookings</Link>
                 <Link className="footer-link" href="/account/issues">Report a booking issue</Link>
@@ -779,9 +779,8 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5 text-[11px] leading-relaxed text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 border-t border-white/10 pt-4 text-xs leading-5 text-ink-400">
           <span>© {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.</span>
-          <span>Bookings confirm after partner acceptance and server-verified payment.</span>
         </div>
       </div>
     </footer>
