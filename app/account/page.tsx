@@ -115,7 +115,7 @@ export default function GuestAccountOverviewPage() {
       <SiteHeader />
 
       <main className="shell flex-1 py-8 sm:py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="workspace-heading flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Your HAMLET Account</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
