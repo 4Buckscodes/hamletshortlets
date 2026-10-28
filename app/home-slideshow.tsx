@@ -185,11 +185,6 @@ export function HomeMarketplaceExperience({
                 decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/70 to-transparent p-4 pt-16 sm:p-5 sm:pt-20">
-                <span className="inline-flex rounded-full border border-white/30 bg-ink-950/35 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
-                  Made for your kind of stay
-                </span>
-              </div>
             </div>
             <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
               <img
@@ -208,9 +203,6 @@ export function HomeMarketplaceExperience({
                 decoding="async"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-[10px] font-bold text-ink-900 shadow-sm">
-                Lagos Island &amp; Mainland
-              </div>
             </div>
           </div>
         </div>
