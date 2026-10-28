@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateGuestPricing,
+  estimatePaystackLocalFee,
   calculateMarkupAllocation,
   datesOverlap,
   HAMLET_DOMESTIC_MARKUP_RATE,
@@ -102,5 +103,41 @@ describe('HAMLET booking pricing & date helpers', () => {
     expect(datesOverlap('2026-11-10', '2026-11-14', '2026-11-10', '2026-11-14')).toBe(true);
     expect(datesOverlap('2026-11-10', '2026-11-14', '2026-11-14', '2026-11-17')).toBe(false);
     expect(datesOverlap('2026-11-14', '2026-11-17', '2026-11-10', '2026-11-14')).toBe(false);
+  });
+});
+
+
+describe('Paystack local processing fee estimate', () => {
+  it('waives the fixed ₦100 component below ₦2,500', () => {
+    expect(estimatePaystackLocalFee(2_000)).toMatchObject({
+      estimatedFeeNgn: 30,
+      estimatedGuestTotalNgn: 2_030,
+      fixedFeeApplied: false,
+      capped: false,
+    });
+  });
+
+  it('applies 1.5% plus ₦100 at ₦2,500 and above', () => {
+    expect(estimatePaystackLocalFee(2_500)).toMatchObject({
+      estimatedFeeNgn: 138,
+      estimatedGuestTotalNgn: 2_638,
+      fixedFeeApplied: true,
+      capped: false,
+    });
+  });
+
+  it('caps the estimate at ₦2,000 for large local transactions', () => {
+    expect(estimatePaystackLocalFee(500_000)).toMatchObject({
+      estimatedFeeNgn: 2_000,
+      estimatedGuestTotalNgn: 502_000,
+      fixedFeeApplied: true,
+      capped: true,
+    });
+  });
+
+  it('safely handles zero, negative and non-finite inputs', () => {
+    expect(estimatePaystackLocalFee(0).estimatedFeeNgn).toBe(0);
+    expect(estimatePaystackLocalFee(-100).estimatedFeeNgn).toBe(0);
+    expect(estimatePaystackLocalFee(Number.NaN).estimatedFeeNgn).toBe(0);
   });
 });
