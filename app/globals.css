@@ -252,3 +252,28 @@
     transform: none;
   }
 }
+
+
+@layer components {
+  .workspace-heading {
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid rgba(14, 31, 59, 0.1);
+    padding-bottom: 1.25rem;
+  }
+
+  .workspace-heading h1 {
+    letter-spacing: -0.04em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .workspace-heading p:not(.eyebrow) {
+    max-width: 44rem;
+    line-height: 1.75;
+  }
+
+  .card:focus-within,
+  .surface-card:focus-within {
+    border-color: rgba(201, 164, 74, 0.65);
+  }
+}
