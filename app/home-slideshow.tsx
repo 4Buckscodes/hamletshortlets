@@ -403,7 +403,7 @@ export function HomeMarketplaceExperience({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Lagos marketplace</p>
-            <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+            <h2 className="mt-1 font-display text-3xl font-semibold tracking-[-0.035em] text-ink-900 sm:text-4xl">
               Stays you might love
             </h2>
           </div>
@@ -524,7 +524,7 @@ export function HomeMarketplaceExperience({
                 <Link
                   key={card.name}
                   href={card.href}
-                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition duration-300 ease-out hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg motion-reduce:transform-none sm:rounded-3xl"
+                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-brass-400/70 hover:shadow-[0_18px_38px_-20px_rgba(14,31,59,0.32)] motion-reduce:transform-none sm:rounded-3xl"
                 >
                   <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
                     <img
@@ -560,9 +560,10 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Compact Partner Callout Banner ─────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
-        <div className="flex flex-col items-start justify-between gap-5 rounded-3xl bg-ink-950 px-6 py-8 text-paper sm:flex-row sm:items-center sm:px-10">
-          <div>
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="group relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl bg-ink-950 px-6 py-8 text-paper shadow-[0_18px_50px_-28px_rgba(14,31,59,0.55)] sm:flex-row sm:items-center sm:px-10">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-brass-500/10 blur-3xl transition-opacity duration-700 group-hover:bg-brass-500/15 motion-reduce:transition-none" />
+          <div className="relative z-10">
             <p className="eyebrow-light">For property owners &amp; managers</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">
               Turn your shortlet into a better-managed opportunity.
@@ -571,7 +572,7 @@ export function HomeMarketplaceExperience({
               Reach more guests with clear booking records, partner support and commission terms agreed upfront.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="relative z-10 flex flex-wrap items-center gap-3">
             <Link href="/partners/apply" className="btn-brass !rounded-full !px-6">
               List a property <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>
