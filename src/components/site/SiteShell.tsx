@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   createContext,
@@ -833,11 +834,12 @@ export function StayListingCard({
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
         {cover ? (
-          <img
+          <Image
             src={cover}
             alt={stay.title}
-            loading="lazy"
-            className="h-full w-full object-cover opacity-100 transition duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            className="object-cover opacity-100 transition duration-300 group-hover:scale-[1.025] motion-reduce:transition-none"
           />
         ) : (
           <div className="grid h-full w-full place-items-center bg-gradient-to-br from-clay to-paper text-4xl text-brass-600">
