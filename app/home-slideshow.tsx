@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
   Building2,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   MapPin,
   Search,
   ShieldCheck,
@@ -187,102 +185,65 @@ export function HomeMarketplaceExperience({
 
   return (
     <>
-      {/* ── Full-Clarity Sample Interior Hero Slideshow ────────────── */}
-      <section
-        className="relative flex min-h-[440px] flex-col justify-end overflow-hidden bg-ink-950 text-paper sm:min-h-[530px] lg:min-h-[610px]"
-        onMouseEnter={() => setSlideshowPaused(true)}
-        onMouseLeave={() => setSlideshowPaused(false)}
-      >
-        <div className="absolute inset-0">
-          {HERO_SLIDES.map((slide, idx) => {
-            const isCurrent = idx === heroSlide;
-            return (
-              <img
-                key={slide.src}
-                src={slide.src}
-                alt={slide.alt}
-                loading={idx === 0 ? 'eager' : 'lazy'}
-                decoding="async"
-                className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] transition-all duration-1000 ease-out ${
-                  isCurrent ? 'scale-100 opacity-100' : 'pointer-events-none scale-105 opacity-0'
-                }`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Localized bottom/left vignette only — leaves the furnished room bright & clear */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-ink-950/60 via-ink-950/20 to-transparent lg:w-3/5" />
-
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-ink-950/70 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brass-400" />
-                <span>HAMLET.REST · Verified Lagos shortlets</span>
-              </div>
-
-              <h1 className="mt-3.5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(8,15,30,0.65)] sm:text-5xl lg:text-6xl">
-                Find your{' '}
-                <span className="italic text-brass-300">stay.</span>
-              </h1>
-
-              <p className="mt-3 max-w-lg text-sm font-semibold leading-relaxed text-white/95 drop-shadow-[0_1px_10px_rgba(8,15,30,0.7)] sm:text-base">
-                Shortlets across Lagos Island &amp; Mainland.
-              </p>
+      {/* ── Editorial discovery hero: photographic collage, no rotating carousel ── */}
+      <section className="relative overflow-hidden bg-paper">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 pb-14 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-jade-700/15 bg-white px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-ink-800 shadow-2xs">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-jade-700" />
+              <span>HAMLET.REST · Verified Lagos shortlets</span>
             </div>
 
-            {/* Sample interior room switcher + prev/next controls */}
-            <div className="flex flex-wrap items-center gap-2 self-start lg:self-end">
-              <div
-                role="tablist"
-                aria-label="Sample apartment rooms"
-                className="flex flex-wrap items-center gap-1 rounded-2xl border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md sm:rounded-full"
-              >
-                <span className="px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-brass-300">
-                  Sample interior
-                </span>
-                {HERO_SLIDES.map((slide, idx) => {
-                  const active = idx === heroSlide;
-                  return (
-                    <button
-                      key={slide.src}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setHeroSlide(idx)}
-                      className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-bold transition ${
-                        active
-                          ? 'bg-brass-400 text-ink-950 shadow-2xs'
-                          : 'text-white/85 hover:bg-white/15 hover:text-white'
-                      }`}
-                    >
-                      {slide.room}
-                    </button>
-                  );
-                })}
-              </div>
+            <h1 className="mt-5 font-display text-5xl font-bold leading-[0.98] tracking-tight text-ink-950 sm:text-6xl lg:text-7xl">
+              Find your{' '}
+              <span className="italic text-jade-700">stay.</span>
+            </h1>
 
-              <div className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md">
-                <button
-                  type="button"
-                  aria-label="Previous interior photo"
-                  onClick={() =>
-                    setHeroSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
-                  }
-                  className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
-                >
-                  <ChevronLeft className="h-4 w-4 shrink-0" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next interior photo"
-                  onClick={() => setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length)}
-                  className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
-                >
-                  <ChevronRight className="h-4 w-4 shrink-0" />
-                </button>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-ink-600 sm:text-lg">
+              Thoughtfully selected shortlets across Lagos Island and Mainland.
+              Find a place that feels right, then make it yours for a while.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-ink-600">
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-jade-700" /> Reviewed listings</span>
+              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-jade-700" /> Lagos, made easier</span>
+            </div>
+          </div>
+
+          <div className="relative mx-auto grid w-full max-w-2xl grid-cols-[1.2fr_0.8fr] gap-3 sm:gap-4">
+            <div className="relative row-span-2 min-h-[320px] overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
+              <img
+                src="/images/hero-sample-living.jpg"
+                alt="Warm, furnished shortlet living room with balcony greenery"
+                loading="eager"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/70 to-transparent p-4 pt-16 sm:p-5 sm:pt-20">
+                <span className="inline-flex rounded-full border border-white/30 bg-ink-950/35 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
+                  Made for your kind of stay
+                </span>
+              </div>
+            </div>
+            <div className="relative min-h-[150px] overflow-hidden rounded-[1.5rem] bg-clay sm:min-h-[210px]">
+              <img
+                src="/images/hero-sample-bedroom.jpg"
+                alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
+                loading="eager"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+            <div className="relative min-h-[150px] overflow-hidden rounded-[1.5rem] bg-clay sm:min-h-[210px]">
+              <img
+                src="/images/hero-sample-kitchen.jpg"
+                alt="Contemporary shortlet kitchen and dining space"
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute bottom-3 right-3 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-[10px] font-bold text-ink-900 shadow-sm">
+                Lagos Island &amp; Mainland
               </div>
             </div>
           </div>
