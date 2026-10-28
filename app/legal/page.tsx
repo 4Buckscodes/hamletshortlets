@@ -15,7 +15,7 @@ export default function LegalPage() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section className="page-hero border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">Legal &amp; Policies · Abundance Abodes</p>
             <h1 className="mt-2.5 font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
