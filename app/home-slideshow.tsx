@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
@@ -180,30 +181,33 @@ export function HomeMarketplaceExperience({
 
           <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-out [&_img]:hover:scale-[1.035] motion-reduce:[&_img]:transition-none>
             <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
-              <img
+              <Image
                 src="/images/hero-sample-living.jpg"
                 alt="Warm, furnished shortlet living room with balcony greenery"
-                loading="eager"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                priority
+                sizes="(max-width: 639px) 64vw, (max-width: 1023px) 50vw, 44vw"
+                className="object-cover"
               />
             </div>
             <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
-              <img
+              <Image
                 src="/images/hero-sample-bedroom.jpg"
                 alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
-                loading="eager"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                loading="lazy"
+                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
+                className="object-cover"
               />
             </div>
             <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
-              <img
+              <Image
                 src="/images/hero-sample-kitchen.jpg"
                 alt="Contemporary shortlet kitchen and dining space"
+                fill
                 loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
+                className="object-cover"
               />
             </div>
           </div>
@@ -527,11 +531,13 @@ export function HomeMarketplaceExperience({
                   className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-brass-400/70 hover:shadow-[0_18px_38px_-20px_rgba(14,31,59,0.32)] motion-reduce:transform-none sm:rounded-3xl"
                 >
                   <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
-                    <img
+                    <Image
                       src={card.img}
                       alt={card.name}
+                      fill
                       loading="lazy"
-                      className="h-full w-full object-cover opacity-100 transition duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
+                      sizes="(max-width: 639px) 46vw, (max-width: 1023px) 48vw, 25vw"
+                      className="object-cover opacity-100 transition duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
                     <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
