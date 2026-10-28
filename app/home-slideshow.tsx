@@ -28,29 +28,6 @@ import {
   useNextHoratio,
 } from '@/components/site/SiteShell';
 
-const HERO_SLIDES = [
-  {
-    src: '/images/hero-sample-living.jpg',
-    room: 'Living room',
-    alt: 'Furnished sample apartment living room with warm brass lighting and balcony greenery',
-  },
-  {
-    src: '/images/hero-sample-bedroom.jpg',
-    room: 'Primary bedroom',
-    alt: 'Furnished sample apartment primary bedroom with upholstered king bed and walnut joinery',
-  },
-  {
-    src: '/images/hero-sample-kitchen.jpg',
-    room: 'Kitchen & dining',
-    alt: 'Furnished sample apartment marble kitchen island and dining area',
-  },
-  {
-    src: '/images/hero-sample-lounge.jpg',
-    room: 'Study & terrace',
-    alt: 'Furnished sample apartment study desk and twilight lounge',
-  },
-] as const;
-
 const QUICK_AREAS = [
   'Lagos Mainland',
   'Yaba',
@@ -133,23 +110,12 @@ export function HomeMarketplaceExperience({
   const { formatPrice } = useCurrency();
   const { openHoratio } = useNextHoratio();
 
-  const [heroSlide, setHeroSlide] = useState(0);
-  const [slideshowPaused, setSlideshowPaused] = useState(false);
-
   const [area, setArea] = useState('');
   const [searchSide, setSearchSide] = useState<'all' | 'mainland' | 'island'>('all');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
-
-  useEffect(() => {
-    if (slideshowPaused) return;
-    const timer = window.setInterval(() => {
-      setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 5500);
-    return () => window.clearInterval(timer);
-  }, [slideshowPaused]);
 
   const minDate = lagosIsoDateOffset(0);
 
