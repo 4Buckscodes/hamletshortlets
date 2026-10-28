@@ -89,7 +89,7 @@ export default function PartnerStartDashboard() {
                 <h2 className="mt-3 text-base font-bold text-ink-900">Your partner level</h2>
                 <p className="mt-2 inline-flex rounded-full border border-ink-200 bg-paper px-3 py-1 text-xs font-extrabold text-ink-900">VIP 1 · Registered</p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-600">You are not yet an identity-verified partner. Upgrade to VIP 2 when you are ready to complete identity verification. Some actions will remain restricted until the relevant checks are approved.</p>
-                <Link href="/partners/verify" className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-ink-900 underline underline-offset-4">Explore identity verification <ArrowRight className="h-4 w-4" /></Link>
+                <p className="mt-2 text-xs text-ink-500">Identity verification can be started from your partner dashboard when the verification flow is available.</p>
               </article>
             </section>
 
