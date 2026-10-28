@@ -107,3 +107,144 @@ create trigger apply_network_partner_referral_reward
 revoke all on function public.apply_network_partner_referral_reward() from public, anon;
 grant execute on function public.apply_network_partner_referral_reward() to service_role;
 
+
+-- Complete the network-referral extension at stay completion: any referred
+-- partner role can activate their referrer relationship and accrue the same 2.5%
+-- reward on eligible later stays.
+create or replace function public.complete_network_partner_referral_reward()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  listing_row public.properties%rowtype;
+  generator_id uuid;
+  referral_row public.partner_referrals%rowtype;
+  generator_active boolean := false;
+  referrer_active boolean := false;
+  reward integer := 0;
+begin
+  if new.status <> 'completed' or old.status = 'completed' then
+    return new;
+  end if;
+
+  -- The existing lifecycle function handles closing-agent referrals. Avoid
+  -- duplicating an activation/reward already recorded for this booking.
+  if exists (select 1 from public.partner_referral_rewards where booking_id = new.id) then
+    return new;
+  end if;
+
+  select * into listing_row from public.properties where id = new.property_id;
+  if not found then return new; end if;
+
+  generator_id := new.closing_agent_id;
+  if generator_id is null then generator_id := listing_row.authorised_manager_id; end if;
+  if generator_id is null then generator_id := listing_row.property_introducer_id; end if;
+
+  if generator_id is null then
+    select candidates.id::uuid into generator_id
+    from (
+      select nullif(to_jsonb(listing_row) ->> 'owner_id', '') as id
+      union all select nullif(to_jsonb(listing_row) ->> 'owner_user_id', '')
+      union all select nullif(to_jsonb(listing_row) ->> 'created_by', '')
+      union all select nullif(to_jsonb(listing_row) ->> 'submitted_by', '')
+    ) candidates
+    where candidates.id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    limit 1;
+  end if;
+
+  if generator_id is null or generator_id = new.guest_id then return new; end if;
+
+  select * into referral_row
+  from public.partner_referrals
+  where referred_partner_id = generator_id
+    and referrer_partner_id <> generator_id
+  for update;
+
+  if not found then return new; end if;
+
+  select (account_status = 'active') into generator_active
+  from public.profiles where id = generator_id and role in ('partner', 'admin');
+  select (account_status = 'active') into referrer_active
+  from public.profiles where id = referral_row.referrer_partner_id and role in ('partner', 'admin');
+
+  if not coalesce(generator_active, false) or not coalesce(referrer_active, false) then
+    return new;
+  end if;
+
+  if referral_row.status = 'verified' and referral_row.activated_at is null then
+    update public.partner_referrals
+      set status = 'active',
+          activated_at = now(),
+          activating_booking_id = new.id,
+          eligibility_starts_at = now(),
+          eligibility_ends_at = now() + make_interval(days => earning_window_days),
+          updated_at = now()
+    where id = referral_row.id;
+
+    insert into public.partner_referral_rewards (
+      referral_id, referrer_partner_id, referred_closing_agent_id,
+      booking_id, booking_reference, owner_listed_price_ngn,
+      reward_rate, reward_amount_ngn, payout_status
+    )
+    values (
+      referral_row.id, referral_row.referrer_partner_id, generator_id,
+      new.id, new.reference, coalesce(new.owner_listed_price_ngn, new.accommodation_subtotal, 0),
+      0.0000, 0, 'activated_no_payout'
+    )
+    on conflict (booking_id) do nothing;
+    return new;
+  end if;
+
+  if referral_row.status <> 'active'
+    or referral_row.eligibility_starts_at is null
+    or referral_row.eligibility_starts_at > now()
+    or referral_row.eligibility_ends_at is null
+    or referral_row.eligibility_ends_at <= now() then
+    return new;
+  end if;
+
+  reward := coalesce(new.direct_referrer_reward_ngn, 0);
+  if reward <= 0 or new.direct_referrer_id is distinct from referral_row.referrer_partner_id then
+    return new;
+  end if;
+
+  insert into public.partner_referral_rewards (
+    referral_id, referrer_partner_id, referred_closing_agent_id,
+    booking_id, booking_reference, owner_listed_price_ngn,
+    reward_rate, reward_amount_ngn, payout_status
+  )
+  values (
+    referral_row.id, referral_row.referrer_partner_id, generator_id,
+    new.id, new.reference, coalesce(new.owner_listed_price_ngn, new.accommodation_subtotal, 0),
+    0.0250, reward, 'pending'
+  )
+  on conflict (booking_id) do nothing;
+
+  if found then
+    insert into public.booking_payment_records (
+      booking_id, record_type, amount, provider_reference, status,
+      description, variance, operator_name, beneficiary_user_id, payout_status
+    )
+    values (
+      new.id, 'referral_reward', reward, new.reference || ':network_referral',
+      'recorded', 'Partner network referral reward (2.5% of owner-listed accommodation price)',
+      0, 'HAMLET system', referral_row.referrer_partner_id, 'pending'
+    )
+    on conflict (provider_reference, record_type, booking_id)
+      where provider_reference is not null
+    do nothing;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists complete_network_partner_referral_reward on public.bookings;
+create trigger complete_network_partner_referral_reward
+  after update of status on public.bookings
+  for each row execute function public.complete_network_partner_referral_reward();
+
+revoke all on function public.complete_network_partner_referral_reward() from public, anon, authenticated;
+grant execute on function public.complete_network_partner_referral_reward() to service_role;
