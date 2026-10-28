@@ -179,7 +179,7 @@ export function HomeMarketplaceExperience({
             </div>
           </div>
 
-          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-out [&_img]:hover:scale-[1.035] motion-reduce:[&_img]:transition-none">
+          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-300 [&_img]:ease-out [&_img]:hover:scale-[1.02] motion-reduce:[&_img]:transition-none">
             <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
               <Image
                 src="/images/hero-sample-living.jpg"
@@ -190,7 +190,7 @@ export function HomeMarketplaceExperience({
                 className="object-cover"
               />
             </div>
-            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
+            <div className="hero-tile-enter relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
               <Image
                 src="/images/hero-sample-bedroom.jpg"
                 alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
@@ -200,7 +200,7 @@ export function HomeMarketplaceExperience({
                 className="object-cover"
               />
             </div>
-            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
+            <div className="hero-tile-enter hero-tile-enter-delay relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
               <Image
                 src="/images/hero-sample-kitchen.jpg"
                 alt="Contemporary shortlet kitchen and dining space"
@@ -270,24 +270,39 @@ export function HomeMarketplaceExperience({
           </div>
 
           {/* Quick area chips */}
-          <div className="mb-3.5 flex items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-1">
-            {QUICK_AREAS.map(hub => {
-              const selected = area === hub;
-              return (
-                <button
-                  key={hub}
-                  type="button"
-                  onClick={() => setArea(selected ? '' : hub)}
-                  className={`shrink-0 cursor-pointer rounded-full border px-3 py-1 text-[11px] font-bold transition ${
-                    selected
-                      ? 'border-brass-600 bg-brass-500 text-ink-950'
-                      : 'border-ink-200 bg-paper/75 text-ink-700 hover:border-ink-400'
-                  }`}
-                >
-                  {hub}
+          <div className="mb-4 rounded-2xl border border-ink-100 bg-paper/75 p-3.5 sm:p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold text-ink-900">Popular locations</p>
+                <p className="mt-0.5 text-[11px] text-ink-500">Choose an area to narrow your search</p>
+              </div>
+              {area && (
+                <button type="button" onClick={() => setArea('')} className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-ink-500 transition hover:bg-white hover:text-ink-900">
+                  Clear
                 </button>
-              );
-            })}
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_AREAS.map(hub => {
+                const selected = area === hub;
+                return (
+                  <button
+                    key={hub}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setArea(selected ? '' : hub)}
+                    className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 ${
+                      selected
+                        ? 'border-ink-900 bg-ink-900 text-white shadow-sm'
+                        : 'border-ink-200 bg-white text-ink-700 hover:border-brass-500 hover:bg-brass-200/30 hover:text-ink-950'
+                    }`}
+                  >
+                    {selected && <span aria-hidden="true" className="text-brass-300">✓</span>}
+                    {hub}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
