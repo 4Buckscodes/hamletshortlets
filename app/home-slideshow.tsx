@@ -153,31 +153,31 @@ export function HomeMarketplaceExperience({
     <>
       {/* ── Editorial discovery hero: photographic collage, no rotating carousel ── */}
       <section className="relative overflow-hidden bg-paper">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 pb-14 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
+        <div className="mx-auto grid max-w-7xl items-center gap-5 px-4 sm:gap-8 pb-8 pt-7 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-jade-700/15 bg-white px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-ink-800 shadow-2xs">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-jade-700" />
               <span>HAMLET.REST · Verified Lagos shortlets</span>
             </div>
 
-            <h1 className="mt-5 font-display text-5xl font-bold leading-[0.98] tracking-tight text-ink-950 sm:text-6xl lg:text-7xl">
+            <h1 className="mt-4 font-display text-4xl font-bold leading-[0.98] sm:mt-5 sm:text-6xl tracking-tight text-ink-950 sm:text-6xl lg:text-7xl">
               Find your{' '}
               <span className="italic text-jade-700">stay.</span>
             </h1>
 
-            <p className="mt-5 max-w-md text-base leading-relaxed text-ink-600 sm:text-lg">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-600 sm:mt-5 sm:text-lg">
               Thoughtfully selected shortlets across Lagos Island and Mainland.
               Find a place that feels right, then make it yours for a while.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-ink-600">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] sm:mt-6 sm:gap-x-5 sm:text-xs font-semibold text-ink-600">
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-jade-700" /> Reviewed listings</span>
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-jade-700" /> Lagos, made easier</span>
             </div>
           </div>
 
-          <div className="relative mx-auto grid w-full max-w-2xl grid-cols-[1.2fr_0.8fr] gap-3 sm:gap-4">
-            <div className="relative row-span-2 min-h-[320px] overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
+          <div className="relative mx-auto grid h-[300px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4">
+            <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
               <img
                 src="/images/hero-sample-living.jpg"
                 alt="Warm, furnished shortlet living room with balcony greenery"
@@ -191,7 +191,7 @@ export function HomeMarketplaceExperience({
                 </span>
               </div>
             </div>
-            <div className="relative min-h-[150px] overflow-hidden rounded-[1.5rem] bg-clay sm:min-h-[210px]">
+            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
               <img
                 src="/images/hero-sample-bedroom.jpg"
                 alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
@@ -200,7 +200,7 @@ export function HomeMarketplaceExperience({
                 className="absolute inset-0 h-full w-full object-cover"
               />
             </div>
-            <div className="relative min-h-[150px] overflow-hidden rounded-[1.5rem] bg-clay sm:min-h-[210px]">
+            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
               <img
                 src="/images/hero-sample-kitchen.jpg"
                 alt="Contemporary shortlet kitchen and dining space"
