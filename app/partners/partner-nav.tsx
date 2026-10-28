@@ -17,7 +17,7 @@ export function PartnerNav({
   return (
     <nav
       aria-label="Partner workspace navigation"
-      className="flex flex-wrap gap-2"
+      className="flex gap-2 overflow-x-auto overscroll-x-contain pb-2"
     >
       {PARTNER_LINKS.map(item => {
         const active = item.id === current;
@@ -28,8 +28,8 @@ export function PartnerNav({
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'primary-button min-h-[42px]'
-                : 'secondary-button min-h-[42px]'
+                ? 'primary-button page-action min-h-[42px] shrink-0 shadow-sm'
+                : 'secondary-button page-action min-h-[42px] shrink-0'
             }
           >
             {item.label}
