@@ -117,7 +117,7 @@ export default async function StaysPage({ searchParams }: { searchParams: Search
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 py-10 text-paper sm:py-14">
+        <section className="page-hero border-b border-ink-800 bg-ink-950 py-10 text-paper sm:py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <p className="eyebrow-light">Lagos shortlets · Mainland &amp; Island</p>
             <h1 className="mt-2 font-display text-3xl font-bold leading-[1.06] text-white sm:text-5xl">
