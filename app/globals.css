@@ -148,3 +148,107 @@
     animation: none !important;
   }
 }
+
+
+/* Shared HAMLET page polish — restrained motion, consistent surfaces, clear controls. */
+@layer components {
+  .page-section {
+    padding-block: clamp(2.75rem, 6vw, 5rem);
+  }
+
+  .page-container {
+    width: min(1220px, calc(100% - 32px));
+    margin-inline: auto;
+  }
+
+  @media (min-width: 760px) {
+    .page-container { width: min(1220px, calc(100% - 48px)); }
+  }
+
+  .page-lead {
+    max-width: 46rem;
+    color: var(--muted);
+    font-size: clamp(0.95rem, 1.4vw, 1.075rem);
+    line-height: 1.8;
+  }
+
+  .surface-card {
+    border: 1px solid rgba(14, 31, 59, 0.09);
+    border-radius: 1.5rem;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(14, 31, 59, 0.035), 0 14px 34px -26px rgba(14, 31, 59, 0.24);
+  }
+
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--navy-deep);
+    color: #fff;
+  }
+
+  .page-hero-inner {
+    position: relative;
+    z-index: 1;
+    width: min(1220px, calc(100% - 32px));
+    margin-inline: auto;
+    padding-block: clamp(2.75rem, 6vw, 5rem);
+  }
+
+  .page-hero h1 {
+    max-width: 56rem;
+    font-size: clamp(2.15rem, 5.2vw, 4.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+  }
+
+  .page-hero p:not(.eyebrow):not(.eyebrow-light) {
+    max-width: 46rem;
+    line-height: 1.8;
+  }
+
+  .page-control {
+    min-height: 48px;
+    width: 100%;
+    border: 1px solid #dce2ec;
+    border-radius: 0.9rem;
+    background: #fff;
+    padding: 0.75rem 0.9rem;
+    color: var(--navy);
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .page-control:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 164, 74, 0.17);
+  }
+
+  .page-action {
+    transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .page-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .page-action:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 639px) {
+  .page-container,
+  .page-hero-inner {
+    width: calc(100% - 32px);
+  }
+  .page-section {
+    padding-block: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-action:hover:not(:disabled),
+  .page-action:active:not(:disabled) {
+    transform: none;
+  }
+}

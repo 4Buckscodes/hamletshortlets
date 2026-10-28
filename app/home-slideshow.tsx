@@ -1,15 +1,15 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
   Building2,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   MapPin,
   Search,
   ShieldCheck,
@@ -29,29 +29,6 @@ import {
   StayListingCard,
   useNextHoratio,
 } from '@/components/site/SiteShell';
-
-const HERO_SLIDES = [
-  {
-    src: '/images/hero-sample-living.jpg',
-    room: 'Living room',
-    alt: 'Furnished sample apartment living room with warm brass lighting and balcony greenery',
-  },
-  {
-    src: '/images/hero-sample-bedroom.jpg',
-    room: 'Primary bedroom',
-    alt: 'Furnished sample apartment primary bedroom with upholstered king bed and walnut joinery',
-  },
-  {
-    src: '/images/hero-sample-kitchen.jpg',
-    room: 'Kitchen & dining',
-    alt: 'Furnished sample apartment marble kitchen island and dining area',
-  },
-  {
-    src: '/images/hero-sample-lounge.jpg',
-    room: 'Study & terrace',
-    alt: 'Furnished sample apartment study desk and twilight lounge',
-  },
-] as const;
 
 const QUICK_AREAS = [
   'Lagos Mainland',
@@ -135,23 +112,13 @@ export function HomeMarketplaceExperience({
   const { formatPrice } = useCurrency();
   const { openHoratio } = useNextHoratio();
 
-  const [heroSlide, setHeroSlide] = useState(0);
-  const [slideshowPaused, setSlideshowPaused] = useState(false);
-
   const [area, setArea] = useState('');
   const [searchSide, setSearchSide] = useState<'all' | 'mainland' | 'island'>('all');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
-
-  useEffect(() => {
-    if (slideshowPaused) return;
-    const timer = window.setInterval(() => {
-      setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 5500);
-    return () => window.clearInterval(timer);
-  }, [slideshowPaused]);
+  const [searchExpanded, setSearchExpanded] = useState(false);
 
   const minDate = lagosIsoDateOffset(0);
 
@@ -187,116 +154,91 @@ export function HomeMarketplaceExperience({
 
   return (
     <>
-      {/* ── Full-Clarity Sample Interior Hero Slideshow ────────────── */}
-      <section
-        className="relative flex min-h-[440px] flex-col justify-end overflow-hidden bg-ink-950 text-paper sm:min-h-[530px] lg:min-h-[610px]"
-        onMouseEnter={() => setSlideshowPaused(true)}
-        onMouseLeave={() => setSlideshowPaused(false)}
-      >
-        <div className="absolute inset-0">
-          {HERO_SLIDES.map((slide, idx) => {
-            const isCurrent = idx === heroSlide;
-            return (
-              <img
-                key={slide.src}
-                src={slide.src}
-                alt={slide.alt}
-                loading={idx === 0 ? 'eager' : 'lazy'}
-                decoding="async"
-                className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] transition-all duration-1000 ease-out ${
-                  isCurrent ? 'scale-100 opacity-100' : 'pointer-events-none scale-105 opacity-0'
-                }`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Localized bottom/left vignette only — leaves the furnished room bright & clear */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-ink-950/60 via-ink-950/20 to-transparent lg:w-3/5" />
-
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-ink-950/70 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brass-400" />
-                <span>HAMLET.REST · Verified Lagos shortlets</span>
-              </div>
-
-              <h1 className="mt-3.5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(8,15,30,0.65)] sm:text-5xl lg:text-6xl">
-                Lagos is big.{' '}
-                <span className="italic text-brass-300">Your stay, sorted.</span>
-              </h1>
-
-              <p className="mt-3 max-w-lg text-sm font-semibold leading-relaxed text-white/95 drop-shadow-[0_1px_10px_rgba(8,15,30,0.7)] sm:text-base">
-                Verified shortlets across Lagos Mainland &amp; Island. Pay only after availability is confirmed.
-              </p>
+      {/* ── Editorial discovery hero: photographic collage, no rotating carousel ── */}
+      <section className="relative overflow-hidden bg-paper">
+        <div className="mx-auto grid max-w-7xl items-center gap-5 px-4 sm:gap-8 pb-8 pt-7 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-jade-700/15 bg-white px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-ink-800 shadow-2xs">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-jade-700" />
+              <span>HAMLET.REST · Verified Lagos shortlets</span>
             </div>
 
-            {/* Sample interior room switcher + prev/next controls */}
-            <div className="flex flex-wrap items-center gap-2 self-start lg:self-end">
-              <div
-                role="tablist"
-                aria-label="Sample apartment rooms"
-                className="flex flex-wrap items-center gap-1 rounded-2xl border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md sm:rounded-full"
-              >
-                <span className="px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-brass-300">
-                  Sample interior
-                </span>
-                {HERO_SLIDES.map((slide, idx) => {
-                  const active = idx === heroSlide;
-                  return (
-                    <button
-                      key={slide.src}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setHeroSlide(idx)}
-                      className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-bold transition ${
-                        active
-                          ? 'bg-brass-400 text-ink-950 shadow-2xs'
-                          : 'text-white/85 hover:bg-white/15 hover:text-white'
-                      }`}
-                    >
-                      {slide.room}
-                    </button>
-                  );
-                })}
-              </div>
+            <h1 className="mt-4 font-display text-4xl font-bold leading-[0.98] sm:mt-5 sm:text-6xl tracking-tight text-ink-950 sm:text-6xl lg:text-7xl">
+              Find your{' '}
+              <span className="italic text-jade-700">stay.</span>
+            </h1>
 
-              <div className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-ink-950/65 p-1 backdrop-blur-md">
-                <button
-                  type="button"
-                  aria-label="Previous interior photo"
-                  onClick={() =>
-                    setHeroSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
-                  }
-                  className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
-                >
-                  <ChevronLeft className="h-4 w-4 shrink-0" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next interior photo"
-                  onClick={() => setHeroSlide(prev => (prev + 1) % HERO_SLIDES.length)}
-                  className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
-                >
-                  <ChevronRight className="h-4 w-4 shrink-0" />
-                </button>
-              </div>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-600 sm:mt-5 sm:text-lg">
+              Thoughtfully selected shortlets across Lagos Island and Mainland.
+              Find a place that feels right, then make it yours for a while.
+            </p>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] sm:mt-6 sm:gap-x-5 sm:text-xs font-semibold text-ink-600">
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-jade-700" /> Reviewed listings</span>
+              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-jade-700" /> Lagos, made easier</span>
+            </div>
+          </div>
+
+          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-300 [&_img]:ease-out [&_img]:hover:scale-[1.02] motion-reduce:[&_img]:transition-none">
+            <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
+              <Image
+                src="/images/hero-sample-living.jpg"
+                alt="Warm, furnished shortlet living room with balcony greenery"
+                fill
+                priority
+                sizes="(max-width: 639px) 64vw, (max-width: 1023px) 50vw, 44vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="hero-tile-enter relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
+              <Image
+                src="/images/hero-sample-bedroom.jpg"
+                alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
+                fill
+                loading="lazy"
+                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="hero-tile-enter hero-tile-enter-delay relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
+              <Image
+                src="/images/hero-sample-kitchen.jpg"
+                alt="Contemporary shortlet kitchen and dining space"
+                fill
+                loading="lazy"
+                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Elevated Search Dock (below hero so interior photos stay clear) ── */}
-      <div className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-11 sm:px-6">
+      <div className="relative z-20 mx-auto -mt-6 max-w-6xl px-4 sm:-mt-11 sm:px-6">
         <form
           action="/stays"
           method="get"
           onSubmit={handleSearchSubmit}
-          className="rounded-3xl border border-ink-100 bg-white p-4 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
+          className="rounded-3xl border border-ink-100 bg-white p-3 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
         >
+          <div className="mb-2 flex items-center justify-between gap-3 sm:hidden">
+            <div className="min-w-0">
+              <p className="text-sm font-extrabold text-ink-900">Find your stay</p>
+              <p className="truncate text-xs text-ink-500">{area || (searchSide === 'mainland' ? 'Lagos Mainland' : searchSide === 'island' ? 'Lagos Island' : 'Anywhere in Lagos')}{checkIn ? ` · ${checkIn}` : ''}{guests > 2 ? ` · ${guests} guests` : ''}</p>
+            </div>
+            <button
+              type="button"
+              aria-expanded={searchExpanded}
+              onClick={() => setSearchExpanded(value => !value)}
+              className="group inline-flex shrink-0 items-center gap-2.5 rounded-full border border-brass-500/40 bg-ink-950 px-4 py-2.5 text-xs font-bold text-white shadow-[0_5px_16px_-7px_rgba(14,31,59,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-900 hover:shadow-[0_9px_22px_-8px_rgba(14,31,59,0.6)] active:translate-y-0 motion-reduce:transform-none"
+            >
+              {searchExpanded ? 'Hide filters' : 'Edit search'}
+              <ChevronDown className={`h-4 w-4 text-brass-300 transition-transform duration-300 ease-out group-hover:translate-y-0.5 ${searchExpanded ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+          <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none sm:block ${searchExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 sm:grid-rows-none sm:opacity-100'}`}>
+          <div className="min-h-0 overflow-hidden sm:overflow-visible">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
             <div className="flex flex-wrap items-center gap-1.5">
               {(
@@ -328,24 +270,39 @@ export function HomeMarketplaceExperience({
           </div>
 
           {/* Quick area chips */}
-          <div className="mb-3.5 flex items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-1">
-            {QUICK_AREAS.map(hub => {
-              const selected = area === hub;
-              return (
-                <button
-                  key={hub}
-                  type="button"
-                  onClick={() => setArea(selected ? '' : hub)}
-                  className={`shrink-0 cursor-pointer rounded-full border px-3 py-1 text-[11px] font-bold transition ${
-                    selected
-                      ? 'border-brass-600 bg-brass-500 text-ink-950'
-                      : 'border-ink-200 bg-paper/75 text-ink-700 hover:border-ink-400'
-                  }`}
-                >
-                  {hub}
+          <div className="mb-4 rounded-2xl border border-ink-100 bg-paper/75 p-3.5 sm:p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold text-ink-900">Popular locations</p>
+                <p className="mt-0.5 text-[11px] text-ink-500">Choose an area to narrow your search</p>
+              </div>
+              {area && (
+                <button type="button" onClick={() => setArea('')} className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-ink-500 transition hover:bg-white hover:text-ink-900">
+                  Clear
                 </button>
-              );
-            })}
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_AREAS.map(hub => {
+                const selected = area === hub;
+                return (
+                  <button
+                    key={hub}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setArea(selected ? '' : hub)}
+                    className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 ${
+                      selected
+                        ? 'border-ink-900 bg-ink-900 text-white shadow-sm'
+                        : 'border-ink-200 bg-white text-ink-700 hover:border-brass-500 hover:bg-brass-200/30 hover:text-ink-950'
+                    }`}
+                  >
+                    {selected && <span aria-hidden="true" className="text-brass-300">✓</span>}
+                    {hub}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
@@ -455,6 +412,8 @@ export function HomeMarketplaceExperience({
               </button>
             </div>
           </div>
+          </div>
+          </div>
         </form>
       </div>
 
@@ -463,8 +422,8 @@ export function HomeMarketplaceExperience({
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Lagos marketplace</p>
-            <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-              Available stays
+            <h2 className="mt-1 font-display text-3xl font-semibold tracking-[-0.035em] text-ink-900 sm:text-4xl">
+              Stays you might love
             </h2>
           </div>
 
@@ -563,13 +522,13 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Browse by Area (Photographic Mainland & Island Grid) ───── */}
-      <section className="border-t border-ink-100 bg-clay/45 py-12 sm:py-16">
+      <section className="border-t border-ink-100 bg-clay/45 py-9 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Mainland &amp; Island</p>
               <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-                Browse by area
+                Explore Lagos
               </h2>
             </div>
             <Link href="/lagos" className="btn-outline !rounded-full !px-5 !py-2 text-xs">
@@ -577,36 +536,38 @@ export function HomeMarketplaceExperience({
             </Link>
           </div>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {NEIGHBOURHOOD_CARDS.map(card => {
               const floor = floorPriceFor(card.name);
               return (
                 <Link
                   key={card.name}
                   href={card.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-brass-400/70 hover:shadow-[0_18px_38px_-20px_rgba(14,31,59,0.32)] motion-reduce:transform-none sm:rounded-3xl"
                 >
-                  <div className="relative h-44 overflow-hidden bg-clay">
-                    <img
+                  <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
+                    <Image
                       src={card.img}
                       alt={card.name}
+                      fill
                       loading="lazy"
-                      className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
+                      sizes="(max-width: 639px) 46vw, (max-width: 1023px) 48vw, 25vw"
+                      className="object-cover opacity-100 transition duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
                     <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
                       {card.corridor}
                     </span>
-                    <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white drop-shadow-xs">
+                    <h3 className="absolute bottom-2.5 left-3 right-3 font-display text-lg font-bold text-white drop-shadow-xs sm:left-3.5 sm:right-3.5 sm:text-xl">
                       {card.name}
                     </h3>
                   </div>
-                  <div className="flex items-center justify-between gap-2 px-4 py-3.5">
+                  <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-4 sm:py-3.5">
                     <div className="min-w-0">
-                      <p className="truncate text-[11.5px] font-medium text-ink-500">
+                      <p className="line-clamp-2 text-[10px] font-medium leading-snug text-ink-500 sm:truncate sm:text-[11.5px]">
                         {card.sub}
                       </p>
-                      <p className="mt-0.5 text-xs font-extrabold text-ink-900">
+                      <p className="mt-1 text-[11px] font-extrabold text-ink-900 sm:text-xs">
                         {floor ? `From ${floor} / night` : 'Browse stays'}
                       </p>
                     </div>
@@ -620,18 +581,19 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Compact Partner Callout Banner ─────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
-        <div className="flex flex-col items-start justify-between gap-5 rounded-3xl bg-ink-950 px-6 py-8 text-paper sm:flex-row sm:items-center sm:px-10">
-          <div>
-            <p className="eyebrow-light">0% owner fee</p>
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="group relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl bg-ink-950 px-6 py-8 text-paper shadow-[0_18px_50px_-28px_rgba(14,31,59,0.55)] sm:flex-row sm:items-center sm:px-10">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-brass-500/10 blur-3xl transition-opacity duration-700 group-hover:bg-brass-500/15 motion-reduce:transition-none" />
+          <div className="relative z-10">
+            <p className="eyebrow-light">For property owners &amp; managers</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">
-              Own or manage a shortlet in Lagos?
+              Turn your shortlet into a better-managed opportunity.
             </h2>
             <p className="mt-1 text-sm font-medium text-ink-300">
-              Keep 100% of your listed rate. Closing agents and referrers earn recorded commissions.
+              Reach more guests with clear booking records, partner support and commission terms agreed upfront.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="relative z-10 flex flex-wrap items-center gap-3">
             <Link href="/partners/apply" className="btn-brass !rounded-full !px-6">
               List a property <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>

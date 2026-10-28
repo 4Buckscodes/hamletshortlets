@@ -75,6 +75,16 @@
   .font-display {
     font-optical-sizing: auto;
     font-feature-settings: "kern" 1, "liga" 1;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   .font-mono {
@@ -140,4 +150,53 @@
   .hamlet-marquee-track {
     animation: none;
   }
+}
+
+
+/* Small, quick hero entrance: opacity first, with only a subtle upward settle. */
+@keyframes hamlet-hero-tile-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-tile-enter {
+  animation: hamlet-hero-tile-in 240ms ease-out both;
+}
+.hero-tile-enter-delay {
+  animation-delay: 85ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-tile-enter,
+  .hero-tile-enter-delay {
+    animation: none;
+  }
+}
+
+/* Compact, expandable footer navigation instead of long legacy link columns. */
+.footer-menu summary::-webkit-details-marker { display: none; }
+.footer-menu[open] .footer-menu-icon { transform: rotate(45deg); }
+.footer-menu-content {
+  display: grid;
+  gap: 0.2rem;
+  animation: footer-menu-in 160ms ease-out both;
+}
+.footer-link {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  color: var(--color-ink-300);
+  transition: color 150ms ease;
+}
+.footer-link:hover { color: white; }
+.footer-link:focus-visible,
+.footer-menu summary:focus-visible {
+  outline: 2px solid var(--color-brass-400);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+@keyframes footer-menu-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-menu-content { animation: none; }
 }

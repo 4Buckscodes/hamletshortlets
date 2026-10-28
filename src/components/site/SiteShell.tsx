@@ -718,65 +718,69 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-ink-800 bg-ink-950 text-ink-100">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div className="md:col-span-1">
-            <Link href="/" className="inline-flex items-center">
+    <footer className="border-t border-white/10 bg-ink-950 text-ink-100">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr] md:items-start">
+          <div className="max-w-sm">
+            <Link href="/" aria-label="HAMLET.REST home" className="inline-flex items-center">
               <HamletWordmark light />
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-ink-300">
-              Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island — built by Abundance Abodes.
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-300">
+              Your stay, sorted. Thoughtfully selected shortlets across Lagos Island and Mainland.
             </p>
+            <Link href="/stays" className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-brass-500 px-4 py-2 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400">
+              Explore stays <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
 
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Explore Lagos
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/stays" className="inline-block py-1 transition hover:text-white">All Lagos stays</Link></li>
-              <li><Link href="/stays?area=Lagos+Mainland" className="inline-block py-1 transition hover:text-white">Lagos Mainland (Yaba, Shomolu, Surulere)</Link></li>
-              <li><Link href="/stays?area=Victoria+Island" className="inline-block py-1 transition hover:text-white">Victoria Island &amp; Ikoyi</Link></li>
-              <li><Link href="/stays?area=Lekki+Phase+1" className="inline-block py-1 transition hover:text-white">Lekki Phase 1 &amp; Oniru</Link></li>
-              <li><Link href="/lagos" className="inline-block py-1 transition hover:text-white">Lagos neighbourhood guide</Link></li>
-            </ul>
-          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <details className="footer-menu group rounded-2xl border border-white/10 bg-white/[0.035] px-4">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">
+                Explore
+                <span className="footer-menu-icon text-xl font-normal text-brass-300 transition-transform duration-200">+</span>
+              </summary>
+              <div className="footer-menu-content pb-4 text-sm text-ink-300">
+                <Link className="footer-link" href="/stays">All Lagos stays</Link>
+                <Link className="footer-link" href="/stays?area=Lagos+Mainland">Lagos Mainland</Link>
+                <Link className="footer-link" href="/stays?area=Victoria+Island">Victoria Island &amp; Ikoyi</Link>
+                <Link className="footer-link" href="/stays?area=Lekki+Phase+1">Lekki Phase 1 &amp; Oniru</Link>
+                <Link className="footer-link" href="/lagos">Lagos neighbourhood guide</Link>
+              </div>
+            </details>
 
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Trust &amp; Support
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/how-it-works" className="inline-block py-1 transition hover:text-white">How bookings work</Link></li>
-              <li><Link href="/safety" className="inline-block py-1 transition hover:text-white">Verification &amp; safety</Link></li>
-              <li><Link href="/about" className="inline-block py-1 transition hover:text-white">About HAMLET</Link></li>
-              <li><Link href="/faqs" className="inline-block py-1 transition hover:text-white">FAQs</Link></li>
-              <li><Link href="/legal" className="inline-block py-1 transition hover:text-white">Legal, privacy &amp; NDPR</Link></li>
-            </ul>
-          </div>
+            <details className="footer-menu group rounded-2xl border border-white/10 bg-white/[0.035] px-4">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">
+                Help &amp; trust
+                <span className="footer-menu-icon text-xl font-normal text-brass-300 transition-transform duration-200">+</span>
+              </summary>
+              <div className="footer-menu-content pb-4 text-sm text-ink-300">
+                <Link className="footer-link" href="/how-it-works">How it works</Link>
+                <Link className="footer-link" href="/safety">Verification &amp; safety</Link>
+                <Link className="footer-link" href="/faqs">FAQs</Link>
+                <Link className="footer-link" href="/about">About HAMLET</Link>
+                <Link className="footer-link" href="/legal">Privacy &amp; legal</Link>
+              </div>
+            </details>
 
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Accounts &amp; Partners
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/signin" className="inline-block py-1 transition hover:text-white">Sign in / Create account</Link></li>
-              <li><Link href="/account" className="inline-block py-1 transition hover:text-white">Guest account &amp; bookings</Link></li>
-              <li><Link href="/account/issues" className="inline-block py-1 transition hover:text-white">Report a booking issue</Link></li>
-              <li><Link href="/partners/apply" className="inline-block py-1 transition hover:text-white">Apply as a partner</Link></li>
-              <li><Link href="/partners" className="inline-block py-1 transition hover:text-white">Partner workspace</Link></li>
-            </ul>
+            <details className="footer-menu group rounded-2xl border border-white/10 bg-white/[0.035] px-4 sm:col-span-2">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-white marker:hidden [&::-webkit-details-marker]:hidden">
+                Your account &amp; partners
+                <span className="footer-menu-icon text-xl font-normal text-brass-300 transition-transform duration-200">+</span>
+              </summary>
+              <div className="footer-menu-content grid gap-x-6 pb-4 text-sm text-ink-300 sm:grid-cols-2">
+                <Link className="footer-link" href="/signin">Sign in or create an account</Link>
+                <Link className="footer-link" href="/account">My bookings</Link>
+                <Link className="footer-link" href="/account/issues">Report a booking issue</Link>
+                <Link className="footer-link" href="/partners/apply">List a property</Link>
+                <Link className="footer-link" href="/partners">Partner workspace</Link>
+              </div>
+            </details>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-ink-800 pt-6 text-xs text-ink-400">
-          <span>
-            © {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.
-          </span>
-          <span>
-            Bookings confirm only after partner acceptance and server-verified payment.
-          </span>
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5 text-[11px] leading-relaxed text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.</span>
+          <span>Bookings confirm after partner acceptance and server-verified payment.</span>
         </div>
       </div>
     </footer>
