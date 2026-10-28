@@ -86,8 +86,10 @@ export default function PartnerStartDashboard() {
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
                 <Sparkles className="h-5 w-5 text-brass-700" />
-                <h2 className="mt-3 text-base font-bold text-ink-900">Partner levels</h2>
-                <p className="mt-1 text-sm leading-relaxed text-ink-600">Registered, Verified, Preferred and Elite are planned as separate benefit levels. Higher privileges never bypass approval or permission checks.</p>
+                <h2 className="mt-3 text-base font-bold text-ink-900">Your partner level</h2>
+                <p className="mt-2 inline-flex rounded-full border border-ink-200 bg-paper px-3 py-1 text-xs font-extrabold text-ink-900">VIP 1 · Registered</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">You are not yet an identity-verified partner. Upgrade to VIP 2 when you are ready to complete identity verification. Some actions will remain restricted until the relevant checks are approved.</p>
+                <Link href="/partners/verify" className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-ink-900 underline underline-offset-4">Explore identity verification <ArrowRight className="h-4 w-4" /></Link>
               </article>
             </section>
 
