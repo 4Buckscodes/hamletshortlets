@@ -95,11 +95,14 @@
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    transition: transform 0.16s ease, background 0.16s ease, opacity 0.16s ease;
+    box-shadow: 0 5px 14px -10px rgba(9, 21, 40, 0.8);
+    transition: transform 0.16s ease, background 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
   }
 
   .primary-button:hover:not(:disabled) {
     background: #1b3560;
+    box-shadow: 0 10px 22px -14px rgba(9, 21, 40, 0.75);
+    transform: translateY(-1px);
   }
 
   .primary-button:active:not(:disabled) {
@@ -131,6 +134,13 @@
   .secondary-button:hover:not(:disabled) {
     border-color: var(--navy);
     background: #fbfaf7;
+    transform: translateY(-1px);
+  }
+
+  .primary-button:focus-visible,
+  .secondary-button:focus-visible {
+    outline: 3px solid rgba(201, 164, 74, 0.7);
+    outline-offset: 3px;
   }
 
   .secondary-button:disabled {
