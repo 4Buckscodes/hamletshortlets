@@ -133,7 +133,7 @@ export function StaysExplorer({
           e.preventDefault();
           applySearch();
         }}
-        className="mt-6 grid gap-3 rounded-2xl border border-ink-200 bg-white p-3.5 shadow-xs sm:grid-cols-2 lg:grid-cols-5"
+        className="mt-6 grid gap-3.5 rounded-3xl border border-ink-100 bg-white p-4 shadow-[0_1px_2px_rgba(14,31,59,0.04),0_16px_40px_-28px_rgba(14,31,59,0.28)] sm:grid-cols-2 sm:p-5 lg:grid-cols-5"
       >
         <label className="grid gap-1">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
@@ -204,40 +204,55 @@ export function StaysExplorer({
         </div>
       </form>
 
-      {/* Quick Corridor Chips */}
-      <div className="mt-3.5 flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
-        {[
-          { label: 'All Lagos', value: '' },
-          { label: 'Lagos Mainland', value: 'Lagos Mainland' },
-          { label: 'Victoria Island', value: 'Victoria Island' },
-          { label: 'Ikoyi', value: 'Ikoyi' },
-          { label: 'Lekki Phase 1', value: 'Lekki Phase 1' },
-          { label: 'Yaba', value: 'Yaba' },
-          { label: 'Shomolu', value: 'Shomolu' },
-          { label: 'Surulere', value: 'Surulere' },
-          { label: 'Ikeja GRA', value: 'Ikeja GRA' },
-        ].map(chip => {
-          const active = initialFilters.area === chip.value;
-          return (
+      {/* Quick corridor shortcuts */}
+      <section aria-label="Popular Lagos areas" className="mt-4 rounded-3xl border border-ink-100 bg-white/75 p-4 sm:p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="m-0 text-sm font-bold text-ink-900">Popular locations</h2>
+            <p className="m-0 mt-0.5 text-xs text-ink-500">Choose a neighbourhood to narrow your search.</p>
+          </div>
+          {area && (
             <button
-              key={chip.label}
               type="button"
-              onClick={() => {
-                setArea(chip.value);
-                applySearch({ area: chip.value });
-              }}
-              aria-pressed={active}
-              className={`min-h-[40px] shrink-0 cursor-pointer rounded-full border px-3.5 text-xs font-bold transition ${
-                active
-                  ? 'border-ink-900 bg-ink-900 text-white'
-                  : 'border-ink-200 bg-white text-ink-700 hover:border-ink-500'
-              }`}
+              onClick={() => { setArea(''); applySearch({ area: '' }); }}
+              className="inline-flex min-h-9 items-center rounded-full px-3 text-xs font-bold text-ink-600 transition hover:bg-paper hover:text-ink-900"
             >
-              {chip.label}
+              Clear location
             </button>
-          );
-        })}
-      </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: 'All Lagos', value: '' },
+            { label: 'Lagos Mainland', value: 'Lagos Mainland' },
+            { label: 'Victoria Island', value: 'Victoria Island' },
+            { label: 'Ikoyi', value: 'Ikoyi' },
+            { label: 'Lekki Phase 1', value: 'Lekki Phase 1' },
+            { label: 'Yaba', value: 'Yaba' },
+            { label: 'Shomolu', value: 'Shomolu' },
+            { label: 'Surulere', value: 'Surulere' },
+            { label: 'Ikeja GRA', value: 'Ikeja GRA' },
+          ].map(chip => {
+            const active = area === chip.value;
+            return (
+              <button
+                key={chip.label}
+                type="button"
+                onClick={() => { setArea(chip.value); applySearch({ area: chip.value }); }}
+                aria-pressed={active}
+                className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 ${
+                  active
+                    ? 'border-ink-900 bg-ink-900 text-white shadow-sm'
+                    : 'border-ink-200 bg-white text-ink-700 hover:border-brass-500 hover:bg-brass-200/25 hover:text-ink-950'
+                }`}
+              >
+                {active && <span aria-hidden="true" className="text-brass-300">✓</span>}
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {availabilityMessage && (
         <p
