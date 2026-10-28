@@ -74,7 +74,7 @@ export default function SafetyPage() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section className="page-hero border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">Safety &amp; protection</p>
             <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
