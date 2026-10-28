@@ -43,7 +43,7 @@ begin
   -- Where the listing schema stores an owner identity, recognise common owner
   -- column names without assuming every deployment has the same optional field.
   if generating_partner_id is null then
-    select candidate.id into generating_partner_id
+    select candidates.id::uuid into generating_partner_id
     from (
       select nullif(to_jsonb(listing_row) ->> 'owner_id', '') as id
       union all select nullif(to_jsonb(listing_row) ->> 'owner_user_id', '')
