@@ -75,6 +75,16 @@
   .font-display {
     font-optical-sizing: auto;
     font-feature-settings: "kern" 1, "liga" 1;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   .font-mono {
