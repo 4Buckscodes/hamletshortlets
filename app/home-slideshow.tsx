@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   Building2,
   Calendar,
+  ChevronDown,
   MapPin,
   Search,
   ShieldCheck,
@@ -116,6 +117,7 @@ export function HomeMarketplaceExperience({
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
+  const [searchExpanded, setSearchExpanded] = useState(false);
 
   const minDate = lagosIsoDateOffset(0);
 
@@ -176,7 +178,7 @@ export function HomeMarketplaceExperience({
             </div>
           </div>
 
-          <div className="relative mx-auto grid h-[300px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4">
+          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4">
             <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
               <img
                 src="/images/hero-sample-living.jpg"
@@ -209,13 +211,29 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Elevated Search Dock (below hero so interior photos stay clear) ── */}
-      <div className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-11 sm:px-6">
+      <div className="relative z-20 mx-auto -mt-6 max-w-6xl px-4 sm:-mt-11 sm:px-6">
         <form
           action="/stays"
           method="get"
           onSubmit={handleSearchSubmit}
-          className="rounded-3xl border border-ink-100 bg-white p-4 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
+          className="rounded-3xl border border-ink-100 bg-white p-3 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
         >
+          <div className="mb-2 flex items-center justify-between gap-3 sm:hidden">
+            <div className="min-w-0">
+              <p className="text-sm font-extrabold text-ink-900">Find your stay</p>
+              <p className="truncate text-xs text-ink-500">{area || (searchSide === 'mainland' ? 'Lagos Mainland' : searchSide === 'island' ? 'Lagos Island' : 'Anywhere in Lagos')}{checkIn ? ` · ${checkIn}` : ''}{guests > 2 ? ` · ${guests} guests` : ''}</p>
+            </div>
+            <button
+              type="button"
+              aria-expanded={searchExpanded}
+              onClick={() => setSearchExpanded(value => !value)}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-ink-900 px-4 py-2.5 text-xs font-bold text-white"
+            >
+              {searchExpanded ? 'Hide filters' : 'Edit search'}
+              <ChevronDown className={`h-4 w-4 transition-transform ${searchExpanded ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+          <div className={searchExpanded ? 'block' : 'hidden sm:block'}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
             <div className="flex flex-wrap items-center gap-1.5">
               {(
@@ -373,6 +391,7 @@ export function HomeMarketplaceExperience({
                 <span>Search</span>
               </button>
             </div>
+          </div>
           </div>
         </form>
       </div>
