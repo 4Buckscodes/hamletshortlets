@@ -178,7 +178,7 @@ export function HomeMarketplaceExperience({
             </div>
           </div>
 
-          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4">
+          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-out [&_img]:hover:scale-[1.035] motion-reduce:[&_img]:transition-none>
             <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
               <img
                 src="/images/hero-sample-living.jpg"
@@ -227,13 +227,14 @@ export function HomeMarketplaceExperience({
               type="button"
               aria-expanded={searchExpanded}
               onClick={() => setSearchExpanded(value => !value)}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-ink-900 px-4 py-2.5 text-xs font-bold text-white"
+              className="group inline-flex shrink-0 items-center gap-2.5 rounded-full border border-brass-500/40 bg-ink-950 px-4 py-2.5 text-xs font-bold text-white shadow-[0_5px_16px_-7px_rgba(14,31,59,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-900 hover:shadow-[0_9px_22px_-8px_rgba(14,31,59,0.6)] active:translate-y-0 motion-reduce:transform-none"
             >
               {searchExpanded ? 'Hide filters' : 'Edit search'}
-              <ChevronDown className={`h-4 w-4 transition-transform ${searchExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 text-brass-300 transition-transform duration-300 ease-out group-hover:translate-y-0.5 ${searchExpanded ? 'rotate-180' : ''}`} />
             </button>
           </div>
-          <div className={searchExpanded ? 'block' : 'hidden sm:block'}>
+          <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none sm:block ${searchExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 sm:grid-rows-none sm:opacity-100'}`}>
+          <div className="min-h-0 overflow-hidden sm:overflow-visible">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
             <div className="flex flex-wrap items-center gap-1.5">
               {(
@@ -393,6 +394,7 @@ export function HomeMarketplaceExperience({
             </div>
           </div>
           </div>
+          </div>
         </form>
       </div>
 
@@ -522,14 +524,14 @@ export function HomeMarketplaceExperience({
                 <Link
                   key={card.name}
                   href={card.href}
-                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md sm:rounded-3xl"
+                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition duration-300 ease-out hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg motion-reduce:transform-none sm:rounded-3xl"
                 >
                   <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
                     <img
                       src={card.img}
                       alt={card.name}
                       loading="lazy"
-                      className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
+                      className="h-full w-full object-cover opacity-100 transition duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
                     <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
