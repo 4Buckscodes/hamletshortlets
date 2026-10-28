@@ -14,7 +14,7 @@ export function AccountNav({
   return (
     <nav
       aria-label="Guest account navigation"
-      className="flex flex-wrap gap-2"
+      className="flex gap-2 overflow-x-auto overscroll-x-contain pb-2"
     >
       {ACCOUNT_LINKS.map(item => {
         const active = item.id === current;
@@ -23,7 +23,7 @@ export function AccountNav({
             key={item.id}
             href={item.href}
             aria-current={active ? 'page' : undefined}
-            className={active ? 'primary-button min-h-[42px]' : 'secondary-button min-h-[42px]'}
+            className={active ? 'primary-button page-action min-h-[42px] shrink-0 shadow-sm' : 'secondary-button page-action min-h-[42px] shrink-0'}
           >
             {item.label}
           </Link>
