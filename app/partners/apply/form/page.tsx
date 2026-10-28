@@ -20,7 +20,7 @@ export default function PartnerApplyFormPage() {
               List free. <span className="italic text-brass-300">Partner with clarity.</span>
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Property owners keep 100% of their listed stay rate (B). Complete the progressive application below. Every partner account is reviewed before listing or commission access is activated.
+              Pricing, platform charges and any applicable partner rewards will be shown clearly before you commit. Complete the progressive application below. Every partner account is reviewed before listing or commission access is activated.
             </p>
           </div>
         </section>
