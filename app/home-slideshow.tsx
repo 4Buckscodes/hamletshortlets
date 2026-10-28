@@ -501,7 +501,7 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Browse by Area (Photographic Mainland & Island Grid) ───── */}
-      <section className="border-t border-ink-100 bg-clay/45 py-12 sm:py-16">
+      <section className="border-t border-ink-100 bg-clay/45 py-9 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -515,16 +515,16 @@ export function HomeMarketplaceExperience({
             </Link>
           </div>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {NEIGHBOURHOOD_CARDS.map(card => {
               const floor = floorPriceFor(card.name);
               return (
                 <Link
                   key={card.name}
                   href={card.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md sm:rounded-3xl"
                 >
-                  <div className="relative h-44 overflow-hidden bg-clay">
+                  <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
                     <img
                       src={card.img}
                       alt={card.name}
@@ -535,16 +535,16 @@ export function HomeMarketplaceExperience({
                     <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
                       {card.corridor}
                     </span>
-                    <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white drop-shadow-xs">
+                    <h3 className="absolute bottom-2.5 left-3 right-3 font-display text-lg font-bold text-white drop-shadow-xs sm:left-3.5 sm:right-3.5 sm:text-xl">
                       {card.name}
                     </h3>
                   </div>
-                  <div className="flex items-center justify-between gap-2 px-4 py-3.5">
+                  <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-4 sm:py-3.5">
                     <div className="min-w-0">
-                      <p className="truncate text-[11.5px] font-medium text-ink-500">
+                      <p className="line-clamp-2 text-[10px] font-medium leading-snug text-ink-500 sm:truncate sm:text-[11.5px]">
                         {card.sub}
                       </p>
-                      <p className="mt-0.5 text-xs font-extrabold text-ink-900">
+                      <p className="mt-1 text-[11px] font-extrabold text-ink-900 sm:text-xs">
                         {floor ? `From ${floor} / night` : 'Browse stays'}
                       </p>
                     </div>
@@ -561,12 +561,12 @@ export function HomeMarketplaceExperience({
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
         <div className="flex flex-col items-start justify-between gap-5 rounded-3xl bg-ink-950 px-6 py-8 text-paper sm:flex-row sm:items-center sm:px-10">
           <div>
-            <p className="eyebrow-light">0% owner fee</p>
+            <p className="eyebrow-light">For property owners &amp; managers</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">
-              Own or manage a shortlet in Lagos?
+              Turn your shortlet into a better-managed opportunity.
             </h2>
             <p className="mt-1 text-sm font-medium text-ink-300">
-              Keep 100% of your listed rate. Closing agents and referrers earn recorded commissions.
+              Reach more guests with clear booking records, partner support and commission terms agreed upfront.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
