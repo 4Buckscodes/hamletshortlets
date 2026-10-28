@@ -669,4 +669,4 @@ export function FocusedDrawer({
 }
 
 export const FIELD_INPUT_CLASS =
-  'min-h-[48px] w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-ink-400 transition focus:border-ink-900 focus:outline-none';
+  'page-control min-h-[48px] w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-ink-400 transition focus:border-brass-500 focus:outline-none focus:ring-2 focus:ring-brass-500/15';
