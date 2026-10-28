@@ -644,11 +644,11 @@ export function FocusedDrawer({
       role="dialog"
       aria-modal="true"
       aria-label={title}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/55 sm:items-stretch sm:justify-end"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/45 backdrop-blur-sm sm:items-stretch sm:justify-end"
     >
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-lg sm:rounded-none">
-        <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
+      <div className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[2rem] border border-white/70 bg-white shadow-[0_24px_80px_-24px_rgba(9,21,40,0.5)] sm:m-3 sm:h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-24px)] sm:max-w-lg sm:rounded-[2rem]">
+        <div className="flex items-start justify-between gap-3 border-b border-ink-100 bg-paper/75 px-5 py-4 sm:px-6">
           <div className="min-w-0">
             <h2 className="serif m-0 text-xl font-medium text-ink-900">{title}</h2>
             {subtitle && <p className="m-0 mt-1 text-xs text-ink-500">{subtitle}</p>}
@@ -662,7 +662,7 @@ export function FocusedDrawer({
             <X className="h-4 w-4 shrink-0" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5 sm:p-6">{children}</div>
       </div>
     </div>
   );
