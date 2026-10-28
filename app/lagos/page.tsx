@@ -101,7 +101,7 @@ export default function LagosGuidePage() {
 
       <main className="flex-1">
         {/* Full-bleed Lagos Hero */}
-        <section className="relative overflow-hidden bg-ink-950 text-paper">
+        <section className="page-hero relative overflow-hidden bg-ink-950 text-paper">
           <img
             src="/images/lagos-hero.jpg"
             alt="Lagos cityscape"
