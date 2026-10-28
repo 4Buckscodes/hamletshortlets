@@ -9,10 +9,10 @@ export const metadata: Metadata = {
   alternates: { canonical: '/partners/apply' },
 };
 
-const ECONOMICS = [
-  { stat: '100%', label: 'Owner share of base rate B (0% owner fee)' },
-  { stat: '10%', label: 'Closing agent commission on attributed B' },
-  { stat: '2.5%', label: 'Direct referrer reward (90-day window)' },
+const PARTNER_PILLARS = [
+  { stat: '01', label: 'Owner and manager applications' },
+  { stat: '02', label: 'Partner access reviewed before activation' },
+  { stat: '03', label: 'Commission terms agreed upfront' },
 ] as const;
 
 export default function PartnerApplyPage() {
@@ -29,11 +29,11 @@ export default function PartnerApplyPage() {
               <span className="italic text-brass-300">Partner with clarity.</span>
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Property owners keep 100% of their listed stay rate (<em>B</em>). Complete the short progressive application below — every partner account is reviewed before listing or commission access is activated.
+              Tell us how you want to work with HAMLET. Complete the short application below; every partner account is reviewed before listing or commission access is activated. Applicable rates and commission terms will be made clear before you participate.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {ECONOMICS.map(item => (
+              {PARTNER_PILLARS.map(item => (
                 <div
                   key={item.stat}
                   className="rounded-2xl border border-white/15 bg-ink-900/90 p-4"
