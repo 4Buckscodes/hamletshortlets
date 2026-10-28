@@ -66,7 +66,7 @@ export default function AboutPage() {
 
       <main className="flex-1">
         {/* Midnight Navy Hero */}
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section className="page-hero border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">
               {HAMLET_BRAND_NAME} · By {HAMLET_PARENT_COMPANY}
