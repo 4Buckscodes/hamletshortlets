@@ -112,7 +112,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('partner') || q.includes('owner') || q.includes('list') || q.includes('agent') || q.includes('commission')) {
     return {
-      text: 'Property owners keep 100% of their listed base nightly rate (0% owner fee). Verified closing agents earn 10% of the owner base rate on attributed stays, and eligible referring partners earn 2.5% during their active referral window.',
+      text: 'HAMLET’s current pricing model includes a 20% domestic accommodation markup, which covers applicable partner commissions and referral rewards. Your applicable rates and eligibility should be confirmed in the partner terms before you participate.',
       links: [
         { label: 'Apply as a partner', href: '/partners/apply' },
         { label: 'Partner workspace', href: '/partners' },
