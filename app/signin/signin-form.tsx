@@ -348,6 +348,20 @@ export default function SignInForm() {
               )}
             </FormField>
 
+            {lockedReferralCode && (
+              <FormField label="Referral code" hint="This referral was attached to your sign-up link and cannot be changed.">
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    value={lockedReferralCode}
+                    readOnly
+                    aria-readonly="true"
+                    className={`${FIELD_INPUT_CLASS} cursor-not-allowed bg-paper/80 font-mono uppercase`}
+                  />
+                )}
+              </FormField>
+            )}
+
             <FormField
               label="Phone number"
               optional
