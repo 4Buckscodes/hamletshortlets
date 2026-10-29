@@ -103,11 +103,11 @@ Approved partners (`https://www.hamlet.rest/#/partner/register`) can participate
 - **Agent (authorised)**: Manages listings on behalf of owners with documented mandate.
 - **Property Manager**: Handles full guest operations, check-in, maintenance, and issue resolution.
 - **Shortlet Operator / Co-host**: Operates multiple serviced units or guest-facing hospitality.
-- **Closing Agent**: Shares verified stay links (`https://www.hamlet.rest/#/stays?agent=HML-...`) or partner codes with guests and earns **10% of `B`** on confirmed/completed bookings closed with their code (`0` listed properties required).
-- **Referral Partner**: Introduces new partners via canonical referral links (`https://www.hamlet.rest/#/partner/register?ref=HML-...`).
-  - Self-referrals (same account, email, or phone) are blocked.
-  - **Activation rule**: The referred partner's **1st completed booking** activates a **90-day recurring reward window** (`₦0` activation reward on booking #1).
-  - **Recurring reward**: During the active 90-day window, the referring partner earns **2.5% of `B`** on subsequent qualifying completed bookings closed by the referred partner, funded entirely from HAMLET's 20% markup.
+- **Closing Agent**: Shares eligible stay links with guests and earns the applicable closing-agent commission on bookings they are attributed to close, subject to booking and payout rules.
+- **Partner referrals**: Any eligible partner can share a partner recruitment link (`https://www.hamlet.rest/partners/apply?ref=HML-...`) or a guest discovery link (`https://www.hamlet.rest/?ref=HML-...`) using the same stable referral code. The link purpose is tracked separately; the primary partner role does not create a separate referral-only account.
+  - Referral attribution is validated server-side. Self-referrals and invalid codes are rejected.
+  - Partner-network rewards apply only to eligible completed activity within the configured earning window; clicks, sign-up, and requested bookings do not earn a payout.
+  - The same booking must not receive duplicate booking-based commissions; all reward allocation remains subject to the approved commercial rules and settlement checks.
 
 ---
 
