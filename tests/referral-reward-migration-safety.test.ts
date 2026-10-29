@@ -30,6 +30,15 @@ describe('network referral reward lifecycle migration safety', () => {
     expect(migration).toMatch(/return new;\s*end if;/i);
   });
 
+  it('does not double-allocate the referral reward already handled by transition_booking', () => {
+    expect(migration).toMatch(/if new\\.closing_agent_id is not null then\\s+return new;\\s+end if;/i);
+    expect(migration).toMatch(/transition_booking already allocates the closing-agent referral reward/i);
+  });
+
+  it('updates the HAMLET allocation ledger when the fallback referral reward changes allocation', () => {
+    expect(migration).toMatch(/set amount = new_allocation,[\\s\\S]{0,180}record_type = 'hamlet_allocation'/i);
+  });
+
   it('uses a unique booking reward and idempotent ledger conflict handling', () => {
     expect(migration).toMatch(/on conflict \(booking_id\) do nothing/i);
     expect(migration).toMatch(/on conflict \(provider_reference, record_type, booking_id\)/i);
