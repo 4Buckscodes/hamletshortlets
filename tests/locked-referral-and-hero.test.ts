@@ -40,8 +40,10 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
   });
 
-  it('removes the hero image scale/reveal entrance effect', () => {
-    expect(hero).not.toMatch(/scale-105/);
-    expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
+  it('removes the hero slideshow image scale/reveal entrance effect without affecting other cards', () => {
+    const heroSlideshow = hero.split('/* ── Available Stays Marketplace Board')[0];
+    expect(heroSlideshow).not.toMatch(/scale-105/);
+    expect(heroSlideshow).not.toMatch(/transition-all duration-1000 ease-out/);
+    expect(heroSlideshow).not.toMatch(/transition-transform/);
   });
 });
