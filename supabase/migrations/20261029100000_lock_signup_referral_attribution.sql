@@ -89,3 +89,77 @@ begin
   return new;
 end;
 $$;
+
+
+-- Partner applications can be submitted or resubmitted independently of the UI.
+-- Validate the recruitment attribution at the database boundary as well.
+create or replace function public.validate_partner_application_referral()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  normalized_code text := upper(btrim(coalesce(new.referred_by_code, '')));
+  referrer_id uuid;
+  applicant_email text;
+  referrer_email text;
+  applicant_phone text;
+  referrer_phone text;
+begin
+  if normalized_code = '' then
+    new.referred_by_code := null;
+    return new;
+  end if;
+
+  select p.id
+    into referrer_id
+    from public.profiles p
+    where p.referral_code = normalized_code
+      and p.role in ('partner', 'admin')
+      and p.account_status = 'active'
+    limit 1;
+
+  if referrer_id is null then
+    raise exception 'This partner referral code is invalid or no longer active.';
+  end if;
+
+  if new.applicant_id = referrer_id then
+    raise exception 'Self-referrals are not permitted.';
+  end if;
+
+  select lower(btrim(coalesce(u.email, ''))),
+         regexp_replace(coalesce(p.phone, ''), '[^0-9]', '', 'g')
+    into referrer_email, referrer_phone
+    from public.profiles p
+    left join auth.users u on u.id = p.id
+    where p.id = referrer_id;
+
+  select lower(btrim(coalesce(u.email, ''))),
+         regexp_replace(coalesce(p.phone, ''), '[^0-9]', '', 'g')
+    into applicant_email, applicant_phone
+    from public.profiles p
+    left join auth.users u on u.id = p.id
+    where p.id = new.applicant_id;
+
+  if referrer_email <> '' and referrer_email = applicant_email then
+    raise exception 'Self-referrals are not permitted.';
+  end if;
+
+  if referrer_phone <> '' and referrer_phone = applicant_phone then
+    raise exception 'Self-referrals using the same phone number are not permitted.';
+  end if;
+
+  new.referred_by_code := normalized_code;
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_partner_application_referral on public.partner_applications;
+create trigger validate_partner_application_referral
+  before insert or update of referred_by_code, applicant_id
+  on public.partner_applications
+  for each row execute function public.validate_partner_application_referral();
+
+revoke all on function public.validate_partner_application_referral() from public, anon, authenticated;
+grant execute on function public.validate_partner_application_referral() to service_role;
