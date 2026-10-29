@@ -170,7 +170,9 @@ export default function PartnerApplicationForm() {
       return;
     }
 
-    const urlRef = new URLSearchParams(window.location.search).get('ref');
+    const urlRef =
+      new URLSearchParams(window.location.search).get('ref') ||
+      window.localStorage.getItem('hamlet:referral-code');
     if (urlRef?.trim()) {
       const capturedCode = urlRef.trim().toUpperCase();
       setLockedReferralCode(capturedCode);
