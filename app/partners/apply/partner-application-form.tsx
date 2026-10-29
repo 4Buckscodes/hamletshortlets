@@ -151,6 +151,7 @@ export default function PartnerApplicationForm() {
   const [roleState, setRoleState] = useState('');
   const [existing, setExisting] = useState<ExistingApp | null>(null);
   const [referralResolved, setReferralResolved] = useState<string>('');
+  const [lockedReferralCode, setLockedReferralCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -170,11 +171,10 @@ export default function PartnerApplicationForm() {
     }
 
     const urlRef = new URLSearchParams(window.location.search).get('ref');
-    if (urlRef) {
-      setValues(prev => ({
-        ...prev,
-        referralCode: prev.referralCode || urlRef.trim().toUpperCase(),
-      }));
+    if (urlRef?.trim()) {
+      const capturedCode = urlRef.trim().toUpperCase();
+      setLockedReferralCode(capturedCode);
+      setValues(prev => ({ ...prev, referralCode: capturedCode }));
     }
 
     const { data: session } = await db.auth.getSession();
