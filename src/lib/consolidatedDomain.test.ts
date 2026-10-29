@@ -6,6 +6,7 @@ import {
 import {
   buildCanonicalReferralUrl,
   buildClosingAgentShareUrl,
+  buildGuestReferralUrl,
   buildPartnerReferralCode,
   buildReferralWhatsAppShareUrl,
   evaluateReferralOnBookingCompletion,
@@ -194,11 +195,13 @@ describe('§12.2 Partner Referral Links & 90-Day Recurring 2.5% Reward Engine', 
     expect(isValidReferralCodeFormat(collisionAvoided)).toBe(true);
 
     const url = buildCanonicalReferralUrl('hml-tun101');
-    expect(url).toBe('https://www.hamlet.rest/#/partner/register?ref=HML-TUN101');
+    expect(url).toBe('https://www.hamlet.rest/partners/apply?ref=HML-TUN101');
     expect(url).not.toContain('https://hamlet.rest/');
 
     const agentUrl = buildClosingAgentShareUrl('hml-chi202', 'p-01');
-    expect(agentUrl).toBe('https://www.hamlet.rest/#/stays/p-01?agent=HML-CHI202');
+    expect(agentUrl).toBe('https://www.hamlet.rest/stays/p-01?agent=HML-CHI202');
+
+    expect(buildGuestReferralUrl('hml-tun101')).toBe('https://www.hamlet.rest/?ref=HML-TUN101');
 
     const waUrl = buildReferralWhatsAppShareUrl('HML-TUN101', 'Tunde Adeyemi');
     expect(waUrl).toContain('https://wa.me/?text=');
