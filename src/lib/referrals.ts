@@ -1,6 +1,6 @@
 // ─── HAMLET Partner Referral, Attribution & Recurring Reward Engine (§4 & §8.1) ─
 // Rules:
-//   - Canonical referral onboarding URL uses https://www.hamlet.rest/#/partner/register?ref=CODE
+//   - Canonical partner recruitment URL uses https://www.hamlet.rest/partners/apply?ref=CODE
 //   - Single direct referrer per partner; no self-referrals; no multi-level / cascading rewards.
 //   - No registration or property-upload bonuses.
 //   - Referred closing agent's FIRST completed eligible booking activates the referral relationship
