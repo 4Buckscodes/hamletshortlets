@@ -25,6 +25,12 @@ begin
     return new;
   end if;
 
+  -- Closing-agent referral rewards are already allocated by transition_booking.
+  -- Restrict this fallback trigger to bookings without a closing-agent attribution.
+  if new.closing_agent_id is not null then
+    return new;
+  end if;
+
   -- The existing booking lifecycle may already have recorded a reward/activation.
   if exists (
     select 1 from public.partner_referral_rewards
