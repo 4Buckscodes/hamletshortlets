@@ -1,0 +1,73 @@
+-- Persist guest sign-up referral attribution from trusted auth metadata.
+-- The UI locks the field for usability; this trigger is the enforcement boundary.
+create or replace function public.create_profile_for_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  normalized_email text := lower(btrim(coalesce(new.email, '')));
+  is_preauthorized_admin boolean := false;
+  assigned_role text := 'guest';
+  raw_referral_code text := upper(regexp_replace(
+    btrim(coalesce(new.raw_user_meta_data ->> 'referred_by_code', '')),
+    '[^A-Za-z0-9-]', '', 'g'
+  ));
+  resolved_referrer_id uuid;
+  resolved_referral_code text;
+begin
+  if normalized_email <> '' then
+    select exists (
+      select 1 from public.admin_bootstrap_emails where email = normalized_email
+    ) into is_preauthorized_admin;
+  end if;
+
+  if is_preauthorized_admin then
+    assigned_role := 'admin';
+  end if;
+
+  if raw_referral_code <> '' then
+    select p.id, p.referral_code
+      into resolved_referrer_id, resolved_referral_code
+      from public.profiles p
+      where p.referral_code = raw_referral_code
+        and p.role in ('partner', 'admin')
+        and p.account_status = 'active'
+      limit 1;
+
+    if resolved_referrer_id is null then
+      raise exception 'This referral code is invalid or no longer active.';
+    end if;
+  end if;
+
+  insert into public.profiles (
+    id, full_name, phone, role, company, referred_by_code, referred_by_partner_id
+  )
+  values (
+    new.id,
+    coalesce(
+      nullif(btrim(new.raw_user_meta_data ->> 'full_name'), ''),
+      case when is_preauthorized_admin then 'HAMLET Operations' else '' end
+    ),
+    nullif(btrim(coalesce(new.raw_user_meta_data ->> 'phone', '')), ''),
+    assigned_role,
+    case when is_preauthorized_admin then 'HAMLET' else null end,
+    nullif(resolved_referral_code, ''),
+    resolved_referrer_id
+  );
+
+  if is_preauthorized_admin then
+    insert into public.admin_audit_log (actor_id, actor_role, action, target, detail)
+      values (
+        new.id,
+        'admin',
+        'admin_bootstrapped',
+        normalized_email,
+        'Administrator account automatically provisioned from pre-authorized email registry.'
+      );
+  end if;
+
+  return new;
+end;
+$$;
