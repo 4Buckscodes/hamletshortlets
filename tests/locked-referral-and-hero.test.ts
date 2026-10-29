@@ -32,6 +32,13 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/raise exception 'This referral code is invalid or no longer active\.'/i);
   });
 
+  it('validates partner recruitment referrals at the database boundary, not only in the form', () => {
+    expect(migration).toMatch(/create or replace function public\\.validate_partner_application_referral\\(\\)/i);
+    expect(migration).toMatch(/before insert or update of referred_by_code, applicant_id/i);
+    expect(migration).toMatch(/new\\.applicant_id = referrer_id/i);
+    expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
+  });
+
   it('removes the hero image scale/reveal entrance effect', () => {
     expect(hero).not.toMatch(/scale-105/);
     expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
