@@ -33,7 +33,7 @@ describe('locked referral capture and static hero', () => {
   });
 
   it('validates partner recruitment referrals at the database boundary, not only in the form', () => {
-    expect(migration).toMatch(/create or replace function public\\.validate_partner_application_referral\\(\\)/i);
+    expect(migration).toMatch(/create or replace function public\.validate_partner_application_referral\(\)/i);
     expect(migration).toMatch(/before insert on public\.partner_applications/i);
     expect(migration).toMatch(/before update of referred_by_code, applicant_id on public\.partner_applications/i);
     expect(migration).toMatch(/new\.applicant_id = referrer_id/i);
