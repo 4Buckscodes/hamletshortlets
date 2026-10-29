@@ -16,6 +16,9 @@ declare
   ));
   resolved_referrer_id uuid;
   resolved_referral_code text;
+  referrer_email text;
+  referrer_phone text;
+  submitted_phone text := regexp_replace(coalesce(new.raw_user_meta_data ->> 'phone', ''), '\\D', '', 'g');
 begin
   if normalized_email <> '' then
     select exists (
@@ -38,6 +41,21 @@ begin
 
     if resolved_referrer_id is null then
       raise exception 'This referral code is invalid or no longer active.';
+    end if;
+
+    select lower(btrim(coalesce(u.email, ''))), regexp_replace(coalesce(p.phone, ''), '\\D', '', 'g')
+      into referrer_email, referrer_phone
+      from public.profiles p
+      join auth.users u on u.id = p.id
+      where p.id = resolved_referrer_id;
+
+    if referrer_email <> '' and referrer_email = lower(btrim(coalesce(new.email, ''))) then
+      raise exception 'Self-referrals are not permitted.';
+    end if;
+
+    if submitted_phone <> '' and referrer_phone <> ''
+      and submitted_phone = referrer_phone then
+      raise exception 'Self-referrals using the same phone number are not permitted.';
     end if;
   end if;
 
