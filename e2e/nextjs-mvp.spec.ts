@@ -77,6 +77,7 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
 
   test('locks referral code on guest sign-up when arriving from a referral link', async ({ page }) => {
     await page.goto('/?ref=HML-LOCK123');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code'))).toBe('HML-LOCK123');
     await page.goto('/signin?mode=signup');
     await page.getByLabel(/Email address/i).fill('guest@example.com');
     await page.getByLabel('Password', { exact: true }).fill('ValidPass123!');
