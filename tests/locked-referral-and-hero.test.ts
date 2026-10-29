@@ -28,6 +28,7 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/referred_by_code, referred_by_partner_id/i);
     expect(migration).toMatch(/Self-referrals are not permitted/i);
     expect(migration).toMatch(/same phone number are not permitted/i);
+    expect(migration).toMatch(/regexp_replace\(coalesce\(new\.raw_user_meta_data ->> 'phone', ''\), '\[\^0-9\]', '', 'g'\)/i);
     expect(migration).toMatch(/raise exception 'This referral code is invalid or no longer active\.'/i);
   });
 
