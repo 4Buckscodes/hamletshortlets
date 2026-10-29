@@ -569,15 +569,16 @@ export default function PartnerApplicationForm() {
                 <input
                   {...fieldProps}
                   maxLength={32}
-                  value={values.referralCode}
-                  onChange={e =>
-                    setValues(prev => ({
-                      ...prev,
-                      referralCode: e.target.value.toUpperCase(),
-                    }))
-                  }
+                  value={lockedReferralCode || values.referralCode}
+                  readOnly={Boolean(lockedReferralCode)}
+                  aria-readonly={Boolean(lockedReferralCode)}
+                  onChange={e => {
+                    if (!lockedReferralCode) {
+                      setValues(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }));
+                    }
+                  }}
                   placeholder="Optional code"
-                  className={`${FIELD_INPUT_CLASS} font-mono uppercase`}
+                  className={`${FIELD_INPUT_CLASS} font-mono uppercase ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
                 />
               )}
             </FormField>
