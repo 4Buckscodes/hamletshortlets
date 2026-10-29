@@ -43,6 +43,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [lockedReferralCode, setLockedReferralCode] = useState('');
 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -55,6 +56,8 @@ export default function SignInForm() {
         setMode('signup');
       }
       setRequestedNext(readRequestedRedirectFromSearch(window.location.search));
+      const referralCode = new URLSearchParams(window.location.search).get('ref');
+      if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -158,6 +161,7 @@ export default function SignInForm() {
             data: {
               full_name: name.trim(),
               phone: phone.trim() || null,
+              referred_by_code: lockedReferralCode || null,
             },
           },
         });
