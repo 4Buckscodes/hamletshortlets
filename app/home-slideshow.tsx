@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   Building2,
   Calendar,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -143,6 +144,7 @@ export function HomeMarketplaceExperience({
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
 
   useEffect(() => {
@@ -290,168 +292,193 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Elevated Search Dock (below hero so interior photos stay clear) ── */}
-      <div className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-11 sm:px-6">
+      <div className="relative z-20 mx-auto -mt-5 max-w-6xl px-3 sm:-mt-10 sm:px-6">
         <form
           action="/stays"
           method="get"
           onSubmit={handleSearchSubmit}
-          className="rounded-3xl border border-ink-100 bg-white p-4 text-ink-900 shadow-[0_24px_60px_-20px_rgba(14,31,59,0.28)] sm:p-5"
+          className="rounded-[1.35rem] border border-ink-100/90 bg-white p-3 text-ink-900 shadow-[0_18px_48px_-30px_rgba(14,31,59,0.32)] sm:rounded-[1.65rem] sm:p-5"
         >
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {(
-                [
-                  { id: 'all', label: 'All Lagos' },
-                  { id: 'mainland', label: 'Lagos Mainland' },
-                  { id: 'island', label: 'Lagos Island' },
-                ] as const
-              ).map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setSearchSide(tab.id);
-                    if (tab.id === 'mainland') setArea('Lagos Mainland');
-                    else if (area === 'Lagos Mainland') setArea('');
-                  }}
-                  className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                    searchSide === tab.id
-                      ? 'bg-ink-900 text-white'
-                      : 'bg-paper text-ink-600 hover:bg-clay hover:text-ink-900'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          {/* Mobile summary keeps the hero compact; expanded controls remain full-size and touch-friendly. */}
+          <div className="mb-2 flex items-center justify-between gap-3 sm:hidden">
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-tight text-ink-900">Find your stay</p>
+              <p className="truncate text-[11px] text-ink-500">
+                {area || (searchSide === 'mainland' ? 'Lagos Mainland' : searchSide === 'island' ? 'Lagos Island' : 'Anywhere in Lagos')}
+                {checkIn ? ` · ${checkIn}` : ''}
+                {checkOut ? ` – ${checkOut}` : ''}
+                {guests !== 2 ? ` · ${guests} guests` : ''}
+              </p>
             </div>
-            <NextCurrencySwitcher />
+            <button
+              type="button"
+              aria-expanded={searchExpanded}
+              aria-controls="hamlet-home-search-fields"
+              onClick={() => setSearchExpanded(value => !value)}
+              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full bg-ink-900 px-3.5 text-xs font-bold text-white transition-colors hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
+            >
+              {searchExpanded ? 'Close' : 'Edit search'}
+              <ChevronDown className={`h-4 w-4 text-brass-300 transition-transform duration-200 ${searchExpanded ? 'rotate-180' : ''}`} />
+            </button>
           </div>
 
-          {/* Quick area chips */}
-          <div className="mb-3.5 flex items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-1">
-            {QUICK_AREAS.map(hub => {
-              const selected = area === hub;
-              return (
-                <button
-                  key={hub}
-                  type="button"
-                  onClick={() => setArea(selected ? '' : hub)}
-                  className={`shrink-0 cursor-pointer rounded-full border px-3 py-1 text-[11px] font-bold transition ${
-                    selected
-                      ? 'border-brass-600 bg-brass-500 text-ink-950'
-                      : 'border-ink-200 bg-paper/75 text-ink-700 hover:border-ink-400'
-                  }`}
-                >
-                  {hub}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
-            <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-4">
-              <MapPin className="h-[17px] w-[17px] shrink-0 text-brass-600" />
-              <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
-                  Where
-                </span>
-                <select
-                  name="area"
-                  aria-label="Choose a Lagos neighbourhood"
-                  value={area}
-                  onChange={e => setArea(e.target.value)}
-                  className="w-full truncate bg-transparent text-[13.5px] font-bold text-ink-900 focus:outline-none"
-                >
-                  <option value="">All Lagos areas</option>
-                  <optgroup label="Lagos Mainland">
-                    {MAINLAND_AREAS.map(a => (
-                      <option key={a} value={a}>
-                        {a === 'Lagos Mainland' ? 'Lagos Mainland (All)' : a}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Lagos Island & Lekki">
-                    {ISLAND_AND_LEKKI_AREAS.map(a => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
+          <div
+            id="hamlet-home-search-fields"
+            className={`${searchExpanded ? 'block' : 'hidden'} sm:block`}
+          >
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
+              <div className="flex flex-wrap items-center gap-1.5" aria-label="Lagos area">
+                {(
+                  [
+                    { id: 'all', label: 'All Lagos' },
+                    { id: 'mainland', label: 'Lagos Mainland' },
+                    { id: 'island', label: 'Lagos Island' },
+                  ] as const
+                ).map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    aria-pressed={searchSide === tab.id}
+                    onClick={() => {
+                      setSearchSide(tab.id);
+                      if (tab.id === 'mainland') setArea('Lagos Mainland');
+                      else if (area === 'Lagos Mainland') setArea('');
+                    }}
+                    className={`min-h-8 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:text-xs ${
+                      searchSide === tab.id
+                        ? 'bg-ink-900 text-white'
+                        : 'bg-paper text-ink-600 hover:bg-clay hover:text-ink-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
-            </label>
+              <NextCurrencySwitcher />
+            </div>
 
-            <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-3">
-              <Calendar className="h-[17px] w-[17px] shrink-0 text-brass-600" />
-              <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
-                  Check in
-                </span>
-                <input
-                  name="checkIn"
-                  type="date"
-                  min={minDate}
-                  aria-label="Check-in date"
-                  value={checkIn}
-                  onChange={e => {
-                    const nextIn = e.target.value;
-                    setCheckIn(nextIn);
-                    if (nextIn && checkOut && checkOut <= nextIn) {
-                      setCheckOut(addDaysToIsoDate(nextIn, 2));
-                    }
-                  }}
-                  className="w-full min-w-0 bg-transparent text-[13px] font-bold text-ink-900 focus:outline-none"
-                />
+            <div className="mb-3 rounded-2xl border border-ink-100 bg-paper/65 p-3 sm:mb-4 sm:p-4">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-ink-900">Popular locations</p>
+                  <p className="mt-0.5 text-[11px] text-ink-500">Choose an area to narrow your search</p>
+                </div>
+                {area && (
+                  <button
+                    type="button"
+                    onClick={() => setArea('')}
+                    className="min-h-8 shrink-0 rounded-full px-2.5 text-[11px] font-bold text-ink-500 transition-colors hover:bg-white hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
-            </label>
-
-            <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-3">
-              <Calendar className="h-[17px] w-[17px] shrink-0 text-brass-600" />
-              <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
-                  Check out
-                </span>
-                <input
-                  name="checkOut"
-                  type="date"
-                  min={checkIn ? addDaysToIsoDate(checkIn, 1) : addDaysToIsoDate(minDate, 1)}
-                  aria-label="Check-out date"
-                  value={checkOut}
-                  onChange={e => setCheckOut(e.target.value)}
-                  className="w-full min-w-0 bg-transparent text-[13px] font-bold text-ink-900 focus:outline-none"
-                />
+              <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-1 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:pb-0">
+                {QUICK_AREAS.map(hub => {
+                  const selected = area === hub;
+                  return (
+                    <button
+                      key={hub}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setArea(selected ? '' : hub)}
+                      className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:px-3.5 sm:text-xs ${
+                        selected
+                          ? 'border-ink-900 bg-ink-900 text-white'
+                          : 'border-ink-200 bg-white text-ink-700 hover:border-brass-500 hover:bg-brass-200/30 hover:text-ink-950'
+                      }`}
+                    >
+                      {selected && <span aria-hidden="true" className="text-brass-300">✓</span>}
+                      {hub}
+                    </button>
+                  );
+                })}
               </div>
-            </label>
+            </div>
 
-            <div className="flex items-stretch gap-2 lg:col-span-2">
-              <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-ink-100 bg-paper/65 px-3 py-2.5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2.5 lg:grid-cols-12">
+              <label className="col-span-2 flex min-w-0 items-center gap-2.5 rounded-xl border border-ink-100 bg-paper/55 px-3 py-2.5 sm:col-span-1 sm:rounded-2xl sm:px-3.5 lg:col-span-4">
+                <MapPin className="h-4 w-4 shrink-0 text-brass-600" />
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Where</span>
+                  <select
+                    name="area"
+                    aria-label="Choose a Lagos neighbourhood"
+                    value={area}
+                    onChange={e => setArea(e.target.value)}
+                    className="w-full min-w-0 truncate bg-transparent text-xs font-bold text-ink-900 focus:outline-none sm:text-[13.5px]"
+                  >
+                    <option value="">All Lagos areas</option>
+                    <optgroup label="Lagos Mainland">
+                      {MAINLAND_AREAS.map(a => (
+                        <option key={a} value={a}>{a === 'Lagos Mainland' ? 'Lagos Mainland (All)' : a}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Lagos Island & Lekki">
+                      {ISLAND_AND_LEKKI_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </optgroup>
+                  </select>
+                </div>
+              </label>
+
+              <label className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-2.5 py-2.5 sm:rounded-2xl sm:px-3.5 lg:col-span-3">
+                <Calendar className="h-4 w-4 shrink-0 text-brass-600" />
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Check in</span>
+                  <input
+                    name="checkIn"
+                    type="date"
+                    min={minDate}
+                    aria-label="Check-in date"
+                    value={checkIn}
+                    onChange={e => {
+                      const nextIn = e.target.value;
+                      setCheckIn(nextIn);
+                      if (nextIn && checkOut && checkOut <= nextIn) setCheckOut(addDaysToIsoDate(nextIn, 2));
+                    }}
+                    className="w-full min-w-0 bg-transparent text-[11px] font-bold text-ink-900 focus:outline-none sm:text-[13px]"
+                  />
+                </div>
+              </label>
+
+              <label className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-2.5 py-2.5 sm:rounded-2xl sm:px-3.5 lg:col-span-3">
+                <Calendar className="h-4 w-4 shrink-0 text-brass-600" />
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Check out</span>
+                  <input
+                    name="checkOut"
+                    type="date"
+                    min={checkIn ? addDaysToIsoDate(checkIn, 1) : addDaysToIsoDate(minDate, 1)}
+                    aria-label="Check-out date"
+                    value={checkOut}
+                    onChange={e => setCheckOut(e.target.value)}
+                    className="w-full min-w-0 bg-transparent text-[11px] font-bold text-ink-900 focus:outline-none sm:text-[13px]"
+                  />
+                </div>
+              </label>
+
+              <label className="col-span-2 flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-3 py-2.5 sm:col-span-1 sm:rounded-2xl sm:px-3.5 lg:col-span-2">
                 <Users className="h-4 w-4 shrink-0 text-brass-600" />
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
-                    Guests
-                  </span>
+                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Guests</span>
                   <select
                     name="guests"
                     aria-label="Guests"
                     value={guests}
                     onChange={e => setGuests(Number(e.target.value))}
-                    className="w-full bg-transparent text-[13px] font-bold text-ink-900 focus:outline-none"
+                    className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-900 focus:outline-none sm:text-[13px]"
                   >
-                    {[1, 2, 3, 4, 6, 8, 10].map(n => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
+                    {[1, 2, 3, 4, 6, 8, 10].map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
               </label>
 
               <button
                 type="submit"
-                className="btn-jade min-h-12 shrink-0 !rounded-2xl !px-5 text-sm shadow-sm"
+                className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink-900 px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:col-span-1 sm:rounded-2xl lg:col-span-12"
               >
                 <Search className="h-4 w-4 shrink-0" />
-                <span>Search</span>
+                <span>Search stays</span>
               </button>
             </div>
           </div>
