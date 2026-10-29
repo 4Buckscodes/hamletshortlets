@@ -31,7 +31,7 @@ describe('network referral reward lifecycle migration safety', () => {
   });
 
   it('does not double-allocate the referral reward already handled by transition_booking', () => {
-    expect(migration).toMatch(/if new\.closing_agent_id is not null then\s+return new;\\s+end if;/i);
+    expect(migration).toMatch(/if new\.closing_agent_id is not null then\s+return new;\s+end if;/i);
     expect(migration).toMatch(/transition_booking already allocates the closing-agent referral reward/i);
   });
 
