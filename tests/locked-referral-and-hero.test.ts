@@ -26,6 +26,8 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/p\.role in \('partner', 'admin'\)/i);
     expect(migration).toMatch(/p\.account_status = 'active'/i);
     expect(migration).toMatch(/referred_by_code, referred_by_partner_id/i);
+    expect(migration).toMatch(/Self-referrals are not permitted/i);
+    expect(migration).toMatch(/same phone number are not permitted/i);
     expect(migration).toMatch(/raise exception 'This referral code is invalid or no longer active\.'/i);
   });
 
