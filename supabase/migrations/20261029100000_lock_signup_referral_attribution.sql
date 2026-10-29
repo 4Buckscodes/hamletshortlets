@@ -155,10 +155,14 @@ begin
 end;
 $$;
 
-drop trigger if exists validate_partner_application_referral on public.partner_applications;
-create trigger validate_partner_application_referral
-  before insert or update of referred_by_code, applicant_id
-  on public.partner_applications
+drop trigger if exists validate_partner_application_referral_insert on public.partner_applications;
+create trigger validate_partner_application_referral_insert
+  before insert on public.partner_applications
+  for each row execute function public.validate_partner_application_referral();
+
+drop trigger if exists validate_partner_application_referral_update on public.partner_applications;
+create trigger validate_partner_application_referral_update
+  before update of referred_by_code, applicant_id on public.partner_applications
   for each row execute function public.validate_partner_application_referral();
 
 revoke all on function public.validate_partner_application_referral() from public, anon, authenticated;
