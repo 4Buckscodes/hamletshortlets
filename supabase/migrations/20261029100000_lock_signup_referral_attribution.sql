@@ -18,7 +18,7 @@ declare
   resolved_referral_code text;
   referrer_email text;
   referrer_phone text;
-  submitted_phone text := regexp_replace(coalesce(new.raw_user_meta_data ->> 'phone', ''), '\\D', '', 'g');
+  submitted_phone text := regexp_replace(coalesce(new.raw_user_meta_data ->> 'phone', ''), '\D', '', 'g');
 begin
   if normalized_email <> '' then
     select exists (
@@ -43,7 +43,7 @@ begin
       raise exception 'This referral code is invalid or no longer active.';
     end if;
 
-    select lower(btrim(coalesce(u.email, ''))), regexp_replace(coalesce(p.phone, ''), '\\D', '', 'g')
+    select lower(btrim(coalesce(u.email, ''))), regexp_replace(coalesce(p.phone, ''), '\D', '', 'g')
       into referrer_email, referrer_phone
       from public.profiles p
       join auth.users u on u.id = p.id
