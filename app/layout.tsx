@@ -3,6 +3,7 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/playfair-display';
 import './globals.css';
 import { SiteProviders } from '@/components/site/SiteShell';
+import ReferralAttributionCapture from '@/components/site/ReferralAttributionCapture';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
@@ -63,7 +64,10 @@ export default function RootLayout({
   return (
     <html lang="en-NG">
       <body>
-        <SiteProviders>{children}</SiteProviders>
+        <SiteProviders>
+          <ReferralAttributionCapture />
+          {children}
+        </SiteProviders>
       </body>
     </html>
   );
