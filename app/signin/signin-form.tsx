@@ -168,6 +168,7 @@ export default function SignInForm() {
           },
         });
         if (authError) throw authError;
+        window.localStorage.removeItem('hamlet:referral-code');
         if (data.session && data.user) {
           await resolveRoleAndNavigate(data.user.id, true);
           return;
