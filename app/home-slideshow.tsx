@@ -205,7 +205,7 @@ export function HomeMarketplaceExperience({
                 decoding="async"
                 className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] ${
                   isCurrent ? 'opacity-100' : 'pointer-events-none opacity-0'
-                }`
+                }`}
               />
             );
           })}
