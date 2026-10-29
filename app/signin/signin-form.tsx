@@ -56,7 +56,9 @@ export default function SignInForm() {
         setMode('signup');
       }
       setRequestedNext(readRequestedRedirectFromSearch(window.location.search));
-      const referralCode = new URLSearchParams(window.location.search).get('ref');
+      const referralCode =
+        new URLSearchParams(window.location.search).get('ref') ||
+        window.localStorage.getItem('hamlet:referral-code');
       if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
     }, 0);
     return () => window.clearTimeout(timer);
