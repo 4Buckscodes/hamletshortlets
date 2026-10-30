@@ -1,59 +1,66 @@
 # HAMLET.REST — Authoritative Pricing, Currency & Payment Contract
 
-**Single Source of Truth in Code:** `src/lib/pricing.ts` & `src/lib/currency.ts`  
-**Active Rules Version:** `PRICING_RULES_VERSION = 'v2_20pct_markup_10pct_fx_buffer'`
+**Code authority:** `src/lib/pricing.ts`, `src/lib/currency.ts`  
+**Business authority:** `MVP_SPECIFICATION.md` v1.1 (29 October 2026)  
+**Rules version:** `v2_20pct_markup_10pct_fx_buffer`
 
----
+## 1. Approved decision
+The legacy 3% guest-only HAMLET service fee is retired. Do not charge or describe it as active.
 
-## 1. Documented Commercial Policy & Spec Reconciliation
+The domestic model adds a 20% pool to the owner's listed accommodation base price (B):
+- domestic guest accommodation price = (B × 1.20);
+- owner fee deducted from (B) = 0%;
+- pool percentages are percentage points of (B), not percentages of the pool or guest total.
 
-> **Explicit Spec Reconciliation Notice (Owner Visibility Required):**  
-> Early v1 product prose referenced a `3%` guest service fee, whereas the authoritative commercial engine implemented across `src/lib/pricing.ts`, unit tests (`src/lib/pricing.test.ts`, `src/lib/consolidatedDomain.test.ts`), and the live Supabase database (`20261024100000_availability_referrals_pricing_fx_settlement.sql`) enforces **`v2_20pct_markup_10pct_fx_buffer`**. Per engineering governance rules, **no silent commercial rate change was made**; all Next.js cards, detail pages, partner previews, and server booking endpoints read exclusively from `src/lib/pricing.ts`. Any future rate adjustment must be approved by the business owner and updated solely in `src/lib/pricing.ts` + a coordinated database migration.
+This replaces the earlier 3% prose in MVP v1.0. It does not by itself approve live payment-provider fees or certify production readiness.
 
-### Active Formula (`v2_20pct_markup_10pct_fx_buffer`)
-1. **Owner Listed Base Accommodation Price ($B$, in NGN)**:
-   - Property partner enters nightly base rate $B_{\text{night}}$ in NGN.
-   - For $N$ nights, $B = B_{\text{night}} \times N$.
-   - **Owner Fee:** `0%` deducted from $B$ (`OWNER_HAMLET_FEE_RATE = 0`). The owner keeps `100%` of $B$.
-2. **Domestic Guest Accommodation Price (NGN)**:
-   - Domestic markup = `20%` of $B$ (`HAMLET_DOMESTIC_MARKUP_RATE = 0.20`), rounded via integer basis points (`multiplyNairaBasisPoints(B, 2000)`).
-   - Guest-facing nightly stay rate = $B_{\text{night}} \times 1.20$ (`guestFacingNightlyNgn`).
-   - Internal allocation of the `20%` markup on $B$:
-     - Closing agent: `10%` of $B$ (when validly attributed)
-     - Direct referring partner: `2.5%` of $B$ (within active 90-day referral window; self-referral blocked)
-     - HAMLET platform allocation: `5%` of $B$ (with eligible referrer) or `7.5%` of $B$ (without eligible referrer)
-     - Payment & settlement cost reserve: `2.5%` of $B$
-3. **Mandatory Charges (Cleaning / Turnover Fee, in NGN)**:
-   - Added flat (`0%` domestic markup) to form **Domestic Guest Stay Total**:
-     $$\text{guestTotal (NGN)} = (B \times 1.20) + \text{mandatoryChargesTotal}$$
-4. **International Display & Quote Buffer (`USD` / `GBP`)**:
-   - Reference rates loaded from `public.currency_exchange_rates` (defaults: `₦1,600 / $1 USD`, `₦2,000 / £1 GBP`).
-   - Converts `guestTotal (NGN)` to `USD` or `GBP` and applies a **single `10%` international FX buffer (`INTERNATIONAL_CURRENCY_BUFFER_RATE = 0.10`)** — never stacked or compounded.
-   - Foreign-currency quotes carry a **30-minute validity window** (`quote_expires_at`). Expired quotes are refreshed server-side via `refresh_booking_fx_quote` before checkout initialization.
-5. **Refundable Caution Deposit**:
-   - Itemised separately on every card, summary, booking row, and receipt.
-   - **Strictly `0%` domestic markup and `0%` international FX buffer** (`formatCautionDeposit` / `applyInternationalBuffer: false`).
-   - Tracked in `public.booking_caution_deposits` and inspected post-checkout via `transition_caution_deposit`.
+## 2. Pool allocations
 
----
+| Allocation | Eligible referrer | No eligible referrer |
+|---|---:|---:|
+| Closing agent, when validly attributed | 10% of (B) | 10% of (B) |
+| Direct referrer, when eligible | 2.5% of (B) | 0% |
+| HAMLET allocation | 5% of (B) | 7.5% of (B) |
+| Payment/settlement reserve | 2.5% of (B) | 2.5% of (B) |
+| **Total** | **20% of (B)** | **20% of (B)** |
 
-## 2. Booking Hold & Server-Verified Payment Contract
+The referrer reward is 2.5 percentage points of (B), not 2.5% of the pool or guest total. Apply configured attribution, self-referral prevention, referral window and earning-milestone rules. Agent/referrer rewards must be adjusted consistently for cancellations and refunds.
 
-1. **Request Stage (`POST /api/booking-requests`)**:
-   - Authenticated active guest submits `propertyId`, `checkIn`, `checkOut`, `guests`, `quoteCurrency`, and optional `specialRequests`.
-   - Server validates `status = 'approved'`, guest capacity, `first_available_date`, and `get_unavailable_property_ids(requested_check_in, requested_check_out)`.
-   - Server computes `calculateGuestPricing` + `calculateInternationalStayQuote` from database rates (never trusting client-submitted totals) and inserts `status = 'requested'`.
-   - **No card payment is collected at the request stage.**
-2. **Partner Confirmation & 48-Hour Hold (`transition_booking`)**:
-   - Authorised property partner reviews the request in `/partners/bookings`.
-   - Accepting moves the booking to `awaiting_payment` with a **48-hour `payment_deadline`**, temporarily holding the dates against competing bookings.
-   - Overdue unpaid holds expire via `expire_overdue_bookings`.
-3. **Checkout Initialization (`supabase/functions/paystack-initialize`)**:
-   - Invoked from `/account/bookings` only when `status = 'awaiting_payment'` and `payment_deadline > now()`.
-   - Verifies caller JWT owns `booking.guest_id`, computes exact NGN kobo amount on the server, initializes Paystack transaction using server-only `PAYSTACK_SECRET_KEY`, and returns `authorization_url`.
-   - If `PAYSTACK_SECRET_KEY` is not yet configured on the environment, returns `503` and the UI displays an honest degraded-provider message without altering the booking hold.
-4. **Browser Return vs. Webhook Confirmation (`supabase/functions/paystack-webhook`)**:
-   - Returning to `/account/bookings?payment=return&booking=HML-...` **never marks a booking paid or confirmed**. It displays an explicit verification notice and refreshes server state.
-   - Only `paystack-webhook` — after verifying `x-paystack-signature` (HMAC-SHA512 over the raw request body), transaction status, currency, kobo amount, and idempotent `provider_reference` — invokes `confirm_booking_payment_webhook` (`service_role` only) to transition `awaiting_payment → confirmed` and write immutable ledger rows in `booking_payment_records`.
-5. **Refunds & Payout Reconciliation**:
-   - `record_booking_refund`, `update_payout_status`, and `transition_caution_deposit` record audited reconciliation states in `booking_payment_records` / `booking_caution_deposits` / `admin_audit_log`. Admin UI labels these honestly as ledger reconciliation records rather than automated bank transfers.
+The 2.5% reserve is an internal budget allocation, not the provider's actual fee. Reconcile actual provider charges separately. Do not silently deduct reserve shortfalls from owner proceeds or partner rewards.
+
+Example for (B = ₦200,000): guest accommodation price ₦240,000; pool ₦40,000. With eligible agent and referrer: ₦20,000 agent, ₦5,000 referrer, ₦10,000 HAMLET, ₦5,000 reserve. Without eligible referrer: ₦20,000 agent, ₦0 referrer, ₦15,000 HAMLET, ₦5,000 reserve.
+
+## 3. Mandatory charges and deposits
+Disclosed mandatory charges are added separately and excluded from the 20% pool by default. Refundable caution deposits are itemised separately and receive 0% markup, 0% international FX buffer, and no agent/referrer reward or HAMLET revenue allocation. Maintain a distinct deposit ledger and inspection/refund workflow.
+
+## 4. International quotes
+The current engine converts the domestic stay amount using configured exchange-rate data and applies one 10% USD/GBP buffer to qualifying stay quotes, never stacked or compounded. Caution deposits are converted separately without the buffer. Foreign-currency quotes expire after 30 minutes and must be refreshed server-side before checkout. Partner allocations remain based on the NGN owner base (B).
+
+## 5. Single calculation authority
+`src/lib/pricing.ts` is the only application-level pricing authority. All cards, property details, partner previews, booking requests, checkout, receipts, dashboards and server handlers must reuse it or a validated server-side wrapper. No independent 3%/20%/commission/FX formulas in components. Do not trust client-submitted totals; recompute from stored property prices, dates, mandatory charges, deposit, currency configuration and eligible attribution. Record the rules version and auditable allocation/quote data.
+
+## 6. Booking and payment verification
+1. Server validates listing approval, capacity, dates and availability, then calculates the authoritative quote.
+2. A booking request is not confirmation or proof of payment.
+3. An authorised partner may accept, moving the booking to `awaiting_payment` with a deadline/hold.
+4. Checkout initialization verifies guest ownership, state and deadline; amount is calculated server-side in provider minor units.
+5. Browser return, screenshot or uploaded receipt never marks a booking paid.
+6. Only the verified provider webhook may confirm payment after signature, status, reference, currency and amount checks; processing must be idempotent.
+7. Admin refund/payout actions must be described as ledger/reconciliation records unless actual provider execution is verified.
+
+## 7. Provider fees and ledger
+Provider-fee pass-through remains undecided. Do not add a provider fee to checkout until the policy and disclosures are approved; do not double charge or represent an estimate as an actual fee. Ledger must distinguish owner base/proceeds, each pool allocation, mandatory charges, caution deposit/refund, FX buffer/quote, actual provider fee/reserve variance, cancellation/refund adjustments, payment references, status and audit actor.
+
+## 8. Required tests
+- (B=₦200,000) gives guest accommodation price ₦240,000 and pool ₦40,000.
+- With referrer: allocations ₦20,000 / ₦5,000 / ₦10,000 / ₦5,000.
+- Without referrer: allocations ₦20,000 / ₦0 / ₦15,000 / ₦5,000.
+- No active legacy 3% fee in guest totals or settlement.
+- Owner proceeds are not reduced by pool.
+- Mandatory charges/deposits are excluded from pool; deposits exclude FX buffer.
+- FX buffer applies once; referral eligibility and cancellation/refund adjustments are tested.
+- Browser return cannot confirm payment; webhook checks are idempotent.
+- UI and server quote agree; actual provider fee is separate from reserve.
+
+## 9. Launch gate
+Commercial pricing sign-off is complete. Production readiness still requires verified provider secrets/webhook, deployed migrations/RPCs, real approved inventory, end-to-end payment tests, ledger reconciliation, legal disclosures, cancellation/refund policy and operational ownership.

@@ -1,162 +1,101 @@
 # HAMLET Locked MVP Specification
 
-**Version:** 1.0  
-**Decision date:** 11 October 2026  
-**Status:** Product scope locked; live-launch dependencies remain open.
+**Version:** 1.1  
+**Decision date:** 29 October 2026  
+**Status:** Product scope locked; live-launch dependencies remain open.  
+**Commercial supersession:** This version retires the 3% guest-only fee stated in v1.0. Other product scope remains unless expressly changed below.
 
 ## 1. MVP goal
+Prove HAMLET can onboard legitimate shortlet properties, connect guests to suitable accommodation, facilitate real request-to-book transactions, and maintain accountability between guests, property owners and authorised partners through listing review, booking, stay, issue resolution and settlement. HAMLET is a trusted, partner-inclusive marketplace first; advanced property-management automation remains later scope.
 
-Prove HAMLET can onboard legitimate shortlet properties, connect guests to suitable accommodation, facilitate real request-to-book transactions, and maintain clear accountability between guests, property owners and authorised partners from listing review through booking, stay, issue resolution and settlement.
-
-HAMLET is a trusted, partner-inclusive shortlet marketplace first. Advanced property-management automation and the wider service ecosystem are later releases.
-
-## 2. Launch market and initial target
-
-- Launch geography: Lagos, Nigeria.
-- Abuja and Ibadan: deferred until the Lagos operating process is reliable.
-- Initial supply target: 50 approved properties by 31 October 2026.
+## 2. Launch market
+- Initial market: Lagos, Nigeria.
+- Abuja and Ibadan remain deferred until Lagos operations are reliable.
+- Supply targets are planning targets, not permission to publish unverified inventory.
 - Pilot success is measured by completed bookings, trustworthy supply, reconciled transactions, issue resolution and repeat/qualified demand—not registrations alone.
 
-## 3. Locked commercial and booking decisions
-
+## 3. Approved commercial and booking decisions
 - Booking model: request-to-book.
-- Payments: use an approved payment provider; initially reconcile transactions and settlements through a controlled ledger and manual operating procedure.
-- HAMLET service fee: 3% paid by the guest only.
-- Owner HAMLET service fee: 0%.
-- Displayed guest price: accommodation subtotal plus HAMLET's 3% fee and any known mandatory charges. The total must be visible before the guest commits and must not increase unexpectedly at checkout.
-- Fee base: discounted accommodation subtotal, excluding refundable deposits and separately disclosed taxes or charges where applicable, subject to legal/commercial review.
-- Payment-processing fee policy: **not decided**. Do not hard-code or automatically pass it to guests yet. Confirm provider/account terms, fee calculation, tax treatment and disclosure requirements first.
-- Guest reviews: deferred. Collect private feedback during the pilot.
-- Verification: manual, evidence-based review with recorded outcomes and honest trust labels.
-- Partner commissions: recorded only when specifically agreed; they are not the same as HAMLET's service fee.
+- Payment provider: approved provider; controlled ledger and manual reconciliation where permitted.
+- **Retire the legacy 3% guest-only HAMLET service fee. It must not be charged or described as active.**
+- **Approved domestic model:** add a 20% commercial pool to the owner's listed accommodation base price (B). Domestic guest accommodation price is (B × 1.20).
+- Owner fee deducted from (B): 0%. The pool is not deducted from owner proceeds.
+- All pool percentages are percentage points of (B), not percentages of the pool or guest total.
+- With a valid closing agent and eligible direct referrer: closing agent 10% of (B); direct referrer 2.5% of (B); HAMLET allocation 5% of (B); payment/settlement reserve 2.5% of (B). Total: 20%.
+- Without an eligible direct referrer: referrer 0%; HAMLET allocation 7.5% of (B); closing agent remains 10% of (B) when validly attributed; reserve remains 2.5% of (B). Total: 20%.
+- Referrer reward is 2.5 percentage points of the owner's base (B), not 2.5% of the pool or guest total. Eligibility, attribution, self-referral prevention and the configured referral window apply.
+- The 2.5% reserve is an internal budget allocation, not the provider's actual fee. Actual provider fees must be reconciled against provider records; reserve shortfalls must not be silently deducted from owner proceeds or partner rewards.
+- Disclosed mandatory charges are added separately and excluded from the 20% pool unless a future written decision changes this rule.
+- Refundable caution deposits are itemised separately and receive no markup, FX buffer, agent/referral reward or HAMLET revenue allocation.
+- USD/GBP quotes use configured exchange rates and one 10% international buffer applied once to qualifying stay amounts. This is separate from the domestic pool; caution deposits are excluded.
+- Payment-processing-fee pass-through remains undecided. Do not add an extra provider fee at checkout until policy, provider support and disclosures are approved.
+- Show itemised charges and the full guest total before commitment. No undisclosed checkout charges.
+- Verification remains manual and evidence-based. Public reviews remain deferred; collect private pilot feedback.
 
-Example: for a ₦100,000 accommodation subtotal, HAMLET's guest service fee is ₦3,000 and the guest-facing total before any later-approved processing-fee policy or other applicable mandatory charges is ₦103,000.
+### Example: (B = ₦200,000)
+| Line | Amount |
+|---|---:|
+| Owner accommodation base | ₦200,000 |
+| Closing agent (10%, if attributed) | ₦20,000 |
+| Eligible referrer (2.5%) | ₦5,000 |
+| HAMLET allocation (with referrer) | ₦10,000 |
+| Payment/settlement reserve (2.5%) | ₦5,000 |
+| Total pool | ₦40,000 |
+| Guest accommodation price before mandatory charges/deposit | ₦240,000 |
+
+Without an eligible referrer, referrer allocation is ₦0 and HAMLET allocation is ₦15,000; total pool remains ₦40,000. Agent and referral earnings remain subject to attribution, booking completion, cancellation and refund rules.
 
 ## 4. Release 1 scope
-
 ### Guest marketplace
-- Responsive, mobile-first property discovery.
-- Search/filter by Lagos area, dates, price, guest capacity and amenities where supported by actual data.
-- Property details, photographs, amenities, house rules, location and transparent total pricing.
-- Booking request, status tracking, confirmed booking details and support/issue reporting.
-- No public reviews or claims of live availability until those features are genuinely connected.
+Mobile-first discovery; supported search/filter; accurate property details and house rules; transparent pricing; booking requests/status; confirmed booking details and issue reporting. Do not claim live availability or public reviews unless genuinely connected.
 
 ### Property onboarding and verification
-- Structured property submission for owners and authorised partners.
-- Record submitter role, owner/property contacts and authority to list.
-- Capture listing facts, photos/media references, pricing, availability information and relevant documentation evidence.
-- Duplicate checks and manual review workflow: submitted, needs correction, approved, rejected or suspended.
-- Only approved, non-suspended listings may be publicly discoverable.
-- A checked documentation box is self-reported until evidence is reviewed. A checklist is not itself proof of legal title or document validity.
+Structured submissions by owners/authorised partners; record submitter and authority; capture listing facts, photos, prices, availability and evidence; duplicate checks and manual review states; only approved, non-suspended listings are public. A checked box is not proof of title or document validity.
 
-### HAMLET Partner Network
-- One partner registration/sign-in experience for owners, agents, property managers, shortlet operators, co-hosts/hospitality operators, referral partners and other authorised partners.
-- Partner approval status and role-based access.
-- Submit properties and track review.
-- Explicit property authorisation/assignment and revocation.
-- View only own profile, authorised properties, permitted booking data and specifically agreed commissions.
-- Public registration must never grant admin access.
+### Partner Network
+One registration/sign-in experience for owners, agents, property managers, operators, co-hosts and referral partners. Role-based access, partner approval, explicit property assignment/revocation and access limited to authorised properties, permitted booking data and agreed commissions. Public registration never grants admin access.
 
 ### Booking lifecycle
-1. Requested.
-2. Availability and terms being checked.
-3. Accepted, awaiting payment, with an explicit payment deadline.
-4. Confirmed only after verified provider payment and final availability checks.
-5. Completed, cancelled, expired, refunded or disputed as applicable.
+Requested → availability/terms review → accepted/awaiting payment with deadline → confirmed only after verified provider payment and final availability checks → completed/cancelled/expired/refunded/disputed as applicable. Prevent overlapping confirmed bookings; expire overdue holds; browser redirects, screenshots and uploaded receipts are not proof of payment.
 
-- Prevent overlapping confirmed bookings.
-- Recheck availability after a payment deadline expires.
-- A browser redirect, screenshot or uploaded receipt is not sufficient proof of payment.
-- Record cancellation, refund, no-show, failed payment and issue outcomes.
+### Payments and records
+Use server-verified, idempotent provider callbacks/webhooks. Ledger must record booking reference, pricing-rule version, base, pool allocations, provider charges, deposits, refunds, status and reconciliation differences. Keep owner proceeds, 20% allocations, actual provider charges, deposits and cancellation/refund adjustments distinct. Do not assume HAMLET may hold customer funds or build an internal wallet.
 
-### Payments and financial records
-- Integrate a suitable provider after business and account eligibility are confirmed.
-- Verify server-side provider callbacks/webhooks and process them idempotently.
-- Maintain a transaction ledger with booking reference, amounts, status, provider references, fee calculations, refunds, reconciliation differences and responsible operator.
-- Keep accommodation revenue, HAMLET's guest service fee, provider charges, refundable deposits and agreed partner commissions as distinct ledger concepts.
-- Owner proceeds must not be reduced by HAMLET's 3% guest service fee.
-- Initially use manual reconciliation and settlement operations where permitted; do not build an internal wallet or assume HAMLET may hold customer funds.
-- Exact processing-fee treatment remains configurable/undecided and must not be double charged.
-
-### Admin and accountability
-- Review properties and partner applications.
-- Manage bookings, payment records, cancellations and refunds.
-- Report, assign, investigate, escalate and close issues with evidence and documented decisions.
-- Suspend listings/partners when justified.
-- Audit important status changes, permissions and financial adjustments.
-- Restrict sensitive guest, identity and incident data to authorised roles.
-
-### Security, privacy and reliability
-- Enforce permissions server-side and in database policies, not only in UI.
-- Keep provider secrets server-side.
-- Validate inputs, protect against duplicate webhook processing and prevent booking conflicts.
-- Minimise personal data, limit access, establish retention and breach procedures, and publish appropriate privacy terms.
-- Test backups/recovery and meaningful loading/error/pending states.
+### Admin, security and privacy
+Admin review of properties/partners/bookings/refunds/issues; evidence-based issue handling; audited status/permission/financial changes; server/database-enforced permissions; server-only provider secrets; data minimisation, retention and breach procedures; meaningful loading/error/pending states.
 
 ## 5. Explicitly deferred
-
-- Automated partner commission splitting and payouts.
-- Automated provider-fee pass-through until its policy is decided and provider support is verified.
-- Instant booking and advanced calendar synchronisation.
-- Public ratings/reviews.
-- AI-generated listings, automated document extraction and advanced fraud scoring.
-- Dynamic pricing and advanced analytics.
-- Cleaning/maintenance marketplace, loyalty/rewards and complex referral automation.
-- Abuja and Ibadan expansion.
+Instant booking and advanced calendar sync; public reviews; AI listing/document/fraud automation; dynamic pricing and advanced analytics; broader cleaning/maintenance marketplace and loyalty; Abuja/Ibadan expansion; provider-fee pass-through until policy and provider support are approved.
 
 ## 6. Central pricing rule
+Use one shared pricing authority for search, property, partner previews, booking, checkout, receipts, dashboards and server-side quotes. Inputs: discounted accommodation base (B), mandatory charges, deposit, attribution eligibility and quote currency/configuration. Outputs: 20% pool, each allocation, mandatory charges, deposit, FX buffer/expiry where relevant, guest total and owner proceeds. Never duplicate formulas in UI or trust client-submitted totals. Store the rules version and auditable allocation data.
 
-Implement one shared pricing function and reuse it wherever guest-facing totals are calculated.
-
-Inputs:
-- accommodation subtotal after any applicable accommodation discount;
-- known mandatory non-accommodation charges;
-- configured HAMLET service-fee percentage (3% by default).
-
-Outputs:
-- accommodation subtotal;
-- mandatory charges;
-- HAMLET guest service fee;
-- guest total.
-
-The 3% fee is calculated on the accommodation subtotal, not on refundable deposits. Processing-provider charges are excluded until the policy is decided. Search cards may show an illustrative all-inclusive nightly estimate; a booking's authoritative total is calculated on the full stay subtotal and shown before payment. Avoid independent fee calculations in UI components or provider callbacks.
-
-## 7. Launch dependencies requiring explicit sign-off
-
-1. Nigerian legal review of marketplace role, terms, owner/partner agreements, cancellation/refund/no-show/damage policies, liability, fee disclosures and applicable Lagos requirements.
-2. Payment provider selection/onboarding and confirmation that the merchant account, settlement structure and fee handling are permitted and supported.
-3. Written processing-fee policy: absorbed by HAMLET or included in the guest's disclosed total, including provider fees/taxes and payment-method differences.
-4. Privacy notice, data access/retention controls and assessment of applicable Nigeria Data Protection Act/NDPC obligations.
-5. Operational SOP for availability confirmation, payment deadline, check-in, support, cancellations, refunds, chargebacks, owner settlement and partner commissions.
-6. Support ownership and escalation coverage during the pilot.
-7. Production environment configuration, admin provisioning, database migration review, backups and end-to-end tests.
+## 7. Launch dependencies
+1. Nigerian legal review of marketplace role, agreements, fee disclosures, cancellation/refund/no-show/damage rules and applicable Lagos requirements.
+2. Provider onboarding and confirmation of supported settlement/fee handling.
+3. Written provider-fee policy, including taxes and payment-method differences.
+4. Privacy notice, access/retention controls and applicable NDPA/NDPC review.
+5. SOP for availability, check-in, support, refunds, chargebacks, owner settlement and partner rewards.
+6. Support coverage and escalation ownership.
+7. Production configuration, admin provisioning, migration review, backups and end-to-end tests.
+8. Test pool attribution, completion milestones, cancellation/refund reversals and ledger reconciliation.
 
 ## 8. Implementation order
+Stabilise branch and tests; verify Supabase/auth/roles; finish property intake/review; verify booking lifecycle/overlap; verify central 20% pricing, pool, payment and ledger; finish refunds/issues/audit; run test-mode end-to-end guest/partner/admin scenarios; complete legal/payment/privacy/operations sign-off before live Lagos pilot.
 
-1. Stabilise current branch: pass frontend build/lint/unit tests and Supabase migration/RLS tests.
-2. Verify Supabase configuration, authentication, role permissions, admin provisioning and partner approval.
-3. Complete property intake, evidence review, duplicate handling, corrections and approved-only publication.
-4. Implement booking data model and request-to-book lifecycle with overlap prevention and expiry rules.
-5. Select provider and implement server-side payment confirmation, central pricing, ledger and reconciliation.
-6. Implement cancellations/refunds, complaints, audit trail and operational controls.
-7. Run test-mode end-to-end scenarios across guest, owner/partner and admin accounts.
-8. Complete legal/payment/privacy/operations sign-off; only then run a controlled live Lagos pilot.
+## 9. Acceptance criteria
+- Unapproved/suspended/duplicate listings cannot be published as approved.
+- Partners see only authorised properties/data.
+- Booking requests are not prematurely confirmed and overlapping confirmed bookings are prevented.
+- Only verified provider webhook can confirm payment.
+- All surfaces and server quotes use the same central calculation.
+- Guest accommodation price is (B + 20\% × B); no active 3% fee.
+- Allocations reconcile to 20% of (B): agent 10% when attributed, referrer 2.5% when eligible, HAMLET 5% with eligible referrer or 7.5% without, reserve 2.5%.
+- Owner fee is 0%; pool does not reduce owner proceeds.
+- Mandatory charges and deposits remain separate; deposit receives no markup or FX buffer.
+- FX buffer applies once; provider fee is not silently charged twice or while undecided.
+- Payments, refunds, disputes and adjustments are auditable; access/security/privacy controls and end-to-end tests pass.
+- Product makes no false claims about inventory, availability or verification.
 
-## 9. Release 1 acceptance criteria
-
-- Unapproved, suspended or duplicate listings cannot be published as approved.
-- Partners can access only authorised properties and permitted booking information.
-- Booking requests are not prematurely confirmed; overlapping confirmed bookings are prevented.
-- Payment cannot be marked paid from a redirect or uploaded receipt alone.
-- The same central price calculation is used across search, property, booking and payment surfaces.
-- Owner HAMLET service fee is zero under the current model; the 3% guest fee is not deducted from owner proceeds.
-- Provider fee policy is not silently applied twice or hard-coded while undecided.
-- Failed payments, cancellations, refunds, settlement differences and financial adjustments have statuses, owners and audit records.
-- Issues can be reported, investigated, assigned, escalated and closed with documented outcomes.
-- Role restrictions, secret management, privacy controls and appropriate notices are in place.
-- End-to-end happy-path and failure-path tests pass in the intended target environment.
-- Launch terms, provider approval, support responsibilities and manual reconciliation procedure are ready.
-
-## 10. Product honesty rule
-
-Do not present sample properties as real inventory, imply live availability or claim a verification level that has not actually been completed. The interface may be polished, but the product must be truthful about what is connected and operational.
+## 10. Product honesty
+Do not present sample properties as real inventory, imply live availability or claim verification not completed. The interface may be polished, but must truthfully represent connected and operational features.

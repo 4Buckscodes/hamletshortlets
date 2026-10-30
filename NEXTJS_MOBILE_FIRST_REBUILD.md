@@ -27,7 +27,7 @@ HAMLET.REST should feel app-like on a phone and remain polished on tablet and de
 - Existing public pages include Home, Lagos, About, How It Works, Safety, FAQs, Stays, Property Detail, Account, Sign In, Partner Register and Legal.
 - Partner and admin workspaces already exist and should be migrated after the guest path, without dropping existing capability.
 - Paystack initialization/webhook and Resend notification workflows are server-side Supabase Edge Functions; keep secret keys server-side.
-- The older `MVP_SPECIFICATION.md` says 3% guest-only service fee, while the current pricing module describes 20% domestic markup and a 10% international FX buffer. Treat this as a commercial-rule conflict to resolve before launch; do not silently replace the current pricing engine based on the older document.
+- The approved commercial model is a 20% domestic accommodation markup on the owner's listed base price (B), plus a separate 10% USD/GBP quote buffer applied once. The legacy 3% guest-only fee is retired. See `docs/PRICING_AND_PAYMENT_CONTRACT.md` for the authoritative allocation and exclusions.
 - Wayfinder migration exists in source control but the user’s live-schema checks found its expected tables missing. Treat Wayfinder UI as gated until deployment status is deliberately resolved.
 
 ## Target architecture
@@ -104,7 +104,7 @@ The native Next.js branch now includes:
 ## Release gates still requiring deliberate resolution
 
 These are not silently treated as complete merely because the Next.js build succeeds:
-1. **Commercial pricing:** `src/lib/pricing.ts` currently applies a 20% domestic markup and 10% international FX buffer. Earlier product decisions discussed a 3% guest-only fee, and the exact processing-fee decision was later left open. Confirm the intended commercial rule before launch; do not change it implicitly in a UI migration.
+1. **Commercial pricing:** The 20% domestic markup and 10% international quote buffer are the approved commercial model. The legacy 3% guest-only fee is retired. Verify every client quote, database booking total, payment ledger entry and partner allocation against `docs/PRICING_AND_PAYMENT_CONTRACT.md`. Actual provider-fee treatment remains a separate launch decision.
 2. **Database deployment:** migrations in source control are not proof that the live Supabase project has those objects. In particular, the booking-overlap RPC migration and Wayfinder schema status must be checked and deployed through an approved release process before enabling dependent features.
 3. **Payments and payouts:** verify trusted provider-webhook confirmation, refund reconciliation, and payout/reversal function execute permissions against the live schema. Admin UI status changes are not payment confirmation and do not execute transfers.
 4. **Full legacy parity:** account suspension/reinstatement, partner assignments, referrals/rewards, Wayfinder editing, and some earnings/notification workflows still need native parity or an explicit decision to keep them in the legacy bridge.
