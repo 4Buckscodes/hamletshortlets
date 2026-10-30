@@ -6,6 +6,7 @@ import {
 import {
   buildCanonicalReferralUrl,
   buildClosingAgentShareUrl,
+  buildGuestReferralUrl,
   buildPartnerReferralCode,
   buildReferralWhatsAppShareUrl,
   evaluateReferralOnBookingCompletion,
