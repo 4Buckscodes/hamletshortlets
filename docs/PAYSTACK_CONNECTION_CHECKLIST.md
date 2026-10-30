@@ -21,8 +21,7 @@ Paystack Dashboard inspection on 2026-10-30 confirmed:
 - Paystack Live mode is enabled.
 - A production webhook named `HAMLET — Production Booking Payments.` is registered at the endpoint above.
 - The webhook is configured for `charge.success`.
-- The Supabase production project contains a custom secret named `PAYSTACK_SECRET_KEY`.
-- The project owner confirmed that the stored secret is the Paystack **Live Secret Key**. The value is intentionally not recorded in this repository.
+- The presence and mode (test vs live) of `PAYSTACK_SECRET_KEY` in Supabase have **not yet been independently verified**. The secret value must remain masked and must never be pasted into chat or committed.
 - The webhook dashboard showed no events sent yet at the time of inspection. Therefore, successful end-to-end payment processing has not yet been demonstrated.
 
 Never expose, commit, paste into source files, or add `PAYSTACK_SECRET_KEY` as a `NEXT_PUBLIC_*` variable.
@@ -73,7 +72,7 @@ Before accepting real guest payments or distributing partner/owner proceeds, obt
 Also verify:
 - correct legal/merchant entity and completed Paystack account verification;
 - Paystack's written marketplace/fund-flow approval, including settlement, refunds, disputes and chargebacks;
-- production Live secret remains configured securely in Supabase and is never exposed to clients;
+- verify that the correct production Live secret is configured securely in Supabase and is never exposed to clients;
 - production webhook URL and event selection remain correct;
 - successful isolated test-mode end-to-end acceptance suite;
 - owner/partner settlement, cancellation, refund and caution-deposit custody processes are approved and documented;
