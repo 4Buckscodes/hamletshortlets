@@ -25,6 +25,12 @@ begin
     return new;
   end if;
 
+  -- Closing-agent referral rewards are already allocated by transition_booking.
+  -- Restrict this fallback trigger to bookings without a closing-agent attribution.
+  if new.closing_agent_id is not null then
+    return new;
+  end if;
+
   -- The existing booking lifecycle may already have recorded a reward/activation.
   if exists (
     select 1 from public.partner_referral_rewards
@@ -186,6 +192,13 @@ begin
   returning true into reward_inserted;
 
   if coalesce(reward_inserted, false) then
+    -- Keep the settlement ledger in sync with the updated booking allocation.
+    update public.booking_payment_records
+      set amount = new_allocation,
+          updated_at = now()
+      where booking_id = new.id
+        and record_type = 'hamlet_allocation';
+
     insert into public.booking_payment_records (
       booking_id, record_type, amount, provider_reference, status,
       description, variance, operator_name, beneficiary_user_id, payout_status
