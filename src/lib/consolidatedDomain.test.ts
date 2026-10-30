@@ -201,11 +201,11 @@ describe('§12.2 Partner Referral Links & 90-Day Recurring 2.5% Reward Engine', 
     expect(buildClosingAgentShareUrl('hml-tun101')).toBe('https://www.hamlet.rest/stays?agent=HML-TUN101');
 
     const agentUrl = buildClosingAgentShareUrl('hml-chi202', 'p-01');
-    expect(agentUrl).toBe('https://www.hamlet.rest/#/stays/p-01?agent=HML-CHI202');
+    expect(agentUrl).toBe('https://www.hamlet.rest/stays/p-01?agent=HML-CHI202');
 
     const waUrl = buildReferralWhatsAppShareUrl('HML-TUN101', 'Tunde Adeyemi');
     expect(waUrl).toContain('https://wa.me/?text=');
-    expect(decodeURIComponent(waUrl)).toContain('https://www.hamlet.rest/#/partner/register?ref=HML-TUN101');
+    expect(decodeURIComponent(waUrl)).toContain('https://www.hamlet.rest/partners/apply?ref=HML-TUN101');
   });
 
   it('activates referral on 1st completed booking with ₦0 reward, awards 2.5% of B within 90 days, and expires after 90 days', () => {
