@@ -1,6 +1,21 @@
 name: HAMLET Referral Release Validation
 
 on:
+  pull_request:
+    branches:
+      - main
+      - fix/referral-reward-lifecycle-attribution
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'src/**'
+      - 'supabase/**'
+      - 'tests/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'playwright.config.*'
+      - '.github/workflows/referral-release-validation.yml'
   push:
     branches:
       - feat/locked-referrals-and-static-hero
@@ -10,7 +25,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: hamlet-referral-release-${{ github.ref }}
+  group: hamlet-referral-release-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
