@@ -131,7 +131,7 @@ begin
     or length(clean_company) < 2
     or length(clean_role) < 2
     or length(clean_motivation) < 20
-    or next_count < case when clean_role in ('Closing Agent', 'Referral Partner') then 0 else 1 end
+    or next_count < (case when clean_role in ('Closing Agent', 'Referral Partner') then 0 else 1 end)
     or next_count > 500
     or jsonb_typeof(application_data -> 'areas') is distinct from 'array'
     or jsonb_array_length(application_data -> 'areas') < 1 then
