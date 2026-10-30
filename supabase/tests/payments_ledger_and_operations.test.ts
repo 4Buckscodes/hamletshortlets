@@ -287,7 +287,7 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
       ).rejects.toThrow(/permission denied for function confirm_booking_payment_webhook/i);
     });
 
-    it('rejects tampered webhook signatures, confirms valid signed webhooks idempotently, and records distinct ledger lines without deducting 3% fee from owner proceeds', async () => {
+    it('rejects tampered webhook signatures, confirms valid signed webhooks idempotently, and reconciles the 20% markup without deducting from owner proceeds', async () => {
       // Grant an explicit 10% co-host commission on the property before payment
       await asUser(db, adminId, tx =>
         tx.query(
@@ -377,6 +377,12 @@ describe('HAMLET Release 1 — duplicates, verified payments/ledger, refunds, is
       expect(byType.get('guest_service_fee')?.amount).toBe(40_000);
       expect(byType.get('payment_reserve')?.amount).toBe(5_000);
       expect(byType.get('hamlet_allocation')?.amount).toBe(35_000);
+      // No closing agent or eligible referrer is attributed in this fixture:
+      // HAMLET allocation + internal reserve must reconcile exactly to the 20% markup.
+      expect(
+        (byType.get('hamlet_allocation')?.amount ?? 0) +
+        (byType.get('payment_reserve')?.amount ?? 0),
+      ).toBe(byType.get('guest_service_fee')?.amount);
       expect(byType.get('deposit_hold')?.amount).toBe(80_000);
       expect(byType.get('provider_charge')?.amount).toBe(2_000);
       expect(byType.get('provider_charge')?.note).toContain('internal reserve');

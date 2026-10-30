@@ -213,7 +213,7 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
   it('creates booking request + enqueues and sends Guest, Partner, and HAMLET Operations emails with required copy and links', async () => {
     const ctx = await seedBookingScenario(db);
     const checkIn = futureIsoDate(10);
-    const checkOut = futureIsoDate(13); // 3 nights: 540,000 + 25,000 + 16,200 (3% fee) = 581,200
+    const checkOut = futureIsoDate(13); // 3 nights: 540,000 + 25,000 + 108,000 (20% markup) = 673,000
 
     const createdBooking = await asUser(db, ctx.guestId, async tx => {
       const res = await tx.query<{ id: string; reference: string; status: string }>(
