@@ -179,7 +179,7 @@ export function HomeMarketplaceExperience({
             </div>
           </div>
 
-          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4">
+          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-300 [&_img]:ease-out [&_img]:hover:scale-[1.02] motion-reduce:[&_img]:transition-none">
             <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
               <Image
                 src="/images/hero-sample-living.jpg"
