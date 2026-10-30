@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/playfair-display';
 import './globals.css';
@@ -65,7 +66,9 @@ export default function RootLayout({
     <html lang="en-NG">
       <body>
         <SiteProviders>
-          <ReferralAttributionCapture />
+          <Suspense fallback={null}>
+            <ReferralAttributionCapture />
+          </Suspense>
           {children}
         </SiteProviders>
       </body>
