@@ -75,6 +75,18 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
     await expect(page.getByLabel(/Full name/i)).toBeVisible();
   });
 
+  test('locks referral code on guest sign-up when arriving from a referral link', async ({ page }) => {
+    await page.goto('/?ref=HML-LOCK123');
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code'))).toBe('HML-LOCK123');
+    await page.goto('/signin?mode=signup');
+    await page.getByLabel(/Email address/i).fill('guest@example.com');
+    await page.getByLabel('Password', { exact: true }).fill('ValidPass123!');
+    await page.getByRole('button', { name: /Continue/i }).click();
+    const referralCode = page.getByLabel('Referral code');
+    await expect(referralCode).toHaveValue('HML-LOCK123');
+    await expect(referralCode).toHaveAttribute('readonly', '');
+  });
+
   test('opens mobile-friendly search filter drawer on /stays', async ({ page }) => {
     await page.goto('/stays');
     await page.getByRole('button', { name: /Filters/i }).click();
