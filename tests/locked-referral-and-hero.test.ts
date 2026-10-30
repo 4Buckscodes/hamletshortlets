@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 
 const signInForm = readFileSync(resolve(process.cwd(), 'app/signin/signin-form.tsx'), 'utf8');
 const partnerForm = readFileSync(resolve(process.cwd(), 'app/partners/apply/partner-application-form.tsx'), 'utf8');
+const referralCapture = readFileSync(resolve(process.cwd(), 'components/site/ReferralAttributionCapture.tsx'), 'utf8');
+const resubmissionMigration = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261030100000_preserve_partner_referral_on_resubmission.sql'), 'utf8');
 const hero = readFileSync(resolve(process.cwd(), 'app/home-slideshow.tsx'), 'utf8');
 const migration = readFileSync(
   resolve(process.cwd(), 'supabase/migrations/20261029100000_lock_signup_referral_attribution.sql'),
@@ -11,6 +13,18 @@ const migration = readFileSync(
 );
 
 describe('locked referral capture and static hero', () => {
+  it('captures referral parameters after client-side route or query changes', () => {
+    expect(referralCapture).toContain('usePathname');
+    expect(referralCapture).toContain('useSearchParams');
+    expect(referralCapture).toContain('[pathname, searchParams]');
+  });
+
+  it('preserves referral attribution during partner application resubmission', () => {
+    expect(resubmissionMigration).toContain("application_data ->> 'referred_by_code'");
+    expect(resubmissionMigration).toContain("referred_by_code = nullif(clean_referral_code, '')");
+    expect(resubmissionMigration).toContain('update of referred_by_code, applicant_id on public.partner_applications');
+  });
+
   it('passes the captured guest referral code into auth metadata and renders it read-only', () => {
     expect(signInForm).toMatch(/referred_by_code:\s*lockedReferralCode\s*\|\|\s*null/);
     expect(signInForm).toMatch(/value=\{lockedReferralCode\}[\s\S]{0,100}readOnly/);
