@@ -12,7 +12,6 @@ import {
   FormField,
   OptionCardGroup,
   StepFooterActions,
-  StepProgressHeader,
   StepperCounter,
   useProgressiveDraft,
   FIELD_INPUT_CLASS,
@@ -506,12 +505,7 @@ export function PropertyListingWizard({
         />
       )}
 
-      <StepProgressHeader
-        steps={WIZARD_STEPS}
-        currentStep={step}
-        onSelectStep={idx => setStep(idx)}
-        maxCompletedStep={mode === 'edit' ? WIZARD_STEPS.length - 1 : step}
-      />
+
 
       <form onSubmit={handleFormSubmit} className="space-y-5">
         {/* STEP 1: BASICS & LOCATION */}

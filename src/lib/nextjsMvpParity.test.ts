@@ -153,15 +153,19 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     expect(lagosPage).toContain('Shomolu');
     expect(lagosPage).toContain('Surulere');
 
-    // Progressive step headers across multi-step user & partner forms
+    // Progressive step headers remain on guest, support and partner onboarding forms.
     for (const progressiveFile of [
       'app/stays/[id]/booking-request-form.tsx',
       'app/account/issues/page.tsx',
       'app/partners/apply/partner-application-form.tsx',
-      'src/components/forms/PropertyListingWizard.tsx',
     ]) {
       expect(readRepoFile(progressiveFile)).toContain('StepProgressHeader');
     }
+
+    // The property listing wizard intentionally removes the visible progress header.
+    expect(readRepoFile('src/components/forms/PropertyListingWizard.tsx')).not.toContain(
+      'StepProgressHeader',
+    );
 
     // Focused drawers across stays filter sheet and admin review queues
     for (const drawerFile of [
