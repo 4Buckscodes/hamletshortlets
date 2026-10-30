@@ -251,7 +251,7 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
     it('computes authoritative pricing, status, and initial timeline on insert regardless of client-supplied numbers', async () => {
       // 3 nights × 150,000 = 450,000 subtotal
       // mandatory charges = 25,000 + 15,000 = 40,000
-      // 3% guest fee on accommodation subtotal = round(450,000 * 0.03) = 13,500
+      // 20% domestic markup on accommodation subtotal = round(450,000 * 0.20) = 90,000
       // guest total = 450,000 + 40,000 + 90,000 (20% domestic markup on B) = 580,000
       const booking = await insertBookingAsGuest(guestAId, {
         checkIn: addDays(baseDateIso, 7),
