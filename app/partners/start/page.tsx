@@ -86,9 +86,26 @@ export default function PartnerStartDashboard() {
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
                 <Sparkles className="h-5 w-5 text-brass-700" />
-                <h2 className="mt-3 text-base font-bold text-ink-900">Partner levels</h2>
-                <p className="mt-1 text-sm leading-relaxed text-ink-600">Registered, Verified, Preferred and Elite are planned as separate benefit levels. Higher privileges never bypass approval or permission checks.</p>
+                <h2 className="mt-3 text-base font-bold text-ink-900">Your partner level</h2>
+                <p className="mt-2 inline-flex rounded-full border border-ink-200 bg-paper px-3 py-1 text-xs font-extrabold text-ink-900">VIP 1 · Registered</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">You are not yet an identity-verified partner. Upgrade to VIP 2 when you are ready to complete identity verification. Some actions will remain restricted until the relevant checks are approved.</p>
+                <p className="mt-2 text-xs text-ink-500">Identity verification can be started from your partner dashboard when the verification flow is available.</p>
               </article>
+            </section>
+
+            <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
+              <h2 className="serif m-0 text-2xl font-medium text-ink-900">One partner account. Multiple ways to earn.</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-ink-100 bg-paper p-4">
+                  <p className="m-0 text-sm font-bold text-ink-900">10% · Guest bookings</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-600">Close eligible bookings across HAMLET, including for properties you do not own, and earn the applicable closing-agent commission.</p>
+                </div>
+                <div className="rounded-2xl border border-ink-100 bg-paper p-4">
+                  <p className="m-0 text-sm font-bold text-ink-900">2.5% · Partner referrals</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-600">Introduce eligible owners, managers, operators or agents to HAMLET and earn partner-referral rewards when programme conditions are met.</p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-ink-500">Owners, property managers, operators and agents can use the same account to close eligible bookings and introduce partners. Your main role does not limit these capabilities. Rewards are subject to booking attribution, eligibility and programme payout rules; the same booking cannot generate duplicate closing commissions.</p>
             </section>
 
             <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">

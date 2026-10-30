@@ -40,7 +40,6 @@ interface PartnerApplyDraft {
   referralCode: string;
   areas: string[];
   propertiesCount: number;
-  idDocumentType: string;
   authoritySummary: string;
   payoutBank: string;
   payoutAccountName: string;
@@ -57,7 +56,6 @@ const INITIAL_DRAFT: PartnerApplyDraft = {
   referralCode: '',
   areas: ['Victoria Island'],
   propertiesCount: 1,
-  idDocumentType: 'NIN / National ID',
   authoritySummary: '',
   payoutBank: '',
   payoutAccountName: '',
@@ -71,29 +69,23 @@ const ROLE_OPTIONS = [
     value: 'Property owner',
     label: 'Property owner',
     badge: '0% owner fee',
-    description: 'I own one or more shortlet apartments or homes in Lagos.',
+    description: 'I own one or more shortlet apartments or homes. I can also close eligible bookings for other properties and introduce new partners.',
   },
   {
     value: 'Authorised manager',
     label: 'Authorised property manager',
-    description: 'I manage shortlet properties under a signed owner mandate.',
+    description: 'I manage properties under an owner mandate. I can also close eligible bookings and introduce new partners.',
   },
   {
     value: 'Multi-property operator',
     label: 'Multi-property operator',
-    description: 'I operate a portfolio of serviced apartments in Lagos.',
+    description: 'I operate a portfolio of serviced apartments. I can also close eligible bookings and introduce new partners.',
   },
   {
     value: 'Closing agent',
     label: 'Closing agent',
-    badge: '10% of B',
-    description: 'I match vetted guests to HAMLET stays and close bookings.',
-  },
-  {
-    value: 'Partner referrer',
-    label: 'Partner referrer',
-    badge: '2.5% · 90 days',
-    description: 'I introduce verified owners, managers or closing agents to HAMLET.',
+    badge: '10% booking commission',
+    description: 'I help guests book stays across HAMLET, including properties I do not own. I can also introduce new partners and earn eligible referral rewards.',
   },
 ] as const;
 
@@ -102,7 +94,7 @@ const APPLY_STEPS = [
     id: 'role',
     title: 'How will you work with HAMLET?',
     shortLabel: '1. Role',
-    description: 'Choose the lane that best describes your role so we only ask relevant questions.',
+    description: 'Tell us your main role so we know who you are and how to contact and support you. It does not limit your earning opportunities.'
   },
   {
     id: 'contact',
@@ -118,9 +110,9 @@ const APPLY_STEPS = [
   },
   {
     id: 'verification',
-    title: 'Identity & authority basis',
-    shortLabel: '4. Verification',
-    description: 'Share how you verify identity and lawful authority or network referrals.',
+    title: 'Optional background',
+    shortLabel: '4. Background',
+    description: 'Add context about your network or property authority if you wish. You can verify your identity later from your dashboard.',
   },
   {
     id: 'payout',
@@ -279,11 +271,6 @@ export default function PartnerApplicationForm() {
         return 'Property owners, managers and operators must specify at least 1 property.';
       }
     }
-    if (idx === 3) {
-      if (values.authoritySummary.trim().length < 20) {
-        return 'Provide at least 20 characters explaining your property authority or guest/partner network.';
-      }
-    }
     if (idx === 5) {
       if (
         !values.confirmAccuracy ||
@@ -317,8 +304,7 @@ export default function PartnerApplicationForm() {
 
     try {
       const compiledMotivation = [
-        values.authoritySummary.trim(),
-        `ID Type: ${values.idDocumentType}`,
+        values.authoritySummary.trim() || null,
         values.payoutBank.trim()
           ? `Preferred bank: ${values.payoutBank.trim()} (${values.payoutAccountName.trim() || values.fullName.trim()})`
           : null,
@@ -495,12 +481,23 @@ export default function PartnerApplicationForm() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {step === 0 && (
-          <OptionCardGroup
-            ariaLabel="Partner lane"
-            options={ROLE_OPTIONS}
-            value={values.role}
-            onChange={role => setValues(prev => ({ ...prev, role }))}
-          />
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
+              <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
+              <p className="m-0 mt-1">
+                Once approved, you can earn eligible closing-agent commission on bookings you close across HAMLET, including for properties you do not own, and partner-referral rewards for eligible activity from partners you introduce. Property owners and managers can participate in these earning streams without creating another account. Rewards follow booking attribution, eligibility, and payout rules.
+              </p>
+            </div>
+            <OptionCardGroup
+              ariaLabel="Your main partner role"
+              options={ROLE_OPTIONS}
+              value={values.role}
+              onChange={role => setValues(prev => ({ ...prev, role }))}
+            />
+            <p className="m-0 text-xs leading-relaxed text-ink-600">
+              Your selected role describes your main work; it does not lock your account to that role. Eligible partners can close bookings across the marketplace and introduce new partners without signing up again.
+            </p>
+          </div>
         )}
 
         {step === 1 && (
@@ -617,42 +614,24 @@ export default function PartnerApplicationForm() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <FormField label="Government ID type available for verification">
-              {fieldProps => (
-                <select
-                  {...fieldProps}
-                  value={values.idDocumentType}
-                  onChange={e =>
-                    setValues(prev => ({
-                      ...prev,
-                      idDocumentType: e.target.value,
-                    }))
-                  }
-                  className={FIELD_INPUT_CLASS}
-                >
-                  <option value="NIN / National ID">NIN / National ID</option>
-                  <option value="International Passport">International Passport</option>
-                  <option value="Driver's Licence">Driver&apos;s Licence</option>
-                  <option value="CAC Certificate + Director ID">
-                    CAC Certificate + Director ID
-                  </option>
-                </select>
-              )}
-            </FormField>
-
+            <div className="rounded-2xl border border-ink-100 bg-paper p-4 text-sm leading-relaxed text-ink-700">
+              <p className="m-0 font-bold text-ink-900">Identity verification can wait</p>
+              <p className="m-0 mt-1">
+                You can submit your initial partner application without providing an ID or explaining your network. Your dashboard will show your current partner level and how to request verification when you are ready. Restricted activities will still require the relevant checks.
+              </p>
+            </div>
             <FormField
               label={
                 isInventoryRole
-                  ? 'Describe your ownership or management mandate'
-                  : 'Describe your guest booking or partner referral network in Lagos'
+                  ? 'Ownership or management background'
+                  : 'Guest booking or partner referral network in Lagos'
               }
-              hint="Minimum 20 characters."
+              optional
+              hint="Optional. You can leave this blank and add details later."
             >
               {fieldProps => (
                 <textarea
                   {...fieldProps}
-                  required
-                  minLength={20}
                   maxLength={2000}
                   rows={4}
                   value={values.authoritySummary}
@@ -664,8 +643,8 @@ export default function PartnerApplicationForm() {
                   }
                   placeholder={
                     isInventoryRole
-                      ? 'Share where your apartments are located, how power/check-in are managed, and what ownership or mandate documents you hold…'
-                      : 'Share how you source corporate/leisure shortlet guests or verified property owners in Lagos…'
+                      ? 'Optional: share a little about your properties or management experience…'
+                      : 'Optional: share how you connect guests, property owners or other partners…'
                   }
                   className={`${FIELD_INPUT_CLASS} resize-y`}
                 />

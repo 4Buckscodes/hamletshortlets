@@ -87,8 +87,8 @@ export default function AdminPartnersPage() {
   async function submitDecision(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!db || !selected) return;
-    if (note.trim().length < 10) {
-      setError('Include a reviewer note of at least 10 characters for the audit log.');
+    if (decision !== 'approved' && note.trim().length < 10) {
+      setError('Add a reviewer note of at least 10 characters when requesting corrections or rejecting an application.');
       return;
     }
     setBusy(true);
