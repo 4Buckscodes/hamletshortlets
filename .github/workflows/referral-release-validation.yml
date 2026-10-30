@@ -19,6 +19,7 @@ on:
   push:
     branches:
       - feat/locked-referrals-and-static-hero
+      - fix/pr39-referral-regressions
   workflow_dispatch:
 
 permissions:
