@@ -1,6 +1,6 @@
 // ─── HAMLET Partner Referral, Attribution & Recurring Reward Engine (§4 & §8.1) ─
 // Rules:
-//   - Canonical referral onboarding URL uses https://www.hamlet.rest/#/partner/register?ref=CODE
+//   - Canonical partner recruitment URL uses https://www.hamlet.rest/partners/apply?ref=CODE
 //   - Single direct referrer per partner; no self-referrals; no multi-level / cascading rewards.
 //   - No registration or property-upload bonuses.
 //   - Referred closing agent's FIRST completed eligible booking activates the referral relationship
@@ -66,19 +66,26 @@ export function generatePartnerReferralCode(
 
 export const buildPartnerReferralCode = generatePartnerReferralCode;
 
-/** Canonical partner referral onboarding link on https://www.hamlet.rest/ (§4.2). */
+/** Partner recruitment link: attribution is captured on the current Next.js route. */
 export function buildPartnerReferralUrl(referralCode: string): string {
   const clean = normalizeReferralCode(referralCode);
-  return `${HAMLET_PRODUCTION_ORIGIN}/#/partner/register?ref=${encodeURIComponent(clean)}`;
+  return `${HAMLET_PRODUCTION_ORIGIN}/partners/apply?ref=${encodeURIComponent(clean)}`;
 }
 
 export const buildCanonicalReferralUrl = buildPartnerReferralUrl;
 
-/** Shareable closing-agent stay discovery link on https://www.hamlet.rest/. */
+/** Guest discovery link. The code is captured and carried into guest sign-up. */
+export function buildGuestReferralUrl(referralCode: string): string {
+  const clean = normalizeReferralCode(referralCode);
+  return `${HAMLET_PRODUCTION_ORIGIN}/?ref=${encodeURIComponent(clean)}`;
+}
+
+/** Shareable closing-agent stay discovery link on the current Next.js routes. */
 export function buildClosingAgentShareUrl(referralCode: string, propertyId?: string): string {
   const clean = normalizeReferralCode(referralCode);
   const route = propertyId ? `/stays/${encodeURIComponent(propertyId)}` : '/stays';
-  return `${HAMLET_PRODUCTION_ORIGIN}/#${route}?agent=${encodeURIComponent(clean)}`;
+  const separator = route.includes('?') ? '&' : '?';
+  return `${HAMLET_PRODUCTION_ORIGIN}${route}${separator}agent=${encodeURIComponent(clean)}`;
 }
 
 /** WhatsApp referral share link with encoded production URL and message (§4.2). */
