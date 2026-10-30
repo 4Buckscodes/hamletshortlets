@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const migration = readFileSync(
-  resolve(process.cwd(), 'supabase/migrations/20261028140000_fix_network_referral_reward_lifecycle.sql'),
+  resolve(process.cwd(), 'supabase/migrations/20261030150000_harden_network_referral_reward_completion.sql'),
   'utf8',
 );
 
@@ -28,6 +28,12 @@ describe('network referral reward lifecycle migration safety', () => {
   it('fails closed when the HAMLET allocation cannot fund the referral reward', () => {
     expect(migration).toMatch(/if reward > available_allocation then/i);
     expect(migration).toMatch(/return new;\s*end if;/i);
+  });
+
+  it('does not duplicate closing-agent rewards and keeps the allocation ledger synchronized', () => {
+    expect(migration).toMatch(/if new\.closing_agent_id is not null then/i);
+    expect(migration).toMatch(/update public\.booking_payment_records/i);
+    expect(migration).toMatch(/record_type = 'hamlet_allocation'/i);
   });
 
   it('uses a unique booking reward and idempotent ledger conflict handling', () => {
