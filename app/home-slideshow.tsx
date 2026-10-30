@@ -205,8 +205,8 @@ export function HomeMarketplaceExperience({
                 alt={slide.alt}
                 loading={idx === 0 ? 'eager' : 'lazy'}
                 decoding="async"
-                className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] transition-all duration-1000 ease-out ${
-                  isCurrent ? 'scale-100 opacity-100' : 'pointer-events-none scale-105 opacity-0'
+                className={`absolute inset-0 h-full w-full object-cover object-center brightness-[1.03] contrast-[1.02] transition-opacity duration-1000 ease-out ${
+                  isCurrent ? 'opacity-100' : 'pointer-events-none opacity-0'
                 }`}
               />
             );

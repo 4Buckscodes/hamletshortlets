@@ -43,6 +43,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [lockedReferralCode, setLockedReferralCode] = useState('');
 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -55,6 +56,10 @@ export default function SignInForm() {
         setMode('signup');
       }
       setRequestedNext(readRequestedRedirectFromSearch(window.location.search));
+      const referralCode =
+        new URLSearchParams(window.location.search).get('ref') ||
+        window.localStorage.getItem('hamlet:referral-code');
+      if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -158,10 +163,12 @@ export default function SignInForm() {
             data: {
               full_name: name.trim(),
               phone: phone.trim() || null,
+              referred_by_code: lockedReferralCode || null,
             },
           },
         });
         if (authError) throw authError;
+        window.localStorage.removeItem('hamlet:referral-code');
         if (data.session && data.user) {
           await resolveRoleAndNavigate(data.user.id, true);
           return;
@@ -343,6 +350,20 @@ export default function SignInForm() {
                 />
               )}
             </FormField>
+
+            {lockedReferralCode && (
+              <FormField label="Referral code" hint="This referral was attached to your sign-up link and cannot be changed.">
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    value={lockedReferralCode}
+                    readOnly
+                    aria-readonly="true"
+                    className={`${FIELD_INPUT_CLASS} cursor-not-allowed bg-paper/80 font-mono uppercase`}
+                  />
+                )}
+              </FormField>
+            )}
 
             <FormField
               label="Phone number"

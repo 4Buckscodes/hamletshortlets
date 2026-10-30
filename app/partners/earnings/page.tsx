@@ -31,6 +31,7 @@ export default function PartnerEarningsPage() {
   const [role, setRole] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedGuest, setCopiedGuest] = useState(false);
   const [bookings, setBookings] = useState<PartnerBookingRow[]>([]);
   const [commissions, setCommissions] = useState<CommissionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,6 +138,14 @@ export default function PartnerEarningsPage() {
     window.setTimeout(() => setCopied(false), 2000);
   }
 
+  function copyGuestReferralLink() {
+    if (!referralCode) return;
+    const url = `${window.location.origin}/?ref=${encodeURIComponent(referralCode)}`;
+    void navigator.clipboard.writeText(url);
+    setCopiedGuest(true);
+    window.setTimeout(() => setCopiedGuest(false), 2000);
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
@@ -215,23 +224,22 @@ export default function PartnerEarningsPage() {
                     Share your invite link with verified closing agents or property owners joining HAMLET.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={copyReferralLink}
-                  className="secondary-button min-h-[46px]"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-4 w-4 shrink-0 text-emerald-700" />
-                      Invite link copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4 shrink-0" />
-                      Copy invite link
-                    </>
-                  )}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={copyGuestReferralLink}
+                    className="secondary-button min-h-[46px]"
+                  >
+                    {copiedGuest ? <><Check className="h-4 w-4 shrink-0 text-emerald-700" /> Guest link copied</> : <><Copy className="h-4 w-4 shrink-0" /> Copy guest link</>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={copyReferralLink}
+                    className="secondary-button min-h-[46px]"
+                  >
+                    {copied ? <><Check className="h-4 w-4 shrink-0 text-emerald-700" /> Partner link copied</> : <><Copy className="h-4 w-4 shrink-0" /> Copy partner invite</>}
+                  </button>
+                </div>
               </section>
             )}
 
