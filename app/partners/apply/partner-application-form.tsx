@@ -151,6 +151,7 @@ export default function PartnerApplicationForm() {
   const [roleState, setRoleState] = useState('');
   const [existing, setExisting] = useState<ExistingApp | null>(null);
   const [referralResolved, setReferralResolved] = useState<string>('');
+  const [lockedReferralCode, setLockedReferralCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -169,12 +170,13 @@ export default function PartnerApplicationForm() {
       return;
     }
 
-    const urlRef = new URLSearchParams(window.location.search).get('ref');
-    if (urlRef) {
-      setValues(prev => ({
-        ...prev,
-        referralCode: prev.referralCode || urlRef.trim().toUpperCase(),
-      }));
+    const urlRef =
+      new URLSearchParams(window.location.search).get('ref') ||
+      window.localStorage.getItem('hamlet:referral-code');
+    if (urlRef?.trim()) {
+      const capturedCode = urlRef.trim().toUpperCase();
+      setLockedReferralCode(capturedCode);
+      setValues(prev => ({ ...prev, referralCode: capturedCode }));
     }
 
     const { data: session } = await db.auth.getSession();
@@ -569,15 +571,16 @@ export default function PartnerApplicationForm() {
                 <input
                   {...fieldProps}
                   maxLength={32}
-                  value={values.referralCode}
-                  onChange={e =>
-                    setValues(prev => ({
-                      ...prev,
-                      referralCode: e.target.value.toUpperCase(),
-                    }))
-                  }
+                  value={lockedReferralCode || values.referralCode}
+                  readOnly={Boolean(lockedReferralCode)}
+                  aria-readonly={Boolean(lockedReferralCode)}
+                  onChange={e => {
+                    if (!lockedReferralCode) {
+                      setValues(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }));
+                    }
+                  }}
                   placeholder="Optional code"
-                  className={`${FIELD_INPUT_CLASS} font-mono uppercase`}
+                  className={`${FIELD_INPUT_CLASS} font-mono uppercase ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
                 />
               )}
             </FormField>
