@@ -17,7 +17,7 @@ import {
   triggerBookingNotificationDispatchBestEffort,
 } from '@/lib/next-supabase';
 import { isQuoteExpired } from '@/lib/pricing';
-import { useCurrency } from '@/lib/currency';
+import { formatCurrencyAmount, useCurrency, type DisplayCurrency } from '@/lib/currency';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
   FocusedDrawer,
@@ -431,8 +431,20 @@ export default function GuestBookingsPage() {
                   <span>
                     Stay total:{' '}
                     <strong className="font-mono text-ink-900">
-                      {formatPrice(Number(b.guest_total || 0))}
+                      {b.quote_currency &&
+                      (b.quote_currency === 'USD' || b.quote_currency === 'GBP') &&
+                      Number.isFinite(Number(b.quoted_guest_total))
+                        ? formatCurrencyAmount(
+                            Number(b.quoted_guest_total),
+                            b.quote_currency as DisplayCurrency,
+                          )
+                        : formatPrice(Number(b.guest_total || 0))}
                     </strong>
+                    {b.quote_currency && b.quote_currency !== 'NGN' && (
+                      <span className="ml-1 text-[10px] font-medium text-ink-500">
+                        Locked {b.quote_currency} quote
+                      </span>
+                    )}
                   </span>
                   {Number(b.refundable_deposit) > 0 && (
                     <span>
