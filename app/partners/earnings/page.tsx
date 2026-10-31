@@ -212,7 +212,7 @@ export default function PartnerEarningsPage() {
             </div>
 
             {referralCode && (
-              <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-200 bg-white p-6">
+              <section data-hamlet-reveal className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-200 bg-white p-6">
                 <div>
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
                     Your Partner Referral Code (2.5% of B · 90-day window)
@@ -243,7 +243,7 @@ export default function PartnerEarningsPage() {
               </section>
             )}
 
-            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Commission & referral ledger entries ({commissions.length})
               </h2>
