@@ -5,6 +5,7 @@ import '@fontsource-variable/playfair-display';
 import './globals.css';
 import { SiteProviders } from '@/components/site/SiteShell';
 import ReferralAttributionCapture from '@/components/site/ReferralAttributionCapture';
+import { GlobalMotion } from '@/components/site/GlobalMotion';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
@@ -69,6 +70,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <ReferralAttributionCapture />
           </Suspense>
+          <GlobalMotion />
           {children}
         </SiteProviders>
       </body>
