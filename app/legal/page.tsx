@@ -15,7 +15,7 @@ export default function LegalPage() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">Legal &amp; Policies · Abundance Abodes</p>
             <h1 className="mt-2.5 font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
@@ -29,7 +29,7 @@ export default function LegalPage() {
         </section>
 
         <div className="mx-auto max-w-4xl space-y-5 px-4 py-10 sm:px-6 sm:py-14">
-          <section id="terms" className="card p-6">
+          <section data-hamlet-reveal id="terms" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
               1. Marketplace role &amp; booking confirmation
             </h2>
@@ -38,7 +38,7 @@ export default function LegalPage() {
             </p>
           </section>
 
-          <section id="verification" className="card p-6">
+          <section data-hamlet-reveal id="verification" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
               2. Listing review &amp; verification labels
             </h2>
@@ -47,7 +47,7 @@ export default function LegalPage() {
             </p>
           </section>
 
-          <section id="pricing" className="card p-6">
+          <section data-hamlet-reveal id="pricing" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
               3. Pricing, FX quotes, cancellations &amp; caution deposits
             </h2>
@@ -67,7 +67,7 @@ export default function LegalPage() {
             </ul>
           </section>
 
-          <section id="privacy" className="card p-6">
+          <section data-hamlet-reveal id="privacy" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
               4. Privacy &amp; NDPR notice
             </h2>
@@ -76,7 +76,7 @@ export default function LegalPage() {
             </p>
           </section>
 
-          <section id="partners" className="card p-6">
+          <section data-hamlet-reveal id="partners" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
               5. Partner, closing agent &amp; referral terms
             </h2>

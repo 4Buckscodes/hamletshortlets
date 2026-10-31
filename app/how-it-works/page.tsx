@@ -22,7 +22,7 @@ export default function HowItWorksPage() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">How it works</p>
             <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
@@ -35,7 +35,7 @@ export default function HowItWorksPage() {
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
           <CeremonyExplorer />
 
-          <section className="mt-10 rounded-3xl bg-ink-950 p-6 text-paper sm:p-8">
+          <section data-hamlet-reveal className="mt-10 rounded-3xl bg-ink-950 p-6 text-paper sm:p-8">
             <p className="eyebrow-light">Booking lifecycle</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {LIFECYCLE_STATES.map(s => (

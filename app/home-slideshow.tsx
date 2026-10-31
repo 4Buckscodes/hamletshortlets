@@ -155,7 +155,7 @@ export function HomeMarketplaceExperience({
   return (
     <>
       {/* ── Editorial discovery hero: photographic collage, no rotating carousel ── */}
-      <section className="relative overflow-hidden bg-paper">
+      <section data-hamlet-reveal className="relative overflow-hidden bg-paper">
         <div className="mx-auto grid max-w-7xl items-center gap-5 px-4 sm:gap-8 pb-8 pt-7 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-jade-700/15 bg-white px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-ink-800 shadow-2xs">
@@ -409,7 +409,7 @@ export function HomeMarketplaceExperience({
       </div>
 
       {/* ── Available Stays Marketplace Board ──────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <section data-hamlet-reveal className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Lagos marketplace</p>
@@ -513,7 +513,7 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Browse by Area (Photographic Mainland & Island Grid) ───── */}
-      <section className="border-t border-ink-100 bg-clay/45 py-9 sm:py-16">
+      <section data-hamlet-reveal className="border-t border-ink-100 bg-clay/45 py-9 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -572,7 +572,7 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Compact Partner Callout Banner ─────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+      <section data-hamlet-reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="group relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl bg-ink-950 px-6 py-8 text-paper shadow-[0_18px_50px_-28px_rgba(14,31,59,0.55)] sm:flex-row sm:items-center sm:px-10">
           <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-brass-500/10 blur-3xl transition-opacity duration-700 group-hover:bg-brass-500/15 motion-reduce:transition-none" />
           <div className="relative z-10">

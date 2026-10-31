@@ -74,7 +74,7 @@ export default function SafetyPage() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">Safety &amp; protection</p>
             <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
@@ -88,7 +88,7 @@ export default function SafetyPage() {
         </section>
 
         <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6 sm:py-14">
-          <section>
+          <section data-hamlet-reveal>
             <p className="eyebrow">Recorded per listing</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
               What we check
@@ -110,7 +110,7 @@ export default function SafetyPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-ink-200 bg-white p-6">
+          <section data-hamlet-reveal className="rounded-3xl border border-ink-200 bg-white p-6">
             <p className="eyebrow">Honest status labelling</p>
             <h2 className="mt-1 font-display text-xl font-bold text-ink-900 sm:text-2xl">
               Verified vs. self-reported badges
@@ -138,7 +138,7 @@ export default function SafetyPage() {
           </section>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <section className="card p-6">
+            <section data-hamlet-reveal className="card p-6">
               <div className="flex items-center gap-2 text-ink-900">
                 <CreditCard className="h-5 w-5 shrink-0 text-brass-600" />
                 <h2 className="font-display text-xl font-bold">Payments</h2>
@@ -157,7 +157,7 @@ export default function SafetyPage() {
               </ul>
             </section>
 
-            <section className="card p-6">
+            <section data-hamlet-reveal className="card p-6">
               <div className="flex items-center gap-2 text-ink-900">
                 <Lock className="h-5 w-5 shrink-0 text-brass-600" />
                 <h2 className="font-display text-xl font-bold">Privacy &amp; access</h2>
@@ -177,7 +177,7 @@ export default function SafetyPage() {
             </section>
           </div>
 
-          <section className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink-950 p-6 text-paper sm:flex-row sm:items-center sm:p-8">
+          <section data-hamlet-reveal className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink-950 p-6 text-paper sm:flex-row sm:items-center sm:p-8">
             <div>
               <div className="flex items-center gap-2 text-brass-300">
                 <LifeBuoy className="h-4 w-4 shrink-0" />
