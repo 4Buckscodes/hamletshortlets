@@ -16,7 +16,7 @@ export default function SignInPage() {
 
       <main className="shell flex flex-1 items-center justify-center py-10 sm:py-16">
         <div className="w-full max-w-md">
-          <section className="rounded-3xl border border-ink-200 bg-white p-6 shadow-md sm:p-8">
+          <section data-hamlet-reveal className="rounded-3xl border border-ink-200 bg-white p-6 shadow-md sm:p-8">
             <p className="eyebrow">Your stay, sorted.</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-4xl">
               Welcome to HAMLET.
