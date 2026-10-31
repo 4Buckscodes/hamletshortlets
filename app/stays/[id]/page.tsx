@@ -212,7 +212,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             </div>
 
             {/* Location & Overview */}
-            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Location & stay overview
               </h2>
@@ -243,7 +243,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
             {/* Amenities */}
             {stay.amenities && stay.amenities.length > 0 && (
-              <section className="rounded-3xl border border-ink-100 bg-white p-6">
+              <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
                 <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                   Amenities & facilities
                 </h2>
@@ -261,7 +261,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             )}
 
             {/* Honest 4-Pillar Verification Breakdown */}
-            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <div className="flex items-start gap-2.5">
                 <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-emerald-700" />
                 <div>
@@ -296,7 +296,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             </section>
 
             {/* House Rules & Refundable Caution Terms */}
-            <section className="rounded-3xl border border-ink-100 bg-white p-6">
+            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 House rules & caution deposit terms
               </h2>
