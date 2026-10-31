@@ -57,7 +57,7 @@ export default function PartnerStartDashboard() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
       <main className="shell flex-1 py-8 sm:py-12">
-        <section data-hamlet-reveal className="max-w-4xl">
+        <section className="max-w-4xl">
           <p className="eyebrow">Your HAMLET dashboard</p>
           <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
             {loading ? 'Your space is getting ready' : `Welcome, ${firstName}.`}
@@ -72,7 +72,7 @@ export default function PartnerStartDashboard() {
           <p role="status" className="mt-8 text-sm text-ink-600">Loading your account…</p>
         ) : (
           <>
-            <section data-hamlet-reveal className="mt-7 grid gap-4 md:grid-cols-3">
+            <section className="mt-7 grid gap-4 md:grid-cols-3">
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
                 <CircleUserRound className="h-5 w-5 text-brass-700" />
                 <h2 className="mt-3 text-base font-bold text-ink-900">Your account</h2>
@@ -93,7 +93,7 @@ export default function PartnerStartDashboard() {
               </article>
             </section>
 
-            <section data-hamlet-reveal className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
+            <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">One partner account. Multiple ways to earn.</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-ink-100 bg-paper p-4">
@@ -108,7 +108,7 @@ export default function PartnerStartDashboard() {
               <p className="mt-3 text-xs leading-relaxed text-ink-500">Owners, property managers, operators and agents can use the same account to close eligible bookings and introduce partners. Your main role does not limit these capabilities. Rewards are subject to booking attribution, eligibility and programme payout rules; the same booking cannot generate duplicate closing commissions.</p>
             </section>
 
-            <section data-hamlet-reveal className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
+            <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
               <div className="flex items-start gap-3">
                 <BadgeCheck className="mt-1 h-5 w-5 shrink-0 text-brass-700" />
                 <div>
