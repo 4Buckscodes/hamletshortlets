@@ -103,6 +103,7 @@ export async function resetTestData(db: PGlite): Promise<void> {
       public.property_access,
       public.properties,
       public.partner_applications,
+      public.partner_network_memberships,
       public.admin_audit_log,
       public.profiles,
       auth.users
