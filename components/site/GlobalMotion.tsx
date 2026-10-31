@@ -21,6 +21,8 @@ export function GlobalMotion() {
       return;
     }
 
+    document.documentElement.classList.add('hamlet-motion-ready');
+
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
@@ -34,7 +36,10 @@ export function GlobalMotion() {
     );
 
     nodes.forEach(node => observer.observe(node));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.documentElement.classList.remove('hamlet-motion-ready');
+    };
   }, []);
 
   return null;
