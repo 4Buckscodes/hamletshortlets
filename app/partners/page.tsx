@@ -173,7 +173,7 @@ export default function PartnerDashboardPage() {
             Loading partner workspace…
           </p>
         ) : role !== 'partner' && role !== 'admin' ? (
-          <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
+          <section data-hamlet-reveal className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
               Partner approval required
             </h2>
