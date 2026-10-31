@@ -248,7 +248,7 @@ export default function PartnerAvailabilityPage() {
           <div className="mt-8 grid items-start gap-6 lg:grid-cols-12">
             {/* Property selector + Block Date Form */}
             <div className="space-y-6 lg:col-span-7">
-              <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
+              <section className="rounded-3xl border border-ink-100 bg-white p-6">
                 <FormField label="Select property">
                   {fieldProps => (
                     <select
@@ -322,7 +322,7 @@ export default function PartnerAvailabilityPage() {
                 </form>
               </section>
 
-              <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
+              <section className="rounded-3xl border border-ink-100 bg-white p-6">
                 <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                   Calendar readiness confirmation
                 </h2>
@@ -364,7 +364,7 @@ export default function PartnerAvailabilityPage() {
             </div>
 
             {/* Active Blocks List */}
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
+            <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Blocked date ranges ({activeBlocks.length})
               </h2>
