@@ -66,7 +66,7 @@ export default function AboutPage() {
 
       <main className="flex-1">
         {/* Midnight Navy Hero */}
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
+        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <p className="eyebrow-light">
               {HAMLET_BRAND_NAME} · By {HAMLET_PARENT_COMPANY}
@@ -83,7 +83,7 @@ export default function AboutPage() {
         </section>
 
         {/* Four Pillars of a Better Stay */}
-        <section id="four-pillars" className="border-b border-ink-100 bg-clay/60 py-12 sm:py-16">
+        <section data-hamlet-reveal id="four-pillars" className="border-b border-ink-100 bg-clay/60 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="max-w-2xl">
               <p className="eyebrow">Four pillars of a better stay</p>
@@ -119,7 +119,7 @@ export default function AboutPage() {
         </section>
 
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
-          <section className="rounded-3xl bg-ink-950 p-7 text-paper sm:p-9">
+          <section data-hamlet-reveal className="rounded-3xl bg-ink-950 p-7 text-paper sm:p-9">
             <div className="flex flex-col items-start justify-between gap-5 lg:flex-row lg:items-center">
               <div>
                 <p className="eyebrow-light">{HAMLET_USP}</p>
