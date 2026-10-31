@@ -101,7 +101,7 @@ export default function LagosGuidePage() {
 
       <main className="flex-1">
         {/* Full-bleed Lagos Hero */}
-        <section className="relative overflow-hidden bg-ink-950 text-paper">
+        <section data-hamlet-reveal className="relative overflow-hidden bg-ink-950 text-paper">
           <img
             src="/images/lagos-hero.jpg"
             alt="Lagos cityscape"
@@ -133,7 +133,7 @@ export default function LagosGuidePage() {
         </section>
 
         {/* Lagos Mainland & Environs */}
-        <section className="border-b border-ink-100 bg-paper py-12 sm:py-16">
+        <section data-hamlet-reveal className="border-b border-ink-100 bg-paper py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -201,7 +201,7 @@ export default function LagosGuidePage() {
         </section>
 
         {/* Lagos Island & Lekki Corridor */}
-        <section className="border-b border-ink-100 bg-clay/45 py-12 sm:py-16">
+        <section data-hamlet-reveal className="border-b border-ink-100 bg-clay/45 py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -257,7 +257,7 @@ export default function LagosGuidePage() {
         </section>
 
         {/* Partner CTA */}
-        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
+        <section data-hamlet-reveal className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
           <div className="flex flex-col items-start justify-between gap-5 rounded-3xl bg-ink-950 px-6 py-8 text-paper sm:flex-row sm:items-center sm:px-10">
             <div>
               <p className="eyebrow-light">Partner across Lagos</p>
