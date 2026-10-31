@@ -122,7 +122,7 @@ export default function PartnerProfilePage() {
           <p className="mt-8 text-sm text-ink-600">Loading partner profile…</p>
         ) : (
           <div className="mt-8 grid items-start gap-6 lg:grid-cols-12">
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
+            <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
               <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-brass-700">
                 {partnerRole}
               </span>
@@ -184,7 +184,7 @@ export default function PartnerProfilePage() {
               </form>
             </section>
 
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
+            <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Property management assignments ({assignments.length})
               </h2>
