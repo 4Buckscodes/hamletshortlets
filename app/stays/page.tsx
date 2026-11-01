@@ -121,11 +121,11 @@ export default async function StaysPage({ searchParams }: { searchParams: Search
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <p className="eyebrow-light">Lagos shortlets · Mainland &amp; Island</p>
             <h1 className="mt-2 font-display text-3xl font-bold leading-[1.06] text-white sm:text-5xl">
-              Explore verified{' '}
+              Explore Lagos{' '}
               <span className="italic text-brass-300">shortlet stays.</span>
             </h1>
             <p className="mt-2.5 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Compare approved stays across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) in ₦, $, or £.
+              Discover stays and property previews across Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) in ₦, $, or £.
             </p>
           </div>
         </section>
