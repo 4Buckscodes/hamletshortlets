@@ -31,3 +31,50 @@ Use real Nigerian short-let / serviced-apartment photography wherever possible. 
 ## Current inventory state
 
 The 30 entries in `docs/lagos-showcase-inventory.json` remain fictional concepts. Their `image_urls` arrays intentionally remain empty until approved imagery is available. This is deliberate and protects HAMLET from misrepresenting another operator's property or displaying unlicensed images.
+
+
+## Permission outreach shortlist
+
+These are public business contacts published by the respective organisations. No outreach has been sent from this workspace; permission must be obtained in writing before using their images.
+
+| Priority | Organisation | Public contact | Relevant reference |
+|---|---|---|---|
+| 1 | Dozek Group | sales@dozekgroup.com; dozekgroups@gmail.com; +234 808 251 8441 | [Short-let gallery](https://dozekgroup.com/short-lets) |
+| 2 | Kay Élan Designs | studio@kayelandesign.com; 09038997553 | [Lekki apartment project](https://www.kayelandesign.com/portfolio/residential/lekki-apartment-project) |
+| 3 | Lekki Haven | [Website contact / WhatsApp](https://lekkihaven.com/contact) | [Gallery](https://lekkihaven.com/gallery) |
+
+### Permission request draft
+
+**Subject: Photography usage permission request — HAMLET Nigerian short-let marketplace**
+
+Hello [Name/Team],
+
+I'm reaching out on behalf of HAMLET, a Nigerian short-let discovery and booking platform preparing its Lagos launch.
+
+We came across your apartment/interior photography and appreciate the contemporary Nigerian design direction and presentation. We would like to request written permission to use a small, specifically agreed selection of your photographs as *illustrative visual references* in HAMLET's launch showcase and marketing materials.
+
+To be clear:
+- We will not identify the images as HAMLET partner properties or imply that the pictured apartments are listed, available, inspected or verified on HAMLET.
+- We will credit your organisation/photographer in the format you specify.
+- We will agree the exact images, permitted channels, territory, duration and any licence fee with you before use.
+- We will not edit the images beyond agreed resizing/cropping for layout.
+- We will remove the images if permission expires or is withdrawn under the agreed terms.
+
+Could you let us know whether you control the relevant image rights, which images may be licensed, your preferred credit line, and any applicable fee or conditions? If the photographer or another rights-holder must approve, we'd appreciate an introduction or the appropriate contact.
+
+Thank you for considering the request.
+
+Kind regards,
+HAMLET Team
+[HAMLET website] | [HAMLET contact details]
+
+### Approval record required before publishing
+
+For every approved image, record:
+- Exact image/file identifier and source page
+- Rights-holder's legal/business name and contact
+- Written permission or licence document
+- Approved usage (website, app, social, ads, print)
+- Territory and licence start/end dates
+- Required credit line and any restrictions
+- Date HAMLET received and reviewed approval
