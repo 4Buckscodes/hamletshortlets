@@ -24,6 +24,7 @@ import {
 import { addDaysToIsoDate, guestFacingNightlyNgn, lagosIsoDateOffset } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import type { PublicStayRecord } from '@/lib/next-supabase';
+import { GuestInterestPanel } from './guest-interest-panel';
 import {
   NextCurrencySwitcher,
   StayListingCard,
@@ -486,6 +487,7 @@ export function HomeMarketplaceExperience({
             <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
               HAMLET publishes listings only after review — never placeholder or simulated inventory.
             </p>
+            {approvedStays.length === 0 && <GuestInterestPanel />}
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               {boardFilter !== 'all' ? (
                 <button
