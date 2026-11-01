@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const { data } = await db
     .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,image_urls')
+    .select('title,area,property_type,bedrooms,capacity,image_urls,preview_only')
     .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle();
@@ -75,6 +75,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${data.title} in ${data.area || 'Lagos'}`;
+  if (data.preview_only) {
+    return { title: `${title} | Property preview`, robots: { index: false, follow: false } };
+  }
   const description = `Explore ${data.title} in ${data.area || 'Lagos'} on HAMLET.REST. Compare stay details, verification status, house rules and transparent pricing before requesting to book.`;
   const image =
     Array.isArray(data.image_urls) &&
@@ -147,10 +150,12 @@ export default async function PropertyDetailPage({ params }: Props) {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      {!stay.preview_only && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
 
       <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
         <div className="mb-4">
