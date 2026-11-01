@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
+  CheckCircle2,
   BedDouble,
   Bath,
   Users,
@@ -12,6 +13,11 @@ import {
   Clock,
 } from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import {
+  formatAccommodationLabel,
+  formatBedroomCountLabel,
+  getStayTrustStatus,
+} from '@/lib/discovery';
 import {
   PUBLIC_PROPERTY_SELECT,
   probePropertyWayfinderMeta,
@@ -124,6 +130,12 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const stay = data as PublicStayRecord;
+  const trust = getStayTrustStatus(stay);
+  const accommodationLabel = formatAccommodationLabel(
+    stay.property_type,
+    stay.bedrooms,
+  );
+  const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
   const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
   const images = stay.image_urls ?? [];
   const verification = stay.verification ?? {};
@@ -167,12 +179,20 @@ export default async function PropertyDetailPage({ params }: Props) {
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             {stay.area || wayfinderMeta.city || 'Lagos'}
           </span>
-          {stay.trust_label && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold normal-case text-emerald-800">
-              <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
-              {stay.trust_label}
-            </span>
-          )}
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold normal-case ${
+              trust.verified
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-ink-200 bg-white text-ink-800'
+            }`}
+          >
+            {trust.verified ? (
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+            ) : (
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
+            )}
+            {trust.badge}
+          </span>
         </div>
 
         <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
@@ -187,11 +207,11 @@ export default async function PropertyDetailPage({ params }: Props) {
           <div className="space-y-8 lg:col-span-7">
             {/* Key Specs */}
             <div className="flex flex-wrap gap-3 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-ink-800">
-              <span>{stay.property_type || 'Shortlet'}</span>
+              <span>{accommodationLabel}</span>
               <span>·</span>
               <span className="inline-flex items-center gap-1.5">
                 <BedDouble className="h-4 w-4 shrink-0 text-brass-600" />
-                {stay.bedrooms ?? 0} {stay.bedrooms === 1 ? 'bedroom' : 'bedrooms'}
+                {bedroomLabel}
               </span>
               <span>·</span>
               <span className="inline-flex items-center gap-1.5">

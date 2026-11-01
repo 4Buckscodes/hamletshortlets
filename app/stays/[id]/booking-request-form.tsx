@@ -5,10 +5,10 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, CalendarDays, ShieldCheck } from 'lucide-react';
 import {
   calculateGuestPricing,
-  guestFacingNightlyNgn,
   lagosIsoDateOffset,
   nightsBetween,
 } from '@/lib/pricing';
+import { getValidGuestNightlyNgn } from '@/lib/discovery';
 import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -135,7 +135,7 @@ export default function BookingRequestForm({
     [nightlyRate, nights, cleaningFee, deposit],
   );
 
-  const domesticNightly = guestFacingNightlyNgn(nightlyRate);
+  const domesticNightly = getValidGuestNightlyNgn(nightlyRate);
 
   function buildIntentReturnUrl(targetStep: number) {
     const qs = new URLSearchParams();
@@ -239,6 +239,21 @@ export default function BookingRequestForm({
   }
 
   const renderFormBody = () => {
+    if (domesticNightly === null) {
+      return (
+        <div
+          role="status"
+          className="rounded-2xl border border-ink-200 bg-paper p-4 text-xs leading-relaxed text-ink-700"
+        >
+          <p className="m-0 font-bold text-ink-950">Price currently unavailable</p>
+          <p className="m-0 mt-1">
+            Online booking requests pause automatically whenever a property’s nightly rate is awaiting partner confirmation. Contact{' '}
+            <strong>hello@hamlet.rest</strong> for assistance.
+          </p>
+        </div>
+      );
+    }
+
     if (createdReference || message) {
       return (
         <div
@@ -399,7 +414,7 @@ export default function BookingRequestForm({
         )}
 
         {/* Authoritative Price Breakdown (`src/lib/pricing.ts`) */}
-        {nights > 0 && (
+        {nights > 0 && domesticNightly !== null && (
           <div className="space-y-2 rounded-2xl border border-ink-200 bg-paper/60 p-4 text-xs">
             <div className="flex justify-between gap-2 text-ink-700">
               <span>
@@ -465,8 +480,18 @@ export default function BookingRequestForm({
           <div>
             <p className="m-0 text-xs font-semibold text-ink-500">All-in stay rate</p>
             <p className="m-0 mt-0.5 font-mono text-2xl font-extrabold text-ink-900">
-              {formatPrice(domesticNightly, { roundWhole: true })}{' '}
-              <span className="font-sans text-xs font-normal text-ink-500">/ night</span>
+              {domesticNightly !== null ? (
+                <>
+                  {formatPrice(domesticNightly, { roundWhole: true })}{' '}
+                  <span className="font-sans text-xs font-normal text-ink-500">
+                    / night{currency !== 'NGN' ? ` (${currency})` : ''}
+                  </span>
+                </>
+              ) : (
+                <span className="font-sans text-base font-bold text-ink-600">
+                  Price unavailable
+                </span>
+              )}
             </p>
           </div>
           {deposit > 0 && (
@@ -484,12 +509,20 @@ export default function BookingRequestForm({
         <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="m-0 font-mono text-base font-extrabold text-ink-900">
-              {nights > 0
-                ? formatPrice(pricing.guestTotal)
-                : formatPrice(domesticNightly, { roundWhole: true })}
-              <span className="ml-1 font-sans text-xs font-normal text-ink-500">
-                {nights > 0 ? `total (${nights}n)` : '/ night'}
-              </span>
+              {domesticNightly === null ? (
+                <span className="font-sans text-sm font-bold text-ink-600">
+                  Price unavailable
+                </span>
+              ) : (
+                <>
+                  {nights > 0
+                    ? formatPrice(pricing.guestTotal)
+                    : formatPrice(domesticNightly, { roundWhole: true })}
+                  <span className="ml-1 font-sans text-xs font-normal text-ink-500">
+                    {nights > 0 ? `total (${nights}n)` : '/ night'}
+                  </span>
+                </>
+              )}
             </p>
             <p className="m-0 truncate text-[11px] text-ink-500">
               Partner confirms before payment
@@ -497,8 +530,9 @@ export default function BookingRequestForm({
           </div>
           <button
             type="button"
+            disabled={domesticNightly === null}
             onClick={() => setMobileSheetOpen(true)}
-            className="primary-button min-h-[46px] shrink-0 px-5"
+            className="primary-button min-h-[46px] shrink-0 px-5 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {nights > 0 ? 'Request stay' : 'Check dates'}
           </button>

@@ -10,7 +10,7 @@ const CEREMONY_STEPS = [
     badge: 'Step 01 · Guest',
     Icon: Search,
     title: 'Request the stay',
-    body: 'Choose your dates, guest count, and currency (₦, $, or £). Review house rules and total stay pricing — zero card charge on request.',
+    body: 'Choose your dates and guest count, then review house rules and upfront stay pricing — zero card charge on request.',
     cta: { label: 'Explore stays', href: '/stays' },
   },
   {

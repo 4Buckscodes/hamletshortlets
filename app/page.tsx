@@ -1,3 +1,5 @@
+import showcaseInventory from '../docs/lagos-showcase-inventory.json';
+import { sanitizeShowcaseInventory } from '@/lib/discovery';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
@@ -5,10 +7,14 @@ import { HomeMarketplaceExperience } from './home-slideshow';
 
 export const revalidate = 60;
 
+const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
+  showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
+);
+
 export default async function HomePage() {
   const db = getPublicSupabase();
   let approvedStays: PublicStayRecord[] = [];
-  let connected = false;
+  let queryError = false;
 
   if (db) {
     const { data, error } = await db
@@ -16,10 +22,11 @@ export default async function HomePage() {
       .select(PUBLIC_PROPERTY_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
-      .limit(18);
-    if (!error) {
+      .limit(36);
+    if (error) {
+      queryError = true;
+    } else {
       approvedStays = (data ?? []) as PublicStayRecord[];
-      connected = true;
     }
   }
 
@@ -30,7 +37,8 @@ export default async function HomePage() {
       <main className="flex-1">
         <HomeMarketplaceExperience
           approvedStays={approvedStays}
-          connected={connected}
+          showcaseConcepts={SHOWCASE_CONCEPTS}
+          queryError={queryError}
         />
       </main>
 

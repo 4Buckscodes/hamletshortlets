@@ -1,602 +1,336 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
-  ArrowUpRight,
   Building2,
   Calendar,
-  ChevronDown,
   MapPin,
   Search,
   ShieldCheck,
-  Sparkles,
   Users,
 } from 'lucide-react';
+import { ISLAND_AND_LEKKI_AREAS, MAINLAND_AREAS } from '@/lib/areas';
 import {
-  ISLAND_AND_LEKKI_AREAS,
-  isMainlandArea,
-  MAINLAND_AREAS,
-} from '@/lib/areas';
-import { addDaysToIsoDate, guestFacingNightlyNgn, lagosIsoDateOffset } from '@/lib/pricing';
-import { useCurrency } from '@/lib/currency';
+  parseDiscoverySearchParams,
+  type DiscoveryFilterState,
+  type ShowcaseConceptRecord,
+} from '@/lib/discovery';
 import type { PublicStayRecord } from '@/lib/next-supabase';
-import {
-  NextCurrencySwitcher,
-  StayListingCard,
-  useNextHoratio,
-} from '@/components/site/SiteShell';
+import { lagosIsoDateOffset } from '@/lib/pricing';
+import { DiscoveryMarketplace } from '@/components/site/DiscoveryMarketplace';
 
-const QUICK_AREAS = [
-  'Lagos Mainland',
-  'Yaba',
-  'Surulere',
-  'Shomolu',
-  'Ikeja GRA',
-  'Victoria Island',
-  'Ikoyi',
-  'Lekki Phase 1',
-] as const;
-
-const NEIGHBOURHOOD_CARDS = [
+const HERO_COLLAGE = [
   {
-    name: 'Yaba',
-    corridor: 'Mainland',
-    sub: 'Sabo · Alagomeji · Akoka',
-    href: '/stays?area=Yaba',
-    img: '/images/prop/studio-1.jpg',
+    src: '/images/prop/living-1.jpg',
+    alt: 'Bright furnished shortlet living room in Lagos',
+    badge: 'Victoria Island · Ikoyi · Lekki',
   },
   {
-    name: 'Surulere',
-    corridor: 'Mainland',
-    sub: 'Bode Thomas · Adeniran Ogunsanya',
-    href: '/stays?area=Surulere',
-    img: '/images/prop/bed-1.jpg',
+    src: '/images/prop/bed-1.jpg',
+    alt: 'Furnished bedroom inside a Lagos shortlet apartment',
+    badge: 'Yaba · Surulere · Ikeja GRA',
   },
   {
-    name: 'Shomolu',
-    corridor: 'Mainland',
-    sub: 'Palmgrove · Onipanu · Gbagada',
-    href: '/stays?area=Shomolu',
-    img: '/images/prop/kitchen-1.jpg',
-  },
-  {
-    name: 'Ikeja GRA',
-    corridor: 'Mainland',
-    sub: 'Airport axis · Maryland · Magodo',
-    href: '/stays?area=Ikeja+GRA',
-    img: '/images/prop/duplex.jpg',
-  },
-  {
-    name: 'Victoria Island',
-    corridor: 'Island',
-    sub: 'Adeola Odeku · Ahmadu Bello',
-    href: '/stays?area=Victoria+Island',
-    img: '/images/prop/living-1.jpg',
-  },
-  {
-    name: 'Ikoyi',
-    corridor: 'Island',
-    sub: 'Old Ikoyi · Banana Island · Falomo',
-    href: '/stays?area=Ikoyi',
-    img: '/images/prop/penthouse.jpg',
-  },
-  {
-    name: 'Lekki Phase 1',
-    corridor: 'Island',
-    sub: 'Admiralty Way · Oniru',
-    href: '/stays?area=Lekki+Phase 1',
-    img: '/images/prop/pool-1.jpg',
-  },
-  {
-    name: 'Ajah',
-    corridor: 'Island',
-    sub: 'Chevron · Orchid Road · Sangotedo',
-    href: '/stays?area=Ajah',
-    img: '/images/prop/exterior-1.jpg',
+    src: '/images/prop/kitchen-1.jpg',
+    alt: 'Modern fitted apartment kitchen in Lagos',
+    badge: '4-pillar property verification',
   },
 ] as const;
-
-type BoardFilter = 'all' | 'mainland' | 'island';
 
 export function HomeMarketplaceExperience({
   approvedStays,
+  showcaseConcepts = [],
+  queryError = false,
 }: {
   approvedStays: PublicStayRecord[];
-  connected?: boolean;
+  showcaseConcepts?: ShowcaseConceptRecord[];
+  queryError?: boolean;
 }) {
   const router = useRouter();
-  const { formatPrice } = useCurrency();
-  const { openHoratio } = useNextHoratio();
+  const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
 
   const [area, setArea] = useState('');
-  const [searchSide, setSearchSide] = useState<'all' | 'mainland' | 'island'>('all');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState(2);
-  const [boardFilter, setBoardFilter] = useState<BoardFilter>('all');
-  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [guests, setGuests] = useState('2');
+  const [urlFilters, setUrlFilters] = useState<Partial<DiscoveryFilterState> | undefined>(
+    undefined,
+  );
+  const [urlKey, setUrlKey] = useState('initial');
 
-  const minDate = lagosIsoDateOffset(0);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.search) return;
+    const sp = new URLSearchParams(window.location.search);
+    const record: Record<string, string | undefined> = {};
+    sp.forEach((value, key) => {
+      record[key] = value;
+    });
+    const parsed = parseDiscoverySearchParams(record);
+    const timer = window.setTimeout(() => {
+      setUrlFilters(parsed);
+      setUrlKey(window.location.search);
+      if (parsed.area) setArea(parsed.area);
+      if (parsed.checkIn) setCheckIn(parsed.checkIn);
+      if (parsed.checkOut) setCheckOut(parsed.checkOut);
+      if (parsed.guests > 1) setGuests(String(parsed.guests));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-  const boardStays = approvedStays
-    .filter(stay => {
-      if (boardFilter === 'mainland') return isMainlandArea(stay.area || '');
-      if (boardFilter === 'island') return !isMainlandArea(stay.area || '');
-      return true;
-    })
-    .slice(0, 6);
-
-  function floorPriceFor(targetArea: string): string | null {
-    const matches = approvedStays.filter(
-      s => (s.area || '').toLowerCase() === targetArea.toLowerCase(),
-    );
-    if (matches.length === 0) return null;
-    const minOwnerRate = Math.min(...matches.map(s => Number(s.nightly_rate || 0)));
-    if (!(minOwnerRate > 0)) return null;
-    return formatPrice(guestFacingNightlyNgn(minOwnerRate), { roundWhole: true });
-  }
-
-  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+  function onHeroSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const params = new URLSearchParams();
-    if (area) params.set('area', area);
-    else if (searchSide !== 'all') params.set('side', searchSide);
+    if (area.trim()) params.set('area', area.trim());
     if (checkIn) params.set('checkIn', checkIn);
     if (checkOut) params.set('checkOut', checkOut);
-    if (guests > 1) params.set('guests', String(guests));
+    const parsedGuests = Number(guests);
+    if (Number.isInteger(parsedGuests) && parsedGuests > 1) {
+      params.set('guests', String(parsedGuests));
+    }
     const qs = params.toString();
     router.push(qs ? `/stays?${qs}` : '/stays');
   }
 
   return (
-    <>
-      {/* ── Editorial discovery hero: photographic collage, no rotating carousel ── */}
-      <section data-hamlet-reveal className="relative overflow-hidden bg-paper">
-        <div className="mx-auto grid max-w-7xl items-center gap-5 px-4 sm:gap-8 pb-8 pt-7 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-12 lg:px-8 lg:py-16">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-jade-700/15 bg-white px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-ink-800 shadow-2xs">
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-jade-700" />
-              <span>HAMLET.REST · Verified Lagos shortlets</span>
-            </div>
+    <div>
+      {/* ── Focused Lagos Discovery Hero ── */}
+      <section className="relative overflow-hidden border-b border-ink-800 bg-ink-950 text-paper">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(200,162,74,0.16),transparent_60%),radial-gradient(ellipse_at_bottom_left,rgba(15,106,82,0.18),transparent_55%)]"
+        />
 
-            <h1 className="mt-4 font-display text-4xl font-bold leading-[0.98] sm:mt-5 sm:text-6xl tracking-tight text-ink-950 sm:text-6xl lg:text-7xl">
-              Find your{' '}
-              <span className="italic text-jade-700">stay.</span>
-            </h1>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+          <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-10">
+            <div className="min-w-0 lg:col-span-7">
+              <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3.5 py-1.5 text-[11px] font-bold tracking-wider text-brass-300">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brass-400" />
+                <span className="uppercase">Your stay, sorted.</span>
+                <span className="text-ink-400">·</span>
+                <span className="text-ink-200">Lagos Island &amp; Mainland</span>
+              </div>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-600 sm:mt-5 sm:text-lg">
-              Thoughtfully selected shortlets across Lagos Island and Mainland.
-              Find a place that feels right, then make it yours for a while.
-            </p>
+              <h1 className="mt-4 font-display text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.35rem]">
+                Find your next stay.
+              </h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] sm:mt-6 sm:gap-x-5 sm:text-xs font-semibold text-ink-600">
-              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-jade-700" /> Reviewed listings</span>
-              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-jade-700" /> Lagos, made easier</span>
-            </div>
-          </div>
-
-          <div className="relative mx-auto grid h-[220px] w-full max-w-2xl grid-cols-[1.2fr_0.8fr] grid-rows-2 gap-2.5 sm:h-[440px] sm:gap-4 [&_img]:transition-transform [&_img]:duration-300 [&_img]:ease-out [&_img]:hover:scale-[1.02] motion-reduce:[&_img]:transition-none">
-            <div className="relative row-span-2 min-h-0 overflow-hidden rounded-[1.75rem] bg-clay sm:min-h-[440px]">
-              <Image
-                src="/images/hero-sample-living.jpg"
-                alt="Warm, furnished shortlet living room with balcony greenery"
-                fill
-                priority
-                sizes="(max-width: 639px) 64vw, (max-width: 1023px) 50vw, 44vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
-              <Image
-                src="/images/hero-sample-bedroom.jpg"
-                alt="Calm shortlet bedroom with an upholstered bed and warm finishes"
-                fill
-                loading="lazy"
-                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative min-h-0 overflow-hidden rounded-[1.5rem] bg-clay">
-              <Image
-                src="/images/hero-sample-kitchen.jpg"
-                alt="Contemporary shortlet kitchen and dining space"
-                fill
-                loading="lazy"
-                sizes="(max-width: 639px) 40vw, (max-width: 1023px) 35vw, 28vw"
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Elevated Search Dock (below hero so interior photos stay clear) ── */}
-      <div className="relative z-20 mx-auto -mt-5 max-w-6xl px-3 sm:-mt-10 sm:px-6">
-        <form
-          action="/stays"
-          method="get"
-          onSubmit={handleSearchSubmit}
-          className="rounded-[1.35rem] border border-ink-100/90 bg-white p-3 text-ink-900 shadow-[0_18px_48px_-30px_rgba(14,31,59,0.32)] sm:rounded-[1.65rem] sm:p-5"
-        >
-          {/* Mobile summary keeps the hero compact; expanded controls remain full-size and touch-friendly. */}
-          <div className="mb-2 flex items-center justify-between gap-3 sm:hidden">
-            <div className="min-w-0">
-              <p className="text-sm font-bold tracking-tight text-ink-900">Find your stay</p>
-              <p className="truncate text-[11px] text-ink-500">
-                {area || (searchSide === 'mainland' ? 'Lagos Mainland' : searchSide === 'island' ? 'Lagos Island' : 'Anywhere in Lagos')}
-                {checkIn ? ` · ${checkIn}` : ''}
-                {checkOut ? ` – ${checkOut}` : ''}
-                {guests !== 2 ? ` · ${guests} guests` : ''}
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-200 sm:text-base">
+                Verified shortlet apartments across Lagos — clear details, trusted hosts, and straightforward booking requests.
               </p>
-            </div>
-            <button
-              type="button"
-              aria-expanded={searchExpanded}
-              aria-controls="hamlet-home-search-fields"
-              onClick={() => setSearchExpanded(value => !value)}
-              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full bg-ink-900 px-3.5 text-xs font-bold text-white transition-colors hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
-            >
-              {searchExpanded ? 'Close' : 'Edit search'}
-              <ChevronDown className={`h-4 w-4 text-brass-300 transition-transform duration-200 ${searchExpanded ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
 
-          <div
-            id="hamlet-home-search-fields"
-            className={`${searchExpanded ? 'block' : 'hidden'} sm:block`}
-          >
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3">
-              <div className="flex flex-wrap items-center gap-1.5" aria-label="Lagos area">
-                {(
-                  [
-                    { id: 'all', label: 'All Lagos' },
-                    { id: 'mainland', label: 'Lagos Mainland' },
-                    { id: 'island', label: 'Lagos Island' },
-                  ] as const
-                ).map(tab => (
+              {/* Mobile-first search card */}
+              <form
+                onSubmit={onHeroSearch}
+                aria-label="Search Lagos shortlet stays"
+                className="mt-6 rounded-3xl border border-white/15 bg-white p-3 text-ink-900 shadow-2xl sm:p-4"
+              >
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
+                  <label className="flex min-h-12 min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/75 px-3.5 py-2 focus-within:border-ink-900 sm:col-span-2 lg:col-span-4">
+                    <MapPin className="h-4 w-4 shrink-0 text-brass-700" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+                        Location
+                      </span>
+                      <select
+                        aria-label="Location or Lagos neighbourhood"
+                        value={area}
+                        onChange={e => setArea(e.target.value)}
+                        className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-950 outline-none sm:text-sm"
+                      >
+                        <option value="">Anywhere in Lagos</option>
+                        <optgroup label="Lagos Island & Lekki">
+                          {ISLAND_AND_LEKKI_AREAS.map(item => (
+                            <option key={item} value={item}>
+                              {item}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Lagos Mainland">
+                          <option value="Lagos Mainland">All Lagos Mainland</option>
+                          {MAINLAND_AREAS.map(item => (
+                            <option key={item} value={item}>
+                              {item}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </div>
+                  </label>
+
+                  <label className="flex min-h-12 min-w-0 items-center gap-2 rounded-2xl border border-ink-100 bg-paper/75 px-3 py-2 focus-within:border-ink-900 lg:col-span-3">
+                    <Calendar className="h-4 w-4 shrink-0 text-brass-700" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+                        Check-in
+                      </span>
+                      <input
+                        type="date"
+                        min={todayIso}
+                        value={checkIn}
+                        onChange={e => setCheckIn(e.target.value)}
+                        className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-950 outline-none"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="flex min-h-12 min-w-0 items-center gap-2 rounded-2xl border border-ink-100 bg-paper/75 px-3 py-2 focus-within:border-ink-900 lg:col-span-3">
+                    <Calendar className="h-4 w-4 shrink-0 text-brass-700" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+                        Check-out
+                      </span>
+                      <input
+                        type="date"
+                        min={checkIn || todayIso}
+                        value={checkOut}
+                        onChange={e => setCheckOut(e.target.value)}
+                        className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-950 outline-none"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="flex min-h-12 min-w-0 items-center gap-2 rounded-2xl border border-ink-100 bg-paper/75 px-3 py-2 focus-within:border-ink-900 sm:col-span-2 lg:col-span-2">
+                    <Users className="h-4 w-4 shrink-0 text-brass-700" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+                        Guests
+                      </span>
+                      <select
+                        aria-label="Number of guests"
+                        value={guests}
+                        onChange={e => setGuests(e.target.value)}
+                        className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-950 outline-none sm:text-sm"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 8, 10].map(count => (
+                          <option key={count} value={count}>
+                            {count} {count === 1 ? 'guest' : 'guests'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="mt-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="m-0 px-1 text-[11px] font-medium text-ink-500">
+                    No instant card charge — partners confirm availability before any payment link opens.
+                  </p>
                   <button
-                    key={tab.id}
-                    type="button"
-                    aria-pressed={searchSide === tab.id}
-                    onClick={() => {
-                      setSearchSide(tab.id);
-                      if (tab.id === 'mainland') setArea('Lagos Mainland');
-                      else if (area === 'Lagos Mainland') setArea('');
-                    }}
-                    className={`min-h-8 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:text-xs ${
-                      searchSide === tab.id
-                        ? 'bg-ink-900 text-white'
-                        : 'bg-paper text-ink-600 hover:bg-clay hover:text-ink-900'
-                    }`}
+                    type="submit"
+                    className="inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-ink-950 px-6 text-xs font-extrabold text-white transition hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 sm:text-sm"
                   >
-                    {tab.label}
+                    <Search className="h-4 w-4 shrink-0 text-brass-400" />
+                    <span>Search stays</span>
                   </button>
+                </div>
+              </form>
+
+              {/* Quick Lagos Island & Mainland corridor links */}
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-400">
+                  Popular:
+                </span>
+                {[
+                  'Lekki Phase 1',
+                  'Ikate',
+                  'Victoria Island',
+                  'Ikoyi',
+                  'Yaba',
+                  'Surulere',
+                  'Shomolu',
+                ].map(corridor => (
+                  <Link
+                    key={corridor}
+                    href={`/stays?area=${encodeURIComponent(corridor)}`}
+                    className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/8 px-3 text-xs font-semibold text-ink-100 transition hover:border-brass-400 hover:text-white"
+                  >
+                    {corridor}
+                  </Link>
                 ))}
               </div>
-              <NextCurrencySwitcher />
             </div>
 
-            <div className="mb-3 rounded-2xl border border-ink-100 bg-paper/65 p-3 sm:mb-4 sm:p-4">
-              <div className="mb-2.5 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold text-ink-900">Popular locations</p>
-                  <p className="mt-0.5 text-[11px] text-ink-500">Choose an area to narrow your search</p>
+            {/* Static architectural collage on desktop (no zoom or scale transitions) */}
+            <div className="hidden lg:col-span-5 lg:grid lg:grid-cols-2 lg:gap-3.5">
+              <div className="relative col-span-2 aspect-[16/10] overflow-hidden rounded-3xl border border-white/15 bg-ink-900">
+                <img
+                  src={HERO_COLLAGE[0].src}
+                  alt={HERO_COLLAGE[0].alt}
+                  decoding="async"
+                  className="h-full w-full object-cover opacity-95"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/85 via-ink-950/35 to-transparent p-4">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-300">
+                    {HERO_COLLAGE[0].badge}
+                  </span>
                 </div>
-                {area && (
-                  <button
-                    type="button"
-                    onClick={() => setArea('')}
-                    className="min-h-8 shrink-0 rounded-full px-2.5 text-[11px] font-bold text-ink-500 transition-colors hover:bg-white hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
-                  >
-                    Clear
-                  </button>
-                )}
               </div>
-              <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain pb-1 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:pb-0">
-                {QUICK_AREAS.map(hub => {
-                  const selected = area === hub;
-                  return (
-                    <button
-                      key={hub}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => setArea(selected ? '' : hub)}
-                      className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:px-3.5 sm:text-xs ${
-                        selected
-                          ? 'border-ink-900 bg-ink-900 text-white'
-                          : 'border-ink-200 bg-white text-ink-700 hover:border-brass-500 hover:bg-brass-200/30 hover:text-ink-950'
-                      }`}
-                    >
-                      {selected && <span aria-hidden="true" className="text-brass-300">✓</span>}
-                      {hub}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2.5 lg:grid-cols-12">
-              <label className="col-span-2 flex min-w-0 items-center gap-2.5 rounded-xl border border-ink-100 bg-paper/55 px-3 py-2.5 sm:col-span-1 sm:rounded-2xl sm:px-3.5 lg:col-span-4">
-                <MapPin className="h-4 w-4 shrink-0 text-brass-600" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Where</span>
-                  <select
-                    name="area"
-                    aria-label="Choose a Lagos neighbourhood"
-                    value={area}
-                    onChange={e => setArea(e.target.value)}
-                    className="w-full min-w-0 truncate bg-transparent text-xs font-bold text-ink-900 focus:outline-none sm:text-[13.5px]"
-                  >
-                    <option value="">All Lagos areas</option>
-                    <optgroup label="Lagos Mainland">
-                      {MAINLAND_AREAS.map(a => (
-                        <option key={a} value={a}>{a === 'Lagos Mainland' ? 'Lagos Mainland (All)' : a}</option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Lagos Island & Lekki">
-                      {ISLAND_AND_LEKKI_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
-                    </optgroup>
-                  </select>
-                </div>
-              </label>
-
-              <label className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-2.5 py-2.5 sm:rounded-2xl sm:px-3.5 lg:col-span-3">
-                <Calendar className="h-4 w-4 shrink-0 text-brass-600" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Check in</span>
-                  <input
-                    name="checkIn"
-                    type="date"
-                    min={minDate}
-                    aria-label="Check-in date"
-                    value={checkIn}
-                    onChange={e => {
-                      const nextIn = e.target.value;
-                      setCheckIn(nextIn);
-                      if (nextIn && checkOut && checkOut <= nextIn) setCheckOut(addDaysToIsoDate(nextIn, 2));
-                    }}
-                    className="w-full min-w-0 bg-transparent text-[11px] font-bold text-ink-900 focus:outline-none sm:text-[13px]"
-                  />
-                </div>
-              </label>
-
-              <label className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-2.5 py-2.5 sm:rounded-2xl sm:px-3.5 lg:col-span-3">
-                <Calendar className="h-4 w-4 shrink-0 text-brass-600" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Check out</span>
-                  <input
-                    name="checkOut"
-                    type="date"
-                    min={checkIn ? addDaysToIsoDate(checkIn, 1) : addDaysToIsoDate(minDate, 1)}
-                    aria-label="Check-out date"
-                    value={checkOut}
-                    onChange={e => setCheckOut(e.target.value)}
-                    className="w-full min-w-0 bg-transparent text-[11px] font-bold text-ink-900 focus:outline-none sm:text-[13px]"
-                  />
-                </div>
-              </label>
-
-              <label className="col-span-2 flex min-w-0 items-center gap-2 rounded-xl border border-ink-100 bg-paper/55 px-3 py-2.5 sm:col-span-1 sm:rounded-2xl sm:px-3.5 lg:col-span-2">
-                <Users className="h-4 w-4 shrink-0 text-brass-600" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-ink-400 sm:text-[10px]">Guests</span>
-                  <select
-                    name="guests"
-                    aria-label="Guests"
-                    value={guests}
-                    onChange={e => setGuests(Number(e.target.value))}
-                    className="w-full min-w-0 bg-transparent text-xs font-bold text-ink-900 focus:outline-none sm:text-[13px]"
-                  >
-                    {[1, 2, 3, 4, 6, 8, 10].map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </div>
-              </label>
-
-              <button
-                type="submit"
-                className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink-900 px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2 sm:col-span-1 sm:rounded-2xl lg:col-span-12"
-              >
-                <Search className="h-4 w-4 shrink-0" />
-                <span>Search stays</span>
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      {/* ── Available Stays Marketplace Board ──────────────────────── */}
-      <section data-hamlet-reveal className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Lagos marketplace</p>
-            <h2 className="mt-1 font-display text-3xl font-semibold tracking-[-0.035em] text-ink-900 sm:text-4xl">
-              Stays you might love
-            </h2>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-full border border-ink-200 bg-white p-1">
-              {(
-                [
-                  { id: 'all', label: 'All' },
-                  { id: 'mainland', label: 'Mainland' },
-                  { id: 'island', label: 'Island' },
-                ] as const
-              ).map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setBoardFilter(tab.id)}
-                  className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                    boardFilter === tab.id
-                      ? 'bg-ink-900 text-white'
-                      : 'text-ink-600 hover:text-ink-900'
-                  }`}
+              {HERO_COLLAGE.slice(1).map(panel => (
+                <div
+                  key={panel.src}
+                  className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/15 bg-ink-900"
                 >
-                  {tab.label}
-                </button>
+                  <img
+                    src={panel.src}
+                    alt={panel.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover opacity-95"
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/85 to-transparent p-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-ink-100">
+                      {panel.badge}
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
-            <Link href="/stays" className="btn-outline !rounded-full !px-4 !py-2 text-xs">
-              View all <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-            </Link>
           </div>
         </div>
+      </section>
 
-        {/* Area jump links */}
-        <div className="mt-5 flex items-center gap-2 overflow-x-auto overscroll-x-contain pb-2">
-          {[
-            { label: 'Lagos Mainland', href: '/stays?area=Lagos+Mainland' },
-            { label: 'Yaba', href: '/stays?area=Yaba' },
-            { label: 'Surulere', href: '/stays?area=Surulere' },
-            { label: 'Shomolu', href: '/stays?area=Shomolu' },
-            { label: 'Ikeja GRA', href: '/stays?area=Ikeja+GRA' },
-            { label: 'Victoria Island', href: '/stays?area=Victoria+Island' },
-            { label: 'Ikoyi', href: '/stays?area=Ikoyi' },
-            { label: 'Lekki Phase 1', href: '/stays?area=Lekki+Phase+1' },
-            { label: 'Ajah', href: '/stays?area=Ajah' },
-          ].map(chip => (
-            <Link
-              key={chip.label}
-              href={chip.href}
-              className="shrink-0 rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-xs font-bold text-ink-700 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
-            >
-              {chip.label}
-            </Link>
-          ))}
-        </div>
+      {/* ── Available Stays Marketplace Board ── */}
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
+        <DiscoveryMarketplace
+          key={urlKey}
+          mode="homepage"
+          approvedStays={approvedStays}
+          showcaseConcepts={showcaseConcepts}
+          initialFilters={urlFilters}
+          queryError={queryError}
+        />
+      </div>
 
-        {boardStays.length > 0 ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {boardStays.map(stay => (
-              <StayListingCard key={stay.id} stay={stay} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-6 rounded-3xl border border-ink-200 bg-white px-6 py-12 text-center shadow-2xs">
-            <h3 className="font-display text-2xl font-bold text-ink-900">
-              {approvedStays.length === 0
-                ? 'New verified stays arriving soon.'
-                : 'No stays in this corridor yet.'}
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
-              HAMLET publishes listings only after review — never placeholder or simulated inventory.
+      {/* ── Concise Partner & Verification Strip ── */}
+      <section className="border-t border-ink-200/80 bg-clay/50">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 px-4 py-10 sm:px-6 md:flex-row md:items-center">
+          <div className="min-w-0 max-w-2xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
+              Property owners &amp; verified managers
             </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
-              {boardFilter !== 'all' ? (
-                <button
-                  type="button"
-                  onClick={() => setBoardFilter('all')}
-                  className="btn-jade !rounded-full"
-                >
-                  Show all Lagos
-                </button>
-              ) : (
-                <Link href="/partners/apply" className="btn-jade !rounded-full">
-                  <Building2 className="h-4 w-4 shrink-0" /> List a property
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={() => openHoratio()}
-                className="btn-outline !rounded-full"
-              >
-                <Sparkles className="h-4 w-4 shrink-0 text-brass-600" /> Ask Horatio
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ── Browse by Area (Photographic Mainland & Island Grid) ───── */}
-      <section data-hamlet-reveal className="border-t border-ink-100 bg-clay/45 py-9 sm:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow">Mainland &amp; Island</p>
-              <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-                Explore Lagos
-              </h2>
-            </div>
-            <Link href="/lagos" className="btn-outline !rounded-full !px-5 !py-2 text-xs">
-              Lagos guide <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-            </Link>
-          </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            {NEIGHBOURHOOD_CARDS.map(card => {
-              const floor = floorPriceFor(card.name);
-              return (
-                <Link
-                  key={card.name}
-                  href={card.href}
-                  className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xs transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-brass-400/70 hover:shadow-[0_18px_38px_-20px_rgba(14,31,59,0.32)] motion-reduce:transform-none sm:rounded-3xl"
-                >
-                  <div className="relative h-32 overflow-hidden bg-clay sm:h-44">
-                    <Image
-                      src={card.img}
-                      alt={card.name}
-                      fill
-                      loading="lazy"
-                      sizes="(max-width: 639px) 46vw, (max-width: 1023px) 48vw, 25vw"
-                      className="object-cover opacity-100 transition duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
-                    />
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
-                      {card.corridor}
-                    </span>
-                    <h3 className="absolute bottom-2.5 left-3 right-3 font-display text-lg font-bold text-white drop-shadow-xs sm:left-3.5 sm:right-3.5 sm:text-xl">
-                      {card.name}
-                    </h3>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-4 sm:py-3.5">
-                    <div className="min-w-0">
-                      <p className="line-clamp-2 text-[10px] font-medium leading-snug text-ink-500 sm:truncate sm:text-[11.5px]">
-                        {card.sub}
-                      </p>
-                      <p className="mt-1 text-[11px] font-extrabold text-ink-900 sm:text-xs">
-                        {floor ? `From ${floor} / night` : 'Browse stays'}
-                      </p>
-                    </div>
-                    <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-ink-900" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Compact Partner Callout Banner ─────────────────────────── */}
-      <section data-hamlet-reveal className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
-        <div className="group relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl bg-ink-950 px-6 py-8 text-paper shadow-[0_18px_50px_-28px_rgba(14,31,59,0.55)] sm:flex-row sm:items-center sm:px-10">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-brass-500/10 blur-3xl transition-opacity duration-700 group-hover:bg-brass-500/15 motion-reduce:transition-none" />
-          <div className="relative z-10">
-            <p className="eyebrow-light">For property owners &amp; managers</p>
-            <h2 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">
-              Turn your shortlet into a better-managed opportunity.
+            <h2 className="mt-1 font-display text-xl font-bold text-ink-950 sm:text-2xl">
+              Own or manage a verified shortlet in Lagos?
             </h2>
-            <p className="mt-1 text-sm font-medium text-ink-300">
-              Reach more guests with clear booking records, partner support and commission terms agreed upfront.
+            <p className="mt-1 text-xs leading-relaxed text-ink-600 sm:text-sm">
+              Property owners keep 100% of their listed nightly rate (0% owner fee). Learn how HAMLET verifies ownership, identity, authority, and physical condition before listings go live.
             </p>
           </div>
-          <div className="relative z-10 flex flex-wrap items-center gap-3">
-            <Link href="/partners/apply" className="btn-brass !rounded-full !px-6">
-              List a property <ArrowRight className="h-4 w-4 shrink-0" />
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/partners/apply" className="primary-button min-h-11 px-5">
+              <Building2 className="h-4 w-4 shrink-0 text-brass-400" />
+              Apply as a partner
             </Link>
-            <Link
-              href="/how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-white/15"
-            >
-              How it works
+            <Link href="/about" className="secondary-button min-h-11 px-5">
+              How verification works <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

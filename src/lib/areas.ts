@@ -1,9 +1,8 @@
-import type { Property } from './types';
-
 export const ISLAND_AND_LEKKI_AREAS = [
   'Victoria Island',
   'Ikoyi',
   'Lekki Phase 1',
+  'Ikate',
   'Oniru',
   'Banana Island',
   'Ajah',
@@ -80,12 +79,28 @@ const AREA_SYNONYMS: Record<string, readonly string[]> = {
   surulere: ['surulere', 'bode thomas', 'adeniran ogunsanya', 'aguda', 'eric moore', 'kilo', 'iponri'],
   gbagada: ['gbagada', 'ifako', 'medina'],
   maryland: ['maryland', 'anthony', 'mende'],
-  lekki: ['lekki', 'lekki phase 1'],
+  'lekki phase 1': ['lekki phase 1'],
+  lekki: ['lekki phase 1', 'lekki'],
+  ikate: ['ikate', 'ikate elegushi', 'kusenla'],
+  'ikeja gra': ['ikeja gra'],
   ikeja: ['ikeja', 'ikeja gra', 'opebi', 'allen', 'adeniyi jones'],
+  'victoria island': ['victoria island'],
+  ikoyi: ['ikoyi', 'old ikoyi', 'falomo'],
+  ajah: ['ajah', 'sangotedo', 'chevron'],
 };
 
-export function isMainlandArea(area: string): boolean {
-  const areaNorm = area.trim().toLowerCase();
+export interface LagosLocationFields {
+  area?: string | null;
+  address?: string | null;
+  title?: string | null;
+}
+
+export function hasReliableLocationData(property: LagosLocationFields): boolean {
+  return Boolean((property.area || '').trim() || (property.address || '').trim());
+}
+
+export function isMainlandArea(area: string | null | undefined): boolean {
+  const areaNorm = (area || '').trim().toLowerCase();
   if (!areaNorm) return false;
   if (MAINLAND_AREAS.some(a => a.toLowerCase() === areaNorm)) {
     return true;
@@ -93,17 +108,20 @@ export function isMainlandArea(area: string): boolean {
   return MAINLAND_ENVIRONS_KEYWORDS.some(keyword => areaNorm.includes(keyword));
 }
 
-export function isMainlandProperty(property: Pick<Property, 'area' | 'address' | 'title'>): boolean {
-  const areaNorm = property.area.trim().toLowerCase();
+export function isMainlandProperty(property: LagosLocationFields): boolean {
+  if (!hasReliableLocationData(property)) return false;
+  const areaStr = (property.area || '').trim();
+  const addressStr = (property.address || '').trim();
+  const areaNorm = areaStr.toLowerCase();
   if (MAINLAND_AREAS.some(a => a.toLowerCase() === areaNorm)) {
     return true;
   }
-  const haystack = `${property.area} ${property.address} ${property.title}`.toLowerCase();
-  return MAINLAND_ENVIRONS_KEYWORDS.some(keyword => haystack.includes(keyword));
+  const locationHaystack = `${areaStr} ${addressStr}`.toLowerCase();
+  return MAINLAND_ENVIRONS_KEYWORDS.some(keyword => locationHaystack.includes(keyword));
 }
 
 export function matchesLagosAreaFilter(
-  property: Pick<Property, 'area' | 'address' | 'title'>,
+  property: LagosLocationFields,
   selectedArea: string,
 ): boolean {
   const normalized = selectedArea.trim().toLowerCase();
@@ -111,20 +129,42 @@ export function matchesLagosAreaFilter(
     return true;
   }
 
+  // Never silently classify a property without reliable location fields into a neighbourhood.
+  if (!hasReliableLocationData(property)) {
+    return false;
+  }
+
   if (normalized === 'lagos mainland' || normalized === 'mainland') {
     return isMainlandProperty(property);
   }
 
-  const areaLower = property.area.trim().toLowerCase();
+  const areaStr = (property.area || '').trim();
+  const addressStr = (property.address || '').trim();
+  const areaLower = areaStr.toLowerCase();
   if (areaLower === normalized) {
     return true;
   }
 
-  const haystack = `${property.area} ${property.address} ${property.title}`.toLowerCase();
+  // When a specific area field is already recorded and contradicts the requested neighbourhood,
+  // only match sub-area address synonyms when the area is an umbrella/parent corridor.
+  const locationHaystack = `${areaStr} ${addressStr}`.toLowerCase();
   const synonyms = AREA_SYNONYMS[normalized];
   if (synonyms) {
-    return synonyms.some(term => haystack.includes(term));
+    if (
+      areaLower &&
+      areaLower !== 'lagos' &&
+      areaLower !== 'lagos mainland' &&
+      areaLower !== 'lagos island' &&
+      !synonyms.some(term => areaLower.includes(term))
+    ) {
+      // Allow known parent-suburb pairs (e.g. Ikate inside Lekki address, Sabo inside Yaba)
+      return (
+        synonyms.some(term => addressStr.toLowerCase().includes(term)) &&
+        (areaLower === 'lekki' || areaLower === 'ikeja' || areaLower === normalized)
+      );
+    }
+    return synonyms.some(term => locationHaystack.includes(term));
   }
 
-  return haystack.includes(normalized);
+  return locationHaystack.includes(normalized);
 }
