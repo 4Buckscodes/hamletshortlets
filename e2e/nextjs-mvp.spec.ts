@@ -87,11 +87,15 @@ test.describe('HAMLET Next.js App Router MVP — Mobile & Desktop Verification',
     await expect(referralCode).toHaveAttribute('readonly', '');
   });
 
-  test('opens mobile-friendly search filter drawer on /stays', async ({ page }) => {
+  test('shows the Lagos showcase catalogue without offering bookings', async ({ page }) => {
     await page.goto('/stays');
-    await page.getByRole('button', { name: /Filters/i }).click();
-    await expect(page.getByRole('dialog', { name: /Filter stays/i })).toBeVisible();
-    await page.getByRole('button', { name: /Close panel/i }).click();
+    await expect(page.getByRole('heading', { name: /Find your kind of Lagos stay/i })).toBeVisible();
+    await expect(page.getByText(/SHOWCASE PREVIEW · BOOKINGS NOT OPEN/i)).toBeVisible();
+    await expect(page.getByText(/30 illustrative concepts · not live inventory/i)).toBeVisible();
+    await expect(page.getByText(/These are fictional showcase concepts/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /Become a property partner/i })).toHaveAttribute('href', '/partners/apply');
+    await expect(page.getByRole('link', { name: /Explore concept/i }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Book|Reserve|Filters/i })).toHaveCount(0);
   });
 
   test('redirects legacy #/ hash deep links cleanly to Next.js App Router paths during cutover', async ({
