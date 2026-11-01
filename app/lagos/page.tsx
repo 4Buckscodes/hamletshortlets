@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowRight, ArrowUpRight, Building2 } from 'lucide-react';
 import { buildLagosGuideStructuredData } from '@/lib/seo';
-import { SiteHeader, SiteFooter, NextCurrencySwitcher } from '@/components/site/SiteShell';
+import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 
 export const metadata: Metadata = {
   title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
@@ -115,7 +115,7 @@ export default function LagosGuidePage() {
               <span className="italic text-brass-300">Lagos Island.</span>
             </h1>
             <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Compare verified stays across <strong className="text-brass-300">Lagos Mainland</strong> (Yaba, Shomolu, Surulere &amp; Ikeja) and <strong className="text-brass-300">Lagos Island</strong> in ₦, $, or £.
+              Compare verified stays across <strong className="text-brass-300">Lagos Mainland</strong> (Yaba, Shomolu, Surulere &amp; Ikeja) and <strong className="text-brass-300">Lagos Island</strong> with upfront pricing tailored automatically to your location.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link href="/stays?area=Lagos+Mainland" className="btn-brass !rounded-full !px-6">
@@ -127,7 +127,6 @@ export default function LagosGuidePage() {
               >
                 Lagos Island
               </Link>
-              <NextCurrencySwitcher variant="dark" />
             </div>
           </div>
         </section>

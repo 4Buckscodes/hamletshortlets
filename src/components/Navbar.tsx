@@ -11,7 +11,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { HamletWordmark } from './Logo';
-import { CurrencyToggle } from './CurrencyToggle';
 import { useHoratio } from './HoratioDrawer';
 import { useHamlet } from '../lib/store';
 import { useToast } from '../lib/toast';
@@ -82,9 +81,6 @@ export function GuestNavbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <CurrencyToggle className="hidden sm:inline-flex" />
-          <CurrencyToggle variant="compact" className="sm:hidden" />
-
           <button
             type="button"
             onClick={() => openHoratio()}
@@ -225,10 +221,6 @@ export function GuestNavbar() {
 
       {open && (
         <div className="border-t border-ink-100 bg-paper px-4 py-4 shadow-lg lg:hidden">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-white px-3.5 py-2.5">
-            <span className="text-[11.5px] font-bold text-ink-600">Stay currency</span>
-            <CurrencyToggle />
-          </div>
           <div className="mb-3 grid grid-cols-2 gap-2">
             <button
               type="button"

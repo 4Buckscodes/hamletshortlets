@@ -10,6 +10,7 @@ import {
   useMemo,
   useState,
   type FormEvent,
+  type MouseEvent,
   type ReactNode,
 } from 'react';
 import {
@@ -26,6 +27,10 @@ import {
   Bath,
   Users,
   BadgeCheck,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
   Sparkles,
   Send,
   LayoutDashboard,
@@ -33,14 +38,17 @@ import {
 import { HamletWordmark } from '../Logo';
 import {
   CurrencyProvider,
-  CURRENCY_ORDER,
-  CURRENCY_SYMBOLS,
   useCurrency,
   type DisplayCurrency,
 } from '@/lib/currency';
-import { guestFacingNightlyNgn } from '@/lib/pricing';
 import { isMainlandArea } from '@/lib/areas';
 import { resolveLegacyHashRoute } from '@/lib/authRedirect';
+import {
+  formatAccommodationLabel,
+  formatBedroomCountLabel,
+  getStayTrustStatus,
+  getValidGuestNightlyNgn,
+} from '@/lib/discovery';
 import {
   getBrowserSupabase,
   loadActiveExchangeRates,
@@ -80,7 +88,7 @@ interface HoratioMessage {
 
 const HORATIO_SUGGESTIONS = [
   'Compare Lagos Mainland vs Island areas',
-  'How do ₦, $, and £ prices & caution deposits work?',
+  'How do stay prices and caution deposits work?',
   'When do I pay for a booking?',
   'How do I list a property (0% owner fee)?',
 ] as const;
@@ -88,20 +96,20 @@ const HORATIO_SUGGESTIONS = [
 function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<HoratioMessage, 'id' | 'role'> {
   const q = rawQuery.trim().toLowerCase();
 
-  if (q.includes('mainland') || q.includes('yaba') || q.includes('surulere') || q.includes('shomolu') || q.includes('ikeja') || q.includes('island') || q.includes('lekki') || q.includes('ikoyi') || q.includes('area')) {
+  if (q.includes('mainland') || q.includes('yaba') || q.includes('surulere') || q.includes('shomolu') || q.includes('ikeja') || q.includes('island') || q.includes('lekki') || q.includes('ikate') || q.includes('ikoyi') || q.includes('area')) {
     return {
-      text: 'HAMLET covers both sides of Lagos: Lagos Mainland (Yaba, Surulere, Shomolu, Gbagada, Maryland, Ilupeju, Ikeja GRA & Magodo) for central access, tech hubs, and MMIA airport proximity — and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Oniru & Ajah) for corporate districts and waterfront stays.',
+      text: 'HAMLET covers both sides of Lagos: Lagos Mainland (Yaba, Surulere, Shomolu, Gbagada, Maryland, Ilupeju, Ikeja GRA & Magodo) for central access, tech hubs, and MMIA airport proximity — and Lagos Island & Lekki (Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru & Ajah) for corporate districts and waterfront stays.',
       links: [
         { label: 'Browse Lagos Mainland stays', href: '/stays?area=Lagos+Mainland' },
-        { label: 'Browse Lagos Island stays', href: '/stays?side=Island' },
+        { label: 'Browse Lagos Island stays', href: '/stays?side=island' },
         { label: 'Read the Lagos area guide', href: '/lagos' },
       ],
     };
   }
 
-  if (q.includes('price') || q.includes('fee') || q.includes('usd') || q.includes('gbp') || q.includes('dollar') || q.includes('pound') || q.includes('caution') || q.includes('deposit') || q.includes('₦')) {
+  if (q.includes('price') || q.includes('fee') || q.includes('usd') || q.includes('gbp') || q.includes('dollar') || q.includes('pound') || q.includes('caution') || q.includes('deposit') || q.includes('₦') || q.includes('currency')) {
     return {
-      text: `You are currently viewing prices in ${currency}. Domestic NGN stay quotes include the owner’s base rate plus HAMLET’s 20% platform markup and any stated cleaning charge. USD ($) and GBP (£) stay quotes apply a single 10% FX buffer and settle in NGN. Refundable caution deposits are itemised separately with 0% markup and 0% FX buffer.`,
+      text: `Stay prices are automatically displayed in ${currency} based on your location. Domestic NGN stay quotes include the owner’s base rate plus HAMLET’s 20% platform markup and any stated cleaning charge. International USD ($) and GBP (£) quotes apply a single 10% FX buffer and settle in NGN via Paystack. Refundable caution deposits are itemised separately with 0% markup and 0% FX buffer.`,
       links: [
         { label: 'Explore stays', href: '/stays' },
         { label: 'Pricing & legal terms', href: '/legal' },
@@ -130,7 +138,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
   }
 
   return {
-    text: 'I am Horatio, your HAMLET Lagos guide. Ask me about Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja) vs Island neighbourhoods, 4-pillar property verification, NGN/USD/GBP pricing, 48-hour Paystack holds, or listing a property.',
+    text: 'I am Horatio, your HAMLET Lagos guide. Ask me about Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) vs Island neighbourhoods (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah), 4-pillar property verification, upfront pricing, 48-hour Paystack holds, or listing a property.',
     links: [
       { label: 'Explore all Lagos stays', href: '/stays' },
       { label: 'Safety & 4-pillar verification', href: '/safety' },
@@ -361,52 +369,16 @@ export function SiteProviders({ children }: { children: ReactNode }) {
   );
 }
 
-export function NextCurrencySwitcher({
-  compact = false,
-  variant = 'light',
-}: {
+/**
+ * Guest-facing currency switching UI has been intentionally removed so stay
+ * prices automatically adapt to the visitor's detected currency.
+ */
+export function NextCurrencySwitcher(_props?: {
   compact?: boolean;
   variant?: 'light' | 'dark';
 }) {
-  const { currency, setCurrency } = useCurrency();
-  const isDark = variant === 'dark';
-
-  return (
-    <div
-      role="group"
-      aria-label="Display currency"
-      className={`inline-flex min-h-[38px] shrink-0 items-center rounded-full border p-0.5 ${
-        isDark
-          ? 'border-white/20 bg-ink-900/90 text-ink-200 backdrop-blur-md'
-          : 'border-ink-200 bg-white text-ink-700 shadow-2xs'
-      }`}
-    >
-      {CURRENCY_ORDER.map((code: DisplayCurrency) => {
-        const active = currency === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setCurrency(code)}
-            aria-pressed={active}
-            aria-label={`Display prices in ${code}`}
-            className={`min-h-[32px] cursor-pointer rounded-full px-2.5 text-[11.5px] font-extrabold tracking-wide transition ${
-              active
-                ? isDark
-                  ? 'bg-brass-400 text-ink-950 shadow-2xs'
-                  : 'bg-ink-900 text-white shadow-2xs'
-                : isDark
-                  ? 'text-ink-200 hover:text-white'
-                  : 'text-ink-600 hover:text-ink-900'
-            }`}
-          >
-            {CURRENCY_SYMBOLS[code]}
-            {!compact && ` ${code}`}
-          </button>
-        );
-      })}
-    </div>
-  );
+  void _props;
+  return null;
 }
 
 const PRIMARY_NAV = [
@@ -507,7 +479,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100/90 bg-paper/92 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <div className="flex items-center gap-6">
+        <div className="flex min-w-0 items-center gap-6">
           <Link
             href="/"
             aria-label="HAMLET.REST home"
@@ -541,8 +513,6 @@ export function SiteHeader() {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <NextCurrencySwitcher />
-
           <button
             type="button"
             onClick={() => openHoratio()}
@@ -599,7 +569,12 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
-          <NextCurrencySwitcher compact />
+          <Link
+            href="/stays"
+            className="inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-3.5 text-xs font-bold text-ink-800 shadow-2xs transition hover:border-ink-900"
+          >
+            Stays
+          </Link>
           <button
             type="button"
             onClick={() => setDrawerOpen(prev => !prev)}
@@ -671,14 +646,7 @@ export function SiteHeader() {
                 <ArrowRight className="h-4 w-4 shrink-0 text-brass-600" />
               </button>
 
-              <div className="my-3 border-t border-ink-200/70 pt-3">
-                <p className="mb-2 px-1 text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
-                  Stay currency
-                </p>
-                <NextCurrencySwitcher />
-              </div>
-
-              <div className="grid gap-2.5 pt-2">
+              <div className="grid gap-2.5 border-t border-ink-200/70 pt-4">
                 {session ? (
                   <>
                     <Link href={workspaceHref} className="primary-button w-full">
@@ -738,7 +706,7 @@ export function SiteFooter() {
               <li><Link href="/stays" className="inline-block py-1 transition hover:text-white">All Lagos stays</Link></li>
               <li><Link href="/stays?area=Lagos+Mainland" className="inline-block py-1 transition hover:text-white">Lagos Mainland (Yaba, Shomolu, Surulere)</Link></li>
               <li><Link href="/stays?area=Victoria+Island" className="inline-block py-1 transition hover:text-white">Victoria Island &amp; Ikoyi</Link></li>
-              <li><Link href="/stays?area=Lekki+Phase+1" className="inline-block py-1 transition hover:text-white">Lekki Phase 1 &amp; Oniru</Link></li>
+              <li><Link href="/stays?area=Lekki+Phase+1" className="inline-block py-1 transition hover:text-white">Lekki Phase 1, Ikate &amp; Oniru</Link></li>
               <li><Link href="/lagos" className="inline-block py-1 transition hover:text-white">Lagos neighbourhood guide</Link></li>
             </ul>
           </div>
@@ -784,8 +752,8 @@ export function SiteFooter() {
 }
 
 /**
- * Currency-aware nightly price formatted from owner's listed rate B via `guestFacingNightlyNgn`
- * (`src/lib/pricing.ts`), respecting the active NGN / USD / GBP toggle.
+ * Currency-aware nightly price formatted from owner's listed rate B via `getValidGuestNightlyNgn`
+ * (`src/lib/discovery.ts` + `src/lib/pricing.ts`). Never displays a misleading ₦0 price.
  */
 export function StayNightlyPrice({
   ownerNightlyRateNgn,
@@ -795,7 +763,15 @@ export function StayNightlyPrice({
   className?: string;
 }) {
   const { formatPrice, currency } = useCurrency();
-  const domesticNightly = guestFacingNightlyNgn(ownerNightlyRateNgn);
+  const domesticNightly = getValidGuestNightlyNgn(ownerNightlyRateNgn);
+
+  if (domesticNightly === null) {
+    return (
+      <span className={`text-xs font-semibold text-ink-500 ${className}`}>
+        Price unavailable
+      </span>
+    );
+  }
 
   return (
     <span className={className}>
@@ -816,83 +792,191 @@ export function StayListingCard({
   stay: PublicStayRecord;
   querySuffix?: string;
 }) {
-  const cover = stay.image_urls?.[0] || '';
-  const isVerified =
-    stay.trust_label?.toLowerCase().includes('verified') &&
-    !stay.trust_label?.toLowerCase().includes('unverified');
-  const corridor = isMainlandArea(stay.area || '') ? 'Mainland' : 'Island';
+  const validImages = useMemo(
+    () => (stay.image_urls ?? []).map(url => url.trim()).filter(Boolean),
+    [stay.image_urls],
+  );
+  const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  const usableImages = useMemo(
+    () => validImages.filter(url => !failedUrls[url]),
+    [validImages, failedUrls],
+  );
+  const safeIdx = usableImages.length > 0 ? photoIndex % usableImages.length : 0;
+  const activePhoto = usableImages[safeIdx] || '';
+
+  const trust = getStayTrustStatus(stay);
+  const locationText = (stay.area || '').trim() || 'Location pending';
+  const corridor = stay.area ? (isMainlandArea(stay.area) ? 'Mainland' : 'Island') : null;
+  const accommodationLabel = formatAccommodationLabel(stay.property_type, stay.bedrooms);
+  const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
+  const amenities = (stay.amenities ?? []).filter(Boolean);
+  const visibleAmenities = amenities.slice(0, 3);
+  const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
+  const detailHref = `/stays/${encodeURIComponent(stay.id)}${querySuffix}`;
+
+  function stepPhoto(event: MouseEvent<HTMLButtonElement>, delta: number) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (usableImages.length <= 1) return;
+    setPhotoIndex(prev => (prev + delta + usableImages.length) % usableImages.length);
+  }
 
   return (
-    <Link
-      href={`/stays/${encodeURIComponent(stay.id)}${querySuffix}`}
-      className="group flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg"
-    >
+    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
-        {cover ? (
-          <img
-            src={cover}
-            alt={stay.title}
-            loading="lazy"
-            className="h-full w-full object-cover opacity-100 transition duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-clay to-paper text-4xl text-brass-600">
-            ⌂
-          </div>
-        )}
+        <Link
+          href={detailHref}
+          aria-label={`View ${stay.title} in ${locationText}`}
+          className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
+        >
+          {activePhoto ? (
+            <img
+              src={activePhoto}
+              alt={`${stay.title} in ${locationText} — photo ${safeIdx + 1} of ${usableImages.length}`}
+              loading="lazy"
+              decoding="async"
+              onError={() =>
+                setFailedUrls(prev => ({
+                  ...prev,
+                  [activePhoto]: true,
+                }))
+              }
+              className="h-full w-full object-cover opacity-100 transition duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full w-full place-items-center bg-gradient-to-br from-clay via-paper to-clay px-4 text-center">
+              <div>
+                <span aria-hidden="true" className="block font-display text-3xl text-brass-700/80">
+                  ⌂
+                </span>
+                <span className="mt-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink-600">
+                  Property photo not yet uploaded
+                </span>
+              </div>
+            </div>
+          )}
+        </Link>
+
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/55 to-transparent" />
-        <span className="absolute right-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
-          {corridor}
-        </span>
-        {stay.trust_label && (
-          <span
-            className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
-              isVerified
-                ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
-                : 'border border-ink-200 bg-white/95 text-ink-800'
-            }`}
-          >
-            {isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />}
-            {stay.trust_label}
+
+        {corridor && (
+          <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+            {corridor}
           </span>
+        )}
+
+        <span
+          className={`pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
+            trust.verified
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+              : 'border border-ink-200 bg-white/95 text-ink-900'
+          }`}
+        >
+          {trust.verified ? (
+            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+          ) : (
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
+          )}
+          <span>{trust.badge}</span>
+        </span>
+
+        {usableImages.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={e => stepPhoto(e, -1)}
+              aria-label={`Previous photo of ${stay.title}`}
+              className="absolute left-2.5 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ink-200/80 bg-white/95 text-ink-900 shadow-xs transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+            >
+              <ChevronLeft className="h-4 w-4 shrink-0" />
+            </button>
+            <button
+              type="button"
+              onClick={e => stepPhoto(e, 1)}
+              aria-label={`Next photo of ${stay.title}`}
+              className="absolute right-2.5 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ink-200/80 bg-white/95 text-ink-900 shadow-xs transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+            >
+              <ChevronRight className="h-4 w-4 shrink-0" />
+            </button>
+            <span className="pointer-events-none absolute bottom-2.5 right-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              {safeIdx + 1} / {usableImages.length}
+            </span>
+          </>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-between p-5">
-        <div>
+      <Link
+        href={detailHref}
+        className="flex flex-1 flex-col justify-between p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
+      >
+        <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{stay.area || 'Lagos'}</span>
-            {stay.property_type && (
-              <span className="text-ink-400">· {stay.property_type}</span>
-            )}
+            <span className="truncate">{locationText}</span>
+            <span className="text-ink-400">·</span>
+            <span className="truncate text-ink-600">{accommodationLabel}</span>
           </div>
-          <h3 className="mt-1.5 line-clamp-2 font-display text-lg font-bold leading-snug text-ink-900 transition group-hover:text-jade-600">
+
+          <h3 className="mt-1.5 line-clamp-2 font-display text-lg font-bold leading-snug text-ink-900 transition group-hover:text-jade-700">
             {stay.title}
           </h3>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-ink-500">
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-ink-600">
             <span className="inline-flex items-center gap-1">
               <BedDouble className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              {stay.bedrooms ?? 0} {stay.bedrooms === 1 ? 'bed' : 'beds'}
+              {bedroomLabel}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <Bath className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              {stay.bathrooms ?? 1} bath
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              Up to {stay.capacity ?? 2}
-            </span>
+            {typeof stay.bathrooms === 'number' && stay.bathrooms > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Bath className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+                {stay.bathrooms} {stay.bathrooms === 1 ? 'bath' : 'baths'}
+              </span>
+            )}
+            {typeof stay.capacity === 'number' && stay.capacity > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Users className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+                Up to {stay.capacity} {stay.capacity === 1 ? 'guest' : 'guests'}
+              </span>
+            )}
           </div>
+
+          {visibleAmenities.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {visibleAmenities.map(amenity => (
+                <span
+                  key={amenity}
+                  className="max-w-full truncate rounded-full border border-ink-100 bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink-700"
+                >
+                  {amenity}
+                </span>
+              ))}
+              {extraAmenitiesCount > 0 && (
+                <span className="rounded-full border border-ink-100 bg-paper px-2 py-0.5 text-[11px] font-semibold text-ink-500">
+                  +{extraAmenitiesCount} more
+                </span>
+              )}
+            </div>
+          )}
+
+          <p className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-ink-500">
+            <Calendar className="h-3 w-3 shrink-0 text-brass-600" />
+            <span>
+              {stay.first_available_date
+                ? `From ${stay.first_available_date} · Partner confirms dates`
+                : 'Request to book · Partner confirms dates'}
+            </span>
+          </p>
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
-          <StayNightlyPrice ownerNightlyRateNgn={Number(stay.nightly_rate || 0)} />
-          <span className="inline-flex items-center gap-1 text-xs font-extrabold text-ink-800 transition group-hover:translate-x-0.5">
+          <StayNightlyPrice ownerNightlyRateNgn={Number(stay.nightly_rate ?? 0)} />
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-ink-900 transition group-hover:translate-x-0.5">
             View stay <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
           </span>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </article>
   );
 }

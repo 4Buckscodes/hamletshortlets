@@ -1,5 +1,21 @@
+'use client';
+
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  CURRENCY_ORDER,
+  CURRENCY_SYMBOLS,
+  detectUserCurrency,
+  type DisplayCurrency,
+} from './currency-detect';
 import {
   buildDefaultExchangeRates,
   calculateInternationalStayQuote,
@@ -12,29 +28,54 @@ import {
 } from './pricing';
 import type { ExchangeRateConfig } from './types';
 
-export { buildDefaultExchangeRates, DEFAULT_NGN_PER_GBP, DEFAULT_NGN_PER_USD };
-
-export type DisplayCurrency = 'NGN' | 'USD' | 'GBP';
-
-export const CURRENCY_ORDER: readonly DisplayCurrency[] = ['NGN', 'USD', 'GBP'] as const;
-
-export const CURRENCY_SYMBOLS: Record<DisplayCurrency, string> = {
-  NGN: '₦',
-  USD: '$',
-  GBP: '£',
+export {
+  buildDefaultExchangeRates,
+  CURRENCY_ORDER,
+  CURRENCY_SYMBOLS,
+  DEFAULT_NGN_PER_GBP,
+  DEFAULT_NGN_PER_USD,
+  detectUserCurrency,
+  formatNaira,
+  type DisplayCurrency,
 };
 
-const STORAGE_KEY = 'hamlet_display_currency_v1';
+const LEGACY_STORAGE_KEY = 'hamlet_display_currency_v1';
+
+export function detectBrowserCurrency(): DisplayCurrency {
+  if (typeof window === 'undefined') return 'NGN';
+  let timeZone: string | null = null;
+  try {
+    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  } catch {
+    timeZone = null;
+  }
+  const locales =
+    typeof navigator !== 'undefined'
+      ? navigator.languages && navigator.languages.length > 0
+        ? navigator.languages
+        : navigator.language
+          ? [navigator.language]
+          : []
+      : [];
+
+  return detectUserCurrency({ timeZone, locales });
+}
 
 /** Raw conversion without the 10% international stay buffer (e.g. for refundable caution deposits). */
-export function convertNairaToUsd(amountNgn: number, ngnPerUsd: number = DEFAULT_NGN_PER_USD): number {
+export function convertNairaToUsd(
+  amountNgn: number,
+  ngnPerUsd: number = DEFAULT_NGN_PER_USD,
+): number {
   if (!Number.isFinite(amountNgn) || amountNgn <= 0) return 0;
   const safeRate = ngnPerUsd > 0 ? ngnPerUsd : DEFAULT_NGN_PER_USD;
   return roundCurrencyMinor(amountNgn / safeRate);
 }
 
 /** Raw conversion without the 10% international stay buffer (e.g. for refundable caution deposits). */
-export function convertNairaToGbp(amountNgn: number, ngnPerGbp: number = DEFAULT_NGN_PER_GBP): number {
+export function convertNairaToGbp(
+  amountNgn: number,
+  ngnPerGbp: number = DEFAULT_NGN_PER_GBP,
+): number {
   if (!Number.isFinite(amountNgn) || amountNgn <= 0) return 0;
   const safeRate = ngnPerGbp > 0 ? ngnPerGbp : DEFAULT_NGN_PER_GBP;
   return roundCurrencyMinor(amountNgn / safeRate);
@@ -46,7 +87,9 @@ export function convertDomesticStayToUsd(
   ngnPerUsd: number = DEFAULT_NGN_PER_USD,
 ): number {
   const base = convertNairaToUsd(domesticGuestAmountNgn, ngnPerUsd);
-  return roundCurrencyMinor(base + roundCurrencyMinor(base * INTERNATIONAL_CURRENCY_BUFFER_RATE));
+  return roundCurrencyMinor(
+    base + roundCurrencyMinor(base * INTERNATIONAL_CURRENCY_BUFFER_RATE),
+  );
 }
 
 /** International guest price in GBP including the 10% buffer applied once (§6.1). */
@@ -55,7 +98,9 @@ export function convertDomesticStayToGbp(
   ngnPerGbp: number = DEFAULT_NGN_PER_GBP,
 ): number {
   const base = convertNairaToGbp(domesticGuestAmountNgn, ngnPerGbp);
-  return roundCurrencyMinor(base + roundCurrencyMinor(base * INTERNATIONAL_CURRENCY_BUFFER_RATE));
+  return roundCurrencyMinor(
+    base + roundCurrencyMinor(base * INTERNATIONAL_CURRENCY_BUFFER_RATE),
+  );
 }
 
 export function formatUsd(amountUsd: number, opts?: { roundWhole?: boolean }): string {
@@ -83,7 +128,10 @@ export function formatGbp(amountGbp: number, opts?: { roundWhole?: boolean }): s
 }
 
 /** Formats minor units (cents for USD, pence for GBP, whole Naira for NGN). */
-export function formatMinorCurrency(minorAmount: number, currency: DisplayCurrency): string {
+export function formatMinorCurrency(
+  minorAmount: number,
+  currency: DisplayCurrency,
+): string {
   if (currency === 'USD') {
     return formatUsd(minorAmount / 100);
   }
@@ -126,14 +174,16 @@ export function formatStayAmount(
     typeof opts === 'object' ? (opts?.applyInternationalBuffer ?? true) : true;
 
   if (currency === 'USD') {
-    const ngnPerUsd = typeof opts === 'number' ? opts : (opts?.ngnPerUsd ?? DEFAULT_NGN_PER_USD);
+    const ngnPerUsd =
+      typeof opts === 'number' ? opts : (opts?.ngnPerUsd ?? DEFAULT_NGN_PER_USD);
     const usd = applyBuffer
       ? convertDomesticStayToUsd(domesticGuestAmountNgn, ngnPerUsd)
       : convertNairaToUsd(domesticGuestAmountNgn, ngnPerUsd);
     return formatUsd(usd, { roundWhole });
   }
   if (currency === 'GBP') {
-    const ngnPerGbp = typeof opts === 'number' ? opts : (opts?.ngnPerGbp ?? DEFAULT_NGN_PER_GBP);
+    const ngnPerGbp =
+      typeof opts === 'number' ? opts : (opts?.ngnPerGbp ?? DEFAULT_NGN_PER_GBP);
     const gbp = applyBuffer
       ? convertDomesticStayToGbp(domesticGuestAmountNgn, ngnPerGbp)
       : convertNairaToGbp(domesticGuestAmountNgn, ngnPerGbp);
@@ -143,7 +193,7 @@ export function formatStayAmount(
 }
 
 interface CurrencyContextValue {
-  /** Requested currency selected by the guest in the switcher. */
+  /** Automatically detected visitor currency before rate-availability check. */
   requestedCurrency: DisplayCurrency;
   /** Effective currency after checking rate availability & expiry (falls back to NGN if unavailable). */
   currency: DisplayCurrency;
@@ -174,22 +224,13 @@ interface CurrencyContextValue {
   formatCautionDeposit: (depositNgn: number, opts?: { roundWhole?: boolean }) => string;
   formatUnbufferedMoney: (amountNgn: number, opts?: { roundWhole?: boolean }) => string;
   /** Builds a full InternationalQuoteResult snapshot for a booking request or checkout. */
-  buildStayQuote: (domesticGuestAmountNgn: number, refundableDepositNgn?: number) => InternationalQuoteResult;
+  buildStayQuote: (
+    domesticGuestAmountNgn: number,
+    refundableDepositNgn?: number,
+  ) => InternationalQuoteResult;
 }
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
-
-function readInitialCurrency(): DisplayCurrency {
-  try {
-    if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved === 'NGN' || saved === 'USD' || saved === 'GBP') return saved;
-    }
-  } catch {
-    // Ignore storage access errors in restricted browsing contexts.
-  }
-  return 'NGN';
-}
 
 export function CurrencyProvider({
   children,
@@ -198,10 +239,65 @@ export function CurrencyProvider({
   children: ReactNode;
   exchangeRates?: ExchangeRateConfig[];
 }) {
-  const [requestedCurrency, setCurrencyState] = useState<DisplayCurrency>(readInitialCurrency);
+  // Always start with 'NGN' during SSR + initial hydration to avoid hydration mismatches,
+  // then immediately resolve the visitor's currency on mount via timezone/locale + /api/geo country headers.
+  const [requestedCurrency, setCurrencyState] = useState<DisplayCurrency>('NGN');
+
+  useEffect(() => {
+    let active = true;
+
+    try {
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {
+      // Ignore storage access errors in private browsing contexts.
+    }
+
+    const browserDetected = detectBrowserCurrency();
+    const timer = window.setTimeout(() => {
+      if (active) {
+        setCurrencyState(browserDetected);
+      }
+    }, 0);
+
+    fetch('/api/geo', { method: 'GET', credentials: 'same-origin' })
+      .then(async res => {
+        if (!res.ok) return null;
+        return (await res.json()) as {
+          country?: string | null;
+          currency?: DisplayCurrency;
+        };
+      })
+      .then(payload => {
+        if (!active || !payload?.country) return;
+        let timeZone: string | null = null;
+        try {
+          timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+        } catch {
+          timeZone = null;
+        }
+        const resolved = detectUserCurrency({
+          countryCode: payload.country,
+          timeZone,
+          locales:
+            typeof navigator !== 'undefined' ? navigator.languages : undefined,
+        });
+        setCurrencyState(resolved);
+      })
+      .catch(() => {
+        // Browser timezone/locale detection remains active when offline or without edge geo headers.
+      });
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   const exchangeRates = useMemo(
-    () => (configuredRates && configuredRates.length > 0 ? configuredRates : buildDefaultExchangeRates()),
+    () =>
+      configuredRates && configuredRates.length > 0
+        ? configuredRates
+        : buildDefaultExchangeRates(),
     [configuredRates],
   );
 
@@ -215,7 +311,11 @@ export function CurrencyProvider({
   );
 
   const requestedConfig =
-    requestedCurrency === 'USD' ? usdConfig : requestedCurrency === 'GBP' ? gbpConfig : null;
+    requestedCurrency === 'USD'
+      ? usdConfig
+      : requestedCurrency === 'GBP'
+        ? gbpConfig
+        : null;
 
   const probeQuote = useMemo(
     () =>
@@ -229,37 +329,22 @@ export function CurrencyProvider({
 
   const activeRateIsAvailable = probeQuote.ok;
   const currency: DisplayCurrency = probeQuote.ok ? requestedCurrency : 'NGN';
-  const rateFallbackReason = probeQuote.ok ? null : (probeQuote.fallbackReason ?? 'rate_unavailable');
+  const rateFallbackReason = probeQuote.ok
+    ? null
+    : (probeQuote.fallbackReason ?? 'rate_unavailable');
   const activeRateConfig = currency === 'NGN' ? null : requestedConfig;
 
   const ngnPerUsd = usdConfig?.ngnPerUnit ?? DEFAULT_NGN_PER_USD;
   const ngnPerGbp = gbpConfig?.ngnPerUnit ?? DEFAULT_NGN_PER_GBP;
-  const ngnPerUnit = currency === 'USD' ? ngnPerUsd : currency === 'GBP' ? ngnPerGbp : 1;
+  const ngnPerUnit =
+    currency === 'USD' ? ngnPerUsd : currency === 'GBP' ? ngnPerGbp : 1;
 
   const setCurrency = useCallback((next: DisplayCurrency) => {
     setCurrencyState(next);
-    try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY, next);
-      }
-    } catch {
-      // Ignore storage write errors.
-    }
   }, []);
 
   const toggleCurrency = useCallback(() => {
-    setCurrencyState(prev => {
-      const idx = CURRENCY_ORDER.indexOf(prev);
-      const next: DisplayCurrency = CURRENCY_ORDER[(idx + 1) % CURRENCY_ORDER.length];
-      try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(STORAGE_KEY, next);
-        }
-      } catch {
-        // Ignore storage write errors.
-      }
-      return next;
-    });
+    // Manual guest-facing currency switching is disabled; currency is detected automatically.
   }, []);
 
   const formatPrice = useCallback(

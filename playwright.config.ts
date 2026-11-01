@@ -8,6 +8,8 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: 'http://127.0.0.1:3000',
+    locale: 'en-NG',
+    timezoneId: 'Africa/Lagos',
     trace: 'on-first-retry',
   },
   projects: [
