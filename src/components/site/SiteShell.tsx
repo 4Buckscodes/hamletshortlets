@@ -844,7 +844,7 @@ export function StayListingCard({
         <span className="absolute right-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
           {corridor}
         </span>
-        {stay.trust_label && (
+        {stay.trust_label && !stay.preview_only && (
           <span
             className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
               isVerified
