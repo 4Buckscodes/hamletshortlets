@@ -121,15 +121,12 @@ export async function POST(request: Request) {
 
   const { data: property, error: propertyError } = await db
     .from('properties')
-    .select('id,status,nightly_rate,cleaning_fee,refundable_deposit,capacity,first_available_date,preview_only')
+    .select('id,status,nightly_rate,cleaning_fee,refundable_deposit,capacity,first_available_date')
     .eq('id', propertyId)
     .eq('status', 'approved')
     .maybeSingle();
   if (propertyError || !property) {
     return errorResponse('This stay is not currently available to request.', 404);
-  }
-  if (property.preview_only === true) {
-    return errorResponse('This property is a showcase preview and is not accepting booking requests.', 409);
   }
   const capacity = Number(property.capacity || 0);
   if (capacity > 0 && guests > capacity) {
