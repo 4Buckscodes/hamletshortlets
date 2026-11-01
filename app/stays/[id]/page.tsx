@@ -172,7 +172,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             {stay.area || wayfinderMeta.city || 'Lagos'}
           </span>
-          {stay.trust_label && (
+          {stay.trust_label && !stay.preview_only && (
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold normal-case text-emerald-800">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
               {stay.trust_label}
