@@ -320,6 +320,13 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:col-span-5">
+            {stay.preview_only ? (
+              <section className="rounded-3xl border border-brass-300 bg-brass-50 p-6">
+                <p className="text-xs font-extrabold uppercase tracking-wider text-brass-800">HAMLET property preview</p>
+                <h2 className="serif mt-2 text-2xl font-medium text-ink-900">This property is coming to HAMLET.</h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink-700">This is a showcase listing. Booking is not available for this property yet.</p>
+              </section>
+            ) : (
             <BookingRequestForm
               propertyId={stay.id}
               propertyTitle={stay.title}
@@ -329,6 +336,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               capacity={stay.capacity}
               firstAvailableDate={stay.first_available_date}
             />
+            )}
           </aside>
         </div>
       </main>
