@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const { data } = await db
     .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,image_urls,preview_only')
+    .select('title,area,property_type,bedrooms,capacity,image_urls')
     .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle();
@@ -75,9 +75,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${data.title} in ${data.area || 'Lagos'}`;
-  if (data.preview_only) {
-    return { title: `${title} | Property preview`, robots: { index: false, follow: false } };
-  }
   const description = `Explore ${data.title} in ${data.area || 'Lagos'} on HAMLET.REST. Compare stay details, verification status, house rules and transparent pricing before requesting to book.`;
   const image =
     Array.isArray(data.image_urls) &&
@@ -150,12 +147,10 @@ export default async function PropertyDetailPage({ params }: Props) {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      {!stay.preview_only && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
       <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
         <div className="mb-4">
@@ -172,7 +167,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             {stay.area || wayfinderMeta.city || 'Lagos'}
           </span>
-          {stay.trust_label && !stay.preview_only && (
+          {stay.trust_label && (
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold normal-case text-emerald-800">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
               {stay.trust_label}
@@ -325,13 +320,6 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:col-span-5">
-            {stay.preview_only ? (
-              <section className="rounded-3xl border border-brass-300 bg-brass-50 p-6">
-                <p className="text-xs font-extrabold uppercase tracking-wider text-brass-800">HAMLET property preview</p>
-                <h2 className="serif mt-2 text-2xl font-medium text-ink-900">This property is coming to HAMLET.</h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-700">This is a showcase listing. Booking is not available for this property yet.</p>
-              </section>
-            ) : (
             <BookingRequestForm
               propertyId={stay.id}
               propertyTitle={stay.title}
@@ -341,7 +329,6 @@ export default async function PropertyDetailPage({ params }: Props) {
               capacity={stay.capacity}
               firstAvailableDate={stay.first_available_date}
             />
-            )}
           </aside>
         </div>
       </main>
