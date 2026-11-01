@@ -2,6 +2,7 @@ import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { HomeMarketplaceExperience } from './home-slideshow';
+import { HomeShowcaseSection } from './home-showcase';
 
 export const revalidate = 60;
 
@@ -26,14 +27,13 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
-
       <main className="flex-1">
         <HomeMarketplaceExperience
           approvedStays={approvedStays}
           connected={connected}
         />
+        <HomeShowcaseSection />
       </main>
-
       <SiteFooter />
     </div>
   );
