@@ -23,9 +23,9 @@ This handbook is the canonical documentation set for HAMLET for Your Shortlets, 
 | [Release Operations Runbook](11_RELEASE_OPERATIONS_RUNBOOK.md) | Environment, deployment, rollback, payment and launch gates | Operations/engineering |
 | [Decision Register](12_DECISION_REGISTER.md) | Approved, open, superseded and retired decisions | Governance |
 | [Roadmap & Scope](13_ROADMAP_AND_SCOPE.md) | MVP, later releases, deferred and excluded capabilities | Product |
-| [Requirements Traceability](14_REQUIREMENTS_TRACEABILITY.md) | Requirement-to-code/schema/test/evidence status | Governance/QA |
+| [Requirements Traceability](14_REQUIREMENTS_TRACEABILITY.md) | Requirement-to-code/schema/test/evidence status | Governance/QA |\n| [Engineering Audit Supplement](15_ENGINEERING_AUDIT_SUPPLEMENT.md) | Source-level evidence for partner gates, booking integrity, pricing, rewards, payments and deposits | Engineering/QA |
 
-Documents marked “under consolidation” are planned canonical files and may not yet exist in this branch. Existing focused runbooks in `docs/` remain operational references until the corresponding handbook section supersedes them.
+All listed handbook files exist in this draft branch. They remain subject to review and may contain open questions or provisional status labels. Existing focused runbooks in `docs/` remain operational references until the corresponding handbook section is approved to supersede them.
 
 ## Source-of-truth rules
 
