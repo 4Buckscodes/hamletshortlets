@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowRight, ArrowUpRight, Building2 } from 'lucide-react';
-import { buildLagosGuideStructuredData } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
+import {
+  buildLagosNeighbourhoodGuideSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
   description:
     'Explore shortlets across Lagos Mainland — Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja GRA & environs — and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) on HAMLET.REST.',
-  alternates: { canonical: '/lagos' },
-};
+  pathname: '/lagos',
+});
 
 const MAINLAND_GUIDES = [
   {
@@ -88,16 +92,15 @@ const MAINLAND_CHIPS = [
 ] as const;
 
 export default function LagosGuidePage() {
-  const schema = buildLagosGuideStructuredData([...MAINLAND_GUIDES, ...ISLAND_GUIDES]);
+  const schema = buildLagosNeighbourhoodGuideSchema([
+    ...MAINLAND_GUIDES,
+    ...ISLAND_GUIDES,
+  ]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
+      <JsonLd id="hamlet-lagos-guide-jsonld" data={schema} />
 
       <main className="flex-1">
         {/* Full-bleed Lagos Hero */}

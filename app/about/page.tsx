@@ -9,7 +9,12 @@ import {
   ShieldCheck,
   Wifi,
 } from 'lucide-react';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  buildAboutPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 
 const HAMLET_BRAND_NAME = 'HAMLET for Your Shortlets';
 const HAMLET_USP = 'Shortlets, with accountability.';
@@ -17,12 +22,14 @@ const HAMLET_PARENT_COMPANY = 'Abundance Abodes';
 const HAMLET_POSITIONING = 'The Operating System for African Shortlets';
 const HAMLET_MANTRA = 'Make it easy. Make it trustworthy. Make it accountable.';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'About HAMLET — A Better Way to Book Shortlets in Lagos',
   description:
     'HAMLET.REST is a Nigerian shortlet marketplace and property operating platform by Abundance Abodes. Discover our Four Pillars of a Better Stay.',
-  alternates: { canonical: '/about' },
-};
+  pathname: '/about',
+});
+
+const ABOUT_PAGE_SCHEMA = buildAboutPageSchema();
 
 const FOUR_PILLARS = [
   {
@@ -63,6 +70,7 @@ export default function AboutPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-about-jsonld" data={ABOUT_PAGE_SCHEMA} />
 
       <main className="flex-1">
         {/* Midnight Navy Hero */}

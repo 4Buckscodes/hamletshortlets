@@ -9,14 +9,27 @@ import {
   Lock,
   ShieldCheck,
 } from 'lucide-react';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  buildInformationalPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Guest Safety & Booking Protection',
   description:
     'How HAMLET.REST handles four-pillar property verification, honest status labelling, Paystack payment protection, NDPR privacy, and guest issue resolution.',
-  alternates: { canonical: '/safety' },
-};
+  pathname: '/safety',
+});
+
+const SAFETY_PAGE_SCHEMA = buildInformationalPageSchema({
+  title: 'Guest Safety & Booking Protection | HAMLET',
+  description:
+    'How HAMLET handles four-pillar property verification, honest status labelling, Paystack payment protection, NDPR privacy, and guest issue resolution in Lagos.',
+  pathname: '/safety',
+  breadcrumbName: 'Guest Safety & Booking Protection',
+});
 
 const VERIFICATION_PILLARS = [
   {
@@ -72,6 +85,7 @@ export default function SafetyPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-safety-jsonld" data={SAFETY_PAGE_SCHEMA} />
 
       <main className="flex-1">
         <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">

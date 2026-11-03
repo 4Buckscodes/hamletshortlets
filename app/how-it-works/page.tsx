@@ -1,13 +1,26 @@
 import type { Metadata } from 'next';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import {
+  buildInformationalPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 import { CeremonyExplorer } from './ceremony-explorer';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'How HAMLET Works — Booking Shortlets Made Clear',
   description:
     'Four clear steps to find, request, confirm, and check into a verified Lagos shortlet on HAMLET.REST — with upfront pricing and server-verified Paystack checkout.',
-  alternates: { canonical: '/how-it-works' },
-};
+  pathname: '/how-it-works',
+});
+
+const HOW_IT_WORKS_SCHEMA = buildInformationalPageSchema({
+  title: 'How HAMLET Works — Booking Shortlets Made Clear',
+  description:
+    'Four clear steps to find, request, confirm, and check into a verified Lagos shortlet on HAMLET — with upfront pricing and server-verified Paystack checkout.',
+  pathname: '/how-it-works',
+  breadcrumbName: 'How HAMLET Works',
+});
 
 const LIFECYCLE_STATES = [
   { step: '1', code: 'requested', sub: 'Dates reviewed by partner' },
@@ -20,6 +33,7 @@ export default function HowItWorksPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-how-it-works-jsonld" data={HOW_IT_WORKS_SCHEMA} />
 
       <main className="flex-1">
         <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">

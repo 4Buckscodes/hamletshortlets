@@ -1,68 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.hamlet.rest/</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/stays</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/stays</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/lagos</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/lagos</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/how-it-works</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/how-it-works</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/safety</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/safety</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/faqs</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/faqs</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/about</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/about</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/legal</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/legal</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/partners/apply</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/partners/apply</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/llms.txt</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/partners/apply/form</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hamlet.rest/llms.txt</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.hamlet.rest/llms-full.txt</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://hamlet.rest/llms-full.txt</loc>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

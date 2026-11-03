@@ -1,12 +1,25 @@
-# HAMLET Shortlets — Verified Lagos Shortlets (https://www.hamlet.rest)
-# AI / LLM Context Index: https://www.hamlet.rest/llms.txt
-# Full AI / LLM Reference: https://www.hamlet.rest/llms-full.txt
+# HAMLET Shortlets — Verified Lagos Shortlets (https://hamlet.rest)
+# AI / LLM Context Index: https://hamlet.rest/llms.txt
+# Full AI / LLM Reference: https://hamlet.rest/llms-full.txt
 
 User-agent: *
 Allow: /
+Allow: /partners/apply
+Allow: /partners/apply/form
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /sitemap.xml
+Disallow: /account
+Disallow: /admin
+Disallow: /partners/bookings
+Disallow: /partners/availability
+Disallow: /partners/properties
+Disallow: /partners/earnings
+Disallow: /partners/profile
+Disallow: /partners/start
+Disallow: /signin
+Disallow: /api/
+Disallow: /legacy
 
 User-agent: GPTBot
 Allow: /
@@ -35,4 +48,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://www.hamlet.rest/sitemap.xml
+Sitemap: https://hamlet.rest/sitemap.xml

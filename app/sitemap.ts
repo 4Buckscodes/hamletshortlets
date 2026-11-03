@@ -1,12 +1,13 @@
 import type { MetadataRoute } from 'next';
+import { HAMLET_CANONICAL_ORIGIN } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
 
-const site = 'https://www.hamlet.rest';
+const site = HAMLET_CANONICAL_ORIGIN;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const routes: MetadataRoute.Sitemap = [
-    { url: site, lastModified: now, changeFrequency: 'daily', priority: 1 },
+    { url: `${site}/`, lastModified: now, changeFrequency: 'daily', priority: 1 },
     { url: `${site}/stays`, lastModified: now, changeFrequency: 'hourly', priority: 0.95 },
     { url: `${site}/lagos`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${site}/how-it-works`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -15,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${site}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${site}/legal`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${site}/partners/apply`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${site}/partners/apply/form`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${site}/llms.txt`, lastModified: now, changeFrequency: 'weekly', priority: 0.4 },
     { url: `${site}/llms-full.txt`, lastModified: now, changeFrequency: 'weekly', priority: 0.4 },
   ];

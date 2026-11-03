@@ -1,7 +1,7 @@
 import type { Property } from './types';
 
-export const HAMLET_SITE_URL = 'https://www.hamlet.rest';
-export const HAMLET_SITE_NAME = 'HAMLET Shortlets';
+export const HAMLET_SITE_URL = 'https://hamlet.rest';
+export const HAMLET_SITE_NAME = 'HAMLET';
 export const HAMLET_DEFAULT_TITLE =
   'HAMLET Shortlets | Find Your Next Stay in Lagos — Your stay, sorted.';
 export const HAMLET_DEFAULT_DESCRIPTION =
@@ -98,7 +98,7 @@ export function buildFaqStructuredData(
   };
 }
 
-/** Builds Schema.org LodgingBusiness + BreadcrumbList structured data for an approved Lagos shortlet. */
+/** Builds Schema.org VacationRental + BreadcrumbList structured data for an approved Lagos shortlet. */
 export function buildPropertyStructuredData(
   property: Pick<
     Property,
@@ -115,11 +115,67 @@ export function buildPropertyStructuredData(
   >,
   guestNightlyNgn: number,
 ): Record<string, unknown> {
-  const canonicalUrl = buildCanonicalUrl(`/stays/${encodeURIComponent(property.id)}`);
-  const images =
-    property.images.length > 0
-      ? property.images.map(img => resolveAbsoluteSeoUrl(img))
-      : [HAMLET_DEFAULT_OG_IMAGE];
+  const canonicalUrl = `${HAMLET_SITE_URL}/stays/${encodeURIComponent(property.id)}`;
+  const images = property.images
+    .filter(img => Boolean(img && img.trim()))
+    .map(img => resolveAbsoluteSeoUrl(img));
+
+  const vacationRental: Record<string, unknown> = {
+    '@type': 'VacationRental',
+    '@id': `${canonicalUrl}#vacation-rental`,
+    identifier: property.id,
+    name: property.title,
+    description: `${property.bedrooms}-bedroom ${property.type.toLowerCase()} in ${property.area}, Lagos sleeping up to ${property.capacity} guests on HAMLET.`,
+    url: canonicalUrl,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: property.address.trim(),
+      addressLocality: property.area,
+      addressRegion: 'Lagos',
+      addressCountry: 'NG',
+    },
+    containsPlace: {
+      '@type': 'Accommodation',
+      name: `${property.title} (${property.type})`,
+      additionalType: 'EntirePlace',
+      numberOfBedrooms: property.bedrooms,
+      numberOfBathroomsTotal: property.bathrooms,
+      occupancy: {
+        '@type': 'QuantitativeValue',
+        value: property.capacity,
+      },
+      ...(property.amenities.length > 0
+        ? {
+            amenityFeature: property.amenities.map(name => ({
+              '@type': 'LocationFeatureSpecification',
+              name,
+              value: true,
+            })),
+          }
+        : {}),
+    },
+  };
+
+  if (images.length > 0) {
+    vacationRental.image = images;
+  }
+
+  if (property.amenities.length > 0) {
+    vacationRental.amenityFeature = property.amenities.map(name => ({
+      '@type': 'LocationFeatureSpecification',
+      name,
+      value: true,
+    }));
+  }
+
+  if (Number.isFinite(guestNightlyNgn) && guestNightlyNgn > 0) {
+    vacationRental.offers = {
+      '@type': 'Offer',
+      url: canonicalUrl,
+      priceCurrency: 'NGN',
+      price: Math.round(guestNightlyNgn),
+    };
+  }
 
   return {
     '@context': 'https://schema.org',
@@ -131,13 +187,13 @@ export function buildPropertyStructuredData(
             '@type': 'ListItem',
             position: 1,
             name: 'Home',
-            item: `${HAMLET_SITE_URL}/`,
+            item: HAMLET_SITE_URL,
           },
           {
             '@type': 'ListItem',
             position: 2,
             name: 'Explore Lagos Stays',
-            item: buildCanonicalUrl('/stays'),
+            item: `${HAMLET_SITE_URL}/stays`,
           },
           {
             '@type': 'ListItem',
@@ -147,45 +203,7 @@ export function buildPropertyStructuredData(
           },
         ],
       },
-      {
-        '@type': 'LodgingBusiness',
-        '@id': `${canonicalUrl}#lodging`,
-        name: property.title,
-        description: `${property.bedrooms}-bedroom ${property.type.toLowerCase()} in ${property.area}, Lagos sleeping up to ${property.capacity} guests on HAMLET.`,
-        url: canonicalUrl,
-        image: images,
-        priceRange: `₦${Math.round(guestNightlyNgn).toLocaleString('en-NG')}/night`,
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: property.address,
-          addressLocality: property.area,
-          addressRegion: 'Lagos',
-          addressCountry: 'NG',
-        },
-        numberOfRooms: property.bedrooms,
-        amenityFeature: property.amenities.map(name => ({
-          '@type': 'LocationFeatureSpecification',
-          name,
-          value: true,
-        })),
-        containsPlace: {
-          '@type': 'Accommodation',
-          name: `${property.title} (${property.type})`,
-          numberOfBedrooms: property.bedrooms,
-          numberOfBathroomsTotal: property.bathrooms,
-          occupancy: {
-            '@type': 'QuantitativeValue',
-            maxValue: property.capacity,
-          },
-        },
-        makesOffer: {
-          '@type': 'Offer',
-          url: canonicalUrl,
-          priceCurrency: 'NGN',
-          price: Math.round(guestNightlyNgn),
-          availability: 'https://schema.org/InStock',
-        },
-      },
+      vacationRental,
     ],
   };
 }
@@ -194,7 +212,7 @@ export function buildPropertyStructuredData(
 export function buildLagosGuideStructuredData(
   neighbourhoods: ReadonlyArray<{ name: string; body: string; href: string }>,
 ): Record<string, unknown> {
-  const pageUrl = buildCanonicalUrl('/lagos');
+  const pageUrl = `${HAMLET_SITE_URL}/lagos`;
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -216,7 +234,7 @@ export function buildLagosGuideStructuredData(
         position: index + 1,
         name: area.name,
         description: area.body,
-        url: `${HAMLET_SITE_URL}/#${area.href}`,
+        url: `${HAMLET_SITE_URL}${area.href.startsWith('/') ? area.href : `/${area.href}`}`,
       })),
     },
   };

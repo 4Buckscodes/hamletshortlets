@@ -211,16 +211,41 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.locator('h1').first()).toBeVisible();
   });
 
-  test('serves crawler endpoints, /api/geo, and blocks unauthenticated API mutations', async ({
+  test('serves crawler endpoints, /api/geo, structured data, and blocks unauthenticated API mutations', async ({
     request,
+    page,
   }) => {
     const robots = await request.get('/robots.txt');
     expect(robots.status()).toBe(200);
-    expect(await robots.text()).toContain('Sitemap: https://www.hamlet.rest/sitemap.xml');
+    expect(await robots.text()).toContain('Sitemap: https://hamlet.rest/sitemap.xml');
 
     const sitemap = await request.get('/sitemap.xml');
     expect(sitemap.status()).toBe(200);
-    expect(await sitemap.text()).toContain('https://www.hamlet.rest/stays');
+    expect(await sitemap.text()).toContain('https://hamlet.rest/stays');
+
+    await page.goto('/about');
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    expect(canonical).toBe('https://hamlet.rest/about');
+
+    const jsonLdScripts = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    expect(jsonLdScripts.length).toBeGreaterThanOrEqual(2);
+    const parsedNodes = jsonLdScripts.flatMap(raw => {
+      const parsed = JSON.parse(raw) as { '@graph'?: Array<Record<string, unknown>>; '@type'?: string };
+      return Array.isArray(parsed['@graph']) ? parsed['@graph'] : [parsed];
+    });
+    const orgNodes = parsedNodes.filter(node => node['@type'] === 'Organization');
+    const siteNodes = parsedNodes.filter(node => node['@type'] === 'WebSite');
+    expect(orgNodes).toHaveLength(1);
+    expect(siteNodes).toHaveLength(1);
+    expect(orgNodes[0]?.name).toBe('HAMLET');
+    expect(orgNodes[0]?.url).toBe('https://hamlet.rest');
+    expect((orgNodes[0]?.parentOrganization as { name?: string })?.name).toBe(
+      'Abundance Abodes',
+    );
+    expect(parsedNodes.some(node => node['@type'] === 'AboutPage')).toBe(true);
+    expect(parsedNodes.some(node => node['@type'] === 'BreadcrumbList')).toBe(true);
 
     const geoGb = await request.get('/api/geo', {
       headers: { 'x-vercel-ip-country': 'GB' },

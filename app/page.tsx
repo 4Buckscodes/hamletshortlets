@@ -1,11 +1,35 @@
+import type { Metadata } from 'next';
 import showcaseInventory from '../docs/lagos-showcase-inventory.json';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { sanitizeShowcaseInventory } from '@/lib/discovery';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import {
+  buildHomepageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { HomeMarketplaceExperience } from './home-slideshow';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  ...buildPublicPageMetadata({
+    title: 'HAMLET.REST — Your stay, sorted.',
+    description:
+      'Verified shortlet apartments across Lagos Island and Lagos Mainland — clear details, trusted hosts, and straightforward booking requests.',
+    pathname: '/',
+  }),
+  title: {
+    absolute: 'HAMLET.REST — Your stay, sorted.',
+  },
+  alternates: {
+    canonical: 'https://hamlet.rest',
+    types: {
+      'text/plain': '/llms.txt',
+    },
+  },
+};
 
 const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
   showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
@@ -30,9 +54,12 @@ export default async function HomePage() {
     }
   }
 
+  const pageSchema = buildHomepageSchema({ approvedStays });
+
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-homepage-jsonld" data={pageSchema} />
 
       <main className="flex-1">
         <HomeMarketplaceExperience
