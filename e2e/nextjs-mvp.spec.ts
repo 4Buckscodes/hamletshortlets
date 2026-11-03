@@ -22,7 +22,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     }) => {
       const response = await page.goto(route);
       expect(response?.status()).toBe(200);
-      await expect(page.locator('main')).toBeVisible();
+      await expect(page.getByRole('main')).toBeVisible();
       await expect(page.locator('h1').first()).toBeVisible();
 
       const hasHorizontalOverflow = await page.evaluate(
@@ -227,12 +227,13 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       name: /Search Lagos shortlet stays on mobile/i,
     });
     await expect(mobileSearchForm).toBeVisible();
-    await expect(mobileSearchForm.getByRole('button', { name: 'Island' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    await mobileSearchForm.getByRole('button', { name: 'Mainland' }).click();
-    await expect(mobileSearchForm.getByRole('button', { name: 'Yaba' })).toBeVisible();
+    await expect(
+      mobileSearchForm.getByRole('button', { name: 'Island', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await mobileSearchForm.getByRole('button', { name: 'Mainland', exact: true }).click();
+    await expect(
+      mobileSearchForm.getByRole('button', { name: 'Yaba', exact: true }),
+    ).toBeVisible();
     await expect(mobileSearchForm.getByText('· INSPECTION')).toBeVisible();
 
     // Mobile full-screen navigation drawer
