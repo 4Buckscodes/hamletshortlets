@@ -19,7 +19,7 @@ import {
   type ShowcaseConceptRecord,
 } from '@/lib/discovery';
 import type { PublicStayRecord } from '@/lib/next-supabase';
-import { lagosIsoDateOffset } from '@/lib/pricing';
+import { APPROVED_OWNER_SERVICES_POLICY_COPY, lagosIsoDateOffset } from '@/lib/pricing';
 import { DiscoveryMarketplace } from '@/components/site/DiscoveryMarketplace';
 
 const HERO_COLLAGE = [
@@ -316,7 +316,7 @@ export function HomeMarketplaceExperience({
               Own or manage a verified shortlet in Lagos?
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-ink-600 sm:text-sm">
-              Property owners keep 100% of their listed nightly rate (0% owner fee). Learn how HAMLET verifies ownership, identity, authority, and physical condition before listings go live.
+              {APPROVED_OWNER_SERVICES_POLICY_COPY}
             </p>
           </div>
 

@@ -22,7 +22,7 @@ import {
   MAINLAND_AREAS,
   matchesLagosAreaFilter,
 } from '../lib/areas';
-import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
+import { addDaysToIsoDate, guestFacingNightlyNgn, lagosIsoDateOffset } from '../lib/pricing';
 import { computePropertyAvailabilitySummary } from '../lib/availability';
 
 const AMENITY_FILTERS = [
@@ -161,7 +161,7 @@ export default function Stays() {
     })
     .filter(p => !area || matchesLagosAreaFilter(p, area))
     .filter(p => p.capacity >= guests)
-    .filter(p => !maxPrice || Math.round(p.nightlyRate * 1.2) <= Number(maxPrice))
+    .filter(p => !maxPrice || guestFacingNightlyNgn(p.nightlyRate) <= Number(maxPrice))
     .filter(p => type === 'All types' || p.type === type)
     .filter(p => amenities.every(a => p.amenities.includes(a)))
     .sort((a, b) => {

@@ -3,7 +3,13 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { Upload, Star, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
-import { calculateGuestPricing, estimatePaystackLocalFee, guestFacingNightlyNgn } from '@/lib/pricing';
+import {
+  APPROVED_OWNER_SERVICES_POLICY_COPY,
+  calculateGuestPricing,
+  DEFAULT_PROPERTY_MEDIA_POLICY,
+  estimatePaystackLocalFee,
+  guestFacingNightlyNgn,
+} from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
@@ -253,12 +259,13 @@ export function PropertyListingWizard({
       }
 
       const uploadedUrls: string[] = [];
+      const maxMb = Math.round(DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes / (1024 * 1024));
       for (const file of files) {
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        if (!DEFAULT_PROPERTY_MEDIA_POLICY.allowedImageMimeTypes.includes(file.type)) {
           throw new Error(`"${file.name}" must be JPEG, PNG or WebP.`);
         }
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error(`"${file.name}" exceeds the 5 MB limit.`);
+        if (file.size > DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes) {
+          throw new Error(`"${file.name}" exceeds the ${maxMb} MB limit.`);
         }
         const safeName = file.name
           .toLowerCase()
@@ -288,7 +295,10 @@ export function PropertyListingWizard({
 
       setValues(prev => ({
         ...prev,
-        imageUrls: [...prev.imageUrls, ...uploadedUrls].slice(0, 12),
+        imageUrls: [...prev.imageUrls, ...uploadedUrls].slice(
+          0,
+          DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing,
+        ),
       }));
       setUploadStatus(
         `Uploaded ${uploadedUrls.length} photo${uploadedUrls.length === 1 ? '' : 's'}.`,
@@ -318,7 +328,10 @@ export function PropertyListingWizard({
         ...prev,
         imageUrls: prev.imageUrls.includes(trimmed)
           ? prev.imageUrls
-          : [...prev.imageUrls, trimmed].slice(0, 12),
+          : [...prev.imageUrls, trimmed].slice(
+              0,
+              DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing,
+            ),
       }));
       setUrlInput('');
       setError('');
@@ -652,7 +665,9 @@ export function PropertyListingWizard({
             <div className="rounded-2xl border-2 border-dashed border-ink-200 bg-paper p-5 text-center">
               <Upload className="mx-auto h-6 w-6 text-brass-600" />
               <p className="m-0 mt-2 text-sm font-bold text-ink-900">
-                Upload property photos (JPEG, PNG or WebP · max 5 MB each)
+                Upload property photos (JPEG, PNG or WebP · up to{' '}
+                {DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing} photos · max{' '}
+                {Math.round(DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes / (1024 * 1024))} MB each)
               </p>
               <p className="m-0 mt-1 text-xs text-ink-500">
                 Photos render at full natural clarity. Your first photo becomes the listing cover.
@@ -661,7 +676,7 @@ export function PropertyListingWizard({
                 <span>{uploading ? 'Uploading…' : 'Choose photos from device'}</span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept={DEFAULT_PROPERTY_MEDIA_POLICY.allowedImageMimeTypes.join(',')}
                   multiple
                   disabled={uploading}
                   onChange={e => void handleFileUpload(e)}
@@ -785,8 +800,8 @@ export function PropertyListingWizard({
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <FormField
-                label="Owner nightly base rate (NGN)"
-                hint="0% owner fee — you keep 100% of B."
+                label="Owner agreed nightly rate (NGN)"
+                hint="HAMLET adds a 20% guest service fee in the displayed guest rate."
               >
                 {fieldProps => (
                   <input
@@ -831,7 +846,7 @@ export function PropertyListingWizard({
               <FormField
                 label="Refundable caution deposit (NGN)"
                 optional
-                hint="0% markup · held separately."
+                hint="Excluded from stay pricing · held separately."
               >
                 {fieldProps => (
                   <input
@@ -859,41 +874,54 @@ export function PropertyListingWizard({
                 Live pricing preview (sample 3-night stay)
               </p>
               <div className="mt-3 space-y-1.5 text-ink-700">
-                <div className="flex justify-between">
-                  <span>Your net owner payout (3 nights · 0% owner fee)</span>
+                <div className="flex justify-between gap-2">
+                  <span>Owner accommodation rate (3 nights)</span>
                   <strong className="font-mono text-ink-900">
-                    ₦{samplePricing.ownerListedPriceNgn.toLocaleString('en-NG')}
+                    ₦{samplePricing.ownerAccommodationRateNgn.toLocaleString('en-NG')}
                   </strong>
                 </div>
-                <div className="flex justify-between">
-                  <span>Guest-facing nightly stay rate</span>
+                <div className="flex justify-between gap-2">
+                  <span>HAMLET guest service fee (20% of owner rate)</span>
+                  <strong className="font-mono text-ink-900">
+                    ₦{samplePricing.guestServiceFeeNgn.toLocaleString('en-NG')}
+                  </strong>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span>Displayed guest nightly stay rate (includes 20% fee)</span>
                   <strong className="font-mono text-ink-900">
                     {formatPrice(guestFacingNightlyNgn(values.nightlyRate || 0))} / night
                   </strong>
                 </div>
-                <div className="flex justify-between border-t border-ink-200 pt-2 text-sm font-bold text-ink-900">
-                  <span>Sample 3-night accommodation + mandatory charges</span>
+                {samplePricing.mandatoryChargesTotal > 0 && (
+                  <div className="flex justify-between gap-2">
+                    <span>Mandatory cleaning / turnover charges</span>
+                    <span className="font-mono font-semibold text-ink-900">
+                      {formatPrice(samplePricing.mandatoryChargesTotal)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
+                  <span>Guest-facing stay total (3 nights, fee included once)</span>
                   <span className="font-mono">
-                    {formatPrice(samplePricing.guestTotal)}
+                    {formatPrice(samplePricing.guestFacingTotalNgn)}
                   </span>
                 </div>
-                <div className="flex justify-between text-ink-500">
-                  <span>Estimated local Paystack processing fee at checkout</span>
+                <div className="flex justify-between gap-2 pt-1 text-ink-500">
+                  <span>Estimated local Paystack processing cost (provider reference, separate from 20% fee)</span>
                   <span className="font-mono">{formatPrice(samplePaystackFee.estimatedFeeNgn)}</span>
                 </div>
-                <div className="flex justify-between border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
-                  <span>Estimated guest payment total (before refundable deposit)</span>
-                  <span className="font-mono">{formatPrice(samplePaystackFee.estimatedGuestTotalNgn)}</span>
-                </div>
                 {samplePricing.refundableDeposit > 0 && (
-                  <div className="flex justify-between text-ink-500">
-                    <span>Separate refundable caution deposit (0% markup)</span>
+                  <div className="flex justify-between gap-2 text-ink-500">
+                    <span>Separate refundable caution deposit (excluded from stay price)</span>
                     <span className="font-mono">
                       {formatCautionDeposit(samplePricing.refundableDeposit)}
                     </span>
                   </div>
                 )}
               </div>
+              <p className="m-0 mt-3 border-t border-ink-200 pt-3 text-[11px] leading-relaxed text-ink-600">
+                {APPROVED_OWNER_SERVICES_POLICY_COPY}
+              </p>
             </div>
           </div>
         )}

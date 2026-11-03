@@ -35,10 +35,12 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content).toContain(HAMLET_LLMS_FULL_TXT_URL);
 
     // Commercial & Lagos-only scope accuracy
-    expect(content).toContain('https://www.hamlet.rest');
+    expect(content).toContain('https://hamlet.rest');
+    expect(content).toContain('Abundance Abodes');
     expect(content).toContain('Lagos Mainland');
     expect(content).toContain('Lagos Island');
-    expect(content).toContain('0% owner fee');
+    expect(content).not.toContain('0% owner fee');
+    expect(content).toContain("HAMLET's current pricing and service policies");
     expect(content).toContain('20%');
     expect(content).toContain('10% international currency buffer');
     expect(content).toContain('Paystack');
@@ -77,7 +79,7 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     ]) {
       expect(robots).toContain(`User-agent: ${bot}`);
     }
-    expect(robots).toContain('Sitemap: https://www.hamlet.rest/sitemap.xml');
+    expect(robots).toContain('Sitemap: https://hamlet.rest/sitemap.xml');
     expect(robots).not.toMatch(EXCLUDED_CITIES_RE);
   });
 
@@ -85,9 +87,9 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     const sitemap = readFileSync(join(ROOT, 'public', 'sitemap.xml'), 'utf8');
     expect(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(sitemap).toContain('<loc>https://www.hamlet.rest/</loc>');
-    expect(sitemap).toContain('<loc>https://www.hamlet.rest/llms.txt</loc>');
-    expect(sitemap).toContain('<loc>https://www.hamlet.rest/llms-full.txt</loc>');
+    expect(sitemap).toContain('<loc>https://hamlet.rest/</loc>');
+    expect(sitemap).toContain('<loc>https://hamlet.rest/llms.txt</loc>');
+    expect(sitemap).toContain('<loc>https://hamlet.rest/llms-full.txt</loc>');
     expect(sitemap).not.toMatch(EXCLUDED_CITIES_RE);
 
     const manifestRaw = readFileSync(join(ROOT, 'public', 'site.webmanifest'), 'utf8');
@@ -119,7 +121,7 @@ describe('index.html head tags & Schema.org structured data', () => {
   it('includes canonical, llms.txt alternates, raster Open Graph / Twitter Card tags, geo tags, and valid base JSON-LD', () => {
     const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
 
-    expect(html).toContain('<link rel="canonical" href="https://www.hamlet.rest/" />');
+    expect(html).toContain('<link rel="canonical" href="https://hamlet.rest/" />');
     expect(html).toContain('href="/llms.txt"');
     expect(html).toContain('href="/llms-full.txt"');
     expect(html).toContain('href="/site.webmanifest"');
@@ -190,7 +192,7 @@ describe('index.html head tags & Schema.org structured data', () => {
     ) as { '@graph': Array<{ '@type': string }> };
     expect(propSchema['@graph'].map(item => item['@type'])).toEqual([
       'BreadcrumbList',
-      'LodgingBusiness',
+      'VacationRental',
     ]);
 
     const lagosSchema = buildLagosGuideStructuredData([

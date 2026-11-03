@@ -1,18 +1,33 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { APPROVED_OWNER_SERVICES_POLICY_COPY } from '@/lib/pricing';
+import {
+  buildInformationalPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Legal, Privacy & Marketplace Terms',
   description:
     'Terms of use, Nigeria Data Protection Regulation (NDPR) privacy notice, pricing & caution deposit policies, and partner terms for HAMLET.REST.',
-  alternates: { canonical: '/legal' },
-};
+  pathname: '/legal',
+});
+
+const LEGAL_PAGE_SCHEMA = buildInformationalPageSchema({
+  title: 'Legal, Privacy & Marketplace Terms | HAMLET',
+  description:
+    'Terms of use, Nigeria Data Protection Regulation (NDPR) privacy notice, pricing & caution deposit policies, and partner terms for HAMLET in Lagos.',
+  pathname: '/legal',
+  breadcrumbName: 'Legal, Privacy & Marketplace Terms',
+});
 
 export default function LegalPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-legal-jsonld" data={LEGAL_PAGE_SCHEMA} />
 
       <main className="flex-1">
         <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
@@ -53,13 +68,13 @@ export default function LegalPage() {
             </h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
               <li>
-                <strong>Domestic stay pricing:</strong> Property owners set their base accommodation price (<em>B</em>) in NGN with 0% owner fee deducted from <em>B</em>. Guest-facing domestic accommodation pricing reflects the platform’s active markup rules plus any stated mandatory cleaning/turnover fee.
+                <strong>Domestic stay pricing:</strong> Property owners set their agreed accommodation rate (<em>B</em>) in NGN. HAMLET’s confirmed guest service fee is 20% of the owner’s agreed accommodation rate, added on top of <em>B</em> and included in the displayed guest-facing stay price (<em>B</em> × 1.20 — never added a second time at checkout), plus any stated mandatory cleaning or turnover charge. Payment processing costs and commercial allocations are accounted for separately in the settlement ledger.
               </li>
               <li>
                 <strong>USD &amp; GBP quotes:</strong> Foreign-currency quotes convert the domestic guest stay total using HAMLET’s active reference rate and apply a single 10% international FX buffer with a 30-minute quote validity window.
               </li>
               <li>
-                <strong>Refundable caution deposits:</strong> Itemised separately with 0% markup and 0% FX buffer. Any post-stay deduction requires documented inspection notes and evidence logged on the caution deposit record.
+                <strong>Refundable caution deposits:</strong> Itemised separately from accommodation pricing with no guest service fee and no FX buffer. Any post-stay deduction requires documented inspection notes and evidence logged on the caution deposit record.
               </li>
               <li>
                 <strong>Unpaid holds &amp; cancellations:</strong> Accepted requests hold dates for 48 hours awaiting payment before expiring automatically. Guests may cancel pending or unpaid requests directly from their account; post-payment cancellations and refunds follow the listing’s cancellation terms and documented ledger reconciliation.
@@ -78,10 +93,13 @@ export default function LegalPage() {
 
           <section data-hamlet-reveal id="partners" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
-              5. Partner, closing agent &amp; referral terms
+              5. Owner services, partner, closing agent &amp; referral terms
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Partner accounts require administrative review and approval. Closing agent commissions and direct partner referral rewards accrue only on completed, non-refunded bookings attributed under active platform rules (including self-referral prevention and the 90-day referral window). Administrative ledger statuses record reconciliation state and do not represent automated bank transfers.
+              {APPROVED_OWNER_SERVICES_POLICY_COPY}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Partner accounts require administrative review and approval for restricted capabilities. Closing agent commissions and direct partner referral rewards accrue only on completed, non-refunded bookings attributed under active platform rules (including self-referral prevention and the 90-day referral window). Administrative ledger statuses record reconciliation state and do not represent automated bank transfers.
             </p>
           </section>
 

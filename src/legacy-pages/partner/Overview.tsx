@@ -19,7 +19,7 @@ export default function PartnerOverview() {
   const approvedCount = myProps.filter(p => p.status === 'approved').length;
   const reviewingCount = myProps.filter(p => ['submitted', 'needs_correction'].includes(p.status)).length;
 
-  // Earnings: completed + confirmed booking revenue for my properties (owner proceeds = 0% owner fee)
+  // Earnings: completed + confirmed booking revenue for my properties
   const earnings = myBookings
     .filter(b => ['completed', 'confirmed', 'disputed'].includes(b.status))
     .reduce((sum, b) => sum + ownerProceeds({ accommodationSubtotal: b.accommodationSubtotal, mandatoryChargesTotal: b.mandatoryTotal }), 0);
@@ -28,7 +28,7 @@ export default function PartnerOverview() {
     { label: 'My properties', value: myProps.length, sub: `${approvedCount} approved · ${reviewingCount} in review`, Icon: Home, tone: 'text-brass-400' },
     { label: 'Awaiting my action', value: pending.length, sub: 'Requests needing availability check', Icon: Inbox, tone: 'text-sky-400' },
     { label: 'Confirmed bookings', value: confirmed.length, sub: `${myBookings.length} total requests`, Icon: CalendarDays, tone: 'text-jade-400' },
-    { label: 'Owner proceeds', value: formatNaira(earnings).replace('.00', ''), sub: '0% HAMLET owner fee — always', Icon: Banknote, tone: 'text-brass-300' },
+    { label: 'Owner proceeds', value: formatNaira(earnings).replace('.00', ''), sub: 'Agreed accommodation rate & charges', Icon: Banknote, tone: 'text-brass-300' },
   ];
 
   return (

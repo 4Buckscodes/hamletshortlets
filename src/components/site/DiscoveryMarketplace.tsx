@@ -920,7 +920,7 @@ export function DiscoveryMarketplace({
                 href="/partners/apply"
                 className="font-extrabold text-ink-950 underline underline-offset-4 hover:text-brass-700"
               >
-                Apply to list on HAMLET (0% owner fee) →
+                Apply to list on HAMLET →
               </Link>
             </div>
           </div>

@@ -342,7 +342,7 @@ export function Footer() {
               Partners
             </p>
             <ul className="mt-3 space-y-2 text-[13px] font-medium">
-              <li><Link to="/partner/register" className="transition hover:text-white">List a property (0% fee)</Link></li>
+              <li><Link to="/partner/register" className="transition hover:text-white">List a property</Link></li>
               <li><Link to="/signin" className="transition hover:text-white">Partner sign in</Link></li>
               <li><Link to="/legal/pricing" className="transition hover:text-white">Pricing & fees</Link></li>
               <li><Link to="/legal/trust" className="transition hover:text-white">Verification rules</Link></li>

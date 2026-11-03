@@ -90,7 +90,7 @@ const HORATIO_SUGGESTIONS = [
   'Compare Lagos Mainland vs Island areas',
   'How do stay prices and caution deposits work?',
   'When do I pay for a booking?',
-  'How do I list a property (0% owner fee)?',
+  'How do I list or partner on HAMLET?',
 ] as const;
 
 function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<HoratioMessage, 'id' | 'role'> {
@@ -109,7 +109,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('price') || q.includes('fee') || q.includes('usd') || q.includes('gbp') || q.includes('dollar') || q.includes('pound') || q.includes('caution') || q.includes('deposit') || q.includes('₦') || q.includes('currency')) {
     return {
-      text: `Stay prices are automatically displayed in ${currency} based on your location. Domestic NGN stay quotes include the owner’s base rate plus HAMLET’s 20% platform markup and any stated cleaning charge. International USD ($) and GBP (£) quotes apply a single 10% FX buffer and settle in NGN via Paystack. Refundable caution deposits are itemised separately with 0% markup and 0% FX buffer.`,
+      text: `Stay prices are automatically displayed in ${currency} based on your location. Domestic NGN stay prices include the owner’s agreed accommodation rate plus HAMLET’s 20% guest service fee (never added again at checkout) and any stated cleaning charge. International USD ($) and GBP (£) quotes apply a single 10% FX buffer and settle in NGN via Paystack. Refundable caution deposits are itemised separately without markup or FX buffer.`,
       links: [
         { label: 'Explore stays', href: '/stays' },
         { label: 'Pricing & legal terms', href: '/legal' },
@@ -119,7 +119,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('partner') || q.includes('owner') || q.includes('list') || q.includes('agent') || q.includes('commission')) {
     return {
-      text: 'Property owners keep 100% of their listed base nightly rate (0% owner fee). Verified closing agents earn 10% of the owner base rate on attributed stays, and eligible referring partners earn 2.5% during their active referral window.',
+      text: "HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies. Verified closing agents earn eligible commissions on attributed stays, and referring partners earn eligible rewards during an active referral window.",
       links: [
         { label: 'Apply as a partner', href: '/partners/apply' },
         { label: 'Partner workspace', href: '/partners' },
@@ -695,6 +695,15 @@ export function SiteFooter() {
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-ink-300">
               Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island — built by Abundance Abodes.
+            </p>
+            <p className="mt-2.5 text-xs text-ink-300">
+              Contact:{' '}
+              <a
+                href="mailto:hello@hamlet.rest"
+                className="font-semibold text-brass-300 transition hover:text-white"
+              >
+                hello@hamlet.rest
+              </a>
             </p>
           </div>
 

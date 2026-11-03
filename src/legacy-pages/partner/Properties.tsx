@@ -7,7 +7,7 @@ import { useToast } from '../../lib/toast';
 import { PropertyStatusPill, DocStatusBadge } from '../../components/Badges';
 import { WayfinderEditorModal } from '../../components/WayfinderEditorModal';
 import { myPartnerProperties } from '../../lib/partnerUtils';
-import { formatNaira, formatDate } from '../../lib/pricing';
+import { formatNaira, formatDate, guestFacingNightlyNgn } from '../../lib/pricing';
 import { computePropertyAvailabilitySummary, formatBlockTypeLabel } from '../../lib/availability';
 import { computeWayfinderReadiness } from '../../lib/wayfinder';
 import { AREAS } from '../../lib/seed';
@@ -256,7 +256,7 @@ export default function PartnerProperties() {
                   <span className="inline-flex items-center gap-1.5"><Bath size={13} />{p.bathrooms} ba</span>
                   <span className="inline-flex items-center gap-1.5"><Users size={13} />sleeps {p.capacity}</span>
                   <span className="font-bold text-brass-300">Owner: {formatNaira(p.nightlyRate)}/night</span>
-                  <span className="text-ink-400">Guest (20% markup): {formatNaira(Math.round(p.nightlyRate * 1.2))}/night</span>
+                  <span className="text-ink-400">Guest (incl. 20% fee): {formatNaira(guestFacingNightlyNgn(p.nightlyRate))}/night</span>
                 </p>
                 <p className="mt-1.5 text-[11px] font-medium text-ink-500">{p.address}</p>
                 <p className="mt-1 text-[10.5px] font-semibold text-ink-500">Authority: {p.authorityBasis}</p>

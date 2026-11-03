@@ -22,7 +22,7 @@ import {
 import { useHamlet } from '../lib/store';
 import { useCurrency } from '../lib/currency';
 import { matchesLagosAreaFilter, LAGOS_AREAS } from '../lib/areas';
-import { formatNaira } from '../lib/pricing';
+import { APPROVED_OWNER_SERVICES_POLICY_COPY, formatNaira, guestFacingNightlyNgn } from '../lib/pricing';
 import { myPartnerProperties, propertyIdsOf } from '../lib/partnerUtils';
 
 interface HoratioContextValue {
@@ -201,7 +201,7 @@ function HoratioDrawer({
       // 4. Pricing, fees, FX buffer, or caution deposit questions
       if (/(price|fee|markup|deposit|caution|usd|gbp|dollar|pound|currency|commission|owner)/.test(q)) {
         return {
-          text: 'HAMLET uses one central pricing calculation across search, listing detail, checkout, and the ledger: Owners pay 0% and receive 100% of their listed NGN rate (B). Domestic guest accommodation is B × 1.20 (20% markup). USD ($) and GBP (£) stay quotes convert at the active configured FX rate plus a single 10% currency buffer, settling transparently in NGN via Paystack. Refundable caution deposits are itemised separately, never marked up or buffered, and refunded after post-checkout inspection review.',
+          text: `HAMLET uses one central pricing calculation across search, listing detail, checkout, and the ledger: HAMLET’s confirmed guest service fee is 20% of the owner’s agreed NGN rate (B), included in the displayed domestic guest stay price (B × 1.20 — never added again at checkout). USD ($) and GBP (£) stay quotes convert at the active configured FX rate plus a single 10% currency buffer, settling transparently in NGN via Paystack. Refundable caution deposits are itemised separately, never marked up or buffered, and refunded after post-checkout inspection review. ${APPROVED_OWNER_SERVICES_POLICY_COPY}`,
           links: [
             { label: 'Fees & settlement policy', to: '/legal/pricing' },
             { label: 'Partner commercial terms', to: '/partner/register' },
@@ -272,7 +272,7 @@ function HoratioDrawer({
             ...top.map(p => ({
               label: p.title,
               to: `/stays/${p.id}`,
-              meta: `${p.area} · ${p.bedrooms} bd · up to ${p.capacity} guests · ${formatStayPrice(Math.round(p.nightlyRate * 1.2))}/night (+ ${formatNaira(p.deposit)} refundable deposit)`,
+              meta: `${p.area} · ${p.bedrooms} bd · up to ${p.capacity} guests · ${formatStayPrice(guestFacingNightlyNgn(p.nightlyRate))}/night (+ ${formatNaira(p.deposit)} refundable deposit)`,
             })),
             {
               label: `View all ${matches.length} matching stay${matches.length === 1 ? '' : 's'}`,
@@ -357,7 +357,7 @@ function HoratioDrawer({
       : role === 'partner'
         ? [
             'Summarise my properties & booking requests',
-            'Explain partner commissions & 0% owner fee',
+            'Explain partner commissions & listing terms',
             'How does verification work?',
           ]
         : [

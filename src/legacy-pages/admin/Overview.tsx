@@ -39,7 +39,7 @@ export default function AdminOverview() {
   const kpis = [
     { label: 'Approved properties', value: `${approved.length}/50`, sub: inReview.length > 0 ? `${inReview.length} in review pipeline` : 'Supply target met or in pipeline', Icon: Home, tone: approved.length >= 50 ? 'text-jade-400' : 'text-brass-400' },
     { label: 'Confirmed + completed stays', value: String(confirmedCompleted), sub: 'Pilot success = completed bookings', Icon: BadgeCheck, tone: 'text-jade-400' },
-    { label: '20% domestic stay markup', value: formatNaira(guestFees), sub: `HAMLET net allocation: ${formatNaira(hamletNetAllocation)} · 0% owner fee`, Icon: Receipt, tone: 'text-brass-300' },
+    { label: '20% guest service fee pool', value: formatNaira(guestFees), sub: `HAMLET net allocation: ${formatNaira(hamletNetAllocation)}`, Icon: Receipt, tone: 'text-brass-300' },
     { label: 'Open issues', value: String(openIssues.length), sub: critical.length > 0 ? `${critical.length} critical/escalated` : 'None critical', Icon: LifeBuoy, tone: critical.length > 0 ? 'text-red-400' : 'text-sky-400' },
   ];
 

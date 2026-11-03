@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Check, UploadCloud, ShieldCheck, BadgeCheck,
 import { useHamlet } from '../../lib/store';
 import { useToast } from '../../lib/toast';
 import { AREAS } from '../../lib/seed';
+import { calculateGuestPricing } from '../../lib/pricing';
 import { validateCoordinates } from '../../lib/wayfinder';
 import type { AvailabilityBlockType, AvailabilityConfirmationStatus, PropertyAvailabilityBlock } from '../../lib/types';
 
@@ -361,14 +362,19 @@ export default function NewProperty() {
               <label><span className="label-dark">Refundable caution deposit (₦)</span><input type="number" min={0} step={10000} className="input-dark" value={deposit} onChange={e => setDeposit(Number(e.target.value))} /></label>
             </div>
             <div className="rounded-2xl border border-brass-500/30 bg-brass-500/5 p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Single-source pricing preview (0% owner fee)</p>
-              <dl className="mt-2 grid gap-1 text-[12px] font-semibold text-ink-100">
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Your owner accommodation proceeds (100% of B)</dt><dd className="shrink-0 tabular-nums text-jade-300">₦{nightlyRate.toLocaleString()} / night</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET domestic markup (20% — guest pays, owner pays 0%)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 0.20).toLocaleString()} / night</dd></div>
-                <div className="flex justify-between gap-3 font-bold text-brass-200"><dt className="min-w-0">Domestic guest nightly accommodation rate (B × 1.20)</dt><dd className="shrink-0 tabular-nums">₦{Math.round(nightlyRate * 1.20).toLocaleString()} / night</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Mandatory cleaning & turnover (owner settlement)</dt><dd className="shrink-0 tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable caution deposit (tracked separately, excluded from markup)</dt><dd className="shrink-0 tabular-nums">₦{deposit.toLocaleString()}</dd></div>
-              </dl>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Single-source pricing preview</p>
+              {(() => {
+                const nightlyPreview = calculateGuestPricing({ accommodationSubtotal: nightlyRate });
+                return (
+                  <dl className="mt-2 grid gap-1 text-[12px] font-semibold text-ink-100">
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">Owner agreed accommodation rate (B)</dt><dd className="shrink-0 tabular-nums text-jade-300">₦{nightlyPreview.ownerAccommodationRateNgn.toLocaleString()} / night</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">HAMLET guest service fee (20% of B)</dt><dd className="shrink-0 tabular-nums">₦{nightlyPreview.guestServiceFeeNgn.toLocaleString()} / night</dd></div>
+                    <div className="flex justify-between gap-3 font-bold text-brass-200"><dt className="min-w-0">Displayed guest nightly accommodation rate (includes 20% fee)</dt><dd className="shrink-0 tabular-nums">₦{nightlyPreview.guestFacingAccommodationNgn.toLocaleString()} / night</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">Mandatory cleaning & turnover</dt><dd className="shrink-0 tabular-nums">₦{cleaningFee.toLocaleString()}</dd></div>
+                    <div className="flex justify-between gap-3"><dt className="min-w-0">Refundable caution deposit (tracked separately, excluded from stay price)</dt><dd className="shrink-0 tabular-nums">₦{deposit.toLocaleString()}</dd></div>
+                  </dl>
+                );
+              })()}
             </div>
 
             {/* Calendar & Occupancy Onboarding (§3.3) */}

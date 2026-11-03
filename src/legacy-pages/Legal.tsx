@@ -86,8 +86,8 @@ const CONTENT: Record<string, { title: string; intro: string; sections: { h: str
       'One shared pricing engine computes every guest-facing total on HAMLET — the same number on the listing, in your booking request, at payment and in the ledger.',
     sections: [
       {
-        h: '20% domestic accommodation markup & commercial mandates',
-        b: 'Owners pay 0% — owners receive 100% of their listed NGN accommodation rate (B). Domestic guest accommodation price is B × 1.20. Standard markup allocation covers closing agent commission (10%), direct partner referral reward during an active 90-day window (2.5%, when eligible), HAMLET allocation (5% with referrer or 7.5% without), and an internal payment & settlement cost reserve (2.5%). Owners and authorised partners may also agree recorded property-specific mandates prior to booking.',
+        h: '20% guest service fee & commercial mandates',
+        b: "HAMLET’s confirmed guest service fee is 20% of the owner’s agreed NGN accommodation rate (B), added on top of B and included in the displayed domestic guest stay price (B × 1.20 — never added again at checkout). Standard allocation covers closing agent commission (10%), direct partner referral reward during an active 90-day window (2.5%, when eligible), HAMLET allocation (5% with referrer or 7.5% without), and an internal payment & settlement cost reserve (2.5%). HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.",
       },
       {
         h: 'Worked example (B = ₦200,000)',

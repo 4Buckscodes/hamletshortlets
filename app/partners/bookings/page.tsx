@@ -225,7 +225,7 @@ export default function PartnerBookingsPage() {
 
                 <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-600">
                   <span>
-                    Owner net stay base (<em>B</em>):{' '}
+                    Owner accommodation rate (<em>B</em>):{' '}
                     <strong className="font-mono text-ink-900">
                       ₦{Number(b.accommodation_subtotal || 0).toLocaleString('en-NG')}
                     </strong>

@@ -8,7 +8,7 @@
 HAMLET.REST is a verification-led shortlet marketplace for Lagos. It supports public discovery, guest booking requests, partner property workflows, and admin operations for listing review, booking oversight, issue resolution and ledger reconciliation.
 
 ## Commercial model
-The approved domestic model adds a **20% pool to the owner's listed accommodation base price**. The legacy 3% guest-only fee is retired. Pool allocation, the 2.5% referrer reward, reserve treatment and international FX buffer are specified in [MVP_SPECIFICATION.md](MVP_SPECIFICATION.md) and [docs/PRICING_AND_PAYMENT_CONTRACT.md](docs/PRICING_AND_PAYMENT_CONTRACT.md). Provider-fee pass-through remains a separate unresolved launch decision.
+HAMLET's confirmed guest service fee is **20% of the owner's agreed accommodation rate (`B`)**, added on top of `B` and included in the displayed guest-facing stay price (`B × 1.20` — never added a second time at checkout). Commercial allocations, the 2.5% partner referral reward, payment-reserve reconciliation, international FX buffer, and configurable (currently inactive) owner service policies are specified in [MVP_SPECIFICATION.md](MVP_SPECIFICATION.md), [docs/PRICING_AND_PAYMENT_CONTRACT.md](docs/PRICING_AND_PAYMENT_CONTRACT.md), and [docs/OWNER_COMMERCIAL_AND_STORAGE_ARCHITECTURE.md](docs/OWNER_COMMERCIAL_AND_STORAGE_ARCHITECTURE.md). Provider-fee pass-through and future owner service schedules remain subject to founder and legal sign-off.
 
 ## Local development
 1. Copy `.env.example` to `.env.local` and configure the required Supabase credentials.
@@ -27,6 +27,7 @@ npm run test:e2e
 - [MVP Specification](MVP_SPECIFICATION.md) — scope, approved commercial model and acceptance criteria.
 - [Commercial Model Reconciliation](docs/COMMERCIAL_MODEL_RECONCILIATION.md) — decision record and alignment checklist.
 - [Pricing & Payment Contract](docs/PRICING_AND_PAYMENT_CONTRACT.md) — authoritative calculation, allocation, FX and payment integrity rules.
+- [Owner Commercial & Storage Architecture](docs/OWNER_COMMERCIAL_AND_STORAGE_ARCHITECTURE.md) — configurable owner service fees, verification charges, upload limits, storage quotas and billing gap plan.
 - [Release Readiness](docs/RELEASE_READINESS.md) — evidence-based production gates.
 - [Route Parity](docs/ROUTE_PARITY.md) — legacy to Next.js parity.
 - [Database Release Checklist](docs/DATABASE_RELEASE_CHECKLIST.md) — migration review and verification.

@@ -71,13 +71,13 @@ export default function PartnerEarnings() {
       <div className="mt-3 flex items-start gap-3 rounded-2xl border border-brass-500/30 bg-brass-500/5 px-4 py-3.5 text-[12px] font-semibold leading-relaxed text-brass-200">
         <Info size={16} className="mt-0.5 shrink-0" />
         <span>
-          <strong>HAMLET owner fee is 0%.</strong> Owners receive 100% of their listed accommodation rate (B) + mandatory charges. Guests pay HAMLET’s 20% domestic accommodation markup, which funds closing agent commissions (10% of B) and direct partner referral rewards (2.5% of B during an active 90-day window) without ever reducing owner proceeds.
+          HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET&apos;s current pricing and service policies. Guests pay HAMLET’s confirmed 20% guest service fee in the displayed stay price, funding eligible closing agent commissions (10% of B) and direct partner referral rewards (2.5% of B during an active 90-day window).
         </span>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Owner / property proceeds', value: formatNaira(totalProceeds), sub: `${settleable.length} bookings · ${totalNights} nights (0% owner fee)`, Icon: Banknote },
+          { label: 'Owner / property proceeds', value: formatNaira(totalProceeds), sub: `${settleable.length} bookings · ${totalNights} nights`, Icon: Banknote },
           { label: 'Closing agent commissions (10%)', value: formatNaira(totalClosingCommission), sub: `${myClosedBookings.length} booking(s) closed with your agent code`, Icon: HandCoins },
           { label: 'Partner referral rewards (2.5%)', value: formatNaira(totalReferralEarned), sub: `${myReferralRewards.filter(r => r.rewardAmountNgn > 0).length} recurring reward(s) · 90-day window`, Icon: Gift },
           { label: 'My ledger entries', value: String(myLedger.length), sub: 'Auditable settlement & payout status', Icon: Receipt },
@@ -100,7 +100,7 @@ export default function PartnerEarnings() {
       <h2 className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Property owner / manager booking proceeds</h2>
       <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
-          <thead className="bg-ink-900"><tr><th className="th">Booking</th><th className="th">Stay</th><th className="th">Owner Rate (B)</th><th className="th">Mandatory</th><th className="th">Your Proceeds (0% fee)</th><th className="th">Status</th></tr></thead>
+          <thead className="bg-ink-900"><tr><th className="th">Booking</th><th className="th">Stay</th><th className="th">Owner Rate (B)</th><th className="th">Mandatory</th><th className="th">Owner Settlement</th><th className="th">Status</th></tr></thead>
           <tbody className="divide-y divide-ink-800 bg-ink-900/60">
             {myBookings.map(b => (
               <tr key={b.id} className="transition hover:bg-ink-850">

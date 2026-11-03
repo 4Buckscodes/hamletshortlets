@@ -6,20 +6,25 @@ import {
   sanitizeShowcaseInventory,
   validateStayDates,
 } from '@/lib/discovery';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
+import {
+  buildPropertyListingPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteShell';
 import { StaysExplorer } from './stays-explorer';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Explore Lagos Shortlet Stays',
   description:
     'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
-  alternates: { canonical: '/stays' },
-};
+  pathname: '/stays',
+});
 
 const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
   showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
@@ -81,9 +86,12 @@ export default async function StaysCataloguePage({
     }
   }
 
+  const staysPageSchema = buildPropertyListingPageSchema({ approvedStays });
+
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
+      <JsonLd id="hamlet-stays-jsonld" data={staysPageSchema} />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-col gap-3 border-b border-ink-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">

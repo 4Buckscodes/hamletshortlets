@@ -33,7 +33,7 @@ import {
 
 const DEMO_ACCOUNTS = [
   { role: 'Guest', email: 'guest@hamlet.ng', desc: 'Book stays, track lifecycle, pay, report issues', Icon: User, color: 'text-emerald-800 bg-emerald-50 border-emerald-200' },
-  { role: 'Partner', email: 'partner@hamlet.ng', desc: 'Owner portal — properties, bookings, earnings (0% owner fee)', Icon: Building2, color: 'text-brass-800 bg-brass-100/70 border-brass-300' },
+  { role: 'Partner', email: 'partner@hamlet.ng', desc: 'Owner portal — properties, bookings, earnings & settlement', Icon: Building2, color: 'text-brass-800 bg-brass-100/70 border-brass-300' },
   { role: 'Admin', email: 'admin@hamlet.ng', desc: 'HAMLET operations — reviews, ledger, issues, audit log', Icon: KeyRound, color: 'text-ink-800 bg-ink-100 border-ink-300' },
 ];
 
@@ -270,7 +270,7 @@ export default function SignIn() {
             <div className="mt-6 space-y-2.5 text-xs font-semibold text-ink-100">
               {[
                 'Four-pillar verification on every listing',
-                'Upfront pricing — 0% owner fee, separate caution deposit',
+                'Upfront pricing — 20% guest fee included once, separate caution deposit',
                 'Paystack server-verified confirmation',
               ].map(t => (
                 <p key={t} className="flex items-start gap-2.5">

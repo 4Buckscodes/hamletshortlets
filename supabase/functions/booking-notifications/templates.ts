@@ -404,7 +404,7 @@ export function renderBookingNotificationEmail(input: {
         { label: 'Requested dates', value: datesSummary },
         { label: 'Guests', value: guestsSummary },
         { label: 'Guest name', value: guestName },
-        { label: 'Your proceeds (0% owner fee)', value: partnerProceedsFmt },
+        { label: 'Agreed accommodation rate & charges', value: partnerProceedsFmt },
         { label: 'Current status', value: 'Requested — awaiting your availability decision' },
         ...(specialRequests ? [{ label: 'Guest note', value: specialRequests }] : []),
       ];
