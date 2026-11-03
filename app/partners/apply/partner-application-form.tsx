@@ -64,6 +64,13 @@ const INITIAL_DRAFT: PartnerApplyDraft = {
   confirmReviewConsent: false,
 };
 
+const NETWORK_ROLE_TO_APPLICATION_ROLE: Record<string, string> = {
+  property_owner: 'Property owner',
+  authorised_manager: 'Authorised manager',
+  multi_property_operator: 'Multi-property operator',
+  closing_agent: 'Closing agent',
+};
+
 const ROLE_OPTIONS = [
   {
     value: 'Property owner',
@@ -190,21 +197,31 @@ export default function PartnerApplicationForm() {
     setUserId(user.id);
     setUserEmail(user.email || '');
 
-    const [{ data: profile }, { data: apps }] = await Promise.all([
-      db.from('profiles').select('role,full_name,phone,company').eq('id', user.id).maybeSingle(),
-      db
-        .from('partner_applications')
-        .select(
-          'id,full_name,phone,company,role,areas,properties_count,motivation,referred_by_code,status,review_note,submitted_at',
-        )
-        .eq('applicant_id', user.id)
-        .order('submitted_at', { ascending: false })
-        .limit(1),
-    ]);
+    const [{ data: profile }, { data: apps }, { data: networkMembership }] =
+      await Promise.all([
+        db.from('profiles').select('role,full_name,phone,company').eq('id', user.id).maybeSingle(),
+        db
+          .from('partner_applications')
+          .select(
+            'id,full_name,phone,company,role,areas,properties_count,motivation,referred_by_code,status,review_note,submitted_at',
+          )
+          .eq('applicant_id', user.id)
+          .order('submitted_at', { ascending: false })
+          .limit(1),
+        db
+          .from('partner_network_memberships')
+          .select('primary_role,company,phone')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
 
     setRoleState(String(profile?.role || 'guest'));
     const latest = (apps?.[0] as ExistingApp | undefined) || null;
     setExisting(latest);
+
+    const mappedNetworkRole = networkMembership?.primary_role
+      ? NETWORK_ROLE_TO_APPLICATION_ROLE[String(networkMembership.primary_role)]
+      : undefined;
 
     if (latest && latest.status === 'needs_correction') {
       setValues(prev => ({
@@ -218,12 +235,20 @@ export default function PartnerApplicationForm() {
         authoritySummary: latest.motivation || prev.authoritySummary,
         referralCode: latest.referred_by_code || prev.referralCode,
       }));
-    } else if (profile) {
+    } else if (profile || networkMembership) {
       setValues(prev => ({
         ...prev,
-        fullName: prev.fullName || String(profile.full_name || ''),
-        phone: prev.phone || String(profile.phone || ''),
-        company: prev.company || String(profile.company || ''),
+        role:
+          prev.role === INITIAL_DRAFT.role && mappedNetworkRole
+            ? mappedNetworkRole
+            : prev.role,
+        fullName: prev.fullName || String(profile?.full_name || ''),
+        phone:
+          prev.phone ||
+          String(networkMembership?.phone || profile?.phone || ''),
+        company:
+          prev.company ||
+          String(networkMembership?.company || profile?.company || ''),
       }));
     }
 
@@ -305,14 +330,20 @@ export default function PartnerApplicationForm() {
     setBusy(true);
 
     try {
-      const compiledMotivation = [
-        values.authoritySummary.trim() || null,
-        values.payoutBank.trim()
-          ? `Preferred bank: ${values.payoutBank.trim()} (${values.payoutAccountName.trim() || values.fullName.trim()})`
-          : null,
-      ]
-        .filter(Boolean)
-        .join(' | ');
+      const fallbackSummary = `${values.role} operating across ${values.areas.join(', ')}${
+        isInventoryRole
+          ? ` (${Math.max(1, values.propertiesCount)} ${values.propertiesCount === 1 ? 'property' : 'properties'})`
+          : ''
+      }.`;
+      const compiledMotivation =
+        [
+          values.authoritySummary.trim() || null,
+          values.payoutBank.trim()
+            ? `Preferred bank: ${values.payoutBank.trim()} (${values.payoutAccountName.trim() || values.fullName.trim()})`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' | ') || fallbackSummary;
 
       if (existing && existing.status === 'needs_correction') {
         const { error: rpcError } = await db.rpc('resubmit_partner_application', {

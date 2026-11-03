@@ -256,4 +256,17 @@ describe('authRedirect helpers', () => {
       ),
     ).toContain('not yet enabled');
   });
+
+  it('preserves partner network onboarding routes (/partners/apply, /partners/apply/form, /partners/start) after sign-up and sign-in', () => {
+    expect(resolvePostSignUpRedirect('/partners/apply')).toBe('/partners/apply');
+    expect(resolvePostSignUpRedirect('/partners/apply/form')).toBe('/partners/apply/form');
+    expect(resolvePostSignUpRedirect('/partners/start')).toBe('/partners/start');
+    expect(resolveNextAppPostSignInRedirect('guest', '/partners/apply/form')).toBe(
+      '/partners/apply/form',
+    );
+    expect(resolveNextAppPostSignInRedirect('guest', '/partners/start')).toBe(
+      '/partners/start',
+    );
+    expect(resolveNextAppPostSignInRedirect('guest', '/partners/bookings')).toBe('/account');
+  });
 });

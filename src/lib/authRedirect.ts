@@ -48,12 +48,17 @@ export function sanitizeGuestRedirect(raw: string | null | undefined): string | 
     return null;
   }
 
-  // Allow public /partner/register and /partners/apply while rejecting protected partner workspace routes
+  // Allow public partner onboarding routes while rejecting protected partner workspace routes
+  const isPublicPartnerOnboardingPath =
+    pathname === '/partners/apply' ||
+    pathname === '/partners/apply/form' ||
+    pathname === '/partners/start';
+
   if (
     pathname === '/partner' ||
     (pathname.startsWith('/partner/') && pathname !== '/partner/register') ||
     pathname === '/partners' ||
-    (pathname.startsWith('/partners/') && pathname !== '/partners/apply')
+    (pathname.startsWith('/partners/') && !isPublicPartnerOnboardingPath)
   ) {
     return null;
   }
@@ -391,6 +396,10 @@ export function resolveLegacyHashRoute(
     return appendSearch('/partners/apply');
   }
 
+  if (rawPath === '/partners/apply/form' || rawPath === '/partners/start') {
+    return appendSearch(rawPath);
+  }
+
   if (rawPath.startsWith('/partner/bookings/')) {
     const bookingId = decodeURIComponent(rawPath.slice('/partner/bookings/'.length));
     if (bookingId && !params.has('booking')) {
@@ -451,6 +460,7 @@ export function resolveLegacyHashRoute(
     rawPath === '/admin' ||
     rawPath === '/admin/properties' ||
     rawPath === '/admin/partners' ||
+    rawPath === '/admin/partners/network' ||
     rawPath === '/admin/bookings' ||
     rawPath === '/admin/issues' ||
     rawPath === '/admin/settlements' ||

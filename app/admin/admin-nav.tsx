@@ -4,6 +4,7 @@ const ADMIN_LINKS = [
   { href: '/admin', label: 'Overview', id: 'overview' },
   { href: '/admin/properties', label: 'Property review', id: 'properties' },
   { href: '/admin/partners', label: 'Partner queue', id: 'partners' },
+  { href: '/admin/partners/network', label: 'Partner network', id: 'network' },
   { href: '/admin/bookings', label: 'Bookings', id: 'bookings' },
   { href: '/admin/issues', label: 'Issues', id: 'issues' },
   { href: '/admin/settlements', label: 'Ledger & caution', id: 'settlements' },
