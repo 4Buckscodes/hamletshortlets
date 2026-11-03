@@ -26,7 +26,7 @@ import {
   matchesLagosAreaFilter,
 } from '../lib/areas';
 import { HAMLET_BRAND_NAME, HAMLET_USP, usePageMeta } from '../lib/brand';
-import { addDaysToIsoDate, lagosIsoDateOffset } from '../lib/pricing';
+import { addDaysToIsoDate, guestFacingNightlyNgn, lagosIsoDateOffset } from '../lib/pricing';
 
 const QUICK_AREAS = [
   'Lagos Mainland',
@@ -175,7 +175,7 @@ export default function Home() {
     const matches = approved.filter(p => matchesLagosAreaFilter(p, matchArea));
     if (matches.length === 0) return null;
     const minRate = Math.min(...matches.map(p => p.nightlyRate));
-    return formatStayPrice(Math.round(minRate * 1.2));
+    return formatStayPrice(guestFacingNightlyNgn(minRate));
   };
 
   const onSearch = (event: FormEvent) => {
@@ -634,12 +634,12 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
         <div className="flex flex-col items-start justify-between gap-5 rounded-3xl bg-ink-950 px-6 py-8 text-paper sm:flex-row sm:items-center sm:px-10">
           <div>
-            <p className="eyebrow-light">0% owner fee</p>
+            <p className="eyebrow-light">HAMLET Partner Network</p>
             <h2 className="mt-1 font-display text-2xl font-bold text-white sm:text-3xl">
               Own or manage a shortlet in Lagos?
             </h2>
             <p className="mt-1 text-sm font-medium text-ink-300">
-              Keep 100% of your listed rate. Closing agents and referrers earn recorded commissions.
+              Access listing, visibility, booking and property management services with transparent terms.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

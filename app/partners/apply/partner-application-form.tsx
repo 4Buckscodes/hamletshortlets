@@ -68,7 +68,7 @@ const ROLE_OPTIONS = [
   {
     value: 'Property owner',
     label: 'Property owner',
-    badge: '0% owner fee',
+    badge: 'Owner & host access',
     description: 'I own one or more shortlet apartments or homes. I can also close eligible bookings for other properties and introduce new partners.',
   },
   {

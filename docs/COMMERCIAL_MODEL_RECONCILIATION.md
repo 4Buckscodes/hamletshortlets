@@ -10,7 +10,7 @@
 3. Calculate direct referrer reward as 2.5 percentage points of (B).
 4. With an eligible direct referrer: closing agent 10% of (B), referrer 2.5%, HAMLET 5%, reserve 2.5%.
 5. Without an eligible referrer: referrer 0%, HAMLET 7.5%, reserve 2.5%, closing agent 10% when attributed.
-6. Owner fee remains 0%; pool is not deducted from owner proceeds.
+6. Owner service charges are configurable (`DEFAULT_OWNER_COMMERCIAL_POLICY`) and inactive by default (`ownerServiceFeeRate = 0`); the 20% guest service fee is added on top of (B) rather than deducted from (B), and no permanent zero-fee promise is made to owners.
 7. Mandatory charges and refundable caution deposits remain outside the pool; caution deposits also have no FX buffer.
 8. The 10% USD/GBP buffer is separate and applied once.
 9. The 2.5% reserve is an internal budget, not the actual provider fee. Provider-fee pass-through remains a separate launch decision.

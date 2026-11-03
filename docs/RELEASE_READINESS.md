@@ -6,7 +6,7 @@
 **Status:** Commercial pricing decision approved; production launch remains gated.
 
 ## 1. Commercial pricing decision — approved
-The previous `MVP_SPECIFICATION.md` v1.0 stated a 3% guest-only service fee. That legacy model is retired. The approved model adds a 20% pool to the owner's listed accommodation base price (B), with the owner fee at 0%.
+HAMLET's confirmed guest service fee is **20% of the owner's agreed accommodation rate (B)**, added on top of (B) and included in the displayed domestic guest stay price (B × 1.20 — never charged twice at checkout). Owner-side service fees, verification charges, media limits and optional services are configurable (`DEFAULT_OWNER_COMMERCIAL_POLICY` in `src/lib/pricing.ts`) and inactive by default, without any permanent zero-fee promise.
 
 Pool allocation, when a closing agent is attributed and a direct referrer is eligible:
 - Closing agent: 10% of (B).
@@ -28,11 +28,11 @@ The inspected `src/lib/pricing.ts` already implements the 20% allocation model a
 7. Confirm domain cutover only after preview smoke checks and owner approval; retain a tested rollback path.
 
 ## 3. Pricing-specific tests
-- Base (B=₦200,000) gives a domestic guest accommodation price of ₦240,000 and a 20% pool of ₦40,000.
+- Base (B=₦200,000) gives a domestic guest accommodation price of ₦240,000 and a 20% guest service fee of ₦40,000 (included once, never charged twice at checkout).
 - With eligible referrer: agent ₦20,000, referrer ₦5,000, HAMLET ₦10,000, reserve ₦5,000.
 - Without eligible referrer: agent ₦20,000, referrer ₦0, HAMLET ₦15,000, reserve ₦5,000.
-- The legacy 3% fee must not appear in guest totals or settlement.
-- Owner proceeds must not be reduced by the pool.
+- Owner accommodation rates, guest service fees, payment processing costs, agent earnings and caution deposits remain distinct.
+- Future owner charges remain configurable and inactive by default; no active page promises permanent 0% owner fees.
 - Mandatory charges and caution deposits are excluded from pool; deposits also exclude FX buffer.
 - FX buffer is applied once; provider fees are reconciled separately from the reserve.
 

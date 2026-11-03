@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { DEFAULT_PROPERTY_MEDIA_POLICY } from '@/lib/pricing';
 
 export const runtime = 'nodejs';
 
@@ -123,7 +124,11 @@ function parseAndValidatePayload(body: Payload) {
     };
   }
 
-  const imageUrls = list(body.imageUrls, 12, 500).filter(value => {
+  const imageUrls = list(
+    body.imageUrls,
+    DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing,
+    500,
+  ).filter(value => {
     try {
       const u = new URL(value);
       return u.protocol === 'https:';

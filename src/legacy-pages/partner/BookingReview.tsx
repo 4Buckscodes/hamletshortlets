@@ -238,7 +238,7 @@ export default function PartnerBookingReview() {
         </div>
         <div className="rounded-2xl border border-brass-500/30 bg-brass-500/10 px-4 py-3 sm:text-right">
           <p className="text-[10px] font-extrabold uppercase tracking-wider text-brass-300">
-            Your proceeds (0% owner fee)
+            Accommodation proceeds
           </p>
           <p className="mt-0.5 font-display text-2xl font-black tabular-nums text-brass-200">
             {formatNaira(partnerProceeds)}
@@ -481,11 +481,11 @@ export default function PartnerBookingReview() {
                     </div>
                   )}
                   <div className="flex justify-between gap-3 border-t border-ink-800 pt-2 font-bold text-brass-300">
-                    <dt className="min-w-0">Your gross proceeds (0% HAMLET owner fee)</dt>
+                    <dt className="min-w-0">Gross accommodation &amp; mandatory-charge proceeds</dt>
                     <dd className="shrink-0 tabular-nums">{formatNaira(partnerProceeds)}</dd>
                   </div>
                   <div className="flex justify-between gap-3 pt-1 text-[11px] text-ink-400">
-                    <dt className="min-w-0">HAMLET domestic accommodation markup (20% paid by guest)</dt>
+                    <dt className="min-w-0">HAMLET guest service fee (20% added to accommodation rate)</dt>
                     <dd className="shrink-0 tabular-nums">{formatNaira(booking.hamletGuestFee)}</dd>
                   </div>
                   <div className="flex justify-between gap-3 text-[11px] font-semibold text-ink-300">

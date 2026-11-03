@@ -55,19 +55,23 @@ const PUBLIC_CHECKS = [
   },
   {
     path: '/partners/apply',
-    mustContain: ['100%', '10%', '2.5%'],
+    mustContain: ['HAMLET Partner Network'],
+  },
+  {
+    path: '/partners/apply/form',
+    mustContain: ['List with confidence.', 'Partner with clarity.'],
   },
   {
     path: '/robots.txt',
-    mustContain: ['Sitemap: https://www.hamlet.rest/sitemap.xml', 'Allow: /llms.txt'],
+    mustContain: ['Sitemap: https://hamlet.rest/sitemap.xml', 'Allow: /llms.txt'],
   },
   {
     path: '/sitemap.xml',
-    mustContain: ['<urlset', 'https://www.hamlet.rest/stays'],
+    mustContain: ['<urlset', 'https://hamlet.rest/stays'],
   },
   {
     path: '/llms.txt',
-    mustContain: ['# HAMLET', 'https://www.hamlet.rest'],
+    mustContain: ['# HAMLET', 'https://hamlet.rest'],
   },
 ];
 

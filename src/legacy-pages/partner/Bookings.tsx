@@ -98,7 +98,7 @@ export default function PartnerBookings() {
           <div className="flex items-baseline justify-between gap-2 border-t border-ink-800 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             <div>
               <p className="font-display text-lg font-black tabular-nums text-brass-300 sm:text-right">{formatNaira(b.accommodationSubtotal + b.mandatoryTotal)}</p>
-              <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">your proceeds · 0% fee</p>
+              <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">accommodation proceeds</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {canReportIncident && (

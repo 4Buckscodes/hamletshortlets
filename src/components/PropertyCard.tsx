@@ -10,7 +10,7 @@ import {
   Heart,
 } from 'lucide-react';
 import type { Property } from '../lib/types';
-import { estimateAllInclusiveNightly } from '../lib/pricing';
+import { estimateAllInclusiveNightly, guestFacingNightlyNgn } from '../lib/pricing';
 import { computePropertyAvailabilitySummary } from '../lib/availability';
 import { isMainlandProperty } from '../lib/areas';
 import { useCurrency } from '../lib/currency';
@@ -25,7 +25,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
   const { toast } = useToast();
 
   const saved = isSaved(p.id);
-  const guestNightlyNgn = Math.round(p.nightlyRate * 1.2);
+  const guestNightlyNgn = guestFacingNightlyNgn(p.nightlyRate);
   const est = estimateAllInclusiveNightly(p);
 
   const parsedQuery = new URLSearchParams(searchQuery ?? '');

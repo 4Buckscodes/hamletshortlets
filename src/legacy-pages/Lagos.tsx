@@ -7,6 +7,7 @@ import { useHamlet } from '../lib/store';
 import { useCurrency } from '../lib/currency';
 import { matchesLagosAreaFilter } from '../lib/areas';
 import { usePageMeta } from '../lib/brand';
+import { guestFacingNightlyNgn } from '../lib/pricing';
 import { buildLagosGuideStructuredData } from '../lib/seo';
 
 const MAINLAND_GUIDES = [
@@ -113,7 +114,7 @@ export default function Lagos() {
     const matches = approved.filter(p => matchesLagosAreaFilter(p, matchArea));
     if (matches.length === 0) return null;
     const minRate = Math.min(...matches.map(p => p.nightlyRate));
-    return formatStayPrice(Math.round(minRate * 1.2));
+    return formatStayPrice(guestFacingNightlyNgn(minRate));
   };
 
   return (

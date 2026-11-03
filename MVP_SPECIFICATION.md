@@ -1,9 +1,9 @@
 # HAMLET Locked MVP Specification
 
-**Version:** 1.1  
-**Decision date:** 29 October 2026  
+**Version:** 1.2  
+**Decision date:** 3 November 2026  
 **Status:** Product scope locked; live-launch dependencies remain open.  
-**Commercial supersession:** This version retires the 3% guest-only fee stated in v1.0. Other product scope remains unless expressly changed below.
+**Commercial policy:** Confirmed 20% guest service fee on the owner's agreed accommodation rate (`B`), included in displayed guest-facing stay prices; future owner service charges and media/storage quotas remain configurable and inactive pending sign-off.
 
 ## 1. MVP goal
 Prove HAMLET can onboard legitimate shortlet properties, connect guests to suitable accommodation, facilitate real request-to-book transactions, and maintain accountability between guests, property owners and authorised partners through listing review, booking, stay, issue resolution and settlement. HAMLET is a trusted, partner-inclusive marketplace first; advanced property-management automation remains later scope.
@@ -17,9 +17,8 @@ Prove HAMLET can onboard legitimate shortlet properties, connect guests to suita
 ## 3. Approved commercial and booking decisions
 - Booking model: request-to-book.
 - Payment provider: approved provider; controlled ledger and manual reconciliation where permitted.
-- **Retire the legacy 3% guest-only HAMLET service fee. It must not be charged or described as active.**
-- **Approved domestic model:** add a 20% commercial pool to the owner's listed accommodation base price (B). Domestic guest accommodation price is (B × 1.20).
-- Owner fee deducted from (B): 0%. The pool is not deducted from owner proceeds.
+- **Confirmed guest pricing rule:** HAMLET's guest service fee is **20% of the owner's agreed accommodation rate (B)**, added on top of (B) and included in the displayed domestic guest accommodation price (B × 1.20). The 20% guest service fee must never be added a second time at checkout.
+- **Owner services & configurable charges:** HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services are communicated transparently under HAMLET's current pricing and service policies. Owner-side charges default to inactive (`DEFAULT_OWNER_COMMERCIAL_POLICY` in `src/lib/pricing.ts`) with no permanent zero-fee promise encoded.
 - All pool percentages are percentage points of (B), not percentages of the pool or guest total.
 - With a valid closing agent and eligible direct referrer: closing agent 10% of (B); direct referrer 2.5% of (B); HAMLET allocation 5% of (B); payment/settlement reserve 2.5% of (B). Total: 20%.
 - Without an eligible direct referrer: referrer 0%; HAMLET allocation 7.5% of (B); closing agent remains 10% of (B) when validly attributed; reserve remains 2.5% of (B). Total: 20%.
@@ -89,9 +88,9 @@ Stabilise branch and tests; verify Supabase/auth/roles; finish property intake/r
 - Booking requests are not prematurely confirmed and overlapping confirmed bookings are prevented.
 - Only verified provider webhook can confirm payment.
 - All surfaces and server quotes use the same central calculation.
-- Guest accommodation price is (B + 20\% × B); no active 3% fee.
+- Guest accommodation price is (B + 20% × B), included in displayed stay pricing and never charged twice at checkout.
 - Allocations reconcile to 20% of (B): agent 10% when attributed, referrer 2.5% when eligible, HAMLET 5% with eligible referrer or 7.5% without, reserve 2.5%.
-- Owner fee is 0%; pool does not reduce owner proceeds.
+- Owner commercial charges remain configurable (`DEFAULT_OWNER_COMMERCIAL_POLICY`) and inactive by default; no active page promises permanent 0% owner fees.
 - Mandatory charges and deposits remain separate; deposit receives no markup or FX buffer.
 - FX buffer applies once; provider fee is not silently charged twice or while undecided.
 - Payments, refunds, disputes and adjustments are auditable; access/security/privacy controls and end-to-end tests pass.

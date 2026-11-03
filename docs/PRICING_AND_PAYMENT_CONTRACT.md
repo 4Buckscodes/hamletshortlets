@@ -1,18 +1,18 @@
 # HAMLET.REST — Authoritative Pricing, Currency & Payment Contract
 
-**Code authority:** `src/lib/pricing.ts`, `src/lib/currency.ts`  
-**Business authority:** `MVP_SPECIFICATION.md` v1.1 (29 October 2026)  
+**Code authority:** `src/lib/pricing.ts`, `src/lib/currency.tsx`  
+**Business authority:** `MVP_SPECIFICATION.md` v1.2 (3 November 2026)  
 **Rules version:** `v2_20pct_markup_10pct_fx_buffer`
 
-## 1. Approved decision
-The legacy 3% guest-only HAMLET service fee is retired. Do not charge or describe it as active.
-
-The domestic model adds a 20% pool to the owner's listed accommodation base price (B):
-- domestic guest accommodation price = (B × 1.20);
-- owner fee deducted from (B) = 0%;
+## 1. Confirmed guest pricing & owner commercial policy
+HAMLET's confirmed guest service fee is **20% of the owner's agreed accommodation rate (B)**:
+- domestic guest accommodation price = (B × 1.20), included once in the displayed guest-facing stay price and never added a second time at checkout;
+- owner accommodation rate (B), guest service fee (20% of B), guest-facing total, payment processing costs, agent earnings / commercial allocations, and refundable caution deposits remain distinct;
+- owner commercial charges (`DEFAULT_OWNER_COMMERCIAL_POLICY` in `src/lib/pricing.ts`) are configurable and inactive by default — HAMLET never encodes or publishes a blanket promise of permanent 0% owner fees;
 - pool percentages are percentage points of (B), not percentages of the pool or guest total.
 
-This replaces the earlier 3% prose in MVP v1.0. It does not by itself approve live payment-provider fees or certify production readiness.
+Public owner-services policy copy:
+> "HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies."
 
 ## 2. Pool allocations
 
@@ -37,7 +37,7 @@ Disclosed mandatory charges are added separately and excluded from the 20% pool 
 The current engine converts the domestic stay amount using configured exchange-rate data and applies one 10% USD/GBP buffer to qualifying stay quotes, never stacked or compounded. Caution deposits are converted separately without the buffer. Foreign-currency quotes expire after 30 minutes and must be refreshed server-side before checkout. Partner allocations remain based on the NGN owner base (B).
 
 ## 5. Single calculation authority
-`src/lib/pricing.ts` is the only application-level pricing authority. All cards, property details, partner previews, booking requests, checkout, receipts, dashboards and server handlers must reuse it or a validated server-side wrapper. No independent 3%/20%/commission/FX formulas in components. Do not trust client-submitted totals; recompute from stored property prices, dates, mandatory charges, deposit, currency configuration and eligible attribution. Record the rules version and auditable allocation/quote data.
+`src/lib/pricing.ts` is the only application-level pricing authority. All cards, property details, partner previews, booking requests, checkout, receipts, dashboards and server handlers must reuse it or a validated server-side wrapper. Do not write independent markup/commission/FX formulas in components. Do not trust client-submitted totals; recompute from stored property prices, dates, mandatory charges, deposit, currency configuration and eligible attribution. Record the rules version and auditable allocation/quote data.
 
 ## 6. Booking and payment verification
 1. Server validates listing approval, capacity, dates and availability, then calculates the authoritative quote.
@@ -52,13 +52,16 @@ The current engine converts the domestic stay amount using configured exchange-r
 Provider-fee pass-through remains undecided. Do not add a provider fee to checkout until the policy and disclosures are approved; do not double charge or represent an estimate as an actual fee. Ledger must distinguish owner base/proceeds, each pool allocation, mandatory charges, caution deposit/refund, FX buffer/quote, actual provider fee/reserve variance, cancellation/refund adjustments, payment references, status and audit actor.
 
 ## 8. Required tests
-- (B=₦200,000) gives guest accommodation price ₦240,000 and pool ₦40,000.
+- (B=₦200,000) gives guest accommodation price ₦240,000 and guest service fee ₦40,000.
+- Guest service fee is included once and never charged twice at checkout.
 - With referrer: allocations ₦20,000 / ₦5,000 / ₦10,000 / ₦5,000.
 - Without referrer: allocations ₦20,000 / ₦0 / ₦15,000 / ₦5,000.
-- No active legacy 3% fee in guest totals or settlement.
-- Owner proceeds are not reduced by pool.
-- Mandatory charges/deposits are excluded from pool; deposits exclude FX buffer.
-- FX buffer applies once; referral eligibility and cancellation/refund adjustments are tested.
+- Owner accommodation rates remain distinct from guest-facing totals.
+- Payment processing costs are not silently mixed into the 20% guest service fee.
+- Agent earnings are not silently deducted without an agreed commercial rule.
+- Mandatory charges/deposits are excluded from the 20% fee; deposits exclude FX buffer.
+- Future owner charges and media upload limits are configurable (`DEFAULT_OWNER_COMMERCIAL_POLICY`, `DEFAULT_PROPERTY_MEDIA_POLICY`) rather than hard-coded, and remain inactive by default.
+- No active public page promises permanent 0% owner fees.
 - Browser return cannot confirm payment; webhook checks are idempotent.
 - UI and server quote agree; actual provider fee is separate from reserve.
 

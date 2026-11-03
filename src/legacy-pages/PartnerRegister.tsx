@@ -36,8 +36,8 @@ const ROLES = [
 ];
 
 const ECONOMICS_STATS = [
-  { stat: '100%', label: 'Owner share of listed B', detail: 'Owners receive 100% of their NGN accommodation rate' },
-  { stat: '0%', label: 'Owner listing fee', detail: 'HAMLET adds 20% domestic guest markup on top of B' },
+  { stat: '20%', label: 'Guest service fee', detail: 'Added on top of B and included in displayed guest stay price' },
+  { stat: '4 pillars', label: 'Manual verification', detail: 'Ownership, identity, authority & physical inspection reviewed' },
   { stat: '10% of B', label: 'Closing agent share', detail: 'Standard closing agent commission (or agreed mandate)' },
   { stat: '2.5% of B', label: '90-day referral reward', detail: 'Direct partner referrer share during active window' },
 ];
@@ -235,8 +235,8 @@ export default function PartnerRegister() {
           <div>
             <p className="eyebrow-light">Owners · Managers · Agents · Referrers</p>
             <h1 className="mt-2.5 font-display text-3xl font-bold leading-[1.08] text-white sm:text-4xl">
-              List free. Keep{' '}
-              <span className="italic text-brass-300">100% of your rate.</span>
+              List with confidence.{' '}
+              <span className="italic text-brass-300">Partner with clarity.</span>
             </h1>
 
             {/* The economics, plainly */}

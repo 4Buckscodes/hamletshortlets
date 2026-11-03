@@ -1,14 +1,18 @@
 import type { Metadata } from 'next';
-import { buildFaqStructuredData } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
+import {
+  buildFaqPageSchema,
+  buildPublicPageMetadata,
+} from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { FaqExplorer, type FaqEntry } from './faq-explorer';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Shortlet Booking FAQs',
   description:
     'Answers to common questions about booking shortlets in Lagos on HAMLET.REST — photos, power backup, transparent fees, check-in, payments, and support.',
-  alternates: { canonical: '/faqs' },
-};
+  pathname: '/faqs',
+});
 
 const FAQ_ITEMS: readonly FaqEntry[] = [
   {
@@ -28,7 +32,7 @@ const FAQ_ITEMS: readonly FaqEntry[] = [
   },
   {
     q: '4. Are there hidden fees?',
-    a: 'No. Every quote itemises the stay price, mandatory charges, and any separate refundable caution deposit upfront. USD/GBP quotes include a single 10% stay buffer and settle in NGN.',
+    a: 'No. Displayed stay prices already include HAMLET’s 20% guest service fee (never added again at checkout), itemise any mandatory cleaning charge upfront, and list any refundable caution deposit separately. USD/GBP quotes include a single 10% stay buffer and settle in NGN.',
     category: 'pricing',
   },
   {
@@ -43,7 +47,7 @@ const FAQ_ITEMS: readonly FaqEntry[] = [
   },
   {
     q: '7. Can I cancel and get a refund?',
-    a: 'Requests can be cancelled free before confirmation. Confirmed bookings follow the cancellation terms shown on your reservation.',
+    a: 'Unconfirmed booking requests can be cancelled before confirmation without charge. Confirmed bookings follow the cancellation terms shown on your reservation.',
     category: 'pricing',
   },
   {
@@ -74,16 +78,12 @@ const FAQ_ITEMS: readonly FaqEntry[] = [
 ];
 
 export default function FaqsPage() {
-  const faqSchema = buildFaqStructuredData([...FAQ_ITEMS]);
+  const faqSchema = buildFaqPageSchema([...FAQ_ITEMS]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd id="hamlet-faqs-jsonld" data={faqSchema} />
 
       <main className="flex-1">
         <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">

@@ -6,28 +6,112 @@
 //   - Owner, Closing-Agent & Partner Referral dashboards
 //   - Admin financial views, receipts & transaction ledgers
 //
-// Commercial rules (§5, §6, §7):
-//   - Owner enters base listed accommodation price B in NGN (0% deducted from B).
-//   - Domestic markup = 20% of B -> Domestic guest accommodation price = B × 1.20.
-//   - Allocation of 20% markup on B:
-//       * Closing agent: 10% of B (when validly attributed)
-//       * Direct referring partner: 2.5% of B (when eligible on 2nd+ completed booking in 90d window)
-//       * HAMLET allocation: 5% of B (with eligible referrer) or 7.5% of B (without eligible referrer)
-//       * Payment & settlement cost reserve: 2.5% of B (internal budget, never misrepresented as actual fee)
+// Commercial rules:
+//   - Confirmed guest service fee = 20% of the owner's agreed accommodation rate (B).
+//   - The 20% fee is added on top of B and included in the displayed guest-facing stay price
+//     (B × 1.20), and must never be added a second time at checkout.
+//   - Owner accommodation rate, guest service fee, guest-facing total, payment processing costs,
+//     agent earnings / commercial allocations, and refundable caution deposits remain distinct.
+//   - Owner commercial charges and media/storage policies are configurable and inactive by default
+//     (no permanent zero-fee promise is encoded).
 //   - International USD / GBP display & quote buffer:
-//       * Convert domestic guest price to USD/GBP using configured exchange rate, then apply 10% buffer ONCE.
-//       * Commissions remain strictly calculated on owner's listed NGN price B.
-//   - Caution fee (refundable deposit) is itemised separately: excluded from 20% markup, 10% FX buffer,
-//     agent commissions, referral rewards, and HAMLET revenue.
+//       * Convert domestic guest stay price to USD/GBP using configured exchange rate, then apply 10% buffer ONCE.
+//       * Commercial allocations remain strictly calculated on the owner's agreed NGN rate B.
+//   - Refundable caution deposit is itemised separately: excluded from the 20% guest service fee,
+//     10% FX buffer, agent commissions, referral rewards, and HAMLET revenue.
 
 import type { ExchangeRateConfig, MandatoryCharge, SupportedCurrency } from './types';
 
 export const PRICING_RULES_VERSION = 'v2_20pct_markup_10pct_fx_buffer';
 
+export const APPROVED_OWNER_SERVICES_POLICY_COPY =
+  "HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.";
+
 export const HAMLET_DOMESTIC_MARKUP_RATE = 0.2;
-/** Alias kept for compatibility with callers referencing the guest fee constant. */
+/** Confirmed 20% guest service fee rate applied once on the owner's agreed accommodation rate. */
 export const HAMLET_GUEST_SERVICE_FEE_RATE = HAMLET_DOMESTIC_MARKUP_RATE;
-export const OWNER_HAMLET_FEE_RATE = 0;
+
+export interface OwnerOptionalServiceCharge {
+  code: string;
+  label: string;
+  amountNgn: number;
+  enabled: boolean;
+}
+
+export interface OwnerCommercialPolicyConfig {
+  /** Configurable owner service fee rate (0–1). Inactive (0) by default until approved policy activates it. */
+  ownerServiceFeeRate: number;
+  /** Optional one-off verification/inspection charge in NGN (inactive by default). */
+  verificationChargeNgn: number | null;
+  /** Optional re-inspection or renewal charge in NGN (inactive by default). */
+  reinspectionChargeNgn: number | null;
+  /** Explicit owner-agreed agent/co-host/management commission rate (null = none agreed; never assumed). */
+  agreedAgentCommissionRate: number | null;
+  /** Optional owner services/plans (all disabled/inactive unless explicitly configured). */
+  optionalServiceCharges: ReadonlyArray<OwnerOptionalServiceCharge>;
+}
+
+/**
+ * Default owner commercial policy: configurable architecture with zero active owner charges by default.
+ * Never treat this default as an irreversible or permanent 0% guarantee.
+ */
+export const DEFAULT_OWNER_COMMERCIAL_POLICY: Readonly<OwnerCommercialPolicyConfig> = Object.freeze({
+  ownerServiceFeeRate: 0,
+  verificationChargeNgn: null,
+  reinspectionChargeNgn: null,
+  agreedAgentCommissionRate: null,
+  optionalServiceCharges: Object.freeze([]),
+});
+
+/** Default owner fee rate constant (sourced from configurable policy; currently 0 / inactive). */
+export const OWNER_HAMLET_FEE_RATE = DEFAULT_OWNER_COMMERCIAL_POLICY.ownerServiceFeeRate;
+
+export interface PropertyMediaUploadPolicy {
+  maxImagesPerListing: number;
+  maxImageFileBytes: number;
+  allowedImageMimeTypes: ReadonlyArray<string>;
+  videoUploadsEnabled: boolean;
+  maxVideosPerListing: number;
+  /** Optional per-owner cloud storage quota in bytes (null = quota billing/enforcement inactive). */
+  ownerStorageQuotaBytes: number | null;
+}
+
+export const DEFAULT_PROPERTY_MEDIA_POLICY: Readonly<PropertyMediaUploadPolicy> = Object.freeze({
+  maxImagesPerListing: 12,
+  maxImageFileBytes: 5 * 1024 * 1024,
+  allowedImageMimeTypes: Object.freeze(['image/jpeg', 'image/png', 'image/webp']),
+  videoUploadsEnabled: false,
+  maxVideosPerListing: 0,
+  ownerStorageQuotaBytes: null,
+});
+
+export function resolvePropertyMediaPolicy(
+  overrides?: Partial<PropertyMediaUploadPolicy>,
+): PropertyMediaUploadPolicy {
+  if (!overrides) return DEFAULT_PROPERTY_MEDIA_POLICY;
+  return {
+    maxImagesPerListing: Math.max(
+      1,
+      Math.trunc(overrides.maxImagesPerListing ?? DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing),
+    ),
+    maxImageFileBytes: Math.max(
+      1024,
+      Math.trunc(overrides.maxImageFileBytes ?? DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes),
+    ),
+    allowedImageMimeTypes:
+      overrides.allowedImageMimeTypes ?? DEFAULT_PROPERTY_MEDIA_POLICY.allowedImageMimeTypes,
+    videoUploadsEnabled:
+      overrides.videoUploadsEnabled ?? DEFAULT_PROPERTY_MEDIA_POLICY.videoUploadsEnabled,
+    maxVideosPerListing: Math.max(
+      0,
+      Math.trunc(overrides.maxVideosPerListing ?? DEFAULT_PROPERTY_MEDIA_POLICY.maxVideosPerListing),
+    ),
+    ownerStorageQuotaBytes:
+      overrides.ownerStorageQuotaBytes !== undefined
+        ? overrides.ownerStorageQuotaBytes
+        : DEFAULT_PROPERTY_MEDIA_POLICY.ownerStorageQuotaBytes,
+  };
+}
 
 export const CLOSING_AGENT_COMMISSION_RATE = 0.1;
 export const DIRECT_REFERRER_REWARD_RATE = 0.025;
@@ -171,14 +255,16 @@ export function calculateMarkupAllocation(input: MarkupAllocationInput): MarkupA
 }
 
 export interface PricingInput {
-  /** Owner's listed accommodation subtotal B (after any accommodation discount, before markup/charges). */
+  /** Owner's agreed accommodation subtotal B (after any accommodation discount, before guest service fee/charges). */
   accommodationSubtotal: number;
   /** Known mandatory non-accommodation charges (cleaning, turnover…). */
   mandatoryCharges?: MandatoryCharge[];
   /** Refundable caution deposit — itemised separately, never marked up or buffered. */
   refundableDeposit?: number;
-  /** Override markup rate only if explicitly configured (defaults to 20%). */
+  /** Override guest service fee rate only if explicitly configured (defaults to confirmed 20%). */
   serviceFeeRate?: number;
+  /** Actual or configured payment provider processing cost in NGN (tracked distinctly; never silently mixed into the 20% guest service fee). */
+  paymentProcessingCostNgn?: number;
   hasClosingAgent?: boolean;
   hasEligibleReferrer?: boolean;
   hasQualifyingDirectReferrer?: boolean;
@@ -187,24 +273,40 @@ export interface PricingInput {
 }
 
 export interface PricingBreakdown {
-  /** Owner's listed accommodation price B in NGN. */
+  /** Owner's agreed accommodation rate B in NGN (distinct from guest-facing totals). */
+  ownerAccommodationRateNgn: number;
+  /** Alias for ownerAccommodationRateNgn preserved for existing booking model fields. */
   ownerListedPriceNgn: number;
-  /** Alias for ownerListedPriceNgn preserved for existing booking model fields. */
+  /** Alias for ownerAccommodationRateNgn preserved for existing booking model fields. */
   accommodationSubtotal: number;
-  /** 20% domestic markup on B in NGN. */
+  /** Confirmed 20% guest service fee on B in NGN (added once on B; included in displayed guest price). */
+  guestServiceFeeNgn: number;
+  /** Alias for guestServiceFeeNgn. */
   domesticMarkupNgn: number;
-  /** Domestic guest accommodation price = B × 1.20 in NGN. */
+  /** Displayed domestic guest accommodation price = B × 1.20 in NGN (includes the 20% guest service fee once). */
+  guestFacingAccommodationNgn: number;
+  /** Alias for guestFacingAccommodationNgn. */
   domesticGuestPriceNgn: number;
-  /** Alias for domesticGuestPriceNgn. */
+  /** Alias for guestFacingAccommodationNgn. */
   domesticGuestAccommodationNgn: number;
   mandatoryCharges: MandatoryCharge[];
   mandatoryChargesTotal: number;
-  /** Alias for domesticMarkupNgn preserved for existing booking model fields. */
+  /** Alias for guestServiceFeeNgn preserved for existing booking model fields. */
   hamletGuestServiceFee: number;
   preciseGuestServiceFee: number;
-  /** Domestic guest-facing total in NGN = domesticGuestAccommodationNgn + mandatoryChargesTotal (caution deposit excluded). */
+  /** Guest-facing stay total in NGN = guestFacingAccommodationNgn + mandatoryChargesTotal (caution deposit excluded). */
+  guestFacingTotalNgn: number;
+  /** Alias for guestFacingTotalNgn. */
   guestTotal: number;
-  /** Separate refundable caution deposit in NGN. */
+  /** Authoritative checkout stay amount in NGN — equal to guestFacingTotalNgn (guest service fee is never added again at checkout). */
+  checkoutStayAmountNgn: number;
+  /** Payment processing cost in NGN — tracked separately and never silently mixed into guestServiceFeeNgn. */
+  paymentProcessingCostNgn: number;
+  /** Agent commercial allocation in NGN — 0 unless an agreed closing-agent attribution rule explicitly applies. */
+  agentCommercialAllocationNgn: number;
+  /** Separate refundable caution deposit in NGN (excluded from accommodation pricing and fees). */
+  refundableCautionDepositNgn: number;
+  /** Alias for refundableCautionDepositNgn. */
   refundableDeposit: number;
   serviceFeeRate: number;
   allocation: MarkupAllocationBreakdown;
@@ -219,10 +321,11 @@ export function calculateGuestPricing(input: PricingInput): PricingBreakdown {
     amount: Math.max(0, Math.round(c.amount)),
   }));
   const mandatoryChargesTotal = charges.reduce((s, c) => s + c.amount, 0);
+  const hasExplicitClosingAgent = Boolean(input.hasClosingAgent);
 
   const allocation = calculateMarkupAllocation({
     ownerListedPriceNgn: ownerBase,
-    hasClosingAgent: input.hasClosingAgent,
+    hasClosingAgent: hasExplicitClosingAgent,
     hasEligibleReferrer: input.hasEligibleReferrer ?? input.hasQualifyingDirectReferrer,
     closingAgentId: input.closingAgentId,
     directReferrerId: input.directReferrerId,
@@ -236,23 +339,54 @@ export function calculateGuestPricing(input: PricingInput): PricingBreakdown {
 
   const domesticGuestAccommodationNgn = ownerBase + domesticMarkupNgn;
   const guestTotal = domesticGuestAccommodationNgn + mandatoryChargesTotal;
+  const refundableDeposit = Math.max(0, Math.round(input.refundableDeposit ?? 0));
+  const paymentProcessingCostNgn = Math.max(0, Math.round(input.paymentProcessingCostNgn ?? 0));
 
   return {
+    ownerAccommodationRateNgn: ownerBase,
     ownerListedPriceNgn: ownerBase,
     accommodationSubtotal: ownerBase,
+    guestServiceFeeNgn: domesticMarkupNgn,
     domesticMarkupNgn,
+    guestFacingAccommodationNgn: domesticGuestAccommodationNgn,
     domesticGuestPriceNgn: domesticGuestAccommodationNgn,
     domesticGuestAccommodationNgn,
     mandatoryCharges: charges,
     mandatoryChargesTotal,
     hamletGuestServiceFee: domesticMarkupNgn,
     preciseGuestServiceFee,
+    guestFacingTotalNgn: guestTotal,
     guestTotal,
-    refundableDeposit: Math.max(0, Math.round(input.refundableDeposit ?? 0)),
+    checkoutStayAmountNgn: guestTotal,
+    paymentProcessingCostNgn,
+    agentCommercialAllocationNgn: hasExplicitClosingAgent
+      ? allocation.closingAgentCommissionNgn
+      : 0,
+    refundableCautionDepositNgn: refundableDeposit,
+    refundableDeposit,
     serviceFeeRate: rate,
     allocation,
     rulesVersion: PRICING_RULES_VERSION,
   };
+}
+
+/**
+ * Authoritative checkout stay amount resolver.
+ * Uses the already-calculated guest stay total (or FX settlement total) and never re-applies
+ * the 20% guest service fee at checkout.
+ */
+export function resolveCheckoutStayAmountNgn(source: {
+  guestTotal: number;
+  settlementTotalNgn?: number | null;
+}): number {
+  if (
+    typeof source.settlementTotalNgn === 'number' &&
+    Number.isFinite(source.settlementTotalNgn) &&
+    source.settlementTotalNgn > 0
+  ) {
+    return Math.round(source.settlementTotalNgn);
+  }
+  return Math.max(0, Math.round(source.guestTotal));
 }
 
 /** Domestic guest-facing nightly accommodation price (B_night × 1.20). */
@@ -608,11 +742,113 @@ export function estimateAllInclusiveNightly(property: { nightlyRate: number }): 
   return guestFacingNightlyNgn(property.nightlyRate);
 }
 
-/** Owner-side proceeds. Owner fee is 0% — owner nets their full listed accommodation price B + mandatory charges. */
+export interface OwnerSettlementBreakdown {
+  ownerAccommodationRateNgn: number;
+  mandatoryChargesTotalNgn: number;
+  grossOwnerAmountNgn: number;
+  ownerServiceFeeRate: number;
+  ownerServiceFeeNgn: number;
+  agreedAgentCommissionRate: number;
+  agreedAgentCommissionNgn: number;
+  verificationChargeNgn: number;
+  reinspectionChargeNgn: number;
+  optionalServiceChargesNgn: number;
+  totalOwnerChargesNgn: number;
+  netOwnerSettlementNgn: number;
+}
+
+/**
+ * Calculates owner settlement using configurable commercial rules (inactive by default).
+ * - Under default policy, no owner service fee, verification fee, or agent deduction is applied.
+ * - Agent/co-host/management commissions are never silently deducted without an explicit agreed rate.
+ */
+export function calculateOwnerSettlement(
+  breakdown: Pick<PricingBreakdown, 'accommodationSubtotal' | 'mandatoryChargesTotal'>,
+  policyOverrides?: Partial<OwnerCommercialPolicyConfig>,
+): OwnerSettlementBreakdown {
+  const ownerAccommodationRateNgn = Math.max(0, Math.round(breakdown.accommodationSubtotal));
+  const mandatoryChargesTotalNgn = Math.max(0, Math.round(breakdown.mandatoryChargesTotal));
+  const grossOwnerAmountNgn = ownerAccommodationRateNgn + mandatoryChargesTotalNgn;
+
+  const rawOwnerFeeRate =
+    policyOverrides?.ownerServiceFeeRate ?? DEFAULT_OWNER_COMMERCIAL_POLICY.ownerServiceFeeRate;
+  const ownerServiceFeeRate =
+    Number.isFinite(rawOwnerFeeRate) && rawOwnerFeeRate > 0
+      ? Math.min(1, rawOwnerFeeRate)
+      : 0;
+  const ownerServiceFeeNgn =
+    ownerServiceFeeRate > 0
+      ? multiplyNairaBasisPoints(ownerAccommodationRateNgn, Math.round(ownerServiceFeeRate * 10_000))
+      : 0;
+
+  const rawAgentRate =
+    policyOverrides?.agreedAgentCommissionRate ??
+    DEFAULT_OWNER_COMMERCIAL_POLICY.agreedAgentCommissionRate;
+  const agreedAgentCommissionRate =
+    typeof rawAgentRate === 'number' && Number.isFinite(rawAgentRate) && rawAgentRate > 0
+      ? Math.min(1, rawAgentRate)
+      : 0;
+  const agreedAgentCommissionNgn =
+    agreedAgentCommissionRate > 0
+      ? multiplyNairaBasisPoints(
+          ownerAccommodationRateNgn,
+          Math.round(agreedAgentCommissionRate * 10_000),
+        )
+      : 0;
+
+  const verificationChargeNgn =
+    typeof policyOverrides?.verificationChargeNgn === 'number' &&
+    Number.isFinite(policyOverrides.verificationChargeNgn) &&
+    policyOverrides.verificationChargeNgn > 0
+      ? Math.round(policyOverrides.verificationChargeNgn)
+      : 0;
+
+  const reinspectionChargeNgn =
+    typeof policyOverrides?.reinspectionChargeNgn === 'number' &&
+    Number.isFinite(policyOverrides.reinspectionChargeNgn) &&
+    policyOverrides.reinspectionChargeNgn > 0
+      ? Math.round(policyOverrides.reinspectionChargeNgn)
+      : 0;
+
+  const optionalServiceChargesNgn = (
+    policyOverrides?.optionalServiceCharges ??
+    DEFAULT_OWNER_COMMERCIAL_POLICY.optionalServiceCharges
+  )
+    .filter(item => item.enabled && Number.isFinite(item.amountNgn) && item.amountNgn > 0)
+    .reduce((sum, item) => sum + Math.round(item.amountNgn), 0);
+
+  const totalOwnerChargesNgn =
+    ownerServiceFeeNgn +
+    agreedAgentCommissionNgn +
+    verificationChargeNgn +
+    reinspectionChargeNgn +
+    optionalServiceChargesNgn;
+
+  return {
+    ownerAccommodationRateNgn,
+    mandatoryChargesTotalNgn,
+    grossOwnerAmountNgn,
+    ownerServiceFeeRate,
+    ownerServiceFeeNgn,
+    agreedAgentCommissionRate,
+    agreedAgentCommissionNgn,
+    verificationChargeNgn,
+    reinspectionChargeNgn,
+    optionalServiceChargesNgn,
+    totalOwnerChargesNgn,
+    netOwnerSettlementNgn: Math.max(0, grossOwnerAmountNgn - totalOwnerChargesNgn),
+  };
+}
+
+/**
+ * Owner-side net settlement under the active configurable owner commercial policy
+ * (defaults to `DEFAULT_OWNER_COMMERCIAL_POLICY`, where owner charges are inactive).
+ */
 export function ownerProceeds(
   breakdown: Pick<PricingBreakdown, 'accommodationSubtotal' | 'mandatoryChargesTotal'>,
+  policyOverrides?: Partial<OwnerCommercialPolicyConfig>,
 ): number {
-  return breakdown.accommodationSubtotal + breakdown.mandatoryChargesTotal;
+  return calculateOwnerSettlement(breakdown, policyOverrides).netOwnerSettlementNgn;
 }
 
 export function formatNaira(n: number): string {

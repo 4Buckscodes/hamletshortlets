@@ -18,13 +18,19 @@ import {
   formatBedroomCountLabel,
   getStayTrustStatus,
 } from '@/lib/discovery';
+import { JsonLd } from '@/components/seo/JsonLd';
 import {
   PUBLIC_PROPERTY_SELECT,
   probePropertyWayfinderMeta,
   type PublicStayRecord,
 } from '@/lib/next-supabase';
-import { guestFacingNightlyNgn } from '@/lib/pricing';
-import { buildPropertyStructuredData } from '@/lib/seo';
+import {
+  buildNextCanonicalUrl,
+  buildPropertyDetailSchema,
+  HAMLET_BRAND,
+  HAMLET_DEFAULT_SHARE_IMAGE,
+  resolveCanonicalAssetUrl,
+} from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
@@ -82,30 +88,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${data.title} in ${data.area || 'Lagos'}`;
   const description = `Explore ${data.title} in ${data.area || 'Lagos'} on HAMLET.REST. Compare stay details, verification status, house rules and transparent pricing before requesting to book.`;
-  const image =
-    Array.isArray(data.image_urls) &&
-    data.image_urls[0] &&
-    /^https:\/\//i.test(data.image_urls[0])
-      ? data.image_urls[0]
-      : '/images/lagos-hero.jpg';
+  const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(id)}`);
+  const firstImage =
+    Array.isArray(data.image_urls) && data.image_urls[0]
+      ? resolveCanonicalAssetUrl(data.image_urls[0])
+      : null;
+  const shareImage = firstImage ?? HAMLET_DEFAULT_SHARE_IMAGE;
 
   return {
     title,
     description,
-    alternates: { canonical: `/stays/${encodeURIComponent(id)}` },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       type: 'website',
-      siteName: 'HAMLET.REST',
+      siteName: HAMLET_BRAND,
+      locale: 'en_NG',
       title: `${title} | HAMLET.REST`,
       description,
-      url: `https://www.hamlet.rest/stays/${encodeURIComponent(id)}`,
-      images: [{ url: image, alt: data.title }],
+      url: canonicalUrl,
+      images: [{ url: shareImage, alt: data.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${title} | HAMLET.REST`,
       description,
-      images: [image],
+      images: [shareImage],
     },
   };
 }
@@ -139,30 +146,15 @@ export default async function PropertyDetailPage({ params }: Props) {
   const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
   const images = stay.image_urls ?? [];
   const verification = stay.verification ?? {};
-  const structuredData = buildPropertyStructuredData(
-    {
-      id: stay.id,
-      title: stay.title,
-      type: stay.property_type || 'Apartment',
-      area: stay.area || 'Lagos',
-      address: stay.public_address || stay.area || 'Lagos',
-      bedrooms: stay.bedrooms ?? 1,
-      bathrooms: stay.bathrooms ?? 1,
-      capacity: stay.capacity ?? 2,
-      amenities: stay.amenities ?? [],
-      images,
-    },
-    guestFacingNightlyNgn(Number(stay.nightly_rate || 0)),
-  );
+  const structuredData = buildPropertyDetailSchema({
+    stay,
+    publicLocationSummary: wayfinderMeta.public_location_summary,
+  });
 
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <JsonLd id="hamlet-property-detail-jsonld" data={structuredData} />
 
       <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
         <div className="mb-4">
@@ -333,7 +325,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               )}
               {Number(stay.refundable_deposit || 0) > 0 && (
                 <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
-                  <strong>Refundable caution deposit:</strong> Itemised separately from your stay price with 0% HAMLET markup and 0% FX buffer. Subject to post-checkout inspection and documented condition review.
+                  <strong>Refundable caution deposit:</strong> Itemised separately from accommodation pricing with no guest service fee and no FX buffer. Subject to post-checkout inspection and documented condition review.
                 </p>
               )}
             </section>
