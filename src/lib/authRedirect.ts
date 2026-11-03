@@ -23,7 +23,9 @@ export function sanitizeInternalRedirect(raw: string | null | undefined): string
     pathname === '/signin' ||
     pathname.startsWith('/signin/') ||
     pathname === '/signup' ||
-    pathname.startsWith('/signup/')
+    pathname.startsWith('/signup/') ||
+    pathname === '/auth' ||
+    pathname.startsWith('/auth/')
   ) {
     return null;
   }
@@ -185,6 +187,120 @@ export function buildWorkspaceSignInPath(targetPath: string | null | undefined):
   const params = new URLSearchParams();
   params.set('redirect', safe);
   return `/signin?${params.toString()}`;
+}
+
+export type OAuthAuthIntent = 'signin' | 'signup';
+
+/**
+ * Builds the absolute OAuth `redirectTo` callback URL (`/auth/callback`) preserving
+ * whether the user initiated Google auth from Sign In or Create Account, plus any
+ * validated internal `next` destination.
+ */
+export function buildOAuthCallbackUrl(
+  origin: string,
+  opts: { intent?: OAuthAuthIntent; next?: string | null } = {},
+): string {
+  const cleanOrigin = origin.trim().replace(/\/+$/, '');
+  const params = new URLSearchParams();
+  if (opts.intent === 'signup') {
+    params.set('intent', 'signup');
+  }
+  const safeNext = sanitizeInternalRedirect(opts.next);
+  if (safeNext) {
+    params.set('next', safeNext);
+  }
+  const qs = params.toString();
+  return qs ? `${cleanOrigin}/auth/callback?${qs}` : `${cleanOrigin}/auth/callback`;
+}
+
+/**
+ * Resolves the post-OAuth destination after Google sign-in / sign-up:
+ * - Administrators and approved partners always route via `resolveNextAppPostSignInRedirect`
+ *   so privileged accounts reach `/admin` or `/partners` (or their requested workspace deep link).
+ * - Guest accounts initiated via `intent=signup` (or newly created during this OAuth flow)
+ *   route via `resolvePostSignUpRedirect` (requested guest path or `/stays`).
+ * - Returning guest accounts route via `resolveNextAppPostSignInRedirect` (requested path or `/account`).
+ */
+export function resolveOAuthPostAuthRedirect(opts: {
+  role?: AccountRole | string | null;
+  intent?: string | null;
+  next?: string | null;
+  isNewlyCreatedAccount?: boolean;
+}): string {
+  if (opts.role === 'admin' || opts.role === 'partner') {
+    return resolveNextAppPostSignInRedirect(opts.role, opts.next);
+  }
+  if (opts.intent === 'signup' || opts.isNewlyCreatedAccount) {
+    return resolvePostSignUpRedirect(opts.next);
+  }
+  return resolveNextAppPostSignInRedirect(opts.role, opts.next);
+}
+
+/**
+ * Extracts a clean display name (2–120 chars) from OAuth provider metadata
+ * (`full_name`, `name`, `given_name` + `family_name`) with an email local-part fallback.
+ */
+export function extractOAuthDisplayName(
+  metadata: Record<string, unknown> | null | undefined,
+  email?: string | null,
+): string {
+  const candidates: string[] = [];
+  if (metadata && typeof metadata === 'object') {
+    if (typeof metadata.full_name === 'string') candidates.push(metadata.full_name);
+    if (typeof metadata.name === 'string') candidates.push(metadata.name);
+    const given = typeof metadata.given_name === 'string' ? metadata.given_name.trim() : '';
+    const family = typeof metadata.family_name === 'string' ? metadata.family_name.trim() : '';
+    const combined = [given, family].filter(Boolean).join(' ');
+    if (combined) candidates.push(combined);
+  }
+
+  for (const raw of candidates) {
+    const cleaned = raw.trim().replace(/\s+/g, ' ').slice(0, 120);
+    if (cleaned.length >= 2) return cleaned;
+  }
+
+  if (email && email.includes('@')) {
+    const localPart = email
+      .split('@')[0]!
+      .replace(/[._-]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 120);
+    if (localPart.length >= 2) return localPart;
+  }
+
+  return '';
+}
+
+/**
+ * Translates raw Supabase GoTrue / Google OAuth error codes and descriptions
+ * into calm, actionable user-facing copy.
+ */
+export function formatOAuthErrorMessage(
+  errorCode?: string | null,
+  errorDescription?: string | null,
+): string {
+  const code = (errorCode || '').trim().toLowerCase();
+  const desc = (errorDescription || '').replace(/\+/g, ' ').trim();
+  const combined = `${code} ${desc.toLowerCase()}`;
+
+  if (code === 'access_denied' || combined.includes('access_denied') || combined.includes('canceled') || combined.includes('cancelled')) {
+    return 'Google sign-in was cancelled before completion. You can try again or continue with your email address.';
+  }
+
+  if (combined.includes('provider is not enabled') || combined.includes('unsupported provider')) {
+    return 'Google sign-in is not yet enabled on this HAMLET environment. Please continue with your email and password below.';
+  }
+
+  if (combined.includes('unverified email') || combined.includes('email not verified')) {
+    return 'Your Google account needs a verified email address to sign in to HAMLET.';
+  }
+
+  if (desc) {
+    return desc;
+  }
+
+  return 'Could not complete Google authentication right now. Please try again or continue with your email address.';
 }
 
 /**

@@ -15,7 +15,9 @@ import {
   MailCheck,
 } from 'lucide-react';
 import { HamletMark } from '../components/Logo';
+import { GoogleContinueButton } from '../components/auth/GoogleContinueButton';
 import { useHamlet } from '../lib/store';
+import { supabase } from '../lib/supabase';
 import {
   HAMLET_MANTRA,
   HAMLET_PARENT_COMPANY,
@@ -25,6 +27,8 @@ import {
 } from '../lib/brand';
 import { useToast } from '../lib/toast';
 import {
+  buildOAuthCallbackUrl,
+  formatOAuthErrorMessage,
   resolvePostSignInRedirect,
   resolvePostSignUpRedirect,
   sanitizeGuestRedirect,
@@ -93,6 +97,37 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
+
+  const handleGoogleOAuth = async () => {
+    setError('');
+    setInfoMessage('');
+    if (!supabase) {
+      setError('Configure Supabase to continue with Google.');
+      return;
+    }
+    setOauthLoading(true);
+    try {
+      const intent = creatingAccount ? 'signup' : 'signin';
+      const nextTarget = creatingAccount ? safeGuestRedirect : safeInternalRedirect;
+      const redirectTo = buildOAuthCallbackUrl(window.location.origin, {
+        intent,
+        next: nextTarget,
+      });
+      const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: { prompt: 'select_account' },
+        },
+      });
+      if (oauthErr) throw oauthErr;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not start Google sign-in.';
+      setError(formatOAuthErrorMessage(null, msg));
+      setOauthLoading(false);
+    }
+  };
 
   const updateAuthParams = (mode: AuthMode, nextRedirect?: string | null) => {
     const resolvedRedirect =
@@ -331,6 +366,24 @@ export default function SignIn() {
               <UserPlus size={14} /> Create account
             </button>
           </div>
+
+          {backendConfigured && (activeMode === 'signin' || creatingAccount) && (
+            <div className="mb-5 space-y-3.5">
+              <GoogleContinueButton
+                mode={creatingAccount ? 'signup' : 'signin'}
+                busy={oauthLoading}
+                disabled={loading}
+                onClick={() => void handleGoogleOAuth()}
+              />
+              <div className="relative flex items-center py-0.5">
+                <div className="flex-grow border-t border-ink-200/80" />
+                <span className="mx-3 shrink-0 text-[10.5px] font-bold uppercase tracking-wider text-ink-400">
+                  {creatingAccount ? 'or sign up with email' : 'or continue with email'}
+                </span>
+                <div className="flex-grow border-t border-ink-200/80" />
+              </div>
+            </div>
+          )}
 
           {returningToProperty && (
             <p className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-[11.5px] font-semibold text-emerald-900">

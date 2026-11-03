@@ -5,7 +5,7 @@ import SignInForm from './signin-form';
 export const metadata: Metadata = {
   title: 'Sign in or create an account',
   description:
-    'Sign in to your HAMLET.REST account or create a guest account in two quick steps to request shortlet stays in Lagos.',
+    'Sign in to your HAMLET.REST account or create an account with Google or email to request shortlet stays in Lagos.',
   robots: { index: false, follow: false },
 };
 
@@ -22,7 +22,7 @@ export default function SignInPage() {
               Welcome to HAMLET.
             </h1>
             <p className="mt-2 mb-6 text-sm leading-relaxed text-ink-500">
-              Sign in to manage bookings and workspaces, or create your account in two short steps.
+              Continue with your Google account or use your email address to sign in and manage bookings.
             </p>
             <SignInForm />
           </section>

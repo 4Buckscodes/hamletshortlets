@@ -18,6 +18,7 @@ Disallow: /partners/earnings
 Disallow: /partners/profile
 Disallow: /partners/start
 Disallow: /signin
+Disallow: /auth/
 Disallow: /api/
 Disallow: /legacy
 
