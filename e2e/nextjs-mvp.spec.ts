@@ -211,6 +211,57 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.locator('h1').first()).toBeVisible();
   });
 
+  test('renders mobile hero lagoon sheet, full-screen nav drawer, and accordion footer at 390x844', async ({
+    browser,
+  }) => {
+    const mobileCtx = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      locale: 'en-NG',
+      timezoneId: 'Africa/Lagos',
+    });
+    const mobilePage = await mobileCtx.newPage();
+    await mobilePage.goto('/');
+
+    // Mobile hero Lagoon toggle + chips + 4-pillar strip
+    const mobileSearchForm = mobilePage.getByRole('form', {
+      name: /Search Lagos shortlet stays on mobile/i,
+    });
+    await expect(mobileSearchForm).toBeVisible();
+    await expect(mobileSearchForm.getByRole('button', { name: 'Island' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await mobileSearchForm.getByRole('button', { name: 'Mainland' }).click();
+    await expect(mobileSearchForm.getByRole('button', { name: 'Yaba' })).toBeVisible();
+    await expect(mobileSearchForm.getByText('· INSPECTION')).toBeVisible();
+
+    // Mobile full-screen navigation drawer
+    await mobilePage.getByRole('button', { name: /Open navigation menu/i }).click();
+    const mobileDrawer = mobilePage.getByRole('navigation', { name: 'Mobile navigation' });
+    await expect(mobileDrawer).toBeVisible();
+    await expect(mobileDrawer.getByRole('button', { name: /Ask Horatio/i })).toBeVisible();
+    await expect(mobileDrawer.getByRole('link', { name: 'Explore stays' })).toBeVisible();
+    await expect(mobileDrawer.getByRole('link', { name: 'Lagos guide' })).toBeVisible();
+    await expect(mobileDrawer.getByRole('link', { name: 'Partner with us' })).toBeVisible();
+    await mobileDrawer.getByRole('button', { name: /Close navigation menu/i }).click();
+    await expect(mobileDrawer).toBeHidden();
+
+    // Mobile collapsible accordion footer
+    const exploreToggle = mobilePage.locator('footer').getByRole('button', {
+      name: /Explore Lagos/i,
+    });
+    await expect(exploreToggle).toHaveAttribute('aria-expanded', 'false');
+    await exploreToggle.click();
+    await expect(exploreToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      mobilePage.locator('#footer-accordion-explore').getByRole('link', {
+        name: /All Lagos stays/i,
+      }),
+    ).toBeVisible();
+
+    await mobileCtx.close();
+  });
+
   test('serves crawler endpoints, /api/geo, structured data, and blocks unauthenticated API mutations', async ({
     request,
     page,

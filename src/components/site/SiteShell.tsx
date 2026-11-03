@@ -14,7 +14,6 @@ import {
   type ReactNode,
 } from 'react';
 import {
-  Menu,
   X,
   User,
   LogOut,
@@ -35,7 +34,7 @@ import {
   Send,
   LayoutDashboard,
 } from 'lucide-react';
-import { HamletWordmark } from '../Logo';
+import { HamletMark, HamletWordmark } from '../Logo';
 import {
   CurrencyProvider,
   useCurrency,
@@ -402,11 +401,21 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!drawerOpen) return;
+    const previousOverflow =
+      typeof document !== 'undefined' ? document.body.style.overflow : '';
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setDrawerOpenPath(null);
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = previousOverflow;
+      }
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [drawerOpen]);
 
   useEffect(() => {
@@ -462,6 +471,8 @@ export function SiteHeader() {
     window.location.assign('/');
   }
 
+  const isHome = pathname === '/';
+
   const workspaceHref =
     session?.role === 'admin'
       ? '/admin'
@@ -476,16 +487,46 @@ export function SiteHeader() {
         ? 'Partner workspace'
         : 'My account';
 
+  const mobileGuestNav = [
+    { href: '/stays', label: 'Explore stays' },
+    { href: '/lagos', label: 'Lagos guide' },
+    { href: '/how-it-works', label: 'How it works' },
+    { href: '/safety', label: 'Safety' },
+    { href: '/faqs', label: 'FAQs' },
+  ] as const;
+
+  const mobileHostAndAboutNav = [
+    { href: '/partners/apply', label: 'Partner with us' },
+    { href: '/about', label: 'About HAMLET' },
+  ] as const;
+
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-100/90 bg-paper/92 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+    <header
+      className={`sticky top-0 z-40 transition-colors lg:border-b lg:border-ink-100/90 lg:bg-paper/92 lg:backdrop-blur-xl ${
+        isHome
+          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B]'
+          : 'border-b border-ink-100/90 bg-paper/95'
+      }`}
+    >
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-6">
         <div className="flex min-w-0 items-center gap-6">
           <Link
             href="/"
             aria-label="HAMLET.REST home"
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
-            <HamletWordmark />
+            {isHome ? (
+              <>
+                <span className="font-display text-[24px] font-bold tracking-[1px] text-[#F8F5EE] lg:hidden">
+                  HAMLET<span className="text-[#C9A45C]">.</span>
+                </span>
+                <span className="hidden lg:inline-flex">
+                  <HamletWordmark />
+                </span>
+              </>
+            ) : (
+              <HamletWordmark />
+            )}
           </Link>
 
           <nav
@@ -568,114 +609,191 @@ export function SiteHeader() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
-          <Link
-            href="/stays"
-            className="inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-3.5 text-xs font-bold text-ink-800 shadow-2xs transition hover:border-ink-900"
-          >
-            Stays
-          </Link>
+        <div className="flex items-center lg:hidden">
           <button
             type="button"
             onClick={() => setDrawerOpen(prev => !prev)}
             aria-expanded={drawerOpen}
             aria-controls="hamlet-mobile-drawer"
             aria-label={drawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-ink-200 bg-white text-ink-900 shadow-2xs"
+            className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
+              isHome
+                ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                : 'border border-[#DDD7C8] bg-white text-[#0E1F3B] shadow-2xs hover:border-[#0E1F3B]'
+            }`}
           >
-            {drawerOpen ? <X className="h-5 w-5 shrink-0" /> : <Menu className="h-5 w-5 shrink-0" />}
+            {drawerOpen ? (
+              <X className="h-5 w-5 shrink-0" />
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+                className="shrink-0"
+              >
+                <path d="M4 8h16M4 16h16" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 top-[65px] z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-ink-950/50 backdrop-blur-xs"
-            onClick={() => setDrawerOpen(false)}
-            aria-hidden="true"
-          />
+        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#0E1F3B] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
-            className="relative z-10 max-h-[calc(100dvh-65px)] overflow-y-auto overscroll-y-contain border-b border-ink-200 bg-paper px-4 py-5 shadow-2xl"
+            className="mx-auto flex h-dvh max-w-lg flex-col overflow-y-auto overscroll-y-contain px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
           >
-            <div className="mx-auto max-w-lg space-y-1.5">
-              {PRIMARY_NAV.map(item => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex min-h-[48px] items-center justify-between rounded-2xl px-4 text-base font-bold transition ${
-                      active ? 'bg-ink-900 text-white' : 'bg-white text-ink-800 hover:bg-clay/60'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <ArrowRight className="h-4 w-4 shrink-0 opacity-60" />
-                  </Link>
-                );
-              })}
+            <div className="flex items-center justify-between pb-3">
               <Link
-                href="/about"
-                className="flex min-h-[48px] items-center justify-between rounded-2xl bg-white px-4 text-base font-bold text-ink-800 hover:bg-clay/60"
+                href="/"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="HAMLET.REST home"
+                className="inline-flex min-h-[44px] items-center gap-2"
               >
-                <span>About HAMLET</span>
-                <ArrowRight className="h-4 w-4 shrink-0 opacity-60" />
+                <HamletMark size={28} />
+                <span className="font-display text-[20px] font-bold tracking-[0.06em] text-[#0E1F3B]">
+                  HAMLET
+                </span>
               </Link>
-              <Link
-                href="/partners/apply"
-                className="flex min-h-[48px] items-center justify-between rounded-2xl bg-white px-4 text-base font-bold text-ink-800 hover:bg-clay/60"
-              >
-                <span>Partner with us</span>
-                <ArrowRight className="h-4 w-4 shrink-0 opacity-60" />
-              </Link>
-
               <button
                 type="button"
-                onClick={() => {
-                  setDrawerOpen(false);
-                  openHoratio();
-                }}
-                className="flex min-h-[48px] w-full cursor-pointer items-center justify-between rounded-2xl border border-brass-400/60 bg-white px-4 text-base font-bold text-ink-900"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close navigation menu"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#DDD7C8] bg-white text-[#0E1F3B] transition hover:border-[#0E1F3B]"
               >
-                <span className="inline-flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 shrink-0 text-brass-600" />
-                  Ask Horatio
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-brass-600" />
+                <X className="h-5 w-5 shrink-0" />
               </button>
+            </div>
 
-              <div className="grid gap-2.5 border-t border-ink-200/70 pt-4">
-                {session ? (
-                  <>
-                    <Link href={workspaceHref} className="primary-button w-full">
-                      {workspaceLabel}
-                    </Link>
-                    {session.role !== 'guest' && (
-                      <Link href="/account" className="secondary-button w-full">
-                        Guest account &amp; bookings
-                      </Link>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => void handleSignOut()}
-                      className="secondary-button w-full"
+            <button
+              type="button"
+              onClick={() => {
+                setDrawerOpen(false);
+                openHoratio();
+              }}
+              className="mt-2 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border border-[#C9A45C] bg-white px-4.5 text-[16px] font-semibold text-[#0E1F3B] transition hover:bg-[#FCFBF8]"
+            >
+              <span className="inline-flex items-center gap-2.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  className="shrink-0 text-[#0E1F3B]"
+                >
+                  <path d="M8 1L9.65 6.35L15 8L9.65 9.65L8 15L6.35 9.65L1 8L6.35 6.35L8 1Z" />
+                </svg>
+                <span>Ask Horatio</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-[#8A7035]" />
+            </button>
+
+            <div className="mt-6">
+              <p className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8A7035]">
+                For Guests
+              </p>
+              <div className="space-y-2">
+                {mobileGuestNav.map(item => {
+                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setDrawerOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex min-h-[54px] items-center justify-between rounded-[16px] px-4.5 text-[16px] font-semibold transition ${
+                        active
+                          ? 'bg-[#0E1F3B] text-[#F8F5EE]'
+                          : 'bg-white text-[#0E1F3B] shadow-[0_1px_2px_rgba(14,31,59,0.04)] hover:bg-[#F3EFE4]'
+                      }`}
                     >
-                      Sign out ({session.email})
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/signin" className="primary-button w-full">
-                      Sign in
+                      <span>{item.label}</span>
+                      <ArrowRight
+                        className={`h-4 w-4 shrink-0 ${
+                          active ? 'text-[#C9A45C]' : 'text-[#8A7035]'
+                        }`}
+                      />
                     </Link>
-                    <Link href="/signin?mode=signup" className="secondary-button w-full">
-                      Create guest account
-                    </Link>
-                  </>
-                )}
+                  );
+                })}
               </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8A7035]">
+                For Hosts &amp; About
+              </p>
+              <div className="space-y-2">
+                {mobileHostAndAboutNav.map(item => {
+                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setDrawerOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex min-h-[54px] items-center justify-between rounded-[16px] px-4.5 text-[16px] font-semibold transition ${
+                        active
+                          ? 'bg-[#0E1F3B] text-[#F8F5EE]'
+                          : 'bg-white text-[#0E1F3B] shadow-[0_1px_2px_rgba(14,31,59,0.04)] hover:bg-[#F3EFE4]'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      <ArrowRight
+                        className={`h-4 w-4 shrink-0 ${
+                          active ? 'text-[#C9A45C]' : 'text-[#8A7035]'
+                        }`}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-auto pt-6">
+              {session ? (
+                <div className="grid gap-2.5">
+                  <Link
+                    href={workspaceHref}
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-[#0E1F3B] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#16294A]"
+                  >
+                    {workspaceLabel}
+                  </Link>
+                  {session.role !== 'guest' && (
+                    <Link
+                      href="/account"
+                      onClick={() => setDrawerOpen(false)}
+                      className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-[#D6D0C0] bg-white px-5 text-sm font-semibold text-[#0E1F3B]"
+                    >
+                      Guest account &amp; bookings
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleSignOut()}
+                    className="flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-full border border-[#D6D0C0] bg-white px-5 text-sm font-semibold text-[#0E1F3B]"
+                  >
+                    Sign out ({session.email})
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/signin"
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-[#0E1F3B] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#16294A]"
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </nav>
         </div>
@@ -684,11 +802,120 @@ export function SiteHeader() {
   );
 }
 
+const FOOTER_LINK_GROUPS = [
+  {
+    id: 'explore',
+    title: 'Explore Lagos',
+    links: [
+      { href: '/stays', label: 'All Lagos stays' },
+      { href: '/stays?area=Lagos+Mainland', label: 'Lagos Mainland (Yaba, Shomolu, Surulere)' },
+      { href: '/stays?area=Victoria+Island', label: 'Victoria Island & Ikoyi' },
+      { href: '/stays?area=Lekki+Phase+1', label: 'Lekki Phase 1, Ikate & Oniru' },
+      { href: '/lagos', label: 'Lagos neighbourhood guide' },
+    ],
+  },
+  {
+    id: 'trust',
+    title: 'Trust & Support',
+    links: [
+      { href: '/how-it-works', label: 'How bookings work' },
+      { href: '/safety', label: 'Verification & safety' },
+      { href: '/about', label: 'About HAMLET' },
+      { href: '/faqs', label: 'FAQs' },
+      { href: '/legal', label: 'Legal, privacy & NDPR' },
+    ],
+  },
+  {
+    id: 'accounts',
+    title: 'Accounts & Partners',
+    links: [
+      { href: '/signin', label: 'Sign in / Create account' },
+      { href: '/account', label: 'Guest account & bookings' },
+      { href: '/account/issues', label: 'Report a booking issue' },
+      { href: '/partners/apply', label: 'Apply as a partner' },
+      { href: '/partners', label: 'Partner workspace' },
+    ],
+  },
+] as const;
+
 export function SiteFooter() {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  function toggleSection(sectionId: string) {
+    setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  }
+
   return (
     <footer className="border-t border-ink-800 bg-ink-950 text-ink-100">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-8 md:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 md:py-12">
+        {/* Mobile editorial brand block + collapsible accordion navigation (< md) */}
+        <div className="md:hidden">
+          <Link href="/" className="inline-flex items-center">
+            <span className="font-display text-[26px] font-bold tracking-[0.04em] text-[#F8F5EE]">
+              HAMLET<span className="text-[#C9A45C]">.</span>
+            </span>
+          </Link>
+          <p className="mt-3.5 text-[15px] leading-[1.55] text-[#B8C2D4]">
+            Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
+          </p>
+          <p className="mt-4 text-[15px] text-[#B8C2D4]">
+            Contact:{' '}
+            <a
+              href="mailto:hello@hamlet.rest"
+              className="font-medium text-[#D7B56D] underline underline-offset-4 transition hover:text-white"
+            >
+              hello@hamlet.rest
+            </a>
+          </p>
+
+          <div className="mt-7 divide-y divide-[#1E3150] border-y border-[#1E3150]">
+            {FOOTER_LINK_GROUPS.map(group => {
+              const isOpen = Boolean(openSections[group.id]);
+              const panelId = `footer-accordion-${group.id}`;
+              return (
+                <div key={group.id}>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(group.id)}
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    className="flex min-h-[56px] w-full cursor-pointer items-center justify-between py-4 text-left"
+                  >
+                    <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#C9A45C]">
+                      {group.title}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="text-xl font-normal leading-none text-[#C9A45C]"
+                    >
+                      {isOpen ? '−' : '+'}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <ul
+                      id={panelId}
+                      className="space-y-2.5 pb-4 text-[14px] text-[#D0D7E3]"
+                    >
+                      {group.links.map(link => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className="inline-block py-1 transition hover:text-white"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Desktop 4-column layout (>= md) */}
+        <div className="hidden gap-8 md:grid md:grid-cols-4">
           <div className="md:col-span-1">
             <Link href="/" className="inline-flex items-center">
               <HamletWordmark light />
@@ -707,53 +934,34 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Explore Lagos
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/stays" className="inline-block py-1 transition hover:text-white">All Lagos stays</Link></li>
-              <li><Link href="/stays?area=Lagos+Mainland" className="inline-block py-1 transition hover:text-white">Lagos Mainland (Yaba, Shomolu, Surulere)</Link></li>
-              <li><Link href="/stays?area=Victoria+Island" className="inline-block py-1 transition hover:text-white">Victoria Island &amp; Ikoyi</Link></li>
-              <li><Link href="/stays?area=Lekki+Phase+1" className="inline-block py-1 transition hover:text-white">Lekki Phase 1, Ikate &amp; Oniru</Link></li>
-              <li><Link href="/lagos" className="inline-block py-1 transition hover:text-white">Lagos neighbourhood guide</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Trust &amp; Support
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/how-it-works" className="inline-block py-1 transition hover:text-white">How bookings work</Link></li>
-              <li><Link href="/safety" className="inline-block py-1 transition hover:text-white">Verification &amp; safety</Link></li>
-              <li><Link href="/about" className="inline-block py-1 transition hover:text-white">About HAMLET</Link></li>
-              <li><Link href="/faqs" className="inline-block py-1 transition hover:text-white">FAQs</Link></li>
-              <li><Link href="/legal" className="inline-block py-1 transition hover:text-white">Legal, privacy &amp; NDPR</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
-              Accounts &amp; Partners
-            </h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-200">
-              <li><Link href="/signin" className="inline-block py-1 transition hover:text-white">Sign in / Create account</Link></li>
-              <li><Link href="/account" className="inline-block py-1 transition hover:text-white">Guest account &amp; bookings</Link></li>
-              <li><Link href="/account/issues" className="inline-block py-1 transition hover:text-white">Report a booking issue</Link></li>
-              <li><Link href="/partners/apply" className="inline-block py-1 transition hover:text-white">Apply as a partner</Link></li>
-              <li><Link href="/partners" className="inline-block py-1 transition hover:text-white">Partner workspace</Link></li>
-            </ul>
-          </div>
+          {FOOTER_LINK_GROUPS.map(group => (
+            <div key={group.id}>
+              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+                {group.title}
+              </h2>
+              <ul className="mt-3 space-y-2 text-sm text-ink-200">
+                {group.links.map(link => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="inline-block py-1 transition hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-ink-800 pt-6 text-xs text-ink-400">
-          <span>
+        <div className="mt-7 space-y-1 text-[13px] leading-[1.6] text-[#8E9BB0] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-ink-800 md:pt-6 md:text-xs md:text-ink-400">
+          <p className="m-0">
             © {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.
-          </span>
-          <span>
+          </p>
+          <p className="m-0">
             Bookings confirm only after partner acceptance and server-verified payment.
-          </span>
+          </p>
         </div>
       </div>
     </footer>
