@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildAuthPath,
+  buildOAuthCallbackUrl,
   buildWorkspaceSignInPath,
+  extractOAuthDisplayName,
+  formatOAuthErrorMessage,
   normalizeDirectPathnameToHash,
   resolveLegacyHashRoute,
   resolveNextAppPostSignInRedirect,
+  resolveOAuthPostAuthRedirect,
   resolvePostSignInRedirect,
   resolvePostSignUpRedirect,
   sanitizeGuestRedirect,
@@ -159,5 +163,97 @@ describe('authRedirect helpers', () => {
     await expect(
       extractEdgeFunctionError(genericHttpError, 'Fallback checkout error'),
     ).resolves.toBe('Fallback checkout error');
+  });
+
+  it('builds safe Google OAuth callback URLs and blocks /auth/callback redirect loops', () => {
+    expect(sanitizeInternalRedirect('/auth/callback')).toBeNull();
+    expect(sanitizeInternalRedirect('/auth/callback?next=/stays')).toBeNull();
+
+    expect(buildOAuthCallbackUrl('https://hamlet.rest/')).toBe(
+      'https://hamlet.rest/auth/callback',
+    );
+    expect(
+      buildOAuthCallbackUrl('https://hamlet.rest', {
+        intent: 'signup',
+        next: '/stays/prop-ikoyi-1?checkIn=2026-11-10',
+      }),
+    ).toBe(
+      'https://hamlet.rest/auth/callback?intent=signup&next=%2Fstays%2Fprop-ikoyi-1%3FcheckIn%3D2026-11-10',
+    );
+    expect(
+      buildOAuthCallbackUrl('https://hamlet.rest', {
+        intent: 'signup',
+        next: 'https://evil.example/phish',
+      }),
+    ).toBe('https://hamlet.rest/auth/callback?intent=signup');
+    expect(
+      buildOAuthCallbackUrl('https://hamlet.rest', {
+        intent: 'signin',
+        next: '/auth/callback',
+      }),
+    ).toBe('https://hamlet.rest/auth/callback');
+  });
+
+  it('resolves post-OAuth destinations across new sign-ups, returning guests, partners, and admins', () => {
+    // New Google sign-up defaults to /stays, or returns to requested stay / partner application
+    expect(resolveOAuthPostAuthRedirect({ role: 'guest', intent: 'signup' })).toBe('/stays');
+    expect(
+      resolveOAuthPostAuthRedirect({
+        role: 'guest',
+        intent: 'signup',
+        next: '/partners/apply',
+      }),
+    ).toBe('/partners/apply');
+    expect(
+      resolveOAuthPostAuthRedirect({
+        role: 'guest',
+        intent: 'signin',
+        isNewlyCreatedAccount: true,
+      }),
+    ).toBe('/stays');
+
+    // Returning guest defaults to /account or requested guest deep link
+    expect(resolveOAuthPostAuthRedirect({ role: 'guest', intent: 'signin' })).toBe('/account');
+    expect(
+      resolveOAuthPostAuthRedirect({
+        role: 'guest',
+        intent: 'signin',
+        next: '/account/bookings',
+      }),
+    ).toBe('/account/bookings');
+
+    // Partners and admins always reach their workspace even if initiated from signup tab
+    expect(resolveOAuthPostAuthRedirect({ role: 'partner', intent: 'signup' })).toBe(
+      '/partners',
+    );
+    expect(
+      resolveOAuthPostAuthRedirect({
+        role: 'partner',
+        intent: 'signin',
+        next: '/partners/bookings?booking=bkg-1',
+      }),
+    ).toBe('/partners/bookings?booking=bkg-1');
+    expect(resolveOAuthPostAuthRedirect({ role: 'admin', intent: 'signup' })).toBe('/admin');
+  });
+
+  it('extracts Google OIDC display names cleanly and formats friendly OAuth errors', () => {
+    expect(extractOAuthDisplayName({ full_name: '  Adaeze   Okafor ' })).toBe(
+      'Adaeze Okafor',
+    );
+    expect(extractOAuthDisplayName({ name: 'Tunde Bakare' })).toBe('Tunde Bakare');
+    expect(
+      extractOAuthDisplayName({ given_name: 'Chidi', family_name: 'Nwosu' }),
+    ).toBe('Chidi Nwosu');
+    expect(extractOAuthDisplayName({}, 'kemi.adebayo@gmail.com')).toBe('kemi adebayo');
+
+    expect(formatOAuthErrorMessage('access_denied', 'User+cancelled')).toContain(
+      'cancelled',
+    );
+    expect(
+      formatOAuthErrorMessage(
+        'validation_failed',
+        'Unsupported provider: provider is not enabled',
+      ),
+    ).toContain('not yet enabled');
   });
 });

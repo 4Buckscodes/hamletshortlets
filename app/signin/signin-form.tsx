@@ -3,17 +3,22 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import {
+  buildOAuthCallbackUrl,
+  formatOAuthErrorMessage,
   readRequestedRedirectFromSearch,
   resolveNextAppPostSignInRedirect,
   resolvePostSignUpRedirect,
 } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { GoogleContinueButton } from '@/components/auth/GoogleContinueButton';
 import {
   FormField,
   StepFooterActions,
   StepProgressHeader,
   FIELD_INPUT_CLASS,
 } from '@/components/forms/ProgressiveFormPrimitives';
+
+const OAUTH_CONTEXT_STORAGE_KEY = 'hamlet:oauth-context';
 
 type Mode = 'signin' | 'signup' | 'reset';
 
@@ -46,6 +51,7 @@ export default function SignInForm() {
   const [lockedReferralCode, setLockedReferralCode] = useState('');
 
   const [busy, setBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -60,6 +66,12 @@ export default function SignInForm() {
         new URLSearchParams(window.location.search).get('ref') ||
         window.localStorage.getItem('hamlet:referral-code');
       if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
+
+      const oauthError = params.get('error') || params.get('oauth_error');
+      const oauthErrorDesc = params.get('error_description');
+      if (oauthError || oauthErrorDesc) {
+        setError(formatOAuthErrorMessage(oauthError, oauthErrorDesc));
+      }
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -91,6 +103,59 @@ export default function SignInForm() {
       requestedNext,
     );
     window.location.assign(target);
+  }
+
+  async function handleGoogleAuth() {
+    setError('');
+    setMessage('');
+
+    if (!client) {
+      setError(
+        'HAMLET account access is not configured on this deployment yet. Configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.',
+      );
+      return;
+    }
+
+    const intent = mode === 'signup' ? 'signup' : 'signin';
+    setOauthBusy(true);
+    try {
+      try {
+        window.sessionStorage.setItem(
+          OAUTH_CONTEXT_STORAGE_KEY,
+          JSON.stringify({ intent, next: requestedNext }),
+        );
+        if (lockedReferralCode) {
+          window.localStorage.setItem('hamlet:referral-code', lockedReferralCode);
+        }
+      } catch {
+        // Storage unavailable in restricted browser contexts — URL query params still carry state.
+      }
+
+      const redirectTo = buildOAuthCallbackUrl(window.location.origin, {
+        intent,
+        next: requestedNext,
+      });
+
+      const { error: oauthError } = await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            prompt: 'select_account',
+          },
+        },
+      });
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (caught) {
+      const rawMsg =
+        caught instanceof Error
+          ? caught.message
+          : 'Could not start Google sign-in right now.';
+      setError(formatOAuthErrorMessage(null, rawMsg));
+      setOauthBusy(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -261,6 +326,32 @@ export default function SignInForm() {
         />
       )}
 
+      {(mode === 'signin' || (mode === 'signup' && signupStep === 0)) && (
+        <div className="mb-5 space-y-4">
+          <GoogleContinueButton
+            mode={mode === 'signup' ? 'signup' : 'signin'}
+            busy={oauthBusy}
+            disabled={busy}
+            onClick={() => void handleGoogleAuth()}
+          />
+
+          {mode === 'signup' && lockedReferralCode && (
+            <p className="m-0 rounded-2xl border border-ink-100 bg-paper/75 px-3.5 py-2 text-[11px] font-medium text-ink-600">
+              Referral link attached:{' '}
+              <span className="font-mono font-bold text-ink-900">{lockedReferralCode}</span>
+            </p>
+          )}
+
+          <div className="relative flex items-center py-0.5">
+            <div className="flex-grow border-t border-ink-200/80" />
+            <span className="mx-3 shrink-0 text-[11px] font-bold uppercase tracking-wider text-ink-400">
+              {mode === 'signup' ? 'or sign up with email' : 'or continue with email'}
+            </span>
+            <div className="flex-grow border-t border-ink-200/80" />
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {(mode === 'signin' || mode === 'reset' || signupStep === 0) && (
           <>
@@ -408,7 +499,7 @@ export default function SignInForm() {
         {mode === 'signin' ? (
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || oauthBusy}
             className="primary-button mt-2 min-h-[48px] w-full"
           >
             {busy ? 'Signing in…' : 'Sign in to HAMLET'}
@@ -417,7 +508,7 @@ export default function SignInForm() {
           <div className="space-y-2 pt-1">
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || oauthBusy}
               className="primary-button min-h-[48px] w-full"
             >
               {busy ? 'Sending link…' : 'Send password reset link'}
@@ -440,7 +531,7 @@ export default function SignInForm() {
             isLastStep={signupStep === 1}
             nextLabel="Continue"
             submitLabel="Create my account"
-            busy={busy}
+            busy={busy || oauthBusy}
             busyLabel="Creating account…"
           />
         )}

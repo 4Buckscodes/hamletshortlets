@@ -17,8 +17,12 @@ api_url = "http://127.0.0.1"
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:5173"
-additional_redirect_urls = ["http://127.0.0.1:5173"]
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "http://localhost:3000/**",
+  "http://127.0.0.1:3000/**",
+  "http://127.0.0.1:5173"
+]
 enable_signup = true
 jwt_expiry = 3600
 
@@ -26,6 +30,11 @@ jwt_expiry = 3600
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
+
+[auth.external.google]
+enabled = false
+client_id = "env(GOOGLE_OAUTH_CLIENT_ID)"
+secret = "env(GOOGLE_OAUTH_CLIENT_SECRET)"
 
 [functions.paystack-initialize]
 verify_jwt = false
