@@ -455,4 +455,30 @@ describe('HAMLET Automatic Property Image Optimiser', () => {
       expect(src).not.toContain('cdn.jsdelivr.net');
     }
   });
+
+  it('keeps image upload sections focused strictly on on-device compression without Horatio photo analysis', () => {
+    const root = process.cwd();
+    expect(
+      existsSync(join(root, 'app/api/partner/horatio/photo-analysis/route.ts')),
+    ).toBe(false);
+
+    const horatioAssistantSrc = readFileSync(
+      join(root, 'src/components/forms/HoratioListingAssistant.tsx'),
+      'utf8',
+    );
+    expect(horatioAssistantSrc).not.toContain('photo-analysis');
+    expect(horatioAssistantSrc).not.toContain('type="file"');
+    expect(horatioAssistantSrc).not.toContain('Analyse property photos');
+    expect(horatioAssistantSrc).not.toContain('Inspect property photos');
+
+    const mediaManagerSrc = readFileSync(
+      join(root, 'src/components/forms/PropertyMediaManager.tsx'),
+      'utf8',
+    );
+    expect(mediaManagerSrc).toContain('optimisePropertyImage');
+    expect(mediaManagerSrc).not.toContain('photo-analysis');
+
+    const storeSrc = readFileSync(join(root, 'src/lib/store.tsx'), 'utf8');
+    expect(storeSrc).toContain('optimisePropertyImage');
+  });
 });
