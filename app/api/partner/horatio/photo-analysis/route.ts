@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 const MAX_IMAGES = 3;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_TOTAL_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_TOTAL_IMAGE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export async function POST(request: Request) {
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const actualBytes = Buffer.from(data, 'base64').byteLength;
     if (actualBytes !== size) return NextResponse.json({ error: 'A selected photo could not be validated. Please choose it again.' }, { status: 400 });
     totalBytes += actualBytes;
-    if (totalBytes > MAX_TOTAL_IMAGE_BYTES) return NextResponse.json({ error: 'The selected photos are too large. Choose a smaller set.' }, { status: 413 });
+    if (totalBytes > MAX_TOTAL_IMAGE_BYTES) return NextResponse.json({ error: 'The optimised photos exceed the combined 3 MB analysis limit. Choose fewer photos.' }, { status: 413 });
     images.push({ type: 'image_url', image_url: { url: `data:${mimeType};base64,${data}` } });
   }
 
