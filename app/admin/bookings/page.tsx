@@ -266,7 +266,7 @@ export default function AdminBookingsPage() {
               ) : (
                 <>
                   <p className="m-0 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
-                    <strong>Reconciliation notice:</strong> Recording a refund updates HAMLET’s internal ledger and reverses un-disbursed commission rows. Execute actual Paystack/bank money movement separately.
+                    <strong>Reconciliation notice:</strong> Updates ledger and reverses unpaid commissions. Process external Paystack/bank transfer separately.
                   </p>
                   <FormField label="Refund amount (NGN)">
                     {fieldProps => (
@@ -304,7 +304,7 @@ export default function AdminBookingsPage() {
                     rows={3}
                     value={note}
                     onChange={e => setNote(e.target.value)}
-                    placeholder="Reason recorded in admin_audit_log…"
+                    placeholder="Reason for action…"
                     className={`${FIELD_INPUT_CLASS} resize-y`}
                   />
                 )}

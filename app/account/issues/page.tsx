@@ -49,19 +49,16 @@ const ISSUE_STEPS = [
     id: 'booking',
     title: 'Booking & issue type',
     shortLabel: '1. Booking & type',
-    description: 'Select the booking affected and what kind of help you need.',
   },
   {
     id: 'details',
-    title: 'Urgency & what happened',
+    title: 'Urgency & details',
     shortLabel: '2. Details',
-    description: 'Choose the urgency level and describe what occurred.',
   },
   {
     id: 'evidence',
-    title: 'Evidence note & submit',
+    title: 'Review & submit',
     shortLabel: '3. Submit',
-    description: 'Add any supporting reference link or note, then send to HAMLET operations.',
   },
 ] as const;
 
@@ -285,10 +282,10 @@ export default function AccountIssuesPage() {
           <div>
             <p className="eyebrow">Guest Support</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Report or track a booking issue
+              Report or track an issue
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Reports are linked directly to your booking reference for HAMLET operations review. Never include passwords or full payment card numbers.
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
+              Never include passwords or payment card numbers.
             </p>
           </div>
           <AccountNav current="issues" />
@@ -396,10 +393,7 @@ export default function AccountIssuesPage() {
                       )}
                     </FormField>
 
-                    <FormField
-                      label="What happened?"
-                      hint="Share times, what you expected, and what help you need."
-                    >
+                    <FormField label="What happened?">
                       {fieldProps => (
                         <textarea
                           {...fieldProps}
@@ -409,7 +403,7 @@ export default function AccountIssuesPage() {
                           rows={4}
                           value={description}
                           onChange={e => setDescription(e.target.value)}
-                          placeholder="Provide clear context so operations can assist promptly…"
+                          placeholder="Describe what happened…"
                           className={`${FIELD_INPUT_CLASS} resize-y`}
                         />
                       )}
@@ -429,9 +423,8 @@ export default function AccountIssuesPage() {
                     </div>
 
                     <FormField
-                      label="Supporting evidence note or HTTPS photo link"
+                      label="Supporting note or HTTPS photo link"
                       optional
-                      hint="Optional: add a photo link, receipt reference, or inspection detail."
                     >
                       {fieldProps => (
                         <textarea

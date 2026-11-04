@@ -210,11 +210,8 @@ export default function PartnerAvailabilityPage() {
           <div>
             <p className="eyebrow">Calendar & Availability</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Manage unavailable dates
+              Unavailable dates
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Block maintenance windows, owner stays or external bookings so guests only request open dates.
-            </p>
           </div>
           {(role === 'partner' || role === 'admin') && (
             <PartnerNav current="availability" />

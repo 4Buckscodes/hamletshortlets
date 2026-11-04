@@ -18,17 +18,14 @@ export default function SignInPage() {
         <div className="w-full max-w-md">
           <section data-hamlet-reveal className="rounded-3xl border border-ink-200 bg-white p-6 shadow-md sm:p-8">
             <p className="eyebrow">Your stay, sorted.</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-4xl">
+            <h1 className="serif mt-2 mb-5 text-3xl font-medium text-ink-900 sm:text-4xl">
               Welcome to HAMLET.
             </h1>
-            <p className="mt-2 mb-6 text-sm leading-relaxed text-ink-500">
-              Continue with your Google account or use your email address to sign in and manage bookings.
-            </p>
             <SignInForm />
           </section>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-ink-500">
-            Applying as an owner, property manager, operator, closing agent or referrer? Create your account first, then complete the short Partner Application.
+            Listing or managing stays? Sign in first, then join the Partner Network.
           </p>
         </div>
       </main>

@@ -186,11 +186,8 @@ export default function PartnerProfilePage() {
 
             <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                Property management assignments ({assignments.length})
+                Property assignments ({assignments.length})
               </h2>
-              <p className="mt-1 text-xs text-ink-500">
-                Explicit per-property permissions granted through your submissions or HAMLET operations.
-              </p>
 
               {assignments.length > 0 ? (
                 <div className="mt-4 space-y-3">

@@ -63,8 +63,6 @@ This matrix maps every user, partner, administrator, and crawler route from the 
 
 ---
 
-## 5. Decommissioning Criteria for `/legacy`
+## 5. `/legacy` Route Status
 
-`/legacy` (`app/legacy/page.tsx`) is marked `robots: { index: false, follow: false }` and is never linked from primary guest navigation or post-sign-in redirects. It may be removed once:
-1. Custom domains `hamlet.rest` and `www.hamlet.rest` have been cut over to the Next.js Vercel project for 14 days without rollback.
-2. Any bookmarked hash URLs (`/#/stays`, `/#/signin`) are confirmed unused in analytics.
+The Next.js `/legacy` wrapper route (`app/legacy/`) and public showcase demo routes (`app/stays/showcase/`) have been removed from the production App Router so no illustrative or demo inventory is reachable on `hamlet.rest`.

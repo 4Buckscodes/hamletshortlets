@@ -76,62 +76,56 @@ const ROLE_OPTIONS = [
     value: 'Property owner',
     label: 'Property owner',
     badge: 'Owner & host access',
-    description: 'I own one or more shortlet apartments or homes. I can also close eligible bookings for other properties and introduce new partners.',
+    description: 'List your own shortlet apartments or homes.',
   },
   {
     value: 'Authorised manager',
     label: 'Authorised property manager',
-    description: 'I manage properties under an owner mandate. I can also close eligible bookings and introduce new partners.',
+    description: 'Manage properties under an owner mandate.',
   },
   {
     value: 'Multi-property operator',
     label: 'Multi-property operator',
-    description: 'I operate a portfolio of serviced apartments. I can also close eligible bookings and introduce new partners.',
+    description: 'Operate a portfolio of serviced apartments.',
   },
   {
     value: 'Closing agent',
     label: 'Closing agent',
     badge: '10% booking commission',
-    description: 'I help guests book stays across HAMLET, including properties I do not own. I can also introduce new partners and earn eligible referral rewards.',
+    description: 'Help guests book verified stays across HAMLET.',
   },
 ] as const;
 
 const APPLY_STEPS = [
   {
     id: 'role',
-    title: 'How will you work with HAMLET?',
+    title: 'Primary role',
     shortLabel: '1. Role',
-    description: 'Tell us your main role so we know who you are and how to contact and support you. It does not limit your earning opportunities.'
   },
   {
     id: 'contact',
     title: 'Contact & business details',
     shortLabel: '2. Contact',
-    description: 'Tell us how HAMLET operations can reach you.',
   },
   {
     id: 'focus',
-    title: 'Lagos corridors & scope',
+    title: 'Lagos focus',
     shortLabel: '3. Lagos focus',
-    description: 'Select the Lagos Island or Mainland neighbourhoods you cover.',
   },
   {
     id: 'verification',
     title: 'Optional background',
     shortLabel: '4. Background',
-    description: 'Add context about your network or property authority if you wish. You can verify your identity later from your dashboard.',
   },
   {
     id: 'payout',
-    title: 'Settlement & payout details',
+    title: 'Payout details',
     shortLabel: '5. Payout',
-    description: 'Optional settlement bank preference for future approved disbursements.',
   },
   {
     id: 'declarations',
-    title: 'Review & declarations',
+    title: 'Review & submit',
     shortLabel: '6. Submit',
-    description: 'Confirm HAMLET’s marketplace standards and submit for review.',
   },
 ] as const;
 
@@ -517,8 +511,8 @@ export default function PartnerApplicationForm() {
           <div className="space-y-4">
             <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
               <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
-              <p className="m-0 mt-1">
-                Once approved, you can earn eligible closing-agent commission on bookings you close across HAMLET, including for properties you do not own, and partner-referral rewards for eligible activity from partners you introduce. Property owners and managers can participate in these earning streams without creating another account. Rewards follow booking attribution, eligibility, and payout rules.
+              <p className="m-0 mt-1 text-xs text-ink-600">
+                Approved partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
             <OptionCardGroup
@@ -528,7 +522,7 @@ export default function PartnerApplicationForm() {
               onChange={role => setValues(prev => ({ ...prev, role }))}
             />
             <p className="m-0 text-xs leading-relaxed text-ink-600">
-              Your selected role describes your main work; it does not lock your account to that role. Eligible partners can close bookings across the marketplace and introduce new partners without signing up again.
+              Your selection describes your main work and does not lock your account to that role.
             </p>
           </div>
         )}
@@ -633,8 +627,7 @@ export default function PartnerApplicationForm() {
 
             {isInventoryRole && (
               <StepperCounter
-                label="How many Lagos properties do you plan to list?"
-                hint="You will add individual property details after your partner account is approved."
+                label="Planned properties"
                 value={Math.max(1, values.propertiesCount)}
                 min={1}
                 max={200}
@@ -648,20 +641,13 @@ export default function PartnerApplicationForm() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-ink-100 bg-paper p-4 text-sm leading-relaxed text-ink-700">
-              <p className="m-0 font-bold text-ink-900">Identity verification can wait</p>
-              <p className="m-0 mt-1">
-                You can submit your initial partner application without providing an ID or explaining your network. Your dashboard will show your current partner level and how to request verification when you are ready. Restricted activities will still require the relevant checks.
-              </p>
-            </div>
             <FormField
               label={
                 isInventoryRole
                   ? 'Ownership or management background'
-                  : 'Guest booking or partner referral network in Lagos'
+                  : 'Booking or referral network'
               }
               optional
-              hint="Optional. You can leave this blank and add details later."
             >
               {fieldProps => (
                 <textarea
@@ -675,11 +661,7 @@ export default function PartnerApplicationForm() {
                       authoritySummary: e.target.value,
                     }))
                   }
-                  placeholder={
-                    isInventoryRole
-                      ? 'Optional: share a little about your properties or management experience…'
-                      : 'Optional: share how you connect guests, property owners or other partners…'
-                  }
+                  placeholder="Optional context…"
                   className={`${FIELD_INPUT_CLASS} resize-y`}
                 />
               )}
@@ -689,9 +671,6 @@ export default function PartnerApplicationForm() {
 
         {step === 4 && (
           <div className="space-y-4">
-            <p className="m-0 text-xs leading-relaxed text-ink-500">
-              Optional at application stage: share your preferred Nigerian settlement bank name and account title so operations can match future approved payouts.
-            </p>
             <FormField label="Settlement bank name" optional>
               {fieldProps => (
                 <input

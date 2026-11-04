@@ -6,25 +6,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
-  ArrowUpRight,
-  Bath,
-  BedDouble,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Loader2,
-  MapPin,
   RotateCcw,
   SlidersHorizontal,
-  Users,
   X,
 } from 'lucide-react';
 import {
   ISLAND_AND_LEKKI_AREAS,
   MAINLAND_AREAS,
-  isMainlandArea,
 } from '@/lib/areas';
-import { useCurrency } from '@/lib/currency';
+import { CURRENCY_SYMBOLS, useCurrency } from '@/lib/currency';
 import {
   ACCOMMODATION_TYPE_OPTIONS,
   BEDROOM_FILTER_OPTIONS,
@@ -33,17 +26,12 @@ import {
   DISCOVERY_SORT_OPTIONS,
   buildDiscoverySearchParams,
   filterAndSortApprovedStays,
-  filterAndSortShowcaseConcepts,
-  formatAccommodationLabel,
-  formatBedroomCountLabel,
   getActiveFilterBadges,
-  getValidShowcaseNightlyNgn,
   validatePriceRange,
   validateStayDates,
   type ActiveFilterBadge,
   type DiscoveryFilterState,
   type DiscoverySortKey,
-  type ShowcaseConceptRecord,
 } from '@/lib/discovery';
 import { getBrowserSupabase, type PublicStayRecord } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
@@ -58,127 +46,23 @@ import { StayListingCard } from './SiteShell';
 export interface DiscoveryMarketplaceProps {
   mode: 'homepage' | 'stays';
   approvedStays: PublicStayRecord[];
-  showcaseConcepts?: ShowcaseConceptRecord[];
   initialFilters?: Partial<DiscoveryFilterState>;
   initialUnavailableIds?: string[] | null;
   availabilitySupported?: boolean;
   queryError?: boolean;
 }
 
-function ShowcaseConceptCard({ concept }: { concept: ShowcaseConceptRecord }) {
-  const { formatPrice, currency } = useCurrency();
-  const validRate = getValidShowcaseNightlyNgn(concept.nightly_rate_ngn);
-  const corridor = isMainlandArea(concept.area) ? 'Mainland' : 'Island';
-  const accommodationLabel = formatAccommodationLabel(
-    concept.property_type,
-    concept.bedrooms,
-  );
-  const bedroomLabel = formatBedroomCountLabel(concept.bedrooms, concept.property_type);
-  const visibleAmenities = concept.amenities.slice(0, 3);
-  const extraCount = Math.max(0, concept.amenities.length - visibleAmenities.length);
-
-  return (
-    <article className="group flex min-w-0 flex-col justify-between overflow-hidden rounded-3xl border border-ink-200/80 bg-white shadow-2xs transition hover:border-ink-400">
-      <div>
-        <div className="relative border-b border-ink-100 bg-gradient-to-br from-clay via-paper to-clay px-5 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-950">
-              <Eye className="h-3 w-3 shrink-0 text-amber-800" />
-              Showcase property
-            </span>
-            <span className="rounded-full border border-ink-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-ink-700">
-              Not bookable · {corridor}
-            </span>
-          </div>
-
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{concept.area}</span>
-            <span className="text-ink-400">·</span>
-            <span className="truncate text-ink-600">{accommodationLabel}</span>
-          </div>
-
-          <h4 className="mt-1 line-clamp-2 font-display text-lg font-bold leading-snug text-ink-950">
-            {concept.title}
-          </h4>
-        </div>
-
-        <div className="p-5">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-ink-600">
-            <span className="inline-flex items-center gap-1">
-              <BedDouble className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              {bedroomLabel}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Bath className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              {concept.bathrooms} {concept.bathrooms === 1 ? 'bath' : 'baths'}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              Up to {concept.capacity} guests
-            </span>
-          </div>
-
-          {visibleAmenities.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {visibleAmenities.map(item => (
-                <span
-                  key={item}
-                  className="max-w-full truncate rounded-full border border-ink-100 bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink-600"
-                >
-                  {item}
-                </span>
-              ))}
-              {extraCount > 0 && (
-                <span className="rounded-full border border-ink-100 bg-paper px-2 py-0.5 text-[11px] font-semibold text-ink-500">
-                  +{extraCount} more
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-end justify-between gap-3 border-t border-ink-100 bg-paper/55 px-5 py-3.5">
-        <div className="min-w-0">
-          <span className="block text-[10px] font-bold uppercase tracking-wider text-ink-500">
-            Indicative estimate
-          </span>
-          {validRate !== null ? (
-            <span className="font-mono text-base font-extrabold text-ink-900">
-              {formatPrice(validRate, { roundWhole: true })}
-              <span className="font-sans text-xs font-medium text-ink-500">
-                {' '}
-                / night{currency !== 'NGN' ? ` (${currency})` : ''}
-              </span>
-            </span>
-          ) : (
-            <span className="text-xs font-semibold text-ink-500">Price unavailable</span>
-          )}
-        </div>
-
-        <Link
-          href={`/stays/showcase/${encodeURIComponent(concept.id)}`}
-          className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full border border-ink-200 bg-white px-3.5 text-xs font-bold text-ink-900 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
-        >
-          <span>View showcase</span>
-          <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
-        </Link>
-      </div>
-    </article>
-  );
-}
-
 export function DiscoveryMarketplace({
   mode,
   approvedStays,
-  showcaseConcepts = [],
   initialFilters,
   initialUnavailableIds = null,
   availabilitySupported = true,
   queryError = false,
 }: DiscoveryMarketplaceProps) {
   const router = useRouter();
+  const { currency } = useCurrency();
+  const symbol = CURRENCY_SYMBOLS[currency];
   const railRef = useRef<HTMLDivElement | null>(null);
   const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
 
@@ -187,7 +71,6 @@ export function DiscoveryMarketplace({
     ...initialFilters,
   }));
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [showAllShowcase, setShowAllShowcase] = useState(mode === 'stays');
 
   const initialPairKey =
     initialFilters?.checkIn && initialFilters?.checkOut
@@ -369,16 +252,6 @@ export function DiscoveryMarketplace({
     [approvedStays, filters, todayIso, unavailableSet],
   );
 
-  const filteredShowcase = useMemo(
-    () => filterAndSortShowcaseConcepts(showcaseConcepts, filters),
-    [showcaseConcepts, filters],
-  );
-
-  const visibleShowcase = useMemo(() => {
-    if (mode === 'stays' || showAllShowcase) return filteredShowcase;
-    return filteredShowcase.slice(0, 6);
-  }, [filteredShowcase, mode, showAllShowcase]);
-
   const activeBadges = useMemo(() => getActiveFilterBadges(filters), [filters]);
 
   const detailQuerySuffix = useMemo(() => {
@@ -555,9 +428,6 @@ export function DiscoveryMarketplace({
             >
               Places worth staying in
             </h2>
-            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-ink-600 sm:text-sm">
-              Every bookable listing on HAMLET passes ownership, identity, authority, and physical inspection checks before publication.
-            </p>
           </div>
 
           {mode === 'homepage' && (
@@ -565,7 +435,7 @@ export function DiscoveryMarketplace({
               href={fullCatalogueHref}
               className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 self-start rounded-full border border-ink-200 bg-white px-4 text-xs font-extrabold text-ink-900 shadow-2xs transition hover:border-ink-900 sm:self-auto"
             >
-              <span>Open full /stays catalogue</span>
+              <span>View all stays</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           )}
@@ -788,8 +658,7 @@ export function DiscoveryMarketplace({
 
           {dateValidation.valid && !dateRpcSupported && (
             <p className="mt-3 rounded-xl border border-ink-200 bg-paper px-3.5 py-2 text-xs text-ink-600">
-              Showing matching stays — your chosen dates ({filters.checkIn} →{' '}
-              {filters.checkOut}) will be confirmed directly by the property partner when you request to book.
+              Dates ({filters.checkIn} → {filters.checkOut}) are confirmed by the host on request.
             </p>
           )}
 
@@ -830,24 +699,29 @@ export function DiscoveryMarketplace({
             className="m-0 text-sm font-bold text-ink-900"
           >
             {queryError
-              ? 'Live marketplace temporarily unavailable'
+              ? 'Marketplace temporarily unavailable'
               : approvedStays.length === 0
-                ? '0 verified bookable stays live right now'
+                ? 'No stays published yet'
                 : `${filteredApproved.length} ${
                     filteredApproved.length === 1 ? 'stay' : 'stays'
                   } available`}
             {filters.area ? ` in ${filters.area}` : ''}
           </p>
 
-          {checkingDates && (
-            <span
-              role="status"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-600"
-            >
-              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-brass-700" />
-              Checking live date availability…
+          <div className="flex items-center gap-3">
+            {checkingDates && (
+              <span
+                role="status"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-600"
+              >
+                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-brass-700" />
+                Checking dates…
+              </span>
+            )}
+            <span className="font-mono text-[11px] font-bold text-ink-500">
+              {symbol} ({currency})
             </span>
-          )}
+          </div>
         </div>
 
         {/* 1. Error State */}
@@ -860,10 +734,10 @@ export function DiscoveryMarketplace({
               <AlertCircle className="h-5 w-5 shrink-0" />
             </div>
             <h3 className="mt-3 font-display text-xl font-bold text-ink-950">
-              We could not load live stays right now.
+              Could not load live stays.
             </h3>
             <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-ink-600">
-              HAMLET never substitutes placeholder listings when the live database cannot be reached. Please try refreshing, or contact hello@hamlet.rest for assistance.
+              Please refresh or contact hello@hamlet.rest.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <button
@@ -871,10 +745,10 @@ export function DiscoveryMarketplace({
                 onClick={() => router.refresh()}
                 className="primary-button min-h-11 px-6"
               >
-                Retry loading stays
+                Retry
               </button>
               <Link href="/lagos" className="secondary-button min-h-11 px-5">
-                Explore Lagos neighbourhood guide
+                Lagos guide
               </Link>
             </div>
           </div>
@@ -887,12 +761,9 @@ export function DiscoveryMarketplace({
               </span>
               <h3 className="mt-3 font-display text-xl font-bold text-ink-950 sm:text-2xl">
                 {filters.area
-                  ? `No verified bookable stays are published in ${filters.area} yet.`
-                  : 'Verified Lagos shortlets are currently completing onboarding.'}
+                  ? `No verified stays published in ${filters.area} yet.`
+                  : 'Verified Lagos stays are completing onboarding.'}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                HAMLET only opens booking requests once a property passes title/lease review, host identity verification, management authority, and physical Lagos inspection.
-              </p>
               {activeBadges.length > 0 && (
                 <div className="mt-4">
                   <button
@@ -928,12 +799,12 @@ export function DiscoveryMarketplace({
           /* 3. Filtered Empty State (approved properties exist, none match active filters) */
           <div className="rounded-3xl border border-ink-200 bg-white p-6 text-center shadow-2xs sm:p-10">
             <h3 className="font-display text-xl font-bold text-ink-950 sm:text-2xl">
-              No verified stays match these exact filters.
+              No verified stays match these filters.
             </h3>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-ink-600">
               {!priceValidation.valid && priceValidation.error
                 ? priceValidation.error
-                : 'Try clearing one or more filters, widening your nightly budget, or exploring adjacent Lagos Mainland and Island neighbourhoods.'}
+                : 'Clear filters or broaden your search.'}
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <button
@@ -945,7 +816,7 @@ export function DiscoveryMarketplace({
                 Clear filters
               </button>
               <Link href="/lagos" className="secondary-button min-h-11 px-5">
-                Compare Lagos neighbourhoods
+                Lagos guide
               </Link>
             </div>
           </div>
@@ -963,81 +834,11 @@ export function DiscoveryMarketplace({
         )}
       </section>
 
-      {/* ── Strictly Separated Non-Bookable Showcase Concepts ── */}
-      {showcaseConcepts.length > 0 && (
-        <section
-          aria-labelledby="showcase-concepts-heading"
-          className="rounded-3xl border border-ink-200/90 bg-clay/45 p-5 sm:p-7"
-        >
-          <div className="flex flex-col gap-3 border-b border-ink-200/80 pb-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-950">
-                <Eye className="h-3 w-3 shrink-0 text-amber-800" />
-                Illustrative concept previews · Non-bookable
-              </div>
-              <h3
-                id="showcase-concepts-heading"
-                className="mt-2 font-display text-xl font-bold text-ink-950 sm:text-2xl"
-              >
-                Illustrative Lagos corridor concepts
-              </h3>
-              <p className="mt-1 max-w-3xl text-xs leading-relaxed text-ink-600 sm:text-sm">
-                These concept profiles illustrate the apartment typologies, house standards, and indicative nightly ranges HAMLET is onboarding across Lagos Island and Lagos Mainland. They are <strong>not verified listings</strong> and <strong>cannot be booked</strong>.
-              </p>
-            </div>
-
-            <p className="m-0 shrink-0 font-mono text-xs font-bold text-ink-600">
-              {filteredShowcase.length} concept{filteredShowcase.length === 1 ? '' : 's'}
-            </p>
-          </div>
-
-          {filteredShowcase.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-ink-200 bg-white p-6 text-center">
-              <p className="m-0 text-sm font-semibold text-ink-800">
-                No illustrative showcase concepts match your current filter combination.
-              </p>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="mt-3 inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border border-ink-200 bg-paper px-4 text-xs font-bold text-ink-900 hover:border-ink-900"
-              >
-                <RotateCcw className="h-3.5 w-3.5 shrink-0" />
-                Clear filters
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleShowcase.map(concept => (
-                  <ShowcaseConceptCard key={concept.id} concept={concept} />
-                ))}
-              </div>
-
-              {mode === 'homepage' && filteredShowcase.length > visibleShowcase.length && (
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowAllShowcase(true)}
-                    className="secondary-button min-h-11 px-5"
-                  >
-                    Show all {filteredShowcase.length} showcase concepts
-                  </button>
-                  <Link href={fullCatalogueHref} className="primary-button min-h-11 px-5">
-                    Browse on /stays <ArrowRight className="h-4 w-4 shrink-0" />
-                  </Link>
-                </div>
-              )}
-            </>
-          )}
-        </section>
-      )}
-
       {/* ── Mobile / Tablet Filter Drawer (Preserves FocusedDrawer) ── */}
       <FocusedDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         title="Filter Lagos stays"
-        subtitle="Combine location, accommodation type, bedrooms, nightly budget, guests, and dates."
       >
         <div className="space-y-4">
           <label className="block">
@@ -1089,7 +890,6 @@ export function DiscoveryMarketplace({
 
           <StepperCounter
             label="Minimum bedrooms"
-            hint="Filter by bedroom count"
             value={filters.minBedrooms}
             min={0}
             max={6}
@@ -1099,7 +899,6 @@ export function DiscoveryMarketplace({
 
           <StepperCounter
             label="Guests"
-            hint="Minimum guest capacity"
             value={filters.guests}
             min={1}
             max={16}

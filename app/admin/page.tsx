@@ -159,7 +159,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingProperties}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Awaiting 4-pillar review · {counts.approvedProperties} live on marketplace →
+                  {counts.approvedProperties} live →
                 </p>
               </Link>
 
@@ -174,7 +174,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingPartners}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending onboarding review →
+                  Pending review →
                 </p>
               </Link>
 
@@ -189,7 +189,7 @@ export default function AdminOverviewPage() {
                   {counts.activeBookings}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Requested, awaiting payment or confirmed →
+                  Active requests & stays →
                 </p>
               </Link>
 
@@ -204,7 +204,7 @@ export default function AdminOverviewPage() {
                   {counts.openIssues}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Audited guest & stay support reports →
+                  Open reports →
                 </p>
               </Link>
 
@@ -219,7 +219,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingLedger}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending payout reconciliation entries →
+                  Pending reconciliation →
                 </p>
               </Link>
 
@@ -234,7 +234,7 @@ export default function AdminOverviewPage() {
                   Accounts & Audit Log
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Inspect immutable operational trail →
+                  Directory & audit log →
                 </p>
               </Link>
             </div>
@@ -242,10 +242,10 @@ export default function AdminOverviewPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ink-100 bg-white p-5">
               <div>
                 <p className="m-0 text-sm font-bold text-ink-900">
-                  48-hour unpaid booking hold maintenance
+                  48-hour unpaid booking holds
                 </p>
                 <p className="m-0 text-xs text-ink-500">
-                  Expires overdue awaiting-payment holds and logs each release in the audit trail.
+                  Release expired awaiting-payment holds.
                 </p>
               </div>
               <button

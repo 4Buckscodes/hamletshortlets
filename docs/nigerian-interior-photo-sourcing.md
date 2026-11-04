@@ -24,13 +24,12 @@ Use real Nigerian short-let / serviced-apartment photography wherever possible. 
 1. Do not populate `image_urls` with third-party image URLs until HAMLET has written permission, a suitable commercial licence, or owner-supplied approval.
 2. Do not scrape, download, rehost, crop, remove watermarks from, or hotlink third-party property photographs without rights.
 3. For each approved image, record the image URL/path, photographer or owner, source URL, licence/permission evidence, date approved, and the property/room it depicts.
-4. For showcase concepts, use only licensed stock or original commissioned/generated illustrative imagery, and label it clearly as illustrative. Never imply it is the actual unit or an inspected/verified HAMLET listing.
-5. For real partner listings, use owner-supplied photographs tied to that exact property and approved during onboarding.
-6. Do not reuse one apartment's images across multiple different fictional property concepts in a way that suggests they are separate real homes.
+4. For real partner listings, use owner-supplied photographs tied to that exact property and approved during onboarding.
+5. Do not publish illustrative or fictional demo property listings on public HAMLET discovery surfaces.
 
 ## Current inventory state
 
-The 30 entries in `docs/lagos-showcase-inventory.json` remain fictional concepts. Their `image_urls` arrays intentionally remain empty until approved imagery is available. This is deliberate and protects HAMLET from misrepresenting another operator's property or displaying unlicensed images.
+Public discovery surfaces (`/` and `/stays`) display only real, verified, approved partner properties. No fictional or illustrative property concepts are published.
 
 
 ## Permission outreach shortlist
@@ -51,7 +50,7 @@ Hello [Name/Team],
 
 I'm reaching out on behalf of HAMLET, a Nigerian short-let discovery and booking platform preparing its Lagos launch.
 
-We came across your apartment/interior photography and appreciate the contemporary Nigerian design direction and presentation. We would like to request written permission to use a small, specifically agreed selection of your photographs as *illustrative visual references* in HAMLET's launch showcase and marketing materials.
+We came across your apartment/interior photography and appreciate the contemporary Nigerian design direction and presentation. We would like to request written permission to use a small, specifically agreed selection of your photographs in HAMLET's editorial and marketing materials.
 
 To be clear:
 - We will not identify the images as HAMLET partner properties or imply that the pictured apartments are listed, available, inspected or verified on HAMLET.

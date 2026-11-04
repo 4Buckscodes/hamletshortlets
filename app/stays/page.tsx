@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import showcaseInventory from '../../docs/lagos-showcase-inventory.json';
 import {
   parseDiscoverySearchParams,
-  sanitizeShowcaseInventory,
   validateStayDates,
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -25,10 +23,6 @@ export const metadata: Metadata = buildPublicPageMetadata({
     'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
   pathname: '/stays',
 });
-
-const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
-  showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
-);
 
 export default async function StaysCataloguePage({
   searchParams,
@@ -102,22 +96,18 @@ export default async function StaysCataloguePage({
             <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
               Explore verified shortlet stays across Lagos.
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Compare verified stays across Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah, Yaba, Ikeja GRA, Surulere, and Shomolu — with upfront pricing and partner-confirmed availability.
-            </p>
           </div>
 
           <Link
             href="/lagos"
             className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-900 shadow-2xs transition hover:border-ink-900 sm:self-auto"
           >
-            Lagos neighbourhood guide →
+            Lagos guide →
           </Link>
         </header>
 
         <StaysExplorer
           approvedStays={approvedStays}
-          showcaseConcepts={SHOWCASE_CONCEPTS}
           initialFilters={initialFilters}
           initialUnavailableIds={initialUnavailableIds}
           availabilitySupported={availabilitySupported}

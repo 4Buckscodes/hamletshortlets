@@ -27,13 +27,11 @@ const SIGNUP_STEPS = [
     id: 'credentials',
     title: 'Account credentials',
     shortLabel: '1. Login details',
-    description: 'Start with your email address and a secure password.',
   },
   {
     id: 'profile',
     title: 'Your guest details',
     shortLabel: '2. Your name',
-    description: 'Tell partners who is requesting the stay.',
   },
 ] as const;
 
@@ -372,10 +370,7 @@ export default function SignInForm() {
             </FormField>
 
             {mode !== 'reset' && (
-              <FormField
-                label="Password"
-                hint={mode === 'signup' ? 'Use at least 8 characters.' : undefined}
-              >
+              <FormField label="Password">
                 {fieldProps => (
                   <div className="relative">
                     <input
@@ -443,7 +438,7 @@ export default function SignInForm() {
             </FormField>
 
             {lockedReferralCode && (
-              <FormField label="Referral code" hint="This referral was attached to your sign-up link and cannot be changed.">
+              <FormField label="Referral code" hint="Applied from invite link.">
                 {fieldProps => (
                   <input
                     {...fieldProps}
@@ -456,11 +451,7 @@ export default function SignInForm() {
               </FormField>
             )}
 
-            <FormField
-              label="Phone number"
-              optional
-              hint="Helpful if HAMLET operations need to reach you about check-in."
-            >
+            <FormField label="Phone number" optional>
               {fieldProps => (
                 <input
                   {...fieldProps}
@@ -536,10 +527,6 @@ export default function SignInForm() {
           />
         )}
       </form>
-
-      <p className="mt-5 mb-0 text-[11px] leading-relaxed text-ink-500">
-        New accounts begin with guest permissions. Partner and administrator roles are granted only through HAMLET’s verified review workflow.
-      </p>
     </div>
   );
 }

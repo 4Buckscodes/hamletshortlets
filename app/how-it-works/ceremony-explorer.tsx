@@ -10,7 +10,7 @@ const CEREMONY_STEPS = [
     badge: 'Step 01 · Guest',
     Icon: Search,
     title: 'Request the stay',
-    body: 'Choose your dates and guest count, then review house rules and upfront stay pricing — zero card charge on request.',
+    body: 'Pick dates and guests, then review pricing and rules — no charge on request.',
     cta: { label: 'Explore stays', href: '/stays' },
   },
   {
@@ -18,21 +18,21 @@ const CEREMONY_STEPS = [
     badge: 'Step 02 · Host',
     Icon: ClipboardCheck,
     title: 'Host confirms dates',
-    body: 'The owner or authorised partner confirms availability and locks your dates under a 48-hour payment hold.',
+    body: 'The host confirms availability and opens a 48-hour payment hold.',
   },
   {
     num: '03',
     badge: 'Step 03 · Checkout',
     Icon: CreditCard,
     title: 'Pay via Paystack (48h)',
-    body: 'Pay securely inside your HAMLET account. Bookings confirm exclusively via Paystack’s signed server-side webhook — never browser redirects or screenshots.',
+    body: 'Complete payment inside your HAMLET account; bookings confirm once payment is verified.',
   },
   {
     num: '04',
     badge: 'Step 04 · Arrival',
     Icon: KeyRound,
     title: 'Arrive & enjoy your stay',
-    body: 'Confirmed stays unlock check-in instructions inside your account. Separate refundable caution deposits are inspected post-checkout.',
+    body: 'Check-in details unlock in your account. Caution deposits are reviewed after checkout.',
     cta: { label: 'Find a stay', href: '/stays' },
   },
 ] as const;

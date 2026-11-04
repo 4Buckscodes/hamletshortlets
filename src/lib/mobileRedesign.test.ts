@@ -15,7 +15,7 @@ describe('Mobile Hero, Mobile Navigation Drawer & Mobile Footer Redesign', () =>
     // Mobile hero editorial eyebrow + lagoon-side subcopy
     expect(src).toContain('Verified Shortlets · Lagos');
     expect(src).toContain(
-      'Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.',
+      'Island or Mainland — pick your side of the lagoon.',
     );
 
     // Lagos Lagoon & Lekki-Ikoyi cable-stayed bridge SVG geometry & palette

@@ -117,9 +117,6 @@ export default function LagosGuidePage() {
               Lagos Mainland &amp;{' '}
               <span className="italic text-brass-300">Lagos Island.</span>
             </h1>
-            <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Compare verified stays across <strong className="text-brass-300">Lagos Mainland</strong> (Yaba, Shomolu, Surulere &amp; Ikeja) and <strong className="text-brass-300">Lagos Island</strong> with upfront pricing tailored automatically to your location.
-            </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link href="/stays?area=Lagos+Mainland" className="btn-brass !rounded-full !px-6">
                 Lagos Mainland <ArrowRight className="h-4 w-4 shrink-0" />

@@ -179,17 +179,12 @@ export default function GuestAccountOverviewPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white p-5">
                   <div className="flex items-center gap-3">
                     <Building2 className="h-6 w-6 text-brass-600" />
-                    <div>
-                      <p className="m-0 text-sm font-bold text-ink-900">
-                        Verified Partner Account
-                      </p>
-                      <p className="m-0 text-xs text-ink-500">
-                        Manage your properties, booking requests, availability and earnings.
-                      </p>
-                    </div>
+                    <p className="m-0 text-sm font-bold text-ink-900">
+                      Partner Account
+                    </p>
                   </div>
                   <Link href="/partners" className="primary-button">
-                    Open Partner Workspace →
+                    Partner Workspace →
                   </Link>
                 </div>
               )}
@@ -198,31 +193,21 @@ export default function GuestAccountOverviewPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white p-5">
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="h-6 w-6 text-brass-600" />
-                    <div>
-                      <p className="m-0 text-sm font-bold text-ink-900">
-                        HAMLET Administrator Account
-                      </p>
-                      <p className="m-0 text-xs text-ink-500">
-                        Review properties, partner applications, bookings, issues and settlements.
-                      </p>
-                    </div>
+                    <p className="m-0 text-sm font-bold text-ink-900">
+                      Administrator Account
+                    </p>
                   </div>
                   <Link href="/admin" className="primary-button">
-                    Open Admin Console →
+                    Admin Console →
                   </Link>
                 </div>
               )}
 
               {(!profile || profile.role === 'guest') && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white p-5">
-                  <div>
-                    <p className="m-0 text-sm font-bold text-ink-900">
-                      Own, manage or refer shortlets in Lagos?
-                    </p>
-                    <p className="m-0 mt-0.5 text-xs text-ink-500">
-                      Submit a short partner application to list or manage stays on HAMLET.
-                    </p>
-                  </div>
+                  <p className="m-0 text-sm font-bold text-ink-900">
+                    Own, manage, or refer shortlets in Lagos?
+                  </p>
                   <Link href="/partners/apply" className="secondary-button">
                     Become a partner
                   </Link>
@@ -232,12 +217,9 @@ export default function GuestAccountOverviewPage() {
 
             {/* Compact Contact Profile Card */}
             <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
-              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+              <h2 className="serif m-0 mb-5 text-2xl font-medium text-ink-900">
                 Contact details
               </h2>
-              <p className="mt-1 mb-5 text-xs leading-relaxed text-ink-500">
-                Keep your name and phone current for booking confirmations. Account roles cannot be changed here.
-              </p>
 
               <form onSubmit={saveProfile} className="space-y-4">
                 <FormField label="Account email">

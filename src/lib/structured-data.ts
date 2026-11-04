@@ -327,7 +327,7 @@ function buildApprovedStaysItemListNode(
 
 /**
  * Homepage structured data (`WebPage` + optional `ItemList` of live approved stays).
- * Non-bookable showcase concepts are never emitted as bookable listings.
+ * Only verified, approved properties are emitted as bookable listings.
  */
 export function buildHomepageSchema(params?: {
   approvedStays?: ReadonlyArray<PublicStayRecord>;

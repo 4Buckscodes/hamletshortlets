@@ -15,10 +15,10 @@ export default function GlobalRouteError({
       <main className="shell flex flex-1 flex-col items-center justify-center py-20 text-center">
         <p className="eyebrow">Temporary interruption</p>
         <h1 className="serif mt-3 text-4xl font-medium text-ink-900 sm:text-5xl">
-          Something interrupted this view.
+          Could not load this view.
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-500">
-          No booking or payment state was changed. Try reloading this page or return to Lagos stays.
+          Try reloading or return to stays.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <button type="button" onClick={reset} className="primary-button">

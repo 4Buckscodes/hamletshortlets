@@ -90,11 +90,11 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       timezoneId: 'Africa/Lagos',
     });
     const lagosPage = await lagosCtx.newPage();
-    await lagosPage.goto('/stays/showcase/hamlet-preview-lagos-001');
+    await lagosPage.goto('/stays');
     await expect(
       lagosPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(lagosPage.getByText(/₦145,000/).first()).toBeVisible();
+    await expect(lagosPage.getByText(/₦ \(NGN\)/).first()).toBeVisible();
     await lagosCtx.close();
 
     // 2. UK visitor -> GBP (£) automatically via locale/timezone and /api/geo
@@ -104,11 +104,11 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       extraHTTPHeaders: { 'x-vercel-ip-country': 'GB' },
     });
     const ukPage = await ukCtx.newPage();
-    await ukPage.goto('/stays/showcase/hamlet-preview-lagos-001');
+    await ukPage.goto('/stays');
     await expect(
       ukPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(ukPage.getByText(/\(GBP\)/)).toBeVisible();
+    await expect(ukPage.getByText(/£ \(GBP\)/).first()).toBeVisible();
     await ukCtx.close();
 
     // 3. US visitor -> USD ($) automatically via locale/timezone and /api/geo
@@ -118,11 +118,11 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       extraHTTPHeaders: { 'x-vercel-ip-country': 'US' },
     });
     const usPage = await usCtx.newPage();
-    await usPage.goto('/stays/showcase/hamlet-preview-lagos-001');
+    await usPage.goto('/stays');
     await expect(
       usPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(usPage.getByText(/\(USD\)/)).toBeVisible();
+    await expect(usPage.getByText(/\$ \(USD\)/).first()).toBeVisible();
     await usCtx.close();
   });
 
@@ -153,24 +153,25 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page).toHaveURL(/\/stays$/);
   });
 
-  test('separates non-bookable showcase concepts from bookable stays and omits booking actions on showcase pages', async ({
+  test('omits illustrative showcase demo concepts across / and /stays and returns 404 for removed showcase routes', async ({
     page,
   }) => {
+    await page.goto('/');
+    await expect(page.getByText(/Illustrative concept/i)).toHaveCount(0);
+    await expect(page.getByText(/Lagos showcase concepts/i)).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /View showcase/i })).toHaveCount(0);
+
     await page.goto('/stays');
     await expect(
       page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
     ).toBeVisible();
-    await expect(
-      page.getByText(/Illustrative concept previews · Non-bookable/i).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/Illustrative concept/i)).toHaveCount(0);
+    await expect(page.getByText(/Lagos showcase concepts/i)).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /View showcase/i })).toHaveCount(0);
 
-    const firstShowcaseLink = page.getByRole('link', { name: /View showcase/i }).first();
-    await expect(firstShowcaseLink).toBeVisible();
-    await firstShowcaseLink.click();
-
-    await expect(page).toHaveURL(/\/stays\/showcase\//);
-    await expect(page.getByText(/Not accepting bookings/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Request to book|Reserve/i })).toHaveCount(0);
+    const removedDemoRes = await page.goto('/stays/showcase/hamlet-preview-lagos-001');
+    expect(removedDemoRes?.status()).toBe(404);
+    await expect(page.getByText(/Page not found\./i)).toBeVisible();
   });
 
   test('walks progressive 2-step guest sign-up on /signin and preserves ?next= intent', async ({

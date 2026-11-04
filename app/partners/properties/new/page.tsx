@@ -22,9 +22,6 @@ export default function NewPropertySubmissionPage() {
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
               Submit a Lagos stay
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Complete each short step at your own pace. Your progress saves automatically as a draft, and submitted properties stay private until approved by HAMLET review.
-            </p>
           </div>
           <PartnerNav current="new-property" />
         </div>

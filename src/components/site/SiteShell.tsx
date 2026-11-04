@@ -97,18 +97,18 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('mainland') || q.includes('yaba') || q.includes('surulere') || q.includes('shomolu') || q.includes('ikeja') || q.includes('island') || q.includes('lekki') || q.includes('ikate') || q.includes('ikoyi') || q.includes('area')) {
     return {
-      text: 'HAMLET covers both sides of Lagos: Lagos Mainland (Yaba, Surulere, Shomolu, Gbagada, Maryland, Ilupeju, Ikeja GRA & Magodo) for central access, tech hubs, and MMIA airport proximity — and Lagos Island & Lekki (Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru & Ajah) for corporate districts and waterfront stays.',
+      text: 'Lagos Mainland covers Yaba, Surulere, Shomolu, Gbagada, Maryland, and Ikeja GRA. Lagos Island & Lekki covers Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru, and Ajah.',
       links: [
-        { label: 'Browse Lagos Mainland stays', href: '/stays?area=Lagos+Mainland' },
-        { label: 'Browse Lagos Island stays', href: '/stays?side=island' },
-        { label: 'Read the Lagos area guide', href: '/lagos' },
+        { label: 'Lagos Mainland stays', href: '/stays?area=Lagos+Mainland' },
+        { label: 'Lagos Island stays', href: '/stays?side=island' },
+        { label: 'Lagos guide', href: '/lagos' },
       ],
     };
   }
 
   if (q.includes('price') || q.includes('fee') || q.includes('usd') || q.includes('gbp') || q.includes('dollar') || q.includes('pound') || q.includes('caution') || q.includes('deposit') || q.includes('₦') || q.includes('currency')) {
     return {
-      text: `Stay prices are automatically displayed in ${currency} based on your location. Domestic NGN stay prices include the owner’s agreed accommodation rate plus HAMLET’s 20% guest service fee (never added again at checkout) and any stated cleaning charge. International USD ($) and GBP (£) quotes apply a single 10% FX buffer and settle in NGN via Paystack. Refundable caution deposits are itemised separately without markup or FX buffer.`,
+      text: `Prices display in ${currency}. NGN stay rates include our 20% guest service fee upfront. USD and GBP quotes include a single 10% FX buffer and settle in NGN via Paystack. Caution deposits are itemised separately without markup.`,
       links: [
         { label: 'Explore stays', href: '/stays' },
         { label: 'Pricing & legal terms', href: '/legal' },
@@ -118,7 +118,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('partner') || q.includes('owner') || q.includes('list') || q.includes('agent') || q.includes('commission')) {
     return {
-      text: "HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies. Verified closing agents earn eligible commissions on attributed stays, and referring partners earn eligible rewards during an active referral window.",
+      text: "HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.",
       links: [
         { label: 'Apply as a partner', href: '/partners/apply' },
         { label: 'Partner workspace', href: '/partners' },
@@ -128,7 +128,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('pay') || q.includes('paystack') || q.includes('confirm') || q.includes('cancel') || q.includes('hold')) {
     return {
-      text: 'No card charge happens when you request dates. Once the host confirms availability, your dates are held for 48 hours so you can pay securely via Paystack inside My Account → My Bookings. Confirmation occurs only after server-verified payment.',
+      text: 'No charge is taken on request. Once the host confirms, a 48-hour Paystack payment window opens in My Bookings.',
       links: [
         { label: 'How HAMLET works', href: '/how-it-works' },
         { label: 'My bookings', href: '/account/bookings' },
@@ -137,11 +137,11 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
   }
 
   return {
-    text: 'I am Horatio, your HAMLET Lagos guide. Ask me about Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA) vs Island neighbourhoods (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah), 4-pillar property verification, upfront pricing, 48-hour Paystack holds, or listing a property.',
+    text: 'Ask about Lagos neighbourhoods, property verification, pricing, 48-hour payment holds, or listing a property.',
     links: [
-      { label: 'Explore all Lagos stays', href: '/stays' },
-      { label: 'Safety & 4-pillar verification', href: '/safety' },
-      { label: 'Read FAQs', href: '/faqs' },
+      { label: 'Explore stays', href: '/stays' },
+      { label: 'Verification & safety', href: '/safety' },
+      { label: 'FAQs', href: '/faqs' },
     ],
   };
 }
@@ -219,7 +219,7 @@ function NextHoratioDrawer({
             <div>
               <h2 className="font-display text-lg font-bold text-white">Horatio</h2>
               <p className="text-[11px] font-medium text-ink-300">
-                HAMLET Lagos stay &amp; verification guide
+                Stays, pricing &amp; booking guide
               </p>
             </div>
           </div>
@@ -235,11 +235,8 @@ function NextHoratioDrawer({
 
         <div className="flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-5">
           <div className="rounded-2xl border border-ink-100 bg-white p-4 text-xs leading-relaxed text-ink-700 shadow-2xs">
-            <p className="font-bold text-ink-900">How can I help sort your stay in Lagos?</p>
-            <p className="mt-1 text-ink-500">
-              Ask about neighbourhoods (Mainland &amp; Island), upfront pricing, 48-hour payment holds, or partner listing rules.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <p className="font-bold text-ink-900">Quick questions</p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               {HORATIO_SUGGESTIONS.map(prompt => (
                 <button
                   key={prompt}
@@ -957,10 +954,7 @@ export function SiteFooter() {
 
         <div className="mt-7 space-y-1 text-[13px] leading-[1.6] text-[#8E9BB0] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-ink-800 md:pt-6 md:text-xs md:text-ink-400">
           <p className="m-0">
-            © {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.
-          </p>
-          <p className="m-0">
-            Bookings confirm only after partner acceptance and server-verified payment.
+            © {new Date().getFullYear()} HAMLET.REST · Abundance Abodes · Lagos, Nigeria.
           </p>
         </div>
       </div>
