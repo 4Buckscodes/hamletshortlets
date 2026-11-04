@@ -42,7 +42,9 @@ export function HoratioListingAssistant({ onApply }: { onApply: (draft: Partial<
       const { data } = await db?.auth.getSession() ?? { data: { session: null } };
       const accessToken = data.session?.access_token;
       if (!accessToken) throw new Error('Your session has expired. Please sign in again.');
-      const images = await Promise.all(photoFiles.map(async file => {
+      const images: Array<{ mimeType: string; size: number; data: string }> = [];
+      // Optimise one photo at a time to protect memory on lower-end mobile devices.
+      for (const file of photoFiles) {
         if (file.size > OPTIMISER_MAX_SOURCE_FILE_BYTES) throw new Error(`${file.name} exceeds HAMLET’s 50 MB original photo limit.`);
         setPhotoProgress(`Optimising ${file.name}…`);
         const optimised = await optimisePropertyImage(file);
@@ -54,8 +56,8 @@ export function HoratioListingAssistant({ onApply }: { onApply: (draft: Partial<
           reader.onerror = () => reject(new Error('Could not read a photo.'));
           reader.readAsDataURL(optimised.file);
         });
-        return { mimeType: optimised.mimeType, size: optimised.file.size, data: dataUrl.split(',')[1] || '' };
-      }));
+        images.push({ mimeType: optimised.mimeType, size: optimised.file.size, data: dataUrl.split(',')[1] || '' });
+      }
       setPhotoProgress('Sending optimised photos to Horatio…');
       const response = await fetch('/api/partner/horatio/photo-analysis', {
         method: 'POST',
