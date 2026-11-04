@@ -45,7 +45,7 @@ export function HoratioListingAssistant({ onApply }: { onApply: (draft: Partial<
           reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Could not read a photo.'));
           reader.onerror = () => reject(new Error('Could not read a photo.'));
           reader.readAsDataURL(file);
-        }));
+        });
         return { mimeType: file.type, size: file.size, data: dataUrl.split(',')[1] || '' };
       }));
       const response = await fetch('/api/partner/horatio/photo-analysis', {
