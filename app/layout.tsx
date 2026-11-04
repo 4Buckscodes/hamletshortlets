@@ -39,21 +39,21 @@ export const metadata: Metadata = {
     locale: 'en_NG',
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Find your next shortlet in Lagos across Island and Mainland neighbourhoods with transparent pricing and partner-confirmed bookings.',
+      'Shortlets, with accountability. Verified apartments across Lagos Island and Lagos Mainland.',
     images: [
       {
-        url: '/images/lagos-hero.jpg',
-        width: 867,
-        height: 650,
-        alt: 'HAMLET — Shortlet stays in Lagos',
+        url: '/api/og/default',
+        width: 1200,
+        height: 630,
+        alt: 'HAMLET — Your stay, sorted. Shortlets, with accountability.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HAMLET.REST — Your stay, sorted.',
-    description: 'Find your next shortlet in Lagos. Transparent pricing and accountable stays.',
-    images: ['/images/lagos-hero.jpg'],
+    description: 'Shortlets, with accountability. Verified stays across Lagos.',
+    images: ['/api/og/default'],
   },
   robots: { index: true, follow: true },
 };

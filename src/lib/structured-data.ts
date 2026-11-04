@@ -16,7 +16,7 @@ export const HAMLET_PARENT_ORGANIZATION_ID = `${HAMLET_CANONICAL_ORIGIN}/#parent
 export const HAMLET_WEBSITE_ID = `${HAMLET_CANONICAL_ORIGIN}/#website`;
 export const HAMLET_LOGO_ID = `${HAMLET_CANONICAL_ORIGIN}/#logo`;
 export const HAMLET_LOGO_URL = `${HAMLET_CANONICAL_ORIGIN}/favicon.svg`;
-export const HAMLET_DEFAULT_SHARE_IMAGE = `${HAMLET_CANONICAL_ORIGIN}/images/lagos-hero.jpg`;
+export const HAMLET_DEFAULT_SHARE_IMAGE = `${HAMLET_CANONICAL_ORIGIN}/api/og/default`;
 export const HAMLET_VERIFIED_CONTACT_EMAIL = 'hello@hamlet.rest';
 
 /**
@@ -118,6 +118,8 @@ export function buildPublicPageMetadata({
       images: [
         {
           url: resolvedImage,
+          width: 1200,
+          height: 630,
           alt: resolvedAlt,
         },
       ],

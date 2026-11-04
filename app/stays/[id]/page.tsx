@@ -17,7 +17,10 @@ import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
   getStayTrustStatus,
+  getValidGuestNightlyNgn,
 } from '@/lib/discovery';
+import { formatNaira } from '@/lib/pricing';
+import { buildPropertyPreviewVersion } from '@/lib/share-engine';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   PUBLIC_PROPERTY_SELECT,
@@ -28,12 +31,13 @@ import {
   buildNextCanonicalUrl,
   buildPropertyDetailSchema,
   HAMLET_BRAND,
-  HAMLET_DEFAULT_SHARE_IMAGE,
-  resolveCanonicalAssetUrl,
+  HAMLET_CANONICAL_ORIGIN,
 } from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
+import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
+import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -74,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const { data } = await db
     .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,image_urls')
+    .select('title,area,property_type,bedrooms,capacity,nightly_rate,image_urls,updated_at')
     .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle();
@@ -86,14 +90,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${data.title} in ${data.area || 'Lagos'}`;
-  const description = `Explore ${data.title} in ${data.area || 'Lagos'} on HAMLET.REST. Compare stay details, verification status, house rules and transparent pricing before requesting to book.`;
+  const areaLabel = data.area || 'Lagos';
+  const guestNightly = getValidGuestNightlyNgn(data.nightly_rate);
+  const accommodationSummary = formatAccommodationLabel(
+    data.property_type,
+    data.bedrooms,
+  );
+  const priceSnippet =
+    guestNightly !== null ? ` · ${formatNaira(guestNightly)}/night` : '';
+  const title = `${data.title} in ${areaLabel}`;
+  const description = `${accommodationSummary} in ${areaLabel}, Lagos${priceSnippet}. View photos, verification status, house rules and request dates on HAMLET.`;
   const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(id)}`);
-  const firstImage =
-    Array.isArray(data.image_urls) && data.image_urls[0]
-      ? resolveCanonicalAssetUrl(data.image_urls[0])
-      : null;
-  const shareImage = firstImage ?? HAMLET_DEFAULT_SHARE_IMAGE;
+  const previewVersion = buildPropertyPreviewVersion(data);
+  const shareImage = `${HAMLET_CANONICAL_ORIGIN}/api/og/property/${encodeURIComponent(
+    id,
+  )}?v=${encodeURIComponent(previewVersion)}`;
 
   return {
     title,
@@ -103,14 +114,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       siteName: HAMLET_BRAND,
       locale: 'en_NG',
-      title: `${title} | HAMLET.REST`,
+      title: `${title} | HAMLET`,
       description,
       url: canonicalUrl,
-      images: [{ url: shareImage, alt: data.title }],
+      images: [
+        {
+          url: shareImage,
+          width: 1200,
+          height: 630,
+          alt: `${data.title} — ${areaLabel}, Lagos on HAMLET`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | HAMLET.REST`,
+      title: `${title} | HAMLET`,
       description,
       images: [shareImage],
     },
@@ -165,6 +183,18 @@ export default async function PropertyDetailPage({ params }: Props) {
             <ArrowLeft className="h-4 w-4 shrink-0" /> All Lagos stays
           </Link>
         </div>
+
+        <PartnerPropertyDetailBar
+          stay={{
+            id: stay.id,
+            title: stay.title,
+            area: stay.area,
+            propertyType: stay.property_type,
+            bedrooms: stay.bedrooms,
+            capacity: stay.capacity,
+            ownerNightlyRateNgn: stay.nightly_rate,
+          }}
+        />
 
         <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-brass-700">
           <span className="inline-flex items-center gap-1">
@@ -330,6 +360,10 @@ export default async function PropertyDetailPage({ params }: Props) {
               deposit={Number(stay.refundable_deposit || 0)}
               capacity={stay.capacity}
               firstAvailableDate={stay.first_available_date}
+            />
+            <PropertyEnquiryCard
+              propertyId={stay.id}
+              propertyTitle={stay.title}
             />
           </aside>
         </div>

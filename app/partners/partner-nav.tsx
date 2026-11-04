@@ -1,25 +1,31 @@
+'use client';
+
 import Link from 'next/link';
 
-const PARTNER_LINKS = [
-  { href: '/partners', label: 'Overview', id: 'overview' },
-  { href: '/partners/properties/new', label: 'Submit stay', id: 'new-property' },
-  { href: '/partners/bookings', label: 'Booking requests', id: 'bookings' },
-  { href: '/partners/availability', label: 'Availability', id: 'availability' },
-  { href: '/partners/earnings', label: 'Earnings & referrals', id: 'earnings' },
-  { href: '/partners/profile', label: 'Profile & assignments', id: 'profile' },
-] as const;
+export type PartnerTab =
+  | 'overview'
+  | 'marketing'
+  | 'analytics'
+  | 'bookings'
+  | 'availability'
+  | 'earnings'
+  | 'profile'
+  | 'new-property';
 
-export function PartnerNav({
-  current,
-}: {
-  current: (typeof PARTNER_LINKS)[number]['id'];
-}) {
+const ITEMS: Array<{ id: PartnerTab; label: string; href: string }> = [
+  { id: 'overview', label: 'Overview', href: '/partners' },
+  { id: 'marketing', label: 'Share & Studio', href: '/partners/marketing' },
+  { id: 'analytics', label: 'Performance', href: '/partners/analytics' },
+  { id: 'bookings', label: 'Booking requests', href: '/partners/bookings' },
+  { id: 'availability', label: 'Calendar', href: '/partners/availability' },
+  { id: 'earnings', label: 'Earnings & referrals', href: '/partners/earnings' },
+  { id: 'profile', label: 'Profile & payout', href: '/partners/profile' },
+];
+
+export function PartnerNav({ current }: { current: PartnerTab }) {
   return (
-    <nav
-      aria-label="Partner workspace navigation"
-      className="flex flex-wrap gap-2"
-    >
-      {PARTNER_LINKS.map(item => {
+    <nav aria-label="Partner workspace navigation" className="flex flex-wrap gap-2">
+      {ITEMS.map(item => {
         const active = item.id === current;
         return (
           <Link
@@ -28,8 +34,8 @@ export function PartnerNav({
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'primary-button min-h-[42px]'
-                : 'secondary-button min-h-[42px]'
+                ? 'inline-flex min-h-[40px] items-center rounded-full bg-ink-950 px-4 text-xs font-bold text-white'
+                : 'inline-flex min-h-[40px] items-center rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-800 transition hover:border-ink-900'
             }
           >
             {item.label}

@@ -13,6 +13,11 @@ import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
+  extractShareTokenFromSearchParams,
+  readPropertyShareTokenHint,
+  readVisitorSessionKey,
+} from '@/lib/share-engine';
+import {
   FocusedDrawer,
   FormField,
   StepFooterActions,
@@ -141,6 +146,11 @@ export default function BookingRequestForm({
     if (checkOut) qs.set('checkOut', checkOut);
     qs.set('guests', String(guests));
     if (targetStep === 1) qs.set('step', '2');
+    const activeShareToken =
+      (typeof window !== 'undefined'
+        ? extractShareTokenFromSearchParams(new URLSearchParams(window.location.search))
+        : null) || readPropertyShareTokenHint(propertyId);
+    if (activeShareToken) qs.set('ref', activeShareToken);
     return `/stays/${encodeURIComponent(propertyId)}?${qs.toString()}`;
   }
 
@@ -204,6 +214,10 @@ export default function BookingRequestForm({
           guests,
           specialRequests: requests.trim(),
           quoteCurrency: currency,
+          visitorSessionKey: readVisitorSessionKey(),
+          shareToken:
+            extractShareTokenFromSearchParams(new URLSearchParams(window.location.search)) ||
+            readPropertyShareTokenHint(propertyId),
         }),
       });
       const result = (await response.json()) as {

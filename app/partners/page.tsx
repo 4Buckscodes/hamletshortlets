@@ -2,11 +2,20 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, PauseCircle, PlayCircle, Plus } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  PauseCircle,
+  PlayCircle,
+  Plus,
+  Share2,
+} from 'lucide-react';
 import {
   getBrowserSupabase,
+  isMissingSchemaObjectError,
   PARTNER_PROPERTY_SELECT,
 } from '@/lib/next-supabase';
+import { PartnerShareActions } from '@/components/share/PartnerShareActions';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { PartnerNav } from './partner-nav';
 
@@ -14,11 +23,15 @@ type PartnerProperty = {
   id: string;
   title: string;
   area: string;
+  property_type: string | null;
+  bedrooms: number | null;
+  capacity: number | null;
   nightly_rate: number;
   status: string;
   trust_label: string;
   review_note: string | null;
   updated_at: string;
+  allow_partner_sharing?: boolean;
 };
 
 const STATUS_BADGE: Record<string, string> = {
@@ -37,6 +50,7 @@ export default function PartnerDashboardPage() {
   const [role, setRole] = useState('');
   const [partnerName, setPartnerName] = useState('');
   const [properties, setProperties] = useState<PartnerProperty[]>([]);
+  const [shareFlagsDeployed, setShareFlagsDeployed] = useState(false);
   const [pendingBookingCount, setPendingBookingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState('');
@@ -71,21 +85,43 @@ export default function PartnerDashboardPage() {
       return;
     }
 
-    const [propResult, bookingResult] = await Promise.all([
+    const [propResult, shareFlagResult, bookingResult] = await Promise.all([
       db
         .from('properties')
         .select(PARTNER_PROPERTY_SELECT)
         .order('updated_at', { ascending: false }),
+      db.from('properties').select('id,allow_partner_sharing'),
       db
         .from('bookings')
         .select('id', { count: 'exact', head: true })
         .in('status', ['requested', 'checking']),
     ]);
 
+    const flagMap = new Map<string, boolean>();
+    if (!shareFlagResult.error && Array.isArray(shareFlagResult.data)) {
+      setShareFlagsDeployed(true);
+      for (const row of shareFlagResult.data as Array<{
+        id: string;
+        allow_partner_sharing?: boolean;
+      }>) {
+        flagMap.set(row.id, row.allow_partner_sharing !== false);
+      }
+    } else if (!isMissingSchemaObjectError(shareFlagResult.error)) {
+      setShareFlagsDeployed(false);
+    }
+
     if (propResult.error) {
       setError('We could not load your properties. Refresh and try again.');
     } else {
-      setProperties((propResult.data || []) as unknown as PartnerProperty[]);
+      const merged = ((propResult.data || []) as unknown as PartnerProperty[]).map(
+        row => ({
+          ...row,
+          allow_partner_sharing: flagMap.has(row.id)
+            ? flagMap.get(row.id)
+            : true,
+        }),
+      );
+      setProperties(merged);
       setError('');
     }
     setPendingBookingCount(bookingResult.count || 0);
@@ -126,6 +162,35 @@ export default function PartnerDashboardPage() {
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'Could not update listing status.',
+      );
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  async function toggleNetworkSharing(property: PartnerProperty) {
+    if (!db) return;
+    const nextValue = property.allow_partner_sharing === false;
+    setBusyId(property.id);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcError } = await db.rpc('set_property_sharing_permission', {
+        target_property_id: property.id,
+        allow_sharing: nextValue,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(
+        nextValue
+          ? `"${property.title}" is now open to HAMLET partner network sharing.`
+          : `"${property.title}" is restricted to direct owner and manager sharing only.`,
+      );
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Could not update partner sharing permission.',
       );
     } finally {
       setBusyId('');
@@ -228,6 +293,37 @@ export default function PartnerDashboardPage() {
               </Link>
             </div>
 
+            {/* HAMLET Share Engine Banner */}
+            <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-ink-950 p-5 text-white sm:flex-row sm:items-center sm:p-6">
+              <div className="max-w-2xl">
+                <p className="m-0 text-[11px] font-extrabold uppercase tracking-widest text-brass-400">
+                  HAMLET Share Engine
+                </p>
+                <h2 className="serif m-0 mt-1 text-xl font-medium text-white sm:text-2xl">
+                  Market approved stays on WhatsApp with tracked attribution
+                </h2>
+                <p className="m-0 mt-1 text-xs leading-relaxed text-white/75">
+                  Share verified Lagos listings with one tap, download branded cards and QR codes, and track visits through completed stays.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <Link
+                  href="/partners/marketing"
+                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
+                >
+                  <Share2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Open Share & Studio</span>
+                </Link>
+                <Link
+                  href="/partners/analytics"
+                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white/20"
+                >
+                  <BarChart3 className="h-3.5 w-3.5 shrink-0" />
+                  <span>My performance</span>
+                </Link>
+              </div>
+            </section>
+
             {/* Properties Section */}
             <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
@@ -244,7 +340,7 @@ export default function PartnerDashboardPage() {
                 {properties.map(p => (
                   <article
                     key={p.id}
-                    className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-6"
+                    className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-5 sm:p-6"
                   >
                     <div>
                       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -275,6 +371,39 @@ export default function PartnerDashboardPage() {
                           <span>
                             <strong>Review note:</strong> {p.review_note}
                           </span>
+                        </div>
+                      )}
+
+                      {p.status === 'approved' && (
+                        <div className="mt-4 rounded-2xl border border-ink-100 bg-paper/70 p-3.5">
+                          <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-700">
+                              Instant distribution
+                            </span>
+                            {shareFlagsDeployed && (
+                              <button
+                                type="button"
+                                disabled={busyId === p.id}
+                                onClick={() => void toggleNetworkSharing(p)}
+                                className="cursor-pointer text-[11px] font-bold text-brass-700 underline underline-offset-2 hover:text-ink-950 disabled:opacity-50"
+                              >
+                                {p.allow_partner_sharing === false
+                                  ? 'Network sharing: Off (Enable)'
+                                  : 'Network sharing: Open'}
+                              </button>
+                            )}
+                          </div>
+                          <PartnerShareActions
+                            stay={{
+                              id: p.id,
+                              title: p.title,
+                              area: p.area,
+                              propertyType: p.property_type,
+                              bedrooms: p.bedrooms,
+                              capacity: p.capacity,
+                              ownerNightlyRateNgn: p.nightly_rate,
+                            }}
+                          />
                         </div>
                       )}
                     </div>
@@ -330,13 +459,19 @@ export default function PartnerDashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="mt-5 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center">
+              <div className="mt-5 rounded-3xl border border-dashed border-ink-300 bg-white p-8 text-center sm:p-10">
                 <h3 className="serif text-2xl font-medium text-ink-900">
-                  No properties submitted yet
+                  No direct properties submitted yet
                 </h3>
-                <div className="mt-5">
-                  <Link href="/partners/properties/new" className="primary-button">
-                    Submit a stay →
+                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-600">
+                  You can submit a property you own or manage, or browse approved HAMLET stays in Share & Studio to refer guests immediately.
+                </p>
+                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                  <Link href="/partners/marketing" className="primary-button">
+                    Browse stays to share →
+                  </Link>
+                  <Link href="/partners/properties/new" className="secondary-button">
+                    Submit a stay
                   </Link>
                 </div>
               </div>
