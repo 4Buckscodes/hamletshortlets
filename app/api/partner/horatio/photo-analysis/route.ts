@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const token = (request.headers.get('authorization') || '').match(/^Bearer\\s+(.+)$/i)?.[1];
+  const token = (request.headers.get('authorization') || '').match(/^Bearer\s+(.+)$/i)?.[1];
   if (!supabaseUrl || !supabaseKey || !token) return NextResponse.json({ error: 'Sign in with an approved HAMLET partner account.' }, { status: 401 });
 
   const db = createClient(supabaseUrl, supabaseKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } });
@@ -38,7 +38,9 @@ export async function POST(request: Request) {
     if (!ALLOWED_TYPES.has(mimeType) || !/^[A-Za-z0-9+/]+=*$/.test(data) || !Number.isFinite(size) || size < 1 || size > MAX_IMAGE_BYTES) {
       return NextResponse.json({ error: 'Photos must be JPEG, PNG or WebP and no larger than 5 MB each.' }, { status: 400 });
     }
-    totalBytes += size;
+    const actualBytes = Buffer.from(data, 'base64').byteLength;
+    if (actualBytes !== size) return NextResponse.json({ error: 'A selected photo could not be validated. Please choose it again.' }, { status: 400 });
+    totalBytes += actualBytes;
     if (totalBytes > 12 * 1024 * 1024) return NextResponse.json({ error: 'The selected photos are too large. Choose a smaller set.' }, { status: 413 });
     images.push({ type: 'image_url', image_url: { url: `data:${mimeType};base64,${data}` } });
   }
