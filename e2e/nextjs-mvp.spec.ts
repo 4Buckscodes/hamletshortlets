@@ -94,7 +94,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(
       lagosPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(lagosPage.getByText(/₦ \(NGN\)/)).toBeVisible();
+    await expect(lagosPage.getByText(/₦ \(NGN\)/).first()).toBeVisible();
     await lagosCtx.close();
 
     // 2. UK visitor -> GBP (£) automatically via locale/timezone and /api/geo
@@ -108,7 +108,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(
       ukPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(ukPage.getByText(/£ \(GBP\)/)).toBeVisible();
+    await expect(ukPage.getByText(/£ \(GBP\)/).first()).toBeVisible();
     await ukCtx.close();
 
     // 3. US visitor -> USD ($) automatically via locale/timezone and /api/geo
@@ -122,7 +122,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(
       usPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(usPage.getByText(/\$ \(USD\)/)).toBeVisible();
+    await expect(usPage.getByText(/\$ \(USD\)/).first()).toBeVisible();
     await usCtx.close();
   });
 

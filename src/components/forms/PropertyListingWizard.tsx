@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { HoratioListingAssistant } from './HoratioListingAssistant';
 import { LAGOS_AREAS } from '@/lib/areas';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
@@ -479,6 +480,11 @@ export function PropertyListingWizard({
 
 
       <form onSubmit={handleFormSubmit} className="space-y-5">
+        {mode === 'create' && (
+          <HoratioListingAssistant
+            onApply={draft => setValues(prev => ({ ...prev, ...draft, imageUrls: prev.imageUrls }))}
+          />
+        )}
         {/* STEP 1: BASICS & LOCATION */}
         {step === 0 && (
           <div className="space-y-4">
