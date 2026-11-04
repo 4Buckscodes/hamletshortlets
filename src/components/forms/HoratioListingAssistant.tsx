@@ -58,6 +58,10 @@ export function HoratioListingAssistant({ onApply }: { onApply: (draft: Partial<
         });
         images.push({ mimeType: optimised.mimeType, size: optimised.file.size, data: dataUrl.split(',')[1] || '' });
       }
+      const totalOptimisedBytes = images.reduce((total, image) => total + image.size, 0);
+      if (totalOptimisedBytes > 3 * 1024 * 1024) {
+        throw new Error('These optimised photos exceed the combined 3 MB analysis limit. Remove a photo or choose smaller images, then try again.');
+      }
       setPhotoProgress('Sending optimised photos to Horatio…');
       const response = await fetch('/api/partner/horatio/photo-analysis', {
         method: 'POST',
