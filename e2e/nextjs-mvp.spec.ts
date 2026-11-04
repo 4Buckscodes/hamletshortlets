@@ -94,7 +94,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(
       lagosPage.locator('button[aria-label*="Display prices in"]'),
     ).toHaveCount(0);
-    await expect(lagosPage.getByText(/₦145,000/)).toBeVisible();
+    await expect(lagosPage.getByText(/₦145,000/).first()).toBeVisible();
     await lagosCtx.close();
 
     // 2. UK visitor -> GBP (£) automatically via locale/timezone and /api/geo
@@ -161,7 +161,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
     ).toBeVisible();
     await expect(
-      page.getByText(/Illustrative concept previews · Non-bookable/i),
+      page.getByText(/Illustrative concept previews · Non-bookable/i).first(),
     ).toBeVisible();
 
     const firstShowcaseLink = page.getByRole('link', { name: /View showcase/i }).first();
