@@ -555,9 +555,6 @@ export function DiscoveryMarketplace({
             >
               Places worth staying in
             </h2>
-            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-ink-600 sm:text-sm">
-              Every bookable listing on HAMLET passes ownership, identity, authority, and physical inspection checks before publication.
-            </p>
           </div>
 
           {mode === 'homepage' && (
@@ -565,7 +562,7 @@ export function DiscoveryMarketplace({
               href={fullCatalogueHref}
               className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 self-start rounded-full border border-ink-200 bg-white px-4 text-xs font-extrabold text-ink-900 shadow-2xs transition hover:border-ink-900 sm:self-auto"
             >
-              <span>Open full /stays catalogue</span>
+              <span>View all stays</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           )}
@@ -788,8 +785,7 @@ export function DiscoveryMarketplace({
 
           {dateValidation.valid && !dateRpcSupported && (
             <p className="mt-3 rounded-xl border border-ink-200 bg-paper px-3.5 py-2 text-xs text-ink-600">
-              Showing matching stays — your chosen dates ({filters.checkIn} →{' '}
-              {filters.checkOut}) will be confirmed directly by the property partner when you request to book.
+              Dates ({filters.checkIn} → {filters.checkOut}) are confirmed by the host on request.
             </p>
           )}
 
@@ -860,10 +856,10 @@ export function DiscoveryMarketplace({
               <AlertCircle className="h-5 w-5 shrink-0" />
             </div>
             <h3 className="mt-3 font-display text-xl font-bold text-ink-950">
-              We could not load live stays right now.
+              Could not load live stays.
             </h3>
             <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-ink-600">
-              HAMLET never substitutes placeholder listings when the live database cannot be reached. Please try refreshing, or contact hello@hamlet.rest for assistance.
+              Please refresh or contact hello@hamlet.rest.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <button
@@ -871,10 +867,10 @@ export function DiscoveryMarketplace({
                 onClick={() => router.refresh()}
                 className="primary-button min-h-11 px-6"
               >
-                Retry loading stays
+                Retry
               </button>
               <Link href="/lagos" className="secondary-button min-h-11 px-5">
-                Explore Lagos neighbourhood guide
+                Lagos guide
               </Link>
             </div>
           </div>
@@ -887,12 +883,9 @@ export function DiscoveryMarketplace({
               </span>
               <h3 className="mt-3 font-display text-xl font-bold text-ink-950 sm:text-2xl">
                 {filters.area
-                  ? `No verified bookable stays are published in ${filters.area} yet.`
-                  : 'Verified Lagos shortlets are currently completing onboarding.'}
+                  ? `No verified stays published in ${filters.area} yet.`
+                  : 'Verified Lagos stays are completing onboarding.'}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                HAMLET only opens booking requests once a property passes title/lease review, host identity verification, management authority, and physical Lagos inspection.
-              </p>
               {activeBadges.length > 0 && (
                 <div className="mt-4">
                   <button
@@ -928,12 +921,12 @@ export function DiscoveryMarketplace({
           /* 3. Filtered Empty State (approved properties exist, none match active filters) */
           <div className="rounded-3xl border border-ink-200 bg-white p-6 text-center shadow-2xs sm:p-10">
             <h3 className="font-display text-xl font-bold text-ink-950 sm:text-2xl">
-              No verified stays match these exact filters.
+              No verified stays match these filters.
             </h3>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-ink-600">
               {!priceValidation.valid && priceValidation.error
                 ? priceValidation.error
-                : 'Try clearing one or more filters, widening your nightly budget, or exploring adjacent Lagos Mainland and Island neighbourhoods.'}
+                : 'Clear filters or broaden your search.'}
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <button
@@ -945,7 +938,7 @@ export function DiscoveryMarketplace({
                 Clear filters
               </button>
               <Link href="/lagos" className="secondary-button min-h-11 px-5">
-                Compare Lagos neighbourhoods
+                Lagos guide
               </Link>
             </div>
           </div>
@@ -979,11 +972,8 @@ export function DiscoveryMarketplace({
                 id="showcase-concepts-heading"
                 className="mt-2 font-display text-xl font-bold text-ink-950 sm:text-2xl"
               >
-                Illustrative Lagos corridor concepts
+                Lagos showcase concepts
               </h3>
-              <p className="mt-1 max-w-3xl text-xs leading-relaxed text-ink-600 sm:text-sm">
-                These concept profiles illustrate the apartment typologies, house standards, and indicative nightly ranges HAMLET is onboarding across Lagos Island and Lagos Mainland. They are <strong>not verified listings</strong> and <strong>cannot be booked</strong>.
-              </p>
             </div>
 
             <p className="m-0 shrink-0 font-mono text-xs font-bold text-ink-600">
@@ -994,7 +984,7 @@ export function DiscoveryMarketplace({
           {filteredShowcase.length === 0 ? (
             <div className="mt-5 rounded-2xl border border-ink-200 bg-white p-6 text-center">
               <p className="m-0 text-sm font-semibold text-ink-800">
-                No illustrative showcase concepts match your current filter combination.
+                No showcase concepts match these filters.
               </p>
               <button
                 type="button"
@@ -1037,7 +1027,6 @@ export function DiscoveryMarketplace({
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         title="Filter Lagos stays"
-        subtitle="Combine location, accommodation type, bedrooms, nightly budget, guests, and dates."
       >
         <div className="space-y-4">
           <label className="block">
@@ -1089,7 +1078,6 @@ export function DiscoveryMarketplace({
 
           <StepperCounter
             label="Minimum bedrooms"
-            hint="Filter by bedroom count"
             value={filters.minBedrooms}
             min={0}
             max={6}
@@ -1099,7 +1087,6 @@ export function DiscoveryMarketplace({
 
           <StepperCounter
             label="Guests"
-            hint="Minimum guest capacity"
             value={filters.guests}
             min={1}
             max={16}

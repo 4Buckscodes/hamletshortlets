@@ -334,12 +334,9 @@ export default function PartnerDashboardPage() {
                 <h3 className="serif text-2xl font-medium text-ink-900">
                   No properties submitted yet
                 </h3>
-                <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
-                  Use the 7-step listing wizard to upload photos, preview guest pricing, save drafts and submit your first Lagos stay for HAMLET review.
-                </p>
                 <div className="mt-5">
                   <Link href="/partners/properties/new" className="primary-button">
-                    Start 7-step listing wizard →
+                    Submit a stay →
                   </Link>
                 </div>
               </div>

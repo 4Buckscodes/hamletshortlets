@@ -120,12 +120,8 @@ export function GuestInterestPanel({
             id="guest-interest-title"
             className="mt-0.5 font-display text-lg font-bold text-ink-950 sm:text-xl"
           >
-            Be first to hear when verified stays go live.
+            Get notified when verified stays go live.
           </h3>
-          <p className="mt-1 text-xs leading-relaxed text-ink-600 sm:text-sm">
-            HAMLET is onboarding and reviewing Lagos properties with local owners and managers.
-            Share what you are looking for — this is an expression of interest, not a booking or account registration.
-          </p>
         </div>
       </div>
 
@@ -138,10 +134,10 @@ export function GuestInterestPanel({
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
             <div>
               <p className="m-0 font-bold text-ink-950">
-                Your email app should open with a pre-filled message to hello@hamlet.rest.
+                Email draft opened to hello@hamlet.rest.
               </p>
               <p className="m-0 mt-1 text-xs text-ink-600">
-                HAMLET has not stored your details in a database and will only receive your request once you send that email from your mail app.
+                Send the draft from your mail app to complete your request.
               </p>
             </div>
           </div>
@@ -246,7 +242,7 @@ export function GuestInterestPanel({
           </button>
 
           <p className="m-0 text-[11px] leading-relaxed text-ink-500 sm:col-span-2">
-            Opens your email app with a draft to <strong>hello@hamlet.rest</strong>. Nothing is stored or sent automatically unless you send that email.
+            Opens a pre-filled email to <strong>hello@hamlet.rest</strong>.
           </p>
         </form>
       )}

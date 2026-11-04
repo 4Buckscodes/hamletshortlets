@@ -232,7 +232,7 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
 
         {!canResubmit && (
           <p className="m-0 mt-4 border-t border-ink-100 pt-3 text-xs leading-relaxed text-ink-600">
-            To protect active guest quotes and verified audit records, core listing fields are locked while a property is <strong>{property.status}</strong>. You can pause/resume bookings or manage calendar availability above at any time.
+            Listing details are locked while <strong>{property.status}</strong>. Pause bookings or update calendar above.
           </p>
         )}
       </section>

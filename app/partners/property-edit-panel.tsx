@@ -115,7 +115,6 @@ export default function PropertyEditPanel({ propertyId, status }: { propertyId: 
     <button type="button" className="secondary-button" onClick={() => open ? setOpen(false) : void load()}>{open ? 'Close editor' : status === 'draft' ? 'Edit draft' : 'Correct & resubmit'}</button>
     {open && <div style={{ marginTop: 12, border: '1px solid var(--line)', borderRadius: 14, padding: 16, background: '#fbfaf7' }}>
       {loading ? <p role="status">Loading listing details…</p> : error && !property ? <p role="alert">{error}</p> : property && <form onSubmit={save} style={{ display: 'grid', gap: 12 }}>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>Edit a draft or address requested corrections. Submitting sends it back for review; it is not published automatically.</p>
         <label style={labelStyle}>Title<input name="title" required minLength={8} maxLength={120} defaultValue={property.title} style={inputStyle}/></label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 10 }}>
           <label style={labelStyle}>Type<input name="propertyType" required defaultValue={property.property_type} style={inputStyle}/></label>

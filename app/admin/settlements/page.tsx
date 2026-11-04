@@ -187,7 +187,7 @@ export default function AdminSettlementsPage() {
               Financial reconciliation
             </h1>
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
-              Administrative ledger statuses record reconciliation state and audit trails — they do not trigger automated bank transfers.
+              Ledger status tracks reconciliation only — bank transfers run separately.
             </p>
           </div>
           {allowed && <AdminNav current="settlements" />}

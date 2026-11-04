@@ -153,13 +153,10 @@ export default function PartnerEarningsPage() {
       <main className="shell flex-1 py-8 sm:py-12">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Earnings, Commissions & Referrals</p>
+            <p className="eyebrow">Earnings & Referrals</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Partner ledger overview
+              Partner ledger
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Projected figures reflect confirmed stays in progress; settled figures reflect completed stays and reconciled ledger entries.
-            </p>
           </div>
           {(role === 'partner' || role === 'admin') && (
             <PartnerNav current="earnings" />
@@ -215,13 +212,10 @@ export default function PartnerEarningsPage() {
               <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-200 bg-white p-6">
                 <div>
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
-                    Your Partner Referral Code (2.5% of B · 90-day window)
+                    Your Partner Referral Code (2.5% · 90-day window)
                   </span>
                   <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-ink-900">
                     {referralCode}
-                  </p>
-                  <p className="m-0 mt-1 text-xs text-ink-500">
-                    Share your invite link with verified closing agents or property owners joining HAMLET.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

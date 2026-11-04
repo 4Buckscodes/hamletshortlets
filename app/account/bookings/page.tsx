@@ -347,11 +347,8 @@ export default function GuestBookingsPage() {
           <div>
             <p className="eyebrow">Your Account</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Your booking requests
+              Your bookings
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Track partner confirmation, complete verified Paystack checkout when accepted, and manage stay support.
-            </p>
           </div>
           <AccountNav current="bookings" />
         </div>
@@ -365,7 +362,7 @@ export default function GuestBookingsPage() {
             <div className="flex items-start gap-2.5">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-brass-700" />
               <span>
-                <strong>Returned from payment checkout ({paymentReturnRef}):</strong> HAMLET marks a booking Confirmed only after verifying the signed Paystack webhook on our server — never from a browser redirect alone. Click Refresh below if your webhook is still processing.
+                <strong>Returned from checkout ({paymentReturnRef}):</strong> Status updates once Paystack confirms payment. Refresh if still processing.
               </span>
             </div>
             <button
@@ -374,7 +371,7 @@ export default function GuestBookingsPage() {
               className="secondary-button min-h-[40px] shrink-0"
             >
               <RefreshCcw className="h-3.5 w-3.5 shrink-0" />
-              Refresh verified status
+              Refresh status
             </button>
           </div>
         )}
@@ -530,11 +527,8 @@ export default function GuestBookingsPage() {
         ) : (
           <div className="mt-8 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center">
             <h2 className="serif text-2xl font-medium text-ink-900">
-              No booking requests yet
+              No bookings yet
             </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-500">
-              Explore approved shortlets across Lagos Island and Lagos Mainland to send your first booking request.
-            </p>
             <div className="mt-5">
               <Link href="/stays" className="primary-button">
                 Explore Lagos stays

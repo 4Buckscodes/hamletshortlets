@@ -165,11 +165,8 @@ export default function PartnerBookingsPage() {
           <div>
             <p className="eyebrow">Partner Booking Review</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Respond to booking requests
+              Booking requests
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-              Confirm dates to open a 48-hour Paystack payment window for the guest, or decline with a clear note if dates are unavailable.
-            </p>
           </div>
           {(role === 'partner' || role === 'admin') && (
             <PartnerNav current="bookings" />
@@ -225,7 +222,7 @@ export default function PartnerBookingsPage() {
 
                 <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-600">
                   <span>
-                    Owner accommodation rate (<em>B</em>):{' '}
+                    Owner rate:{' '}
                     <strong className="font-mono text-ink-900">
                       ₦{Number(b.accommodation_subtotal || 0).toLocaleString('en-NG')}
                     </strong>

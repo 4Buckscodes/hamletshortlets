@@ -482,10 +482,7 @@ export function PropertyListingWizard({
         {/* STEP 1: BASICS & LOCATION */}
         {step === 0 && (
           <div className="space-y-4">
-            <FormField
-              label="Listing title"
-              hint="Clear, factual description — e.g. 'Bright 2-Bedroom Apartment off Admiralty Way'."
-            >
+            <FormField label="Listing title">
               {fieldProps => (
                 <input
                   {...fieldProps}
@@ -547,7 +544,7 @@ export function PropertyListingWizard({
 
             <FormField
               label="Public street, estate or landmark summary"
-              hint="Shown publicly on the listing card (do not put door codes or private flat numbers here)."
+              hint="Public area only — exclude door codes or flat numbers."
             >
               {fieldProps => (
                 <input
@@ -593,7 +590,6 @@ export function PropertyListingWizard({
             />
             <StepperCounter
               label="Maximum guests"
-              hint="Include adults and children."
               value={values.capacity}
               min={1}
               max={30}
@@ -646,7 +642,7 @@ export function PropertyListingWizard({
             <FormField
               label="House rules"
               optional
-              hint="Enter one rule per line (shown to guests before requesting dates)."
+              hint="One rule per line."
             >
               {fieldProps => (
                 <textarea
@@ -672,7 +668,7 @@ export function PropertyListingWizard({
             <div className="grid gap-4 sm:grid-cols-3">
               <FormField
                 label="Owner agreed nightly rate (NGN)"
-                hint="HAMLET adds a 20% guest service fee in the displayed guest rate."
+                hint="20% guest service fee added on guest display."
               >
                 {fieldProps => (
                   <input
@@ -800,11 +796,7 @@ export function PropertyListingWizard({
         {/* STEP 6: AVAILABILITY */}
         {step === 5 && (
           <div className="space-y-4">
-            <FormField
-              label="Earliest available check-in date"
-              optional
-              hint="Leave blank if the property is ready immediately once approved."
-            >
+            <FormField label="Earliest available check-in date" optional>
               {fieldProps => (
                 <input
                   {...fieldProps}
@@ -824,7 +816,6 @@ export function PropertyListingWizard({
             <FormField
               label="Person responsible for confirming calendar requests"
               optional
-              hint="Helps HAMLET operations know who verifies date holds."
             >
               {fieldProps => (
                 <input
@@ -864,7 +855,7 @@ export function PropertyListingWizard({
 
             <FormField
               label="Authority & verification summary"
-              hint="Recorded honestly as self-reported until HAMLET operations reviews supporting evidence."
+              hint="Self-reported until verified by HAMLET."
             >
               {fieldProps => (
                 <textarea
@@ -887,11 +878,7 @@ export function PropertyListingWizard({
             </FormField>
 
             {mode === 'edit' && (
-              <FormField
-                label="What did you update?"
-                optional
-                hint="Shared with the HAMLET reviewer when resubmitting."
-              >
+              <FormField label="What did you update?" optional>
                 {fieldProps => (
                   <input
                     {...fieldProps}

@@ -158,15 +158,12 @@ export default function PartnerStartDashboard() {
       <main className="shell flex-1 py-8 sm:py-12">
         <p className="eyebrow">HAMLET Partner Network</p>
         <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-          {loading ? 'Your partner space is getting ready' : `Welcome, ${first}.`}
+          {loading ? 'Preparing your workspace' : `Welcome, ${first}.`}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Join the network in minutes. No manual approval is needed just to
-          register, and approved partners can use the same account to close
-          eligible bookings and introduce partners. Property authority, identity
-          checks and listing publication are reviewed separately when required.
+          Join immediately and use the same account to close eligible bookings and introduce partners.
         </p>
-        <p className="mt-3 max-w-2xl text-xs leading-relaxed text-ink-500">
+        <p className="mt-2.5 max-w-2xl text-xs leading-relaxed text-ink-500">
           {APPROVED_OWNER_SERVICES_POLICY_COPY}
         </p>
 
@@ -200,17 +197,12 @@ export default function PartnerStartDashboard() {
                 <Users className="h-5 w-5 text-brass-700" />
                 <h2 className="mt-3 font-bold text-ink-900">Your account</h2>
                 <p className="mt-1 break-all text-sm text-ink-600">{email}</p>
-                <p className="mt-2 text-xs text-ink-500">
-                  One partner profile across Lagos roles.
-                </p>
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
                 <ShieldCheck className="h-5 w-5 text-brass-700" />
-                <h2 className="mt-3 font-bold text-ink-900">Progressive trust</h2>
+                <h2 className="mt-3 font-bold text-ink-900">Verification</h2>
                 <p className="mt-1 text-sm text-ink-600">
-                  You can join immediately. Managing properties, accessing owner
-                  information, handling bookings and payouts require separate
-                  authority checks.
+                  Property management and payouts unlock after authority checks.
                 </p>
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
@@ -222,11 +214,6 @@ export default function PartnerStartDashboard() {
                     : membership
                       ? 'Active · Registered'
                       : 'Not registered yet'}
-                </p>
-                <p className="mt-1 text-sm text-ink-600">
-                  {membership
-                    ? 'Your network profile is on record.'
-                    : 'Complete the short form to join.'}
                 </p>
               </article>
             </div>
@@ -250,10 +237,6 @@ export default function PartnerStartDashboard() {
                 <p className="mt-2 text-sm text-ink-600">
                   Registered as {roleLabel} · {membership.company}
                 </p>
-                <p className="mt-2 text-sm text-ink-600">
-                  Membership alone does not grant private property access,
-                  booking management, payouts or public listing rights.
-                </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link href="/partners/apply/form" className="primary-button">
                     Continue property / authority checks{' '}
@@ -272,10 +255,6 @@ export default function PartnerStartDashboard() {
                 <h2 className="serif text-2xl text-ink-900">
                   Join the HAMLET partner network
                 </h2>
-                <p className="mt-2 text-sm text-ink-600">
-                  Tell us how you work. You can complete verification when you
-                  need a restricted capability.
-                </p>
 
                 <label className="mt-5 block text-xs font-bold text-ink-700">
                   Primary role
@@ -333,11 +312,6 @@ export default function PartnerStartDashboard() {
                 </button>
               </form>
             )}
-
-            <p className="mt-6 text-xs text-ink-500">
-              Property submission, owner authority, identity checks and public
-              listing approval remain separate steps.
-            </p>
           </>
         )}
       </main>

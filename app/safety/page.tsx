@@ -35,22 +35,22 @@ const VERIFICATION_PILLARS = [
   {
     num: '01',
     title: 'Ownership',
-    body: 'Title or purchase documents checked against the property record.',
+    body: 'Title or deed checked.',
   },
   {
     num: '02',
     title: 'Identity',
-    body: 'Government ID verified for the owner or authorised representative.',
+    body: 'Government ID verified.',
   },
   {
     num: '03',
     title: 'Authority to list',
-    body: 'Direct ownership or signed management mandate recorded.',
+    body: 'Ownership or signed mandate confirmed.',
   },
   {
     num: '04',
     title: 'Physical inspection',
-    body: 'On-site check of photos, power backup, and arrival accuracy.',
+    body: 'Photos, backup power, and address verified on-site.',
   },
 ] as const;
 
@@ -59,25 +59,25 @@ const HONEST_STATUSES = [
     label: 'Verified by HAMLET',
     code: 'verified',
     cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    desc: 'Evidence reviewed and recorded by HAMLET operations.',
+    desc: 'Reviewed and confirmed by HAMLET.',
   },
   {
     label: 'Self-reported',
     code: 'self_reported',
     cls: 'border-ink-200 bg-white text-ink-800',
-    desc: 'Declared by the partner; awaiting independent review.',
+    desc: 'Declared by partner; awaiting review.',
   },
   {
     label: 'Pending review',
     code: 'pending_review',
     cls: 'border-brass-300 bg-brass-200/40 text-brass-700',
-    desc: 'Submitted by the partner and currently in the review queue.',
+    desc: 'Submitted and in the review queue.',
   },
   {
     label: 'Not yet provided',
     code: 'missing',
     cls: 'border-ink-200 bg-ink-50 text-ink-500',
-    desc: 'Evidence has not yet been supplied for this pillar.',
+    desc: 'Evidence not yet supplied.',
   },
 ] as const;
 
@@ -95,9 +95,6 @@ export default function SafetyPage() {
               Four-pillar{' '}
               <span className="italic text-brass-300">verification.</span>
             </h1>
-            <p className="mt-3 max-w-xl text-sm font-medium text-ink-200 sm:text-base">
-              Clear verification records, in-account Paystack checkout, and structured support.
-            </p>
           </div>
         </section>
 
@@ -159,9 +156,9 @@ export default function SafetyPage() {
               </div>
               <ul className="mt-3.5 space-y-2.5 text-sm text-ink-700">
                 {[
-                  'Pay only inside your HAMLET account after dates are confirmed',
-                  'Bookings confirm via Paystack’s server-side webhook — never screenshots',
-                  'Caution deposits are tracked separately and reviewed post-checkout',
+                  'Pay inside your HAMLET account after dates are confirmed',
+                  'Confirmed only after verified Paystack payment',
+                  'Caution deposits tracked separately and reviewed post-checkout',
                 ].map(line => (
                   <li key={line} className="flex items-start gap-2.5">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
@@ -178,9 +175,9 @@ export default function SafetyPage() {
               </div>
               <ul className="mt-3.5 space-y-2.5 text-sm text-ink-700">
                 {[
-                  'Card details stay with Paystack — never stored on HAMLET',
-                  'Exact gate pins and door codes unlock only after confirmation',
-                  'NDPR-aligned access controls protect identity and booking records',
+                  'Card details handled by Paystack — never stored on HAMLET',
+                  'Gate pins and door codes unlock only after confirmation',
+                  'NDPR-aligned privacy controls for identity and booking data',
                 ].map(line => (
                   <li key={line} className="flex items-start gap-2.5">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />

@@ -49,16 +49,16 @@ export default function LegalPage() {
               1. Marketplace role &amp; booking confirmation
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              HAMLET.REST facilitates shortlet discovery, partner date confirmation, and audited payment tracking in Lagos. Submitting a booking request does not create a confirmed reservation until (a) the authorised property partner accepts the requested dates and (b) full stay payment is verified on HAMLET’s server via signed payment provider webhook.
+              HAMLET.REST connects guests with verified Lagos shortlet partners. A booking is confirmed only after the partner accepts the requested dates and full stay payment is verified via Paystack.
             </p>
           </section>
 
           <section data-hamlet-reveal id="verification" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
-              2. Listing review &amp; verification labels
+              2. Listing review &amp; verification
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Partners must hold lawful ownership or documented authority to list every submitted property. HAMLET tracks four distinct review pillars — Ownership/Title, Identity, Authority to List, and Physical Inspection — and displays each pillar’s recorded status honestly. Self-reported partner declarations are never represented as independently verified until reviewed by HAMLET operations.
+              Partners must hold ownership or documented authority for every submitted property. HAMLET records four pillars — Ownership, Identity, Authority to List, and Physical Inspection — and labels unreviewed declarations honestly until verified.
             </p>
           </section>
 
@@ -68,16 +68,16 @@ export default function LegalPage() {
             </h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
               <li>
-                <strong>Domestic stay pricing:</strong> Property owners set their agreed accommodation rate (<em>B</em>) in NGN. HAMLET’s confirmed guest service fee is 20% of the owner’s agreed accommodation rate, added on top of <em>B</em> and included in the displayed guest-facing stay price (<em>B</em> × 1.20 — never added a second time at checkout), plus any stated mandatory cleaning or turnover charge. Payment processing costs and commercial allocations are accounted for separately in the settlement ledger.
+                <strong>Domestic stay pricing:</strong> Displayed NGN stay prices include the owner’s agreed rate plus HAMLET’s 20% guest service fee upfront and any stated cleaning charge.
               </li>
               <li>
-                <strong>USD &amp; GBP quotes:</strong> Foreign-currency quotes convert the domestic guest stay total using HAMLET’s active reference rate and apply a single 10% international FX buffer with a 30-minute quote validity window.
+                <strong>USD &amp; GBP quotes:</strong> International quotes convert at HAMLET’s active reference rate plus a single 10% FX buffer (30-minute quote validity) and settle in NGN via Paystack.
               </li>
               <li>
-                <strong>Refundable caution deposits:</strong> Itemised separately from accommodation pricing with no guest service fee and no FX buffer. Any post-stay deduction requires documented inspection notes and evidence logged on the caution deposit record.
+                <strong>Refundable caution deposits:</strong> Itemised separately with no service fee or FX buffer, and released after post-checkout inspection.
               </li>
               <li>
-                <strong>Unpaid holds &amp; cancellations:</strong> Accepted requests hold dates for 48 hours awaiting payment before expiring automatically. Guests may cancel pending or unpaid requests directly from their account; post-payment cancellations and refunds follow the listing’s cancellation terms and documented ledger reconciliation.
+                <strong>Holds &amp; cancellations:</strong> Accepted requests hold dates for 48 hours awaiting payment. Unpaid requests can be cancelled free of charge; paid bookings follow the listing’s cancellation terms.
               </li>
             </ul>
           </section>
@@ -87,19 +87,19 @@ export default function LegalPage() {
               4. Privacy &amp; NDPR notice
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              In line with the Nigeria Data Protection Act / NDPR principles, HAMLET collects only the account, contact, booking, listing verification, and audit information needed to operate stays, prevent fraud, and resolve disputes. Payment card credentials are handled directly by Paystack and are never stored on HAMLET servers. Access to private verification records, booking rows, and support issues is restricted by database Row-Level Security (RLS) to the relevant guest, authorised property partner, and HAMLET administrators.
+              Under Nigeria Data Protection Act / NDPR principles, HAMLET collects only the account, booking, and verification data required to operate stays and resolve disputes. Card details are processed by Paystack and never stored on HAMLET. Private records are restricted to the guest, authorised partner, and HAMLET administrators. Contact <strong>hello@hamlet.rest</strong> for data requests.
             </p>
           </section>
 
           <section data-hamlet-reveal id="partners" className="card p-6">
             <h2 className="font-display text-2xl font-bold text-ink-900">
-              5. Owner services, partner, closing agent &amp; referral terms
+              5. Owner services, partner &amp; referral terms
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
               {APPROVED_OWNER_SERVICES_POLICY_COPY}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              Partner accounts require administrative review and approval for restricted capabilities. Closing agent commissions and direct partner referral rewards accrue only on completed, non-refunded bookings attributed under active platform rules (including self-referral prevention and the 90-day referral window). Administrative ledger statuses record reconciliation state and do not represent automated bank transfers.
+              Closing agent commissions and 90-day recurring partner referral rewards accrue only on completed, non-refunded bookings attributed under active platform rules.
             </p>
           </section>
 

@@ -19,7 +19,6 @@ import {
 const HAMLET_BRAND_NAME = 'HAMLET for Your Shortlets';
 const HAMLET_USP = 'Shortlets, with accountability.';
 const HAMLET_PARENT_COMPANY = 'Abundance Abodes';
-const HAMLET_POSITIONING = 'The Operating System for African Shortlets';
 const HAMLET_MANTRA = 'Make it easy. Make it trustworthy. Make it accountable.';
 
 export const metadata: Metadata = buildPublicPageMetadata({
@@ -36,7 +35,7 @@ const FOUR_PILLARS = [
     num: '01',
     Icon: BedDouble,
     title: 'Know what you’re booking',
-    body: 'Clear photos, amenities, house rules, and four-pillar verification status upfront before you request.',
+    body: 'Photos, amenities, rules, and verification status shown upfront.',
     cta: 'Explore stays',
     href: '/stays',
   },
@@ -44,7 +43,7 @@ const FOUR_PILLARS = [
     num: '02',
     Icon: Wifi,
     title: 'Power and Wi-Fi, explained',
-    body: 'Check 24/7 power, inverter or generator backup, and internet setup per apartment before booking.',
+    body: 'Backup power and internet setup listed per apartment.',
     cta: 'Filter amenities',
     href: '/stays',
   },
@@ -52,7 +51,7 @@ const FOUR_PILLARS = [
     num: '03',
     Icon: KeyRound,
     title: 'Clear booking steps',
-    body: 'Request dates first, pay via Paystack only once confirmed, and receive check-in guidance inside your account.',
+    body: 'Request first, pay via Paystack once confirmed, then unlock check-in details.',
     cta: 'How it works',
     href: '/how-it-works',
   },
@@ -60,7 +59,7 @@ const FOUR_PILLARS = [
     num: '04',
     Icon: LifeBuoy,
     title: 'Help when you need it',
-    body: 'Log and track stay issues directly from your booking record with audited HAMLET operations oversight.',
+    body: 'Report and track stay issues directly from your booking.',
     cta: 'Safety & support',
     href: '/safety',
   },
@@ -83,9 +82,8 @@ export default function AboutPage() {
               Shortlet stays,{' '}
               <span className="italic text-brass-300">with accountability.</span>
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              Built under <strong className="text-white">{HAMLET_PARENT_COMPANY}</strong> as{' '}
-              <strong className="text-white">{HAMLET_POSITIONING}</strong> — starting in Lagos with honest verification, upfront pricing, and clear check-in operations.
+            <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+              Built by <strong className="text-white">{HAMLET_PARENT_COMPANY}</strong> for verified Lagos shortlets.
             </p>
           </div>
         </section>

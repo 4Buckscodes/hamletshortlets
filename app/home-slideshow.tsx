@@ -230,12 +230,12 @@ export function HomeMarketplaceExperience({
 
               {/* Mobile lagoon-side subcopy */}
               <p className="mt-2.5 max-w-[300px] text-[15px] leading-[1.5] text-[#C5CCDA] sm:max-w-md lg:hidden">
-                Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.
+                Island or Mainland — pick your side of the lagoon.
               </p>
 
               {/* Desktop subcopy */}
               <p className="mt-3 hidden max-w-xl text-base leading-relaxed text-ink-200 lg:block">
-                Verified shortlet apartments across Lagos — clear details, trusted hosts, and straightforward booking requests.
+                Verified shortlets across Lagos Island and Mainland.
               </p>
 
               {/* Desktop search card */}
@@ -333,7 +333,7 @@ export function HomeMarketplaceExperience({
 
                 <div className="mt-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="m-0 px-1 text-[11px] font-medium text-ink-500">
-                    No instant card charge — partners confirm availability before any payment link opens.
+                    No card charged until the host confirms availability.
                   </p>
                   <button
                     type="submit"

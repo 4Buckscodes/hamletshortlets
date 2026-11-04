@@ -36,13 +36,11 @@ const BOOKING_STEPS = [
     id: 'dates',
     title: 'Dates & guests',
     shortLabel: '1. Dates & guests',
-    description: 'Select your check-in, check-out and guest count to see the full stay total.',
   },
   {
     id: 'confirm',
     title: 'Review & request',
     shortLabel: '2. Request',
-    description: 'No payment is taken now — the property partner confirms availability first.',
   },
 ] as const;
 
@@ -247,8 +245,7 @@ export default function BookingRequestForm({
         >
           <p className="m-0 font-bold text-ink-950">Price currently unavailable</p>
           <p className="m-0 mt-1">
-            Online booking requests pause automatically whenever a property’s nightly rate is awaiting partner confirmation. Contact{' '}
-            <strong>hello@hamlet.rest</strong> for assistance.
+            Contact <strong>hello@hamlet.rest</strong> for rate confirmation.
           </p>
         </div>
       );
@@ -389,7 +386,6 @@ export default function BookingRequestForm({
             <FormField
               label="Arrival window or special requests"
               optional
-              hint="Share approximate arrival time or questions for the property partner."
             >
               {fieldProps => (
                 <textarea
@@ -407,7 +403,7 @@ export default function BookingRequestForm({
             <div className="flex items-start gap-2.5 rounded-2xl border border-ink-100 bg-paper/70 p-3 text-xs leading-relaxed text-ink-600">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
               <span>
-                <strong>How payment works:</strong> No card charge happens now. Once the partner confirms your dates, a 48-hour Paystack payment window opens in your HAMLET account.
+                No charge now. A 48-hour Paystack payment window opens after host confirmation.
               </span>
             </div>
           </div>
@@ -437,7 +433,7 @@ export default function BookingRequestForm({
             </div>
             {deposit > 0 && (
               <div className="flex justify-between gap-2 pt-1 text-ink-600">
-                <span>Refundable caution deposit (post-checkout inspection)</span>
+                <span>Refundable caution deposit</span>
                 <span className="font-mono font-semibold">
                   {formatCautionDeposit(deposit)}
                 </span>
@@ -445,7 +441,7 @@ export default function BookingRequestForm({
             )}
             {currency !== 'NGN' && (
               <p className="m-0 pt-1 text-[11px] leading-relaxed text-ink-500">
-                {currency} stay quote includes a single 10% international FX buffer (30-min quote validity). Refundable caution deposits are never marked up or buffered.
+                {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
               </p>
             )}
           </div>

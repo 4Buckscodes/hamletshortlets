@@ -8,10 +8,10 @@ export default function NotFound() {
       <main className="shell flex flex-1 flex-col items-center justify-center py-20 text-center">
         <p className="eyebrow">404 · Page not found</p>
         <h1 className="serif mt-3 text-4xl font-medium text-ink-900 sm:text-5xl">
-          We could not find that page.
+          Page not found.
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-500">
-          The listing or page you followed may have moved, been paused, or is no longer published.
+          This page or listing is unavailable.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link href="/stays" className="primary-button">

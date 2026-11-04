@@ -226,12 +226,12 @@ export default async function PropertyDetailPage({ params }: Props) {
             {/* Location & Overview */}
             <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                Location & stay overview
+                Location
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-600">
                 {wayfinderMeta.public_location_summary ||
                   stay.public_address ||
-                  `Located in ${stay.area || 'Lagos'}. Exact check-in instructions are shared only after a booking is confirmed.`}
+                  `Located in ${stay.area || 'Lagos'}. Exact check-in details unlock once confirmed.`}
               </p>
               {wayfinderMeta.public_landmarks && wayfinderMeta.public_landmarks.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -244,12 +244,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               )}
               <div className="mt-4 flex items-center gap-2 text-xs text-ink-500">
                 <Clock className="h-4 w-4 shrink-0 text-brass-600" />
-                <span>
-                  {stay.availability_confirmation_status === 'confirmed' ||
-                  stay.availability_confirmation_status === 'confirmed_calendar'
-                    ? 'Partner calendar recently reviewed — partner still confirms every booking request.'
-                    : 'Partner reconfirms calendar dates on every booking request before payment.'}
-                </span>
+                <span>Host confirms dates before payment opens.</span>
               </div>
             </section>
 
@@ -257,7 +252,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             {stay.amenities && stay.amenities.length > 0 && (
               <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
                 <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                  Amenities & facilities
+                  Amenities
                 </h2>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {stay.amenities.map(amenity => (
@@ -274,16 +269,11 @@ export default async function PropertyDetailPage({ params }: Props) {
 
             {/* Honest 4-Pillar Verification Breakdown */}
             <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-              <div className="flex items-start gap-2.5">
-                <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-emerald-700" />
-                <div>
-                  <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                    Four-pillar review status
-                  </h2>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-500">
-                    HAMLET displays the actual review status recorded for each verification pillar — never assuming unreviewed evidence is verified.
-                  </p>
-                </div>
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-700" />
+                <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                  Verification status
+                </h2>
               </div>
 
               <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
@@ -310,7 +300,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             {/* House Rules & Refundable Caution Terms */}
             <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                House rules & caution deposit terms
+                House rules
               </h2>
               {stay.house_rules && stay.house_rules.length > 0 ? (
                 <ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
@@ -320,12 +310,12 @@ export default async function PropertyDetailPage({ params }: Props) {
                 </ul>
               ) : (
                 <p className="mt-2 text-sm text-ink-600">
-                  Standard shortlet conduct applies: valid government ID at check-in, guest count within stated capacity, and no unauthorized events.
+                  Valid ID at check-in, guests within stated capacity, and no unauthorized events.
                 </p>
               )}
               {Number(stay.refundable_deposit || 0) > 0 && (
                 <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
-                  <strong>Refundable caution deposit:</strong> Itemised separately from accommodation pricing with no guest service fee and no FX buffer. Subject to post-checkout inspection and documented condition review.
+                  <strong>Refundable caution deposit:</strong> Itemised separately without service fee or FX buffer; refunded after post-checkout inspection.
                 </p>
               )}
             </section>

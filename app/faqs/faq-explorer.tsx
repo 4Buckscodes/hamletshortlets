@@ -96,14 +96,9 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
       </div>
 
       <div className="mt-8 flex flex-col items-start justify-between gap-4 rounded-3xl border border-ink-200 bg-white p-6 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="font-display text-xl font-bold text-ink-900">
-            Need something else?
-          </h2>
-          <p className="mt-0.5 text-xs text-ink-500">
-            Ask Horatio about neighbourhoods, pricing, or booking holds anytime.
-          </p>
-        </div>
+        <h2 className="font-display text-xl font-bold text-ink-900">
+          Still have a question?
+        </h2>
         <div className="flex flex-wrap gap-2.5">
           <button
             type="button"

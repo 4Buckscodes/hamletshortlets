@@ -687,7 +687,7 @@ export function PropertyMediaManager({
           Upload property photographs straight from your phone or computer
         </p>
         <p className="mx-auto m-0 mt-1 max-w-xl text-xs leading-relaxed text-ink-600">
-          Select up to {maxImages} photos (iPhone HEIC/HEIF, JPEG, PNG or WebP). Large camera photos are automatically resized, oriented, stripped of GPS metadata, and optimised to crisp WebP right on your device — no external compression tools needed.
+          Up to {maxImages} photos (HEIC, JPEG, PNG, WebP) — optimised automatically on device.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -747,9 +747,6 @@ export function PropertyMediaManager({
               style={{ width: `${Math.max(6, avgActiveProgress)}%` }}
             />
           </div>
-          <p className="m-0 mt-2 text-[11px] text-ink-600">
-            Processing up to {getRecommendedImageConcurrency()} photographs at a time to protect mobile memory and network stability.
-          </p>
         </div>
       )}
 
@@ -803,7 +800,7 @@ export function PropertyMediaManager({
                 {failedJobs.length} photograph{failedJobs.length === 1 ? '' : 's'} could not finish uploading
               </p>
               <p className="m-0 mt-0.5 text-[11px] text-red-800">
-                Nothing was discarded — retry below once your connection is steady, or remove any unwanted file.
+                Tap Retry to upload again.
               </p>
             </div>
           </div>

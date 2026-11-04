@@ -40,7 +40,7 @@ export default function PartnerApplyFormPage() {
               List with confidence. <span className="italic text-brass-300">Partner with clarity.</span>
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
-              {APPROVED_OWNER_SERVICES_POLICY_COPY} Every partner account is reviewed before listing or commission access is activated.
+              {APPROVED_OWNER_SERVICES_POLICY_COPY}
             </p>
           </div>
         </section>

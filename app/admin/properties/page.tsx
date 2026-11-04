@@ -435,7 +435,7 @@ export default function AdminPropertiesPage() {
 
               <FormField
                 label="Reviewer note (min 10 characters)"
-                hint="Recorded in admin_audit_log and shared with the submitting partner."
+                hint="Shared with the submitting partner."
               >
                 {fieldProps => (
                   <textarea
@@ -446,7 +446,7 @@ export default function AdminPropertiesPage() {
                     required
                     value={reviewNote}
                     onChange={e => setReviewNote(e.target.value)}
-                    placeholder="Specific verification note for the partner and audit log…"
+                    placeholder="Verification note for partner…"
                     className={`${FIELD_INPUT_CLASS} resize-y`}
                   />
                 )}
@@ -467,7 +467,6 @@ export default function AdminPropertiesPage() {
         <FocusedDrawer
           open={Boolean(assignmentTarget)}
           title={assignmentTarget ? `Assignments · ${assignmentTarget.title}` : 'Assignments'}
-          subtitle="Grant or revoke authorised partner access on this property"
           onClose={() => setAssignmentTarget(null)}
         >
           {assignmentTarget && (

@@ -69,7 +69,7 @@ export default async function ShowcasePropertyPage({ params }: Props) {
                 ⌂
               </span>
               <span className="mt-3 block text-xs font-extrabold uppercase tracking-[0.2em] text-ink-700/80">
-                Illustrative concept · no property photo supplied
+                Concept preview
               </span>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default async function ShowcasePropertyPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-950">
                 <Eye className="h-3.5 w-3.5 shrink-0 text-amber-800" />
-                HAMLET showcase preview · Not bookable
+                Showcase preview · Not bookable
               </span>
             </div>
 
@@ -139,13 +139,13 @@ export default async function ShowcasePropertyPage({ params }: Props) {
                 Not accepting bookings
               </p>
               <h2 className="serif mt-2 text-2xl font-medium text-ink-950">
-                This is an illustrative property concept, not a live verified listing.
+                Illustrative concept — not a live listing.
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-700">
-                The property, photographs, amenities, nightly rate, and availability have not been confirmed by an owner or property manager. The indicative estimate below is for illustration only.
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-700">
+                Details and pricing below are indicative only.
               </p>
               <p className="mt-4 text-xs font-bold uppercase tracking-wider text-ink-600">
-                Illustrative nightly estimate
+                Indicative nightly estimate
               </p>
               <ShowcaseIndicativePrice nightlyRateNgn={property.nightly_rate_ngn} />
             </div>
