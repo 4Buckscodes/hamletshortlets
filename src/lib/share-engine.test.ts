@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { createRequire } from 'node:module';
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
+import nextConfig from '../../next.config';
 import {
   buildPartnerPropertyTrackingUrl,
   buildPropertyCanonicalShareUrl,
@@ -274,5 +276,91 @@ describe('HAMLET Share Engine — Real QR Decoder & PNG Artwork Verification', (
     );
     expect(partnerStoryNoEarnings.width).toBe(1080);
     expect(partnerStoryNoEarnings.height).toBe(1920);
+  });
+
+  it('normalizes WebP property photos (from client imageOptimiser) cleanly without crashing Satori', async () => {
+    const req = createRequire(import.meta.url);
+    const sharp = req('sharp') as (input: {
+      create: {
+        width: number;
+        height: number;
+        channels: 3;
+        background: { r: number; g: number; b: number };
+      };
+    }) => { webp: () => { toBuffer: () => Promise<Buffer> } };
+
+    const webpBytes = await sharp({
+      create: {
+        width: 800,
+        height: 600,
+        channels: 3,
+        background: { r: 14, g: 31, b: 59 },
+      },
+    })
+      .webp()
+      .toBuffer();
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(new Uint8Array(webpBytes), {
+        status: 200,
+        headers: { 'Content-Type': 'image/webp' },
+      }),
+    );
+
+    try {
+      const stayWithWebp = {
+        id: 'stay-vi-webp-01',
+        title: 'Luxury 2Bedroom Apartment for Short and Long Stay.',
+        area: 'Victoria Island',
+        property_type: 'Apartment',
+        bedrooms: 2,
+        bathrooms: 2,
+        capacity: 6,
+        nightly_rate: 195_000,
+        amenities: ['24/7 Estate Power', 'Fibre Wi-Fi', 'Swimming Pool'],
+        image_urls: [
+          'https://jopnnevqnwrpldrojmdu.supabase.co/storage/v1/object/public/property-media/sample.webp',
+        ],
+        status: 'approved',
+      };
+
+      const cardPng = PNG.sync.read(
+        await renderMarketingCardBuffer({
+          stay: stayWithWebp,
+          cardType: 'guest',
+          format: 'portrait',
+          theme: 'midnight',
+          targetUrl: 'https://hamlet.rest/stays/stay-vi-webp-01?ref=hsl_0123456789abcdef01234567',
+        }),
+      );
+      expect(cardPng.width).toBe(1080);
+      expect(cardPng.height).toBe(1350);
+
+      const ogPng = PNG.sync.read(await renderPropertyOgBuffer(stayWithWebp));
+      expect(ogPng.width).toBe(1200);
+      expect(ogPng.height).toBe(630);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('traces @fontsource WOFF font assets into serverless bundles for all 4 artwork & QR routes', () => {
+    const includes = nextConfig.outputFileTracingIncludes || {};
+    for (const routeKey of [
+      '/api/og/default',
+      '/api/og/property/[id]',
+      '/api/partner/share/card',
+      '/api/share/qr',
+    ]) {
+      const patterns = includes[routeKey] || [];
+      expect(
+        patterns.some(p => p.includes('@fontsource/inter/files/inter-latin-400-normal.woff')),
+      ).toBe(true);
+      expect(
+        patterns.some(p =>
+          p.includes('@fontsource/playfair-display/files/playfair-display-latin-700-normal.woff'),
+        ),
+      ).toBe(true);
+    }
   });
 });

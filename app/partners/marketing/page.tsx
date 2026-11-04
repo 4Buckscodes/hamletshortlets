@@ -95,8 +95,21 @@ function PartnerMarketingContent() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState('');
+  const [previewRetryCount, setPreviewRetryCount] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [copiedQrLink, setCopiedQrLink] = useState(false);
+
+  useEffect(() => {
+    if (!db) return;
+    const {
+      data: { subscription },
+    } = db.auth.onAuthStateChange((_event, nextSession) => {
+      if (nextSession?.access_token) {
+        setAccessToken(nextSession.access_token);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [db]);
 
   const load = useCallback(async () => {
     if (!db) {
@@ -263,48 +276,63 @@ function PartnerMarketingContent() {
     if (!endpoint || !accessToken) return;
 
     const controller = new AbortController();
-    let objectUrl: string | null = null;
 
-    const timer = window.setTimeout(() => {
+    const timer = window.setTimeout(async () => {
       setPreviewLoading(true);
       setPreviewError('');
 
-      const headers: Record<string, string> = {};
-      if (studioTab === 'card' || qrTracked) {
-        headers.Authorization = `Bearer ${accessToken}`;
-      }
+      try {
+        let token = accessToken;
+        if (db) {
+          const { data: sessionRes } = await db.auth.getSession();
+          if (sessionRes.session?.access_token) {
+            token = sessionRes.session.access_token;
+          }
+        }
+        if (controller.signal.aborted) return;
 
-      fetch(endpoint, { headers, signal: controller.signal })
-        .then(async res => {
-          if (!res.ok) {
-            const body = (await res.json().catch(() => ({}))) as { error?: string };
-            throw new Error(body.error || 'Could not generate preview.');
-          }
-          const blob = await res.blob();
-          objectUrl = URL.createObjectURL(blob);
-          setPreviewUrl(prev => {
-            if (prev) URL.revokeObjectURL(prev);
-            return objectUrl;
-          });
-        })
-        .catch(err => {
-          if (err instanceof DOMException && err.name === 'AbortError') return;
-          setPreviewError(
-            err instanceof Error ? err.message : 'Could not load preview.',
-          );
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setPreviewLoading(false);
-          }
+        const headers: Record<string, string> = {};
+        if (studioTab === 'card' || qrTracked) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const res = await fetch(endpoint, { headers, signal: controller.signal });
+        if (!res.ok) {
+          const body = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(body.error || 'Could not generate preview.');
+        }
+
+        const bytes = await res.arrayBuffer();
+        if (controller.signal.aborted) return;
+
+        const blob = new Blob([bytes], { type: 'image/png' });
+        const objectUrl = URL.createObjectURL(blob);
+        setPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return objectUrl;
         });
+      } catch (err) {
+        if (
+          controller.signal.aborted ||
+          (err instanceof DOMException && err.name === 'AbortError')
+        ) {
+          return;
+        }
+        setPreviewError(
+          err instanceof Error ? err.message : 'Could not load preview.',
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setPreviewLoading(false);
+        }
+      }
     }, 0);
 
     return () => {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [buildArtworkEndpoint, accessToken, studioTab, qrTracked]);
+  }, [buildArtworkEndpoint, accessToken, db, studioTab, qrTracked, previewRetryCount]);
 
   async function handleDownloadAsset() {
     const endpoint = buildArtworkEndpoint(true);
@@ -313,19 +341,29 @@ function PartnerMarketingContent() {
     setDownloading(true);
     setPreviewError('');
     try {
+      let token = accessToken;
+      if (db) {
+        const { data: sessionRes } = await db.auth.getSession();
+        if (sessionRes.session?.access_token) {
+          token = sessionRes.session.access_token;
+        }
+      }
+
       const headers: Record<string, string> = {};
-      if (studioTab === 'card' || qrTracked) {
-        headers.Authorization = `Bearer ${accessToken}`;
+      if ((studioTab === 'card' || qrTracked) && token) {
+        headers.Authorization = `Bearer ${token}`;
       }
       const res = await fetch(endpoint, { headers });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error || 'Could not download image.');
       }
-      const blob = await res.blob();
+      const bytes = await res.arrayBuffer();
+      const blob = new Blob([bytes], { type: 'image/png' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
+      a.rel = 'noopener';
       const slug = selectedStay.id.slice(0, 12);
       a.download =
         studioTab === 'qr'
@@ -334,7 +372,7 @@ function PartnerMarketingContent() {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+      window.setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (caught) {
       setPreviewError(
         caught instanceof Error ? caught.message : 'Download failed.',
@@ -936,6 +974,19 @@ function PartnerMarketingContent() {
                         }
                         className="max-h-[460px] w-auto max-w-full rounded-xl object-contain shadow-md"
                       />
+                    ) : previewError ? (
+                      <div className="flex flex-col items-center gap-2.5 text-center">
+                        <p className="m-0 max-w-xs text-xs font-semibold text-ink-700">
+                          Preview unavailable right now.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewRetryCount(c => c + 1)}
+                          className="secondary-button min-h-[36px] px-4 text-xs"
+                        >
+                          Retry preview
+                        </button>
+                      </div>
                     ) : (
                       <p className="m-0 text-xs text-ink-500">
                         {previewLoading
@@ -957,7 +1008,7 @@ function PartnerMarketingContent() {
                   <div className="mt-4 flex flex-wrap gap-2.5">
                     <button
                       type="button"
-                      disabled={downloading || previewLoading || !selectedStay}
+                      disabled={downloading || !selectedStay}
                       onClick={() => void handleDownloadAsset()}
                       className="primary-button min-h-[44px] flex-1 text-xs"
                     >
