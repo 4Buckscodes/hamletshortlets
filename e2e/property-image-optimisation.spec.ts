@@ -167,7 +167,7 @@ async function installPartnerStorageHarness(page: Page, options: HarnessOptions 
     ({ partnerUserId, seedProperty }) => {
       const makeQueryBuilder = (table: string) => {
         const filters: Record<string, unknown> = {};
-        const builder = {
+        const builder: Record<string, unknown> = {
           select: () => builder,
           eq: (col: string, val: unknown) => {
             filters[col] = val;
@@ -175,14 +175,21 @@ async function installPartnerStorageHarness(page: Page, options: HarnessOptions 
           },
           ilike: () => builder,
           order: () => builder,
-          limit: () =>
-            Promise.resolve({
-              data: [],
-              error: null,
-            }),
+          limit: () => builder,
+          then: (
+            onFulfilled?: (val: { data: unknown[]; error: null }) => unknown,
+            onRejected?: (reason: unknown) => unknown,
+          ) => Promise.resolve({ data: [], error: null }).then(onFulfilled, onRejected),
           maybeSingle: async () => {
             if (table === 'profiles') {
-              return { data: { id: partnerUserId, role: 'partner' }, error: null };
+              return {
+                data: {
+                  id: partnerUserId,
+                  full_name: 'Chinedu Okonkwo',
+                  role: 'partner',
+                },
+                error: null,
+              };
             }
             if (table === 'properties' && seedProperty) {
               return {
@@ -233,17 +240,35 @@ async function installPartnerStorageHarness(page: Page, options: HarnessOptions 
         return builder;
       };
 
+      const fakeUser = {
+        id: partnerUserId,
+        email: 'partner@hamlet.rest',
+        user_metadata: { full_name: 'Chinedu Okonkwo' },
+      };
+
       const fakeSupabase = {
         auth: {
           getSession: async () => ({
             data: {
               session: {
                 access_token: 'e2e-partner-jwt-token',
-                user: { id: partnerUserId, email: 'partner@hamlet.rest' },
+                user: fakeUser,
               },
             },
             error: null,
           }),
+          getUser: async () => ({
+            data: { user: fakeUser },
+            error: null,
+          }),
+          onAuthStateChange: () => ({
+            data: {
+              subscription: {
+                unsubscribe: () => {},
+              },
+            },
+          }),
+          signOut: async () => ({ error: null }),
         },
         from: (table: string) => makeQueryBuilder(table),
         rpc: async () => ({ data: null, error: null }),
