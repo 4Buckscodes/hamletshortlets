@@ -106,11 +106,36 @@ export function useProgressiveDraft<T>(
   const setStep = useCallback(
     (updater: number | ((prev: number) => number)) => {
       setStepState(prev => {
-        const nextStep = typeof updater === 'function' ? updater(prev) : updater;
-        return Math.max(0, nextStep);
+        const nextStep = Math.max(
+          0,
+          typeof updater === 'function' ? updater(prev) : updater,
+        );
+        try {
+          const raw = window.localStorage.getItem(storageKey);
+          if (raw) {
+            const parsed = JSON.parse(raw) as {
+              data?: T;
+              step?: number;
+              savedAt?: string;
+            };
+            const nowIso = new Date().toISOString();
+            window.localStorage.setItem(
+              storageKey,
+              JSON.stringify({
+                ...parsed,
+                step: nextStep,
+                savedAt: nowIso,
+              }),
+            );
+            setSavedAt(nowIso);
+          }
+        } catch {
+          // Ignore storage errors.
+        }
+        return nextStep;
       });
     },
-    [],
+    [storageKey],
   );
 
   const clearDraft = useCallback(() => {

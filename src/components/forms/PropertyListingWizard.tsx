@@ -1,7 +1,7 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { Upload, Star, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
@@ -12,6 +12,14 @@ import {
 } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import {
+  deletePropertyMediaObjects,
+  extractPropertyMediaObjectPath,
+} from '@/lib/imageOptimiser';
+import {
+  PropertyMediaManager,
+  type MediaUploadActivityState,
+} from '@/components/forms/PropertyMediaManager';
 import {
   ChipMultiSelect,
   DraftStatusBar,
@@ -84,7 +92,8 @@ const WIZARD_STEPS = [
     id: 'photos',
     title: 'Property photos & cover order',
     shortLabel: '3. Photos',
-    description: 'Upload clear JPEG/PNG/WebP photos directly or paste HTTPS image links.',
+    description:
+      'Upload camera photos directly from your phone or computer — HAMLET automatically optimises, orients, and converts them.',
   },
   {
     id: 'amenities',
@@ -182,6 +191,7 @@ export function PropertyListingWizard({
     setStep,
     hydrated,
     hasSavedDraft,
+    restoredFromStorage,
     lastSavedAt,
     clearDraft,
   } = useProgressiveDraft<PropertyWizardValues>({
@@ -190,13 +200,41 @@ export function PropertyListingWizard({
     initialStep: 0,
   });
 
-  const [urlInput, setUrlInput] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
+  const initialPersistedUrls = useMemo(
+    () => initialValues?.imageUrls ?? [],
+    [initialValues?.imageUrls],
+  );
+
+  const [mediaActivity, setMediaActivity] = useState<MediaUploadActivityState>({
+    hasActiveUploads: false,
+    activeCount: 0,
+    failedCount: 0,
+    sessionUploadedPaths: [],
+  });
   const [duplicateWarning, setDuplicateWarning] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const submittingRef = useRef(false);
+  const submittedCreateOnceRef = useRef(false);
+
+  const handleChangeImageUrls = useCallback(
+    (updater: string[] | ((prev: string[]) => string[])) => {
+      setValues(prev => {
+        const nextUrls =
+          typeof updater === 'function' ? updater(prev.imageUrls) : updater;
+        return { ...prev, imageUrls: nextUrls };
+      });
+    },
+    [setValues],
+  );
+
+  const handleDiscardDraft = useCallback(() => {
+    if (mode === 'create' && mediaActivity.sessionUploadedPaths.length > 0) {
+      void deletePropertyMediaObjects(db, mediaActivity.sessionUploadedPaths);
+    }
+    clearDraft();
+  }, [clearDraft, db, mediaActivity.sessionUploadedPaths, mode]);
 
   // Check potential duplicate title + area as user completes Step 1
   useEffect(() => {
@@ -238,124 +276,6 @@ export function PropertyListingWizard({
     [samplePricing.guestTotal],
   );
 
-  async function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
-    if (!files.length) return;
-    if (!db) {
-      setError('Storage upload is not configured on this deployment.');
-      return;
-    }
-
-    setError('');
-    setUploading(true);
-    setUploadStatus(`Uploading ${files.length} photo${files.length === 1 ? '' : 's'}…`);
-
-    try {
-      const { data: sessionData } = await db.auth.getSession();
-      const userId = sessionData.session?.user?.id;
-      if (!userId) {
-        throw new Error('Sign in with your approved partner account before uploading photos.');
-      }
-
-      const uploadedUrls: string[] = [];
-      const maxMb = Math.round(DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes / (1024 * 1024));
-      for (const file of files) {
-        if (!DEFAULT_PROPERTY_MEDIA_POLICY.allowedImageMimeTypes.includes(file.type)) {
-          throw new Error(`"${file.name}" must be JPEG, PNG or WebP.`);
-        }
-        if (file.size > DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes) {
-          throw new Error(`"${file.name}" exceeds the ${maxMb} MB limit.`);
-        }
-        const safeName = file.name
-          .toLowerCase()
-          .replace(/[^a-z0-9._-]+/g, '-')
-          .slice(0, 60);
-        const objectPath = `${userId}/${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2, 7)}-${safeName}`;
-
-        const { error: uploadError } = await db.storage
-          .from('property-media')
-          .upload(objectPath, file, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: file.type,
-          });
-
-        if (uploadError) {
-          throw new Error(uploadError.message);
-        }
-
-        const { data: pub } = db.storage.from('property-media').getPublicUrl(objectPath);
-        if (pub?.publicUrl) {
-          uploadedUrls.push(pub.publicUrl);
-        }
-      }
-
-      setValues(prev => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...uploadedUrls].slice(
-          0,
-          DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing,
-        ),
-      }));
-      setUploadStatus(
-        `Uploaded ${uploadedUrls.length} photo${uploadedUrls.length === 1 ? '' : 's'}.`,
-      );
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : 'Photo upload failed. You can retry or paste an HTTPS image link below.',
-      );
-      setUploadStatus('');
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  function addPhotoUrl() {
-    const trimmed = urlInput.trim();
-    if (!trimmed) return;
-    try {
-      const parsed = new URL(trimmed);
-      if (parsed.protocol !== 'https:') {
-        setError('Photo links must start with https://');
-        return;
-      }
-      setValues(prev => ({
-        ...prev,
-        imageUrls: prev.imageUrls.includes(trimmed)
-          ? prev.imageUrls
-          : [...prev.imageUrls, trimmed].slice(
-              0,
-              DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing,
-            ),
-      }));
-      setUrlInput('');
-      setError('');
-    } catch {
-      setError('Enter a valid HTTPS photo URL.');
-    }
-  }
-
-  function makeCoverPhoto(idx: number) {
-    setValues(prev => {
-      const next = [...prev.imageUrls];
-      const [picked] = next.splice(idx, 1);
-      if (picked) next.unshift(picked);
-      return { ...prev, imageUrls: next };
-    });
-  }
-
-  function removePhoto(idx: number) {
-    setValues(prev => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== idx),
-    }));
-  }
-
   function validateCurrentStep(targetStep: number, forDraft = false): string | null {
     if (targetStep === 0) {
       if (values.title.trim().length < 8) {
@@ -370,8 +290,14 @@ export function PropertyListingWizard({
         return 'Guest capacity must be between 1 and 50.';
       }
     }
-    if (targetStep === 2 && !forDraft) {
-      if (values.imageUrls.length < 1) {
+    if (targetStep === 2) {
+      if (mediaActivity.hasActiveUploads) {
+        return 'Please wait a moment — your photographs are still optimising and uploading.';
+      }
+      if (!forDraft && values.imageUrls.length < 1) {
+        if (mediaActivity.failedCount > 0) {
+          return 'Retry your paused photograph upload or add at least 1 photo before continuing (or click Save as draft).';
+        }
         return 'Upload or add at least 1 property photo before continuing (or click Save as draft).';
       }
     }
@@ -389,8 +315,20 @@ export function PropertyListingWizard({
   }
 
   async function submitListing(saveAsDraft: boolean) {
+    if (submittingRef.current) return;
+    if (mode === 'create' && !saveAsDraft && submittedCreateOnceRef.current) {
+      return;
+    }
+
     setError('');
     setMessage('');
+
+    if (mediaActivity.hasActiveUploads) {
+      setError(
+        'Please wait a moment — your photographs are still optimising and uploading.',
+      );
+      return;
+    }
 
     const stepCheck =
       validateCurrentStep(0, saveAsDraft) ||
@@ -409,6 +347,7 @@ export function PropertyListingWizard({
       return;
     }
 
+    submittingRef.current = true;
     setBusy(true);
     try {
       const { data: sessionData } = await db.auth.getSession();
@@ -463,6 +402,23 @@ export function PropertyListingWizard({
         throw new Error(payload.error || 'We could not save this listing.');
       }
 
+      // On successful edit, clean up any previously persisted property-media objects
+      // that the owner removed from the gallery so no orphaned files linger in Storage.
+      if (mode === 'edit' && initialPersistedUrls.length > 0) {
+        const currentSet = new Set(values.imageUrls);
+        const removedPersistedPaths = initialPersistedUrls
+          .filter(oldUrl => !currentSet.has(oldUrl))
+          .map(oldUrl => extractPropertyMediaObjectPath(oldUrl))
+          .filter((p): p is string => Boolean(p));
+        if (removedPersistedPaths.length > 0) {
+          void deletePropertyMediaObjects(db, removedPersistedPaths);
+        }
+      }
+
+      if (mode === 'create' && !saveAsDraft) {
+        submittedCreateOnceRef.current = true;
+      }
+
       clearDraft();
       setMessage(
         payload.message ||
@@ -476,6 +432,7 @@ export function PropertyListingWizard({
         caught instanceof Error ? caught.message : 'Could not save this listing.',
       );
     } finally {
+      submittingRef.current = false;
       setBusy(false);
     }
   }
@@ -513,8 +470,9 @@ export function PropertyListingWizard({
       {hydrated && mode === 'create' && (
         <DraftStatusBar
           hasSavedDraft={hasSavedDraft}
+          restoredFromStorage={restoredFromStorage}
           lastSavedAt={lastSavedAt}
-          onClearDraft={clearDraft}
+          onClearDraft={handleDiscardDraft}
         />
       )}
 
@@ -659,104 +617,17 @@ export function PropertyListingWizard({
           </div>
         )}
 
-        {/* STEP 3: PHOTOS */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <div className="rounded-2xl border-2 border-dashed border-ink-200 bg-paper p-5 text-center">
-              <Upload className="mx-auto h-6 w-6 text-brass-600" />
-              <p className="m-0 mt-2 text-sm font-bold text-ink-900">
-                Upload property photos (JPEG, PNG or WebP · up to{' '}
-                {DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing} photos · max{' '}
-                {Math.round(DEFAULT_PROPERTY_MEDIA_POLICY.maxImageFileBytes / (1024 * 1024))} MB each)
-              </p>
-              <p className="m-0 mt-1 text-xs text-ink-500">
-                Photos render at full natural clarity. Your first photo becomes the listing cover.
-              </p>
-              <label className="primary-button mt-4 inline-flex cursor-pointer">
-                <span>{uploading ? 'Uploading…' : 'Choose photos from device'}</span>
-                <input
-                  type="file"
-                  accept={DEFAULT_PROPERTY_MEDIA_POLICY.allowedImageMimeTypes.join(',')}
-                  multiple
-                  disabled={uploading}
-                  onChange={e => void handleFileUpload(e)}
-                  className="sr-only"
-                />
-              </label>
-              {uploadStatus && (
-                <p className="m-0 mt-2 text-xs font-semibold text-emerald-700">
-                  {uploadStatus}
-                </p>
-              )}
-            </div>
-
-            {/* Optional HTTPS URL fallback */}
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={urlInput}
-                onChange={e => setUrlInput(e.target.value)}
-                placeholder="Or paste an https:// photo URL…"
-                className={`${FIELD_INPUT_CLASS} flex-1`}
-              />
-              <button
-                type="button"
-                onClick={addPhotoUrl}
-                className="secondary-button min-h-[48px] shrink-0"
-              >
-                Add URL
-              </button>
-            </div>
-
-            {values.imageUrls.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {values.imageUrls.map((url, idx) => (
-                  <div
-                    key={`${url}-${idx}`}
-                    className="overflow-hidden rounded-2xl border border-ink-200 bg-white"
-                  >
-                    <div className="relative aspect-[4/3] bg-ink-100">
-                      <img
-                        src={url}
-                        alt={`Property photo ${idx + 1}`}
-                        className="h-full w-full object-cover opacity-100"
-                      />
-                      {idx === 0 && (
-                        <span className="absolute left-2 top-2 rounded-full bg-ink-950/85 px-2.5 py-0.5 text-[10px] font-bold text-white">
-                          Cover photo
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-1 p-2">
-                      {idx > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => makeCoverPhoto(idx)}
-                          className="inline-flex min-h-[34px] cursor-pointer items-center gap-1 rounded-lg px-2 text-[11px] font-bold text-ink-700 hover:bg-paper"
-                        >
-                          <Star className="h-3 w-3 shrink-0" />
-                          Make cover
-                        </button>
-                      ) : (
-                        <span className="px-2 text-[11px] font-semibold text-emerald-700">
-                          Primary
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(idx)}
-                        aria-label={`Remove photo ${idx + 1}`}
-                        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 shrink-0" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* STEP 3: PHOTOS (kept mounted so active uploads/retries survive step navigation) */}
+        <div className={step === 2 ? 'block' : 'hidden'} hidden={step !== 2}>
+          <PropertyMediaManager
+            db={db}
+            imageUrls={values.imageUrls}
+            initialPersistedUrls={initialPersistedUrls}
+            maxImages={DEFAULT_PROPERTY_MEDIA_POLICY.maxImagesPerListing}
+            onChangeImageUrls={handleChangeImageUrls}
+            onActivityChange={setMediaActivity}
+          />
+        </div>
 
         {/* STEP 4: AMENITIES & HOUSE RULES */}
         {step === 3 && (
@@ -1081,21 +952,29 @@ export function PropertyListingWizard({
           canGoBack={step > 0}
           onBack={() => setStep(Math.max(0, step - 1))}
           isLastStep={step === WIZARD_STEPS.length - 1}
-          nextLabel="Save & continue"
+          nextLabel={
+            step === 2 && mediaActivity.hasActiveUploads
+              ? 'Optimising photos…'
+              : 'Save & continue'
+          }
           submitLabel={
             mode === 'edit'
               ? 'Save & resubmit for review'
               : 'Submit for HAMLET review'
           }
-          busy={busy}
-          busyLabel="Saving listing…"
+          busy={busy || (step === WIZARD_STEPS.length - 1 && mediaActivity.hasActiveUploads)}
+          busyLabel={
+            mediaActivity.hasActiveUploads
+              ? 'Finishing photo uploads…'
+              : 'Saving listing…'
+          }
           secondaryAction={
             (!currentStatus || currentStatus === 'draft') ? (
               <button
                 type="button"
-                disabled={busy}
+                disabled={busy || mediaActivity.hasActiveUploads}
                 onClick={() => void submitListing(true)}
-                className="secondary-button min-h-[48px]"
+                className="secondary-button min-h-[48px] disabled:opacity-50"
               >
                 Save as draft
               </button>

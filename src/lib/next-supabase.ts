@@ -26,6 +26,12 @@ export function getBrowserSupabase(): SupabaseClient | null {
         })
       : null;
   }
+  const winWithOverride = window as Window & {
+    __HAMLET_TEST_SUPABASE__?: SupabaseClient | null;
+  };
+  if (winWithOverride.__HAMLET_TEST_SUPABASE__ !== undefined) {
+    return winWithOverride.__HAMLET_TEST_SUPABASE__;
+  }
   if (browserClient !== undefined) return browserClient;
   const env = getPublicSupabaseEnv();
   browserClient = env ? createClient(env.url, env.publishableKey) : null;

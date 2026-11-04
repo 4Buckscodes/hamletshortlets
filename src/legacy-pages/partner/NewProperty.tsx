@@ -6,6 +6,12 @@ import { useToast } from '../../lib/toast';
 import { AREAS } from '../../lib/seed';
 import { calculateGuestPricing } from '../../lib/pricing';
 import { validateCoordinates } from '../../lib/wayfinder';
+import {
+  ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR,
+  getRecommendedImageConcurrency,
+  OPTIMISING_USER_MESSAGE,
+  runWithConcurrencyLimit,
+} from '../../lib/imageOptimiser';
 import type { AvailabilityBlockType, AvailabilityConfirmationStatus, PropertyAvailabilityBlock } from '../../lib/types';
 
 const STEPS = ['Property basics', 'Listing details', 'Pricing & calendar', 'Documentation & authority', 'Review & submit'];
@@ -79,15 +85,34 @@ export default function NewProperty() {
       toast('Maximum 12 photos per listing.', 'error');
       return;
     }
+    const batch = selected.slice(0, remainingSlots);
     setUploadingPhotos(true);
     try {
       const uploadedUrls: string[] = [];
-      for (const file of selected.slice(0, remainingSlots)) {
-        const publicUrl = await uploadPropertyImage(file);
-        uploadedUrls.push(publicUrl);
+      const failedNames: string[] = [];
+      await runWithConcurrencyLimit(
+        batch,
+        getRecommendedImageConcurrency(),
+        async file => {
+          try {
+            const publicUrl = await uploadPropertyImage(file);
+            uploadedUrls.push(publicUrl);
+          } catch {
+            failedNames.push(file.name);
+          }
+        },
+      );
+      if (uploadedUrls.length > 0) {
+        setImages(prev => [...prev, ...uploadedUrls].slice(0, 12));
       }
-      setImages(prev => [...prev, ...uploadedUrls]);
-      toast(`${uploadedUrls.length} photo${uploadedUrls.length === 1 ? '' : 's'} uploaded.`);
+      if (failedNames.length > 0) {
+        toast(
+          `${uploadedUrls.length} uploaded; could not process ${failedNames.join(', ')}. Please retry those files.`,
+          'error',
+        );
+      } else {
+        toast(`${uploadedUrls.length} photo${uploadedUrls.length === 1 ? '' : 's'} optimised & uploaded.`);
+      }
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Could not upload property photo.', 'error');
     } finally {
@@ -306,11 +331,11 @@ export default function NewProperty() {
               </div>
             </div>
             <div>
-              <span className="label-dark">Property photos (min 1, up to 12 · JPEG, PNG or WebP up to 5 MB each)</span>
+              <span className="label-dark">Property photos (min 1, up to 12 · HEIC, JPEG, PNG or WebP — optimised automatically)</span>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept={ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR}
                 multiple
                 onChange={e => void handlePhotoFiles(e)}
                 className="hidden"
@@ -323,7 +348,7 @@ export default function NewProperty() {
                   className="btn-brass shrink-0 !px-4 !py-2.5 text-[12px] disabled:opacity-50"
                 >
                   {uploadingPhotos ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
-                  {uploadingPhotos ? 'Uploading…' : 'Upload photos from device'}
+                  {uploadingPhotos ? 'Optimising…' : 'Upload photos from device'}
                 </button>
                 <input
                   className="input-dark flex-1"
@@ -334,6 +359,11 @@ export default function NewProperty() {
                 />
                 <button type="button" onClick={addImage} className="btn-ghost-dark shrink-0 !border !border-ink-700 !px-4"><UploadCloud size={16} /> Add URL</button>
               </div>
+              {uploadingPhotos && (
+                <p className="mt-2 text-[11px] font-semibold text-brass-400">
+                  {OPTIMISING_USER_MESSAGE}
+                </p>
+              )}
               {images.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-2.5">
                   {images.map((src, i) => (

@@ -27,6 +27,7 @@ import {
   buildDefaultExchangeRates, calculateBookingCurrencyQuote, calculateGuestPricing,
   nightsBetween, formatNaira,
 } from './pricing';
+import { optimisePropertyImage } from './imageOptimiser';
 import {
   buildPartnerReferralCode, evaluateReferralOnBookingCompletion, normalizeReferralCode,
 } from './referrals';
@@ -3186,19 +3187,18 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     uploadPropertyImage: async (file) => {
       if (!state.session) throw new Error('Sign in before uploading property photos.');
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error('Only JPEG, PNG, and WebP property photos are supported.');
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('Each photo must be 5 MB or smaller.');
-      }
+      const { file: optimised } = await optimisePropertyImage(file);
       if (supabase) {
-        const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const ext =
+          optimised.type === 'image/png'
+            ? 'png'
+            : optimised.type === 'image/webp'
+              ? 'webp'
+              : 'jpg';
         const objectPath = `${state.session.userId}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('property-media')
-          .upload(objectPath, file, { contentType: file.type, upsert: false });
+          .upload(objectPath, optimised, { contentType: optimised.type, upsert: false });
         if (uploadError) {
           throw new Error(`Could not upload photo: ${uploadError.message}`);
         }
@@ -3212,7 +3212,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           else reject(new Error('Could not read selected image.'));
         };
         reader.onerror = () => reject(new Error('Could not read selected image.'));
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(optimised);
       });
     },
     submitProperty: async (input) => {
@@ -4725,19 +4725,18 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     },
     uploadArrivalGuidePhoto: async (propertyId, file) => {
       if (!state.session) throw new Error('Sign in before uploading arrival guide photos.');
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error('Only JPEG, PNG, and WebP arrival photos are supported.');
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('Each arrival guide photo must be 5 MB or smaller.');
-      }
+      const { file: optimised } = await optimisePropertyImage(file);
       if (supabase) {
-        const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const ext =
+          optimised.type === 'image/png'
+            ? 'png'
+            : optimised.type === 'image/webp'
+              ? 'webp'
+              : 'jpg';
         const objectPath = `${propertyId}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('arrival-guide-media')
-          .upload(objectPath, file, { contentType: file.type, upsert: false });
+          .upload(objectPath, optimised, { contentType: optimised.type, upsert: false });
         if (uploadError) {
           throw new Error(`Could not upload arrival photo: ${uploadError.message}`);
         }
@@ -4750,7 +4749,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           else reject(new Error('Could not read selected image.'));
         };
         reader.onerror = () => reject(new Error('Could not read selected image.'));
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(optimised);
       });
     },
     resolveArrivalPhotoUrl: async (rawUrl) => {
