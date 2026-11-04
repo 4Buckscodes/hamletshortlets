@@ -509,7 +509,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
     expect(containsAsciiSequence(rawBytes, 'Exif\0\0')).toBe(true);
     expect(containsAsciiSequence(rawBytes, 'GPSLatitude')).toBe(true);
 
-    const fileInput = page.locator('input[type="file"]');
+    const fileInput = page.locator('input[type="file"]').last();
     await fileInput.setInputFiles([
       {
         name: largeCameraJpeg.name,
@@ -589,7 +589,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
       { name: 'bedroom-suite-b.jpg', width: 2800, height: 2100, seed: 22 },
     ]);
 
-    const fileInput = page.locator('input[type="file"]');
+    const fileInput = page.locator('input[type="file"]').last();
     await fileInput.setInputFiles([
       {
         name: photoA.name,
@@ -683,7 +683,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
       })),
     );
 
-    const fileInput = page.locator('input[type="file"]');
+    const fileInput = page.locator('input[type="file"]').last();
 
     // 1. Batch of 10 simultaneous photos
     await fileInput.setInputFiles(
@@ -768,7 +768,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
     const [brightShot] = await generateSyntheticCameraFilesInBrowser(page, [
       { name: 'bright-daytime-living.jpg', width: 2600, height: 1950, seed: 99 },
     ]);
-    await page.locator('input[type="file"]').setInputFiles([
+    await page.locator('input[type="file"]').last().setInputFiles([
       {
         name: brightShot.name,
         mimeType: 'image/jpeg',
