@@ -14,6 +14,7 @@ import {
   validateCoordinates,
   WAYPOINT_TYPE_LABELS,
 } from '../lib/wayfinder';
+import { ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR } from '../lib/imageOptimiser';
 import type {
   CheckInMethod,
   CoordinatePointType,
@@ -570,7 +571,7 @@ export function WayfinderEditorModal({
                 <input
                   ref={entranceFileRef}
                   type="file"
-                  accept="image/*"
+                  accept={ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR}
                   className="hidden"
                   onChange={e => void handlePhotoUpload('entrance', e)}
                 />
@@ -624,7 +625,7 @@ export function WayfinderEditorModal({
                 <input
                   ref={buildingFileRef}
                   type="file"
-                  accept="image/*"
+                  accept={ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR}
                   className="hidden"
                   onChange={e => void handlePhotoUpload('building', e)}
                 />
@@ -687,7 +688,7 @@ export function WayfinderEditorModal({
                 <input
                   ref={doorFileRef}
                   type="file"
-                  accept="image/*"
+                  accept={ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR}
                   className="hidden"
                   onChange={e => void handlePhotoUpload('door', e)}
                 />

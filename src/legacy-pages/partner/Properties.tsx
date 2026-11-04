@@ -10,6 +10,12 @@ import { myPartnerProperties } from '../../lib/partnerUtils';
 import { formatNaira, formatDate, guestFacingNightlyNgn } from '../../lib/pricing';
 import { computePropertyAvailabilitySummary, formatBlockTypeLabel } from '../../lib/availability';
 import { computeWayfinderReadiness } from '../../lib/wayfinder';
+import {
+  ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR,
+  getRecommendedImageConcurrency,
+  OPTIMISING_USER_MESSAGE,
+  runWithConcurrencyLimit,
+} from '../../lib/imageOptimiser';
 import { AREAS } from '../../lib/seed';
 import type { Property, AvailabilityBlockType, AvailabilityConfirmationStatus } from '../../lib/types';
 
@@ -96,14 +102,33 @@ export default function PartnerProperties() {
       toast('Maximum 12 photos per listing.', 'error');
       return;
     }
+    const batch = selected.slice(0, remainingSlots);
     setUploadingEditPhotos(true);
     try {
       const uploaded: string[] = [];
-      for (const file of selected.slice(0, remainingSlots)) {
-        uploaded.push(await uploadPropertyImage(file));
+      const failedNames: string[] = [];
+      await runWithConcurrencyLimit(
+        batch,
+        getRecommendedImageConcurrency(),
+        async file => {
+          try {
+            uploaded.push(await uploadPropertyImage(file));
+          } catch {
+            failedNames.push(file.name);
+          }
+        },
+      );
+      if (uploaded.length > 0) {
+        setEditImages(prev => [...prev, ...uploaded].slice(0, 12));
       }
-      setEditImages(prev => [...prev, ...uploaded]);
-      toast(`${uploaded.length} photo${uploaded.length === 1 ? '' : 's'} uploaded.`);
+      if (failedNames.length > 0) {
+        toast(
+          `${uploaded.length} uploaded; could not process ${failedNames.join(', ')}. Please retry.`,
+          'error',
+        );
+      } else {
+        toast(`${uploaded.length} photo${uploaded.length === 1 ? '' : 's'} optimised & uploaded.`);
+      }
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Could not upload photo.', 'error');
     } finally {
@@ -580,15 +605,20 @@ export default function PartnerProperties() {
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="label-dark">Property photos ({editImages.length}/12)</span>
+                  <span className="label-dark">Property photos ({editImages.length}/12 · HEIC, JPEG, PNG or WebP)</span>
                   <input
                     ref={editFileRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept={ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR}
                     multiple
                     onChange={e => void handleEditPhotoFiles(e)}
                     className="hidden"
                   />
+                  {uploadingEditPhotos && (
+                    <p className="mb-1.5 text-[11px] font-semibold text-brass-400">
+                      {OPTIMISING_USER_MESSAGE}
+                    </p>
+                  )}
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
