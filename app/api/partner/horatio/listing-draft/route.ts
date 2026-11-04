@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const token = (request.headers.get('authorization') || '').match(/^Bearer\\s+(.+)$/i)?.[1];
+  const token = (request.headers.get('authorization') || '').match(/^Bearer\s+(.+)$/i)?.[1];
   if (!supabaseUrl || !supabaseKey || !token) {
     return NextResponse.json({ error: 'Sign in with an approved HAMLET partner account.' }, { status: 401 });
   }
