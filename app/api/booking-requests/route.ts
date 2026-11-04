@@ -6,7 +6,11 @@ import {
   nightsBetween,
   PRICING_RULES_VERSION,
 } from '@/lib/pricing';
-import { loadActiveExchangeRates } from '@/lib/next-supabase';
+import {
+  isMissingSchemaObjectError,
+  loadActiveExchangeRates,
+} from '@/lib/next-supabase';
+import { normalizeShareToken } from '@/lib/share-engine';
 import type { SupportedCurrency } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -18,6 +22,8 @@ type RequestBody = {
   guests?: number;
   specialRequests?: string;
   quoteCurrency?: string;
+  visitorSessionKey?: string | null;
+  shareToken?: string | null;
 };
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -72,6 +78,13 @@ export async function POST(request: Request) {
     typeof body.specialRequests === 'string' ? body.specialRequests.trim().slice(0, 1000) : '';
   const requestedCurrency: SupportedCurrency =
     body.quoteCurrency === 'USD' || body.quoteCurrency === 'GBP' ? body.quoteCurrency : 'NGN';
+  const visitorSessionKey =
+    typeof body.visitorSessionKey === 'string' &&
+    body.visitorSessionKey.trim().length >= 12 &&
+    body.visitorSessionKey.trim().length <= 128
+      ? body.visitorSessionKey.trim()
+      : null;
+  const shareTokenInput = normalizeShareToken(body.shareToken);
 
   if (!propertyId || !checkIn || !checkOut || !isValidDate(checkIn) || !isValidDate(checkOut)) {
     return errorResponse('Choose a property, check-in date and check-out date.');
@@ -214,11 +227,30 @@ export async function POST(request: Request) {
     quote_expires_at: fxQuote.currency === 'NGN' ? null : fxQuote.quoteExpiresAt,
   };
 
-  const { data: booking, error: insertError } = await db
+  const payloadWithShare =
+    visitorSessionKey || shareTokenInput
+      ? {
+          ...fullInsertPayload,
+          ...(visitorSessionKey ? { share_session_key: visitorSessionKey } : {}),
+          ...(shareTokenInput ? { share_token_input: shareTokenInput } : {}),
+        }
+      : fullInsertPayload;
+
+  let { data: booking, error: insertError } = await db
     .from('bookings')
-    .insert(fullInsertPayload)
+    .insert(payloadWithShare)
     .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
     .single();
+
+  if (insertError && isMissingSchemaObjectError(insertError) && payloadWithShare !== fullInsertPayload) {
+    const retryRes = await db
+      .from('bookings')
+      .insert(fullInsertPayload)
+      .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
+      .single();
+    booking = retryRes.data;
+    insertError = retryRes.error;
+  }
 
   if (insertError || !booking) {
     const detail = insertError?.message || '';
