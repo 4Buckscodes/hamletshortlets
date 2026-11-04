@@ -118,64 +118,12 @@ export const DISCOVERY_SORT_OPTIONS: ReadonlyArray<{
   { value: 'newest', label: 'Recently added' },
 ] as const;
 
-export interface ShowcaseConceptRecord {
-  id: string;
-  title: string;
-  area: string;
-  property_type: string;
-  bedrooms: number;
-  bathrooms: number;
-  capacity: number;
-  nightly_rate_ngn: number;
-  public_address: string;
-  amenities: string[];
-  house_rules: string[];
-}
-
-/**
- * Strips internal planning fields (such as `preview_activation_days`) from raw showcase JSON
- * before passing concepts to client components.
- */
-export function sanitizeShowcaseInventory(
-  rawSource:
-    | ReadonlyArray<Record<string, unknown>>
-    | { properties?: ReadonlyArray<Record<string, unknown>> }
-    | null
-    | undefined,
-): ShowcaseConceptRecord[] {
-  const rawItems: ReadonlyArray<Record<string, unknown>> = Array.isArray(rawSource)
-    ? rawSource
-    : Array.isArray((rawSource as { properties?: ReadonlyArray<Record<string, unknown>> } | null)?.properties)
-      ? ((rawSource as { properties: ReadonlyArray<Record<string, unknown>> }).properties)
-      : [];
-
-  return rawItems
-    .filter(item => Boolean(item && item.preview_only === true && item.id && item.title))
-    .map(item => ({
-      id: String(item.id),
-      title: String(item.title),
-      area: String(item.area || '').trim(),
-      property_type: String(item.property_type || 'Apartment').trim(),
-      bedrooms: Math.max(0, Math.trunc(Number(item.bedrooms ?? 0))),
-      bathrooms: Math.max(1, Math.trunc(Number(item.bathrooms ?? 1))),
-      capacity: Math.max(1, Math.trunc(Number(item.capacity ?? 2))),
-      nightly_rate_ngn: Number(item.nightly_rate_ngn ?? 0),
-      public_address: String(item.public_address || '').trim(),
-      amenities: Array.isArray(item.amenities)
-        ? item.amenities.map(a => String(a)).filter(Boolean)
-        : [],
-      house_rules: Array.isArray(item.house_rules)
-        ? item.house_rules.map(r => String(r)).filter(Boolean)
-        : [],
-    }));
-}
-
 const VERIFICATION_PILLARS = ['ownership', 'identity', 'authority', 'inspection'] as const;
 
 /**
  * Strict marketplace publication guard:
- * Only real properties whose `status` is `'approved'` and that are NOT preview/showcase
- * concepts may appear as bookable marketplace listings.
+ * Only real properties whose `status` is `'approved'` and that are NOT preview-only
+ * may appear as bookable marketplace listings.
  */
 export function isApprovedBookableStay(
   stay: Partial<PublicStayRecord> & { preview_only?: boolean } | null | undefined,
@@ -214,12 +162,6 @@ export function getValidGuestNightlyNgn(ownerNightlyRate: unknown): number | nul
   if (!Number.isFinite(num) || num <= 0) return null;
   const computed = guestFacingNightlyNgn(num);
   return Number.isFinite(computed) && computed > 0 ? computed : null;
-}
-
-export function getValidShowcaseNightlyNgn(illustrativeRateNgn: unknown): number | null {
-  const num = Number(illustrativeRateNgn);
-  if (!Number.isFinite(num) || num <= 0) return null;
-  return Math.round(num);
 }
 
 export function isStudioProperty(propertyType: string | null | undefined, bedrooms: number | null | undefined): boolean {
@@ -545,79 +487,6 @@ export function filterAndSortApprovedStays(
 
     return String(b.created_at || '').localeCompare(String(a.created_at || ''));
   });
-
-  return sorted;
-}
-
-export function filterAndSortShowcaseConcepts(
-  concepts: ReadonlyArray<ShowcaseConceptRecord>,
-  filters: DiscoveryFilterState,
-): ShowcaseConceptRecord[] {
-  const priceCheck = validatePriceRange(filters.minPriceInput, filters.maxPriceInput);
-  if (!priceCheck.valid) return [];
-
-  const filtered = concepts.filter(concept => {
-    if (filters.side === 'mainland' && !isMainlandArea(concept.area)) return false;
-    if (filters.side === 'island') {
-      if (!concept.area.trim()) return false;
-      if (isMainlandArea(concept.area)) return false;
-    }
-
-    if (
-      filters.area.trim() &&
-      !matchesLagosAreaFilter(
-        { area: concept.area, address: concept.public_address, title: concept.title },
-        filters.area,
-      )
-    ) {
-      return false;
-    }
-
-    if (!matchesAccommodationFilter(concept, filters.type)) {
-      return false;
-    }
-
-    if (filters.minBedrooms > 0 && concept.bedrooms < filters.minBedrooms) {
-      return false;
-    }
-
-    if (filters.guests > 1 && concept.capacity < filters.guests) {
-      return false;
-    }
-
-    const rate = getValidShowcaseNightlyNgn(concept.nightly_rate_ngn);
-    if (priceCheck.minPrice !== null && (rate === null || rate < priceCheck.minPrice)) {
-      return false;
-    }
-    if (priceCheck.maxPrice !== null && (rate === null || rate > priceCheck.maxPrice)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  const sorted = [...filtered];
-  if (filters.sort === 'price_asc') {
-    sorted.sort((a, b) => {
-      const pa = getValidShowcaseNightlyNgn(a.nightly_rate_ngn);
-      const pb = getValidShowcaseNightlyNgn(b.nightly_rate_ngn);
-      if (pa === null && pb === null) return 0;
-      if (pa === null) return 1;
-      if (pb === null) return -1;
-      return pa - pb;
-    });
-  } else if (filters.sort === 'price_desc') {
-    sorted.sort((a, b) => {
-      const pa = getValidShowcaseNightlyNgn(a.nightly_rate_ngn);
-      const pb = getValidShowcaseNightlyNgn(b.nightly_rate_ngn);
-      if (pa === null && pb === null) return 0;
-      if (pa === null) return 1;
-      if (pb === null) return -1;
-      return pb - pa;
-    });
-  } else if (filters.sort === 'newest') {
-    sorted.reverse();
-  }
 
   return sorted;
 }

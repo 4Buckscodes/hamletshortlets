@@ -1,13 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import showcaseInventory from '../../docs/lagos-showcase-inventory.json';
 import {
   DEFAULT_DISCOVERY_FILTERS,
   DISCOVERY_NEIGHBOURHOODS,
   buildDiscoverySearchParams,
   filterAndSortApprovedStays,
-  filterAndSortShowcaseConcepts,
   formatBedroomCountLabel,
   getActiveFilterBadges,
   getStayTrustStatus,
@@ -15,7 +13,6 @@ import {
   isApprovedBookableStay,
   matchesAccommodationFilter,
   parseDiscoverySearchParams,
-  sanitizeShowcaseInventory,
   validatePriceRange,
   validateStayDates,
 } from './discovery';
@@ -276,22 +273,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
     ).toEqual(['mid', 'high', 'low']);
   });
 
-  it('sanitizes showcase inventory (stripping preview_activation_days) and round-trips URL query params', () => {
-    const concepts = sanitizeShowcaseInventory(
-      showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
-    );
-    expect(concepts.length).toBeGreaterThanOrEqual(8);
-    for (const c of concepts) {
-      expect('preview_activation_days' in c).toBe(false);
-    }
-
-    const ikateConcepts = filterAndSortShowcaseConcepts(concepts, {
-      ...DEFAULT_DISCOVERY_FILTERS,
-      area: 'Ikate',
-    });
-    expect(ikateConcepts.length).toBeGreaterThan(0);
-    expect(ikateConcepts.every(c => c.area === 'Ikate')).toBe(true);
-
+  it('round-trips URL query params and validates stay date windows', () => {
     const parsed = parseDiscoverySearchParams({
       area: 'Ikate',
       type: 'studio',
@@ -311,6 +293,21 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
 
     expect(validateStayDates('2026-12-05', '2026-12-02', '2026-11-01').valid).toBe(false);
     expect(validateStayDates('2026-12-01', '2026-12-05', '2026-11-01').valid).toBe(true);
+  });
+
+  it('excludes illustrative/showcase demo inventory from public discovery pages', () => {
+    const homePage = readFileSync(resolve(process.cwd(), 'app/page.tsx'), 'utf8');
+    const staysPage = readFileSync(resolve(process.cwd(), 'app/stays/page.tsx'), 'utf8');
+    const marketplace = readFileSync(
+      resolve(process.cwd(), 'src/components/site/DiscoveryMarketplace.tsx'),
+      'utf8',
+    );
+
+    expect(homePage).not.toContain('lagos-showcase-inventory');
+    expect(staysPage).not.toContain('lagos-showcase-inventory');
+    expect(marketplace).not.toContain('ShowcaseConceptCard');
+    expect(marketplace).not.toContain('Illustrative concept');
+    expect(marketplace).not.toContain('/stays/showcase/');
   });
 
   it('keeps the homepage hero static without image zoom/reveal transitions', () => {

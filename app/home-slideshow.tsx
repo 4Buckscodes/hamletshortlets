@@ -20,7 +20,6 @@ import {
 import {
   parseDiscoverySearchParams,
   type DiscoveryFilterState,
-  type ShowcaseConceptRecord,
 } from '@/lib/discovery';
 
 type LagosSideOption = DiscoveryFilterState['side'];
@@ -89,11 +88,9 @@ function formatShortDateRange(checkIn: string, checkOut: string): string {
 
 export function HomeMarketplaceExperience({
   approvedStays,
-  showcaseConcepts = [],
   queryError = false,
 }: {
   approvedStays: PublicStayRecord[];
-  showcaseConcepts?: ShowcaseConceptRecord[];
   queryError?: boolean;
 }) {
   const router = useRouter();
@@ -635,7 +632,6 @@ export function HomeMarketplaceExperience({
           key={urlKey}
           mode="homepage"
           approvedStays={approvedStays}
-          showcaseConcepts={showcaseConcepts}
           initialFilters={urlFilters}
           queryError={queryError}
         />

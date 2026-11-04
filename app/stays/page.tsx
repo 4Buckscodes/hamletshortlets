@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import showcaseInventory from '../../docs/lagos-showcase-inventory.json';
 import {
   parseDiscoverySearchParams,
-  sanitizeShowcaseInventory,
   validateStayDates,
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -25,10 +23,6 @@ export const metadata: Metadata = buildPublicPageMetadata({
     'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
   pathname: '/stays',
 });
-
-const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
-  showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
-);
 
 export default async function StaysCataloguePage({
   searchParams,
@@ -114,7 +108,6 @@ export default async function StaysCataloguePage({
 
         <StaysExplorer
           approvedStays={approvedStays}
-          showcaseConcepts={SHOWCASE_CONCEPTS}
           initialFilters={initialFilters}
           initialUnavailableIds={initialUnavailableIds}
           availabilitySupported={availabilitySupported}

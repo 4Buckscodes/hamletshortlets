@@ -19,11 +19,21 @@ const PUBLIC_CHECKS = [
   {
     path: '/',
     mustContain: ['Your stay, sorted.', 'Yaba', 'Surulere', 'Shomolu'],
-    mustNotContain: ['Four pillars of a better stay'],
+    mustNotContain: [
+      'Four pillars of a better stay',
+      'Illustrative concept',
+      'Lagos showcase concepts',
+      'Showcase property',
+    ],
   },
   {
     path: '/stays',
     mustContain: ['Explore verified', 'Lagos Mainland', 'Victoria Island'],
+    mustNotContain: [
+      'Illustrative concept',
+      'Lagos showcase concepts',
+      'Showcase property',
+    ],
   },
   {
     path: '/lagos',

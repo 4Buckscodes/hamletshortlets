@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import showcaseInventory from '../docs/lagos-showcase-inventory.json';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { sanitizeShowcaseInventory } from '@/lib/discovery';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
 import {
@@ -30,10 +28,6 @@ export const metadata: Metadata = {
     },
   },
 };
-
-const SHOWCASE_CONCEPTS = sanitizeShowcaseInventory(
-  showcaseInventory as { properties?: ReadonlyArray<Record<string, unknown>> },
-);
 
 export default async function HomePage() {
   const db = getPublicSupabase();
@@ -64,7 +58,6 @@ export default async function HomePage() {
       <main className="flex-1">
         <HomeMarketplaceExperience
           approvedStays={approvedStays}
-          showcaseConcepts={SHOWCASE_CONCEPTS}
           queryError={queryError}
         />
       </main>
