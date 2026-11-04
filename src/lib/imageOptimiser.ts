@@ -30,6 +30,21 @@ export const BLUR_LAPLACIAN_VARIANCE_THRESHOLD = 32;
 /** Self-hosted worker bundle path (no external CDN requests). */
 export const LOCAL_COMPRESSION_WORKER_URL = '/vendor/browser-image-compression.js';
 
+/**
+ * Resolves an absolute same-origin URL for `importScripts(...)` inside `blob:` Web Workers
+ * (relative paths like `/vendor/...` cannot be resolved against a `blob:` worker base URL).
+ */
+export function resolveLocalCompressionWorkerUrl(): string {
+  if (
+    typeof window !== 'undefined' &&
+    window.location?.origin &&
+    window.location.origin !== 'null'
+  ) {
+    return `${window.location.origin}${LOCAL_COMPRESSION_WORKER_URL}`;
+  }
+  return LOCAL_COMPRESSION_WORKER_URL;
+}
+
 /** File `<input accept="...">` attribute covering standard web formats + iPhone HEIC/HEIF. */
 export const ACCEPTED_PROPERTY_IMAGE_ACCEPT_ATTR =
   'image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif';
@@ -939,7 +954,7 @@ export async function optimisePropertyImage(
     alwaysKeepResolution: true,
     preserveExif: false,
     useWebWorker: typeof Worker !== 'undefined',
-    libURL: LOCAL_COMPRESSION_WORKER_URL,
+    libURL: resolveLocalCompressionWorkerUrl(),
     signal,
     onProgress: pct => {
       const mapped = 40 + Math.round(Math.min(100, Math.max(0, pct)) * 0.45);

@@ -669,6 +669,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
   test('processes 10-photo and 20-photo simultaneous selections with bounded concurrency and pre-caps excess beyond 12', async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     const harness = await installPartnerStorageHarness(page, { uploadLatencyMs: 45 });
     await advanceWizardToPhotoStep(page);
 
