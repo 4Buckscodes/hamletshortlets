@@ -201,8 +201,8 @@ export default function PartnerDashboardPage() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <main className="shell flex-1 py-6 sm:py-12">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
@@ -212,9 +212,23 @@ export default function PartnerDashboardPage() {
             </h1>
           </div>
           {(role === 'partner' || role === 'admin') && (
-            <PartnerNav current="overview" />
+            <Link
+              href="/partners/properties/new"
+              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
+            >
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brass-500 text-ink-950">
+                <Plus className="h-4 w-4 stroke-[2.75]" />
+              </span>
+              <span>Add a new listing</span>
+            </Link>
           )}
         </div>
+
+        {(role === 'partner' || role === 'admin') && (
+          <div className="mt-5">
+            <PartnerNav current="overview" hideNewListingAction />
+          </div>
+        )}
 
         {error && (
           <p
@@ -257,7 +271,7 @@ export default function PartnerDashboardPage() {
         ) : (
           <>
             {/* Summary Metrics */}
-            <div className="mt-7 grid gap-3.5 sm:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-4 sm:gap-3.5">
               <div className="rounded-2xl border border-ink-100 bg-white p-4">
                 <p className="m-0 text-xs font-semibold text-ink-500">Total listings</p>
                 <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-ink-900">
@@ -331,7 +345,7 @@ export default function PartnerDashboardPage() {
               </h2>
               <Link href="/partners/properties/new" className="primary-button">
                 <Plus className="h-4 w-4 shrink-0" />
-                Submit a new stay
+                Add a new listing
               </Link>
             </div>
 
@@ -467,11 +481,12 @@ export default function PartnerDashboardPage() {
                   You can submit a property you own or manage, or browse approved HAMLET stays in Share & Studio to refer guests immediately.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
-                  <Link href="/partners/marketing" className="primary-button">
-                    Browse stays to share →
+                  <Link href="/partners/properties/new" className="primary-button">
+                    <Plus className="h-4 w-4 shrink-0" />
+                    Add a new listing
                   </Link>
-                  <Link href="/partners/properties/new" className="secondary-button">
-                    Submit a stay
+                  <Link href="/partners/marketing" className="secondary-button">
+                    Browse stays to share →
                   </Link>
                 </div>
               </div>

@@ -204,4 +204,27 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
 
     expect(signInForm).toContain('resetPasswordForEmail');
   });
+
+  it('places the Add a new listing CTA immediately after the partner name on the Partner Desk', () => {
+    const partnerOverview = readRepoFile('app/partners/page.tsx');
+    const partnerNav = readRepoFile('app/partners/partner-nav.tsx');
+
+    const nameIndex = partnerOverview.indexOf('partner desk');
+    const firstNewListingIndex = partnerOverview.indexOf('href="/partners/properties/new"');
+    const firstAddListingLabelIndex = partnerOverview.indexOf('Add a new listing');
+    const navIndex = partnerOverview.indexOf('<PartnerNav');
+    const metricsIndex = partnerOverview.indexOf('Total listings');
+    const shareBannerIndex = partnerOverview.indexOf('HAMLET Share Engine');
+
+    expect(nameIndex).toBeGreaterThan(-1);
+    expect(firstNewListingIndex).toBeGreaterThan(nameIndex);
+    expect(firstAddListingLabelIndex).toBeGreaterThan(nameIndex);
+    expect(firstNewListingIndex).toBeLessThan(navIndex);
+    expect(firstAddListingLabelIndex).toBeLessThan(navIndex);
+    expect(firstNewListingIndex).toBeLessThan(metricsIndex);
+    expect(firstNewListingIndex).toBeLessThan(shareBannerIndex);
+
+    expect(partnerNav).toContain('href="/partners/properties/new"');
+    expect(partnerNav).toContain('Add a new listing');
+  });
 });
