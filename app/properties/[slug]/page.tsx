@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import PropertyDetailPage, { generateMetadata as generatePropertyMetadata } from '@/app/stays/[id]/page';
+import PropertyDetailPage, { generateMetadata as generatePropertyMetadata } from '../../stays/[id]/page';
 import { getPublicSupabase } from '@/lib/supabase-public';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -37,5 +37,5 @@ export default async function PropertySlugPage({ params }: Props) {
   const id = await resolvePropertyId(slug);
   if (!id) notFound();
 
-  return PropertyDetailPage({ params: Promise.resolve({ id }) });
+  return <PropertyDetailPage params={Promise.resolve({ id })} />;
 }
