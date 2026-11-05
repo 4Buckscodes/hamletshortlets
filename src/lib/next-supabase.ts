@@ -61,7 +61,7 @@ export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},review_note`;
 
 export interface PublicStayRecord {
   id: string;
-  slug: string;
+  slug?: string | null;
   title: string;
   property_type: string | null;
   area: string | null;
