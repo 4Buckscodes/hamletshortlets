@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const { data } = await db
     .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,nightly_rate,image_urls,updated_at')
+    .select('id,slug,title,area,property_type,bedrooms,capacity,nightly_rate,image_urls,updated_at')
     .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle();
@@ -100,7 +100,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     guestNightly !== null ? ` · ${formatNaira(guestNightly)}/night` : '';
   const title = `${data.title} in ${areaLabel}`;
   const description = `${accommodationSummary} in ${areaLabel}, Lagos${priceSnippet}. View photos, verification status, house rules and request dates on HAMLET.`;
-  const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(id)}`);
+  const canonicalUrl = buildNextCanonicalUrl(`/properties/${encodeURIComponent(data.slug || id)}`);
   const previewVersion = buildPropertyPreviewVersion(data);
   const shareImage = `${HAMLET_CANONICAL_ORIGIN}/api/og/property/${encodeURIComponent(
     id,
