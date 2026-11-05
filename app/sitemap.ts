@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data, error } = await db
     .from('properties')
-    .select('id,updated_at,created_at')
+    .select('id,slug,updated_at,created_at')
     .eq('status', 'approved')
     .order('updated_at', { ascending: false })
     .limit(5000);
@@ -35,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const property of data ?? []) {
     routes.push({
-      url: `${site}/stays/${encodeURIComponent(property.id)}`,
+      url: `${site}/properties/${encodeURIComponent(property.slug || property.id)}`,
       lastModified: property.updated_at
         ? new Date(property.updated_at)
         : property.created_at

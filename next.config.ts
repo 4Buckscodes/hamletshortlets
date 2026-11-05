@@ -14,6 +14,9 @@ const SHARE_ARTWORK_TRACED_ASSETS = [
 ];
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [{ source: '/properties/:slug', destination: '/stays/:slug' }];
+  },
   reactStrictMode: true,
   serverExternalPackages: ['sharp'],
   outputFileTracingIncludes: {
