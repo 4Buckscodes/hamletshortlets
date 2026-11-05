@@ -572,7 +572,9 @@ export function buildPropertyDetailSchema({
   publicLocationSummary,
 }: PropertyDetailSchemaInput): Record<string, unknown> {
   const encodedId = encodeURIComponent(stay.id);
-  const relativePath = `/stays/${encodedId}`;
+  const relativePath = stay.slug
+    ? `/properties/${encodeURIComponent(stay.slug)}`
+    : `/stays/${encodedId}`;
   const canonicalUrl = buildNextCanonicalUrl(relativePath);
   const cleanTitle = stay.title.trim();
   const cleanArea = (stay.area || '').trim();
