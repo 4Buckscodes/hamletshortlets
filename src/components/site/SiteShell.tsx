@@ -54,6 +54,7 @@ import {
   type PublicStayRecord,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
+import { buildPropertyPath } from '@/lib/property-slugs';
 
 interface SessionSummary {
   userId: string;
@@ -1025,7 +1026,7 @@ export function StayListingCard({
   const amenities = (stay.amenities ?? []).filter(Boolean);
   const visibleAmenities = amenities.slice(0, 3);
   const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
-  const detailHref = `/stays/${encodeURIComponent(stay.id)}${querySuffix}`;
+  const detailHref = `${buildPropertyPath(stay)}${querySuffix}`;
 
   function stepPhoto(event: MouseEvent<HTMLButtonElement>, delta: number) {
     event.preventDefault();
