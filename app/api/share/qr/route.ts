@@ -85,8 +85,8 @@ export async function GET(request: Request) {
     }
 
     const targetUrl = validatedToken
-      ? buildPartnerPropertyTrackingUrl(propertyId, validatedToken)
-      : buildPropertyCanonicalShareUrl(propertyId);
+      ? buildPartnerPropertyTrackingUrl(propertyId, validatedToken, undefined, { title: stay.title, area: stay.area })
+      : buildPropertyCanonicalShareUrl(propertyId, undefined, { title: stay.title, area: stay.area });
 
     const png =
       variant === 'branded'
