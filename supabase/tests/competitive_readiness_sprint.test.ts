@@ -186,6 +186,32 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
     });
     expect(guestDeals).toHaveLength(0);
 
+    // 1b. Before accepting a deal or receiving explicit owner authorisation, ordinary partners CANNOT share even though allow_partner_sharing = true!
+    const preAcceptCanShare = await asUser(db, agentAId, async tx => {
+      const { rows } = await tx.query<{ ok: boolean }>(
+        `select public.can_partner_share_property($1, $2) as ok`,
+        [approvedPropertyId, agentAId],
+      );
+      return rows[0].ok;
+    });
+    expect(preAcceptCanShare).toBe(false);
+
+    await expect(
+      asUser(db, agentAId, async tx => {
+        await tx.query(`select public.get_or_create_partner_share_link($1)`, [
+          approvedPropertyId,
+        ]);
+      }),
+    ).rejects.toThrow(/not authorised/i);
+
+    const preAcceptList = await asUser(db, agentAId, async tx => {
+      const { rows } = await tx.query<{ r: unknown[] }>(
+        `select public.list_partner_shareable_properties() as r`,
+      );
+      return rows[0].r;
+    });
+    expect(preAcceptList).toHaveLength(0);
+
     // 2. Agent A accepts the Fixed Agent Payout deal -> unlocks share_token & freezes snapshot
     const acceptance = await asUser(db, agentAId, async tx => {
       const { rows } = await tx.query<{
@@ -223,7 +249,22 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
       ]);
     });
 
-    // 4. Guest visits via Agent A's WhatsApp share link -> clicks Agent B's link afterwards -> Agent A attribution stays locked!
+    // 4. Agent B is still blocked until authorised -> Owner explicitly authorises Agent B -> Guest visits Agent A's link then Agent B's link -> Agent A attribution stays locked!
+    await expect(
+      asUser(db, agentBId, async tx => {
+        await tx.query(`select public.get_or_create_partner_share_link($1)`, [
+          approvedPropertyId,
+        ]);
+      }),
+    ).rejects.toThrow(/not authorised/i);
+
+    await asUser(db, ownerId, async tx => {
+      await tx.query(
+        `select public.grant_owner_agent_authorisation($1, $2, array['market_and_share']::text[], null, 'Secondary Island agent')`,
+        [approvedPropertyId, agentBId],
+      );
+    });
+
     const agentBShareToken = await asUser(db, agentBId, async tx => {
       const { rows } = await tx.query<{ r: { share_token: string } }>(
         `select public.get_or_create_partner_share_link($1) as r`,
@@ -445,11 +486,21 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
   });
 
   it('Journey C: Owner authorises multiple agents on one property and revokes an agent without losing historical booking attribution', async () => {
-    // Turn off open network sharing so ONLY explicitly authorised agents can share
+    // Even with allow_partner_sharing = true (default), external agents CANNOT share without explicit owner authorisation
+    const initialShareCheck = await asUser(db, agentAId, async tx => {
+      const { rows } = await tx.query<{ a: boolean; b: boolean }>(
+        `select
+           public.can_partner_share_property($1, $2) as a,
+           public.can_partner_share_property($1, $3) as b`,
+        [approvedPropertyId, agentAId, agentBId],
+      );
+      return rows[0];
+    });
+    expect(initialShareCheck.a).toBe(false);
+    expect(initialShareCheck.b).toBe(false);
+
+    // Owner explicitly authorises Agent A and Agent B (keeping master allow_partner_sharing = true)
     await asUser(db, ownerId, async tx => {
-      await tx.query(`select public.set_property_sharing_permission($1, false)`, [
-        approvedPropertyId,
-      ]);
       await tx.query(
         `select public.grant_owner_agent_authorisation($1, $2, array['market_and_share']::text[], null, 'VIP Island mandate')`,
         [approvedPropertyId, agentAId],
@@ -529,6 +580,24 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
     );
     expect(preservedRows[0].closing_agent_id).toBe(agentAId);
     expect(preservedRows[0].share_partner_id).toBe(agentAId);
+
+    // Master property-level pause blocks even authorised external agents while preserving owner sharing
+    await asUser(db, ownerId, async tx => {
+      await tx.query(`select public.set_property_sharing_permission($1, false)`, [
+        approvedPropertyId,
+      ]);
+    });
+    const pausedExternalAndOwner = await asUser(db, ownerId, async tx => {
+      const { rows } = await tx.query<{ agent_b: boolean; owner_self: boolean }>(
+        `select
+           public.can_partner_share_property($1, $2) as agent_b,
+           public.can_partner_share_property($1, $3) as owner_self`,
+        [approvedPropertyId, agentBId, ownerId],
+      );
+      return rows[0];
+    });
+    expect(pausedExternalAndOwner.agent_b).toBe(false);
+    expect(pausedExternalAndOwner.owner_self).toBe(true);
   });
 
   it('Journey D & E: Caution policy, check-in/check-out inspections, guest acknowledgement, wear-and-tear guard, claim resolution & enquiry reply', async () => {
@@ -717,15 +786,17 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
     );
     expect(fullLabel[0].trust_label).toBe('Verified by HAMLET');
 
-    // Verify Sprint Rollback SQL executes cleanly in a savepoint/transaction while preserving core data
+    // Verify Sprint Complete Restoration Rollback SQL restores all replaced functions/constraints and leaves zero dangling references
     await db.exec(`
       begin;
+      -- 1. Feature 7: Trust profile triggers, RPCs, and table
       drop trigger if exists z2_sync_property_trust_checks on public.properties;
       drop function if exists public.sync_property_trust_checks_from_property();
       drop function if exists public.admin_review_property_trust_check(text, text, text, text, text, text);
       drop function if exists public.get_public_property_trust_profile(text);
       drop table if exists public.property_trust_checks;
 
+      -- 2. Feature 5: Availability confirmation & enquiry reply columns/RPCs
       drop function if exists public.respond_to_property_enquiry(uuid, text, text);
       drop function if exists public.confirm_property_availability_now(text, text);
       alter table public.property_enquiries
@@ -733,6 +804,7 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
         drop column if exists responded_by,
         drop column if exists responded_at;
 
+      -- 3. Feature 4: Caution deposit RPCs, inspections table, added columns, and original status check constraint
       drop function if exists public.admin_resolve_caution_deposit_status(text, text, integer, integer, text);
       drop function if exists public.respond_to_caution_damage_claim(text, text);
       drop function if exists public.submit_caution_damage_claim(text, text, integer, jsonb, boolean);
@@ -741,6 +813,32 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
       drop function if exists public.update_property_caution_policy(text, integer, text, text);
       drop table if exists public.property_inspections;
 
+      update public.booking_caution_deposits
+        set status = 'refund_completed'
+        where status in ('not_applicable', 'refunded');
+
+      alter table public.booking_caution_deposits
+        drop constraint if exists booking_caution_deposits_status_check;
+      alter table public.booking_caution_deposits
+        add constraint booking_caution_deposits_status_check
+        check (status in (
+          'due',
+          'received',
+          'inspection_pending',
+          'refund_approved',
+          'partially_refunded',
+          'disputed',
+          'refund_completed'
+        ));
+      alter table public.booking_caution_deposits
+        drop column if exists damage_issue_description,
+        drop column if exists damage_claimed_amount_ngn,
+        drop column if exists excludes_normal_wear_and_tear,
+        drop column if exists guest_deduction_response,
+        drop column if exists guest_responded_at,
+        drop column if exists admin_review_note;
+
+      -- 4. Feature 3: Booking financial/deal snapshot trigger, RPC, and added columns
       drop trigger if exists z1_snapshot_booking_financial_and_deal_terms on public.bookings;
       drop function if exists public.snapshot_booking_financial_and_deal_terms();
       drop function if exists public.get_my_agent_deal_earnings();
@@ -753,6 +851,71 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
         drop column if exists agent_deal_acceptance_id,
         drop column if exists agent_deal_id;
 
+      -- 5. Restore pre-sprint public.can_partner_share_property(text, uuid) BEFORE dropping deal & authorisation tables
+      create or replace function public.can_partner_share_property(
+        target_property_id text,
+        target_partner_id uuid default auth.uid()
+      )
+      returns boolean
+      language plpgsql
+      stable
+      security definer
+      set search_path = ''
+      as $fn$
+      declare
+        prop_status text;
+        prop_allow_sharing boolean;
+        partner_role text;
+        partner_status text;
+        has_active_access boolean := false;
+        has_revoked_access boolean := false;
+      begin
+        if target_partner_id is null or target_property_id is null then
+          return false;
+        end if;
+
+        select p.role, coalesce(p.account_status, 'active')
+          into partner_role, partner_status
+          from public.profiles p
+          where p.id = target_partner_id;
+
+        if not found or partner_role not in ('partner', 'admin') or partner_status <> 'active' then
+          return false;
+        end if;
+
+        select pr.status, coalesce(pr.allow_partner_sharing, true)
+          into prop_status, prop_allow_sharing
+          from public.properties pr
+          where pr.id = target_property_id;
+
+        if not found or prop_status <> 'approved' then
+          return false;
+        end if;
+
+        select
+          bool_or(pa.status = 'active'),
+          bool_or(pa.status = 'revoked')
+        into has_active_access, has_revoked_access
+        from public.property_access pa
+        where pa.property_id = target_property_id
+          and pa.user_id = target_partner_id;
+
+        if coalesce(has_revoked_access, false) and not coalesce(has_active_access, false) then
+          return false;
+        end if;
+
+        if partner_role = 'admin' or coalesce(has_active_access, false) then
+          return true;
+        end if;
+
+        return prop_allow_sharing;
+      end;
+      $fn$;
+
+      revoke all on function public.can_partner_share_property(text, uuid) from public, anon;
+      grant execute on function public.can_partner_share_property(text, uuid) to authenticated, service_role;
+
+      -- 6. Feature 1 & 2: Drop Agent Deal Board & Owner Agent Authorisation objects
       drop function if exists public.respond_to_agent_deal(uuid, text);
       drop function if exists public.set_owner_agent_deal_status(uuid, text);
       drop function if exists public.upsert_owner_agent_deal(jsonb);
@@ -765,14 +928,102 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
       drop function if exists public.revoke_owner_agent_authorisation(text, uuid, text);
       drop function if exists public.grant_owner_agent_authorisation(text, uuid, text[], timestamptz, text);
       drop table if exists public.property_agent_authorisations;
+
+      -- 7. Duplicate detection, submitter separation, and pre-sprint public.can_manage_property(text) restoration
       drop trigger if exists z1_detect_property_duplicates on public.properties;
       drop function if exists public.detect_property_duplicates_on_write();
       drop function if exists public.review_property_duplicate_flag(uuid, text, text, boolean);
       drop table if exists public.property_duplicate_flags;
       drop trigger if exists z0_enforce_submitter_role_separation on public.property_private_records;
       drop function if exists public.enforce_submitter_role_separation();
+
+      create or replace function public.can_manage_property(target_property_id text)
+      returns boolean
+      language sql
+      stable
+      security definer
+      set search_path = ''
+      as $fn2$
+        select public.has_role('admin')
+          or exists (
+            select 1
+            from public.property_access pa
+            join public.profiles p on p.id = pa.user_id
+            where pa.property_id = target_property_id
+              and pa.user_id = (select auth.uid())
+              and pa.status = 'active'
+              and p.account_status = 'active'
+          );
+      $fn2$;
+
+      drop function if exists public.can_manage_property_as_owner_or_manager(text);
+
       drop trigger if exists a0_assign_hamlet_property_defaults on public.properties;
       drop function if exists public.assign_hamlet_property_defaults();
+      drop function if exists public.generate_hamlet_property_code();
+      alter table public.properties
+        drop column if exists hamlet_property_code,
+        drop column if exists building_or_estate,
+        drop column if exists unit_identifier,
+        drop column if exists submitted_by_user_id,
+        drop column if exists submitter_relationship,
+        drop column if exists booking_mode,
+        drop column if exists caution_refund_conditions,
+        drop column if exists caution_inspection_policy;
+
+      -- 8. Post-rollback runtime verification: actually invoke restored functions & verify zero dangling references!
+      do $verify$
+      declare
+        restored_share_ok boolean;
+        restored_manage_ok boolean;
+        leftover_sprint_tables integer;
+        leftover_sprint_cols integer;
+      begin
+        -- Execute restored can_partner_share_property() AFTER sprint tables were dropped (must not crash & must match pre-sprint semantics!)
+        restored_share_ok := public.can_partner_share_property('${approvedPropertyId}', '${agentAId}'::uuid);
+        if restored_share_ok is distinct from true then
+          raise exception 'Expected restored pre-sprint can_partner_share_property() to return true when allow_partner_sharing = true, got %', restored_share_ok;
+        end if;
+
+        -- Execute restored can_manage_property() as owner via simulated JWT claims (must not reference dropped can_manage_property_as_owner_or_manager!)
+        perform set_config('request.jwt.claim.sub', '${ownerId}', true);
+        perform set_config('request.jwt.claims', json_build_object('sub', '${ownerId}', 'role', 'authenticated')::text, true);
+        restored_manage_ok := public.can_manage_property('${approvedPropertyId}');
+        if restored_manage_ok is distinct from true then
+          raise exception 'Expected restored pre-sprint can_manage_property() to return true for active property owner, got %', restored_manage_ok;
+        end if;
+
+        select count(*) into leftover_sprint_tables
+          from information_schema.tables
+          where table_schema = 'public'
+            and table_name in (
+              'property_trust_checks',
+              'property_inspections',
+              'agent_deal_acceptances',
+              'agent_deals',
+              'property_agent_authorisations',
+              'property_duplicate_flags'
+            );
+        if leftover_sprint_tables <> 0 then
+          raise exception 'Expected 0 sprint tables after rollback, found %', leftover_sprint_tables;
+        end if;
+
+        select count(*) into leftover_sprint_cols
+          from information_schema.columns
+          where table_schema = 'public'
+            and (
+              (table_name = 'properties' and column_name in ('hamlet_property_code', 'building_or_estate', 'unit_identifier', 'submitted_by_user_id', 'submitter_relationship', 'booking_mode', 'caution_refund_conditions', 'caution_inspection_policy'))
+              or (table_name = 'bookings' and column_name in ('agent_deal_id', 'agent_deal_acceptance_id', 'agreed_owner_allocation_ngn', 'agreed_agent_deal_payout_ngn', 'deal_terms_snapshot', 'price_breakdown_snapshot', 'deal_code_input'))
+              or (table_name = 'booking_caution_deposits' and column_name in ('damage_issue_description', 'damage_claimed_amount_ngn', 'excludes_normal_wear_and_tear', 'guest_deduction_response', 'guest_responded_at', 'admin_review_note'))
+              or (table_name = 'property_enquiries' and column_name in ('partner_response', 'responded_by', 'responded_at'))
+              or (table_name = 'partner_share_links' and column_name = 'accepted_deal_id')
+            );
+        if leftover_sprint_cols <> 0 then
+          raise exception 'Expected 0 sprint columns after rollback, found %', leftover_sprint_cols;
+        end if;
+      end
+      $verify$;
+
       rollback;
     `);
   });

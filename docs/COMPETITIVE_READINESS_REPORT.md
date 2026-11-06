@@ -39,15 +39,19 @@
 ### Migration File
 - `supabase/migrations/20261106100000_competitive_readiness_sprint.sql` (100% additive; all UI consumers use `isMissingSchemaObjectError` probes so zero pages break if deployed before or after the SQL migration).
 
-### Verified Non-Destructive Rollback SQL
+### Verified Complete Restoration Rollback SQL
+Restores every pre-existing database function (`public.can_partner_share_property`, `public.can_manage_property`), grant, and constraint (`public.booking_caution_deposits` status check) to its exact pre-sprint definition before dropping sprint-only triggers, functions, policies, tables, and columns:
+
 ```sql
 begin;
+-- 1. Feature 7: Trust profile triggers, RPCs, and table
 drop trigger if exists z2_sync_property_trust_checks on public.properties;
 drop function if exists public.sync_property_trust_checks_from_property();
 drop function if exists public.admin_review_property_trust_check(text, text, text, text, text, text);
 drop function if exists public.get_public_property_trust_profile(text);
 drop table if exists public.property_trust_checks;
 
+-- 2. Feature 5: Availability confirmation & enquiry reply columns/RPCs
 drop function if exists public.respond_to_property_enquiry(uuid, text, text);
 drop function if exists public.confirm_property_availability_now(text, text);
 alter table public.property_enquiries
@@ -55,6 +59,7 @@ alter table public.property_enquiries
   drop column if exists responded_by,
   drop column if exists responded_at;
 
+-- 3. Feature 4: Caution deposit RPCs, inspections table, added columns, and original status check constraint
 drop function if exists public.admin_resolve_caution_deposit_status(text, text, integer, integer, text);
 drop function if exists public.respond_to_caution_damage_claim(text, text);
 drop function if exists public.submit_caution_damage_claim(text, text, integer, jsonb, boolean);
@@ -63,6 +68,32 @@ drop function if exists public.submit_property_inspection(text, text, text, text
 drop function if exists public.update_property_caution_policy(text, integer, text, text);
 drop table if exists public.property_inspections;
 
+update public.booking_caution_deposits
+  set status = 'refund_completed'
+  where status in ('not_applicable', 'refunded');
+
+alter table public.booking_caution_deposits
+  drop constraint if exists booking_caution_deposits_status_check;
+alter table public.booking_caution_deposits
+  add constraint booking_caution_deposits_status_check
+  check (status in (
+    'due',
+    'received',
+    'inspection_pending',
+    'refund_approved',
+    'partially_refunded',
+    'disputed',
+    'refund_completed'
+  ));
+alter table public.booking_caution_deposits
+  drop column if exists damage_issue_description,
+  drop column if exists damage_claimed_amount_ngn,
+  drop column if exists excludes_normal_wear_and_tear,
+  drop column if exists guest_deduction_response,
+  drop column if exists guest_responded_at,
+  drop column if exists admin_review_note;
+
+-- 4. Feature 3: Booking financial/deal snapshot trigger, RPC, and added columns
 drop trigger if exists z1_snapshot_booking_financial_and_deal_terms on public.bookings;
 drop function if exists public.snapshot_booking_financial_and_deal_terms();
 drop function if exists public.get_my_agent_deal_earnings();
@@ -75,6 +106,71 @@ alter table public.bookings
   drop column if exists agent_deal_acceptance_id,
   drop column if exists agent_deal_id;
 
+-- 5. Restore pre-sprint `public.can_partner_share_property(text, uuid)` BEFORE dropping deal & authorisation tables
+create or replace function public.can_partner_share_property(
+  target_property_id text,
+  target_partner_id uuid default auth.uid()
+)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  prop_status text;
+  prop_allow_sharing boolean;
+  partner_role text;
+  partner_status text;
+  has_active_access boolean := false;
+  has_revoked_access boolean := false;
+begin
+  if target_partner_id is null or target_property_id is null then
+    return false;
+  end if;
+
+  select p.role, coalesce(p.account_status, 'active')
+    into partner_role, partner_status
+    from public.profiles p
+    where p.id = target_partner_id;
+
+  if not found or partner_role not in ('partner', 'admin') or partner_status <> 'active' then
+    return false;
+  end if;
+
+  select pr.status, coalesce(pr.allow_partner_sharing, true)
+    into prop_status, prop_allow_sharing
+    from public.properties pr
+    where pr.id = target_property_id;
+
+  if not found or prop_status <> 'approved' then
+    return false;
+  end if;
+
+  select
+    bool_or(pa.status = 'active'),
+    bool_or(pa.status = 'revoked')
+  into has_active_access, has_revoked_access
+  from public.property_access pa
+  where pa.property_id = target_property_id
+    and pa.user_id = target_partner_id;
+
+  if coalesce(has_revoked_access, false) and not coalesce(has_active_access, false) then
+    return false;
+  end if;
+
+  if partner_role = 'admin' or coalesce(has_active_access, false) then
+    return true;
+  end if;
+
+  return prop_allow_sharing;
+end;
+$$;
+
+revoke all on function public.can_partner_share_property(text, uuid) from public, anon;
+grant execute on function public.can_partner_share_property(text, uuid) to authenticated, service_role;
+
+-- 6. Feature 1 & 2: Drop Agent Deal Board & Owner Agent Authorisation objects
 drop function if exists public.respond_to_agent_deal(uuid, text);
 drop function if exists public.set_owner_agent_deal_status(uuid, text);
 drop function if exists public.upsert_owner_agent_deal(jsonb);
@@ -87,14 +183,48 @@ drop function if exists public.lookup_partner_by_referral_code(text);
 drop function if exists public.revoke_owner_agent_authorisation(text, uuid, text);
 drop function if exists public.grant_owner_agent_authorisation(text, uuid, text[], timestamptz, text);
 drop table if exists public.property_agent_authorisations;
+
+-- 7. Duplicate detection, submitter separation, and pre-sprint `public.can_manage_property(text)` restoration
 drop trigger if exists z1_detect_property_duplicates on public.properties;
 drop function if exists public.detect_property_duplicates_on_write();
 drop function if exists public.review_property_duplicate_flag(uuid, text, text, boolean);
 drop table if exists public.property_duplicate_flags;
 drop trigger if exists z0_enforce_submitter_role_separation on public.property_private_records;
 drop function if exists public.enforce_submitter_role_separation();
+
+create or replace function public.can_manage_property(target_property_id text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.has_role('admin')
+    or exists (
+      select 1
+      from public.property_access pa
+      join public.profiles p on p.id = pa.user_id
+      where pa.property_id = target_property_id
+        and pa.user_id = (select auth.uid())
+        and pa.status = 'active'
+        and p.account_status = 'active'
+    );
+$$;
+
+drop function if exists public.can_manage_property_as_owner_or_manager(text);
+
 drop trigger if exists a0_assign_hamlet_property_defaults on public.properties;
 drop function if exists public.assign_hamlet_property_defaults();
+drop function if exists public.generate_hamlet_property_code();
+alter table public.properties
+  drop column if exists hamlet_property_code,
+  drop column if exists building_or_estate,
+  drop column if exists unit_identifier,
+  drop column if exists submitted_by_user_id,
+  drop column if exists submitter_relationship,
+  drop column if exists booking_mode,
+  drop column if exists caution_refund_conditions,
+  drop column if exists caution_inspection_policy;
 commit;
 ```
 

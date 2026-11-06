@@ -526,14 +526,29 @@ begin
     raise exception 'Only the property owner, authorised manager, or administrator can revoke agent access.';
   end if;
 
-  update public.property_agent_authorisations
+  insert into public.property_agent_authorisations (
+    property_id, agent_id, granted_by, authorisation_status, permission_scope,
+    note, authorised_at, revoked_at, revoked_by, revocation_reason, updated_at
+  )
+  values (
+    target_property_id,
+    target_agent_id,
+    actor_id,
+    'revoked',
+    '{}'::text[],
+    '',
+    now(),
+    now(),
+    actor_id,
+    clean_reason,
+    now()
+  )
+  on conflict (property_id, agent_id) do update
     set authorisation_status = 'revoked',
         revoked_at = now(),
         revoked_by = actor_id,
         revocation_reason = clean_reason,
-        updated_at = now()
-    where property_id = target_property_id
-      and agent_id = target_agent_id;
+        updated_at = now();
 
   -- Block future share link usage while strictly preserving historical bookings & attributions
   update public.partner_share_links
@@ -723,7 +738,8 @@ revoke all on public.agent_deal_acceptances from public, anon, authenticated;
 grant select on public.agent_deal_acceptances to authenticated;
 grant all on public.agent_deal_acceptances to service_role;
 
--- Update `can_partner_share_property` to honour `property_agent_authorisations` & accepted deals
+-- Update `can_partner_share_property` to require explicit owner/manager authorisation or accepted deal
+-- (never fall back to open sharing merely because `allow_partner_sharing` defaults to true)
 create or replace function public.can_partner_share_property(
   target_property_id text,
   target_partner_id uuid default auth.uid()
@@ -775,23 +791,33 @@ begin
   where pa.property_id = target_property_id
     and pa.user_id = target_partner_id;
 
+  -- Active admins and verified property owners / authorised managers can always share their approved listing
+  if partner_role = 'admin' or coalesce(has_owner_or_manager_access, false) then
+    return true;
+  end if;
+
+  -- Property-level master gate: if the owner/manager paused external agent sharing, no external agent may share
+  if not prop_allow_sharing then
+    return false;
+  end if;
+
   select
     bool_or(paa.authorisation_status = 'revoked'),
     bool_or(
       paa.authorisation_status = 'active'
       and (paa.expires_at is null or paa.expires_at > now())
+      and 'market_and_share' = any(paa.permission_scope)
     )
   into has_revoked_agent_auth, has_active_agent_auth
   from public.property_agent_authorisations paa
   where paa.property_id = target_property_id
     and paa.agent_id = target_partner_id;
 
-  if (coalesce(has_revoked_access, false) and not coalesce(has_owner_or_manager_access, false))
-     or coalesce(has_revoked_agent_auth, false) then
+  if coalesce(has_revoked_access, false) or coalesce(has_revoked_agent_auth, false) then
     return false;
   end if;
 
-  if partner_role = 'admin' or coalesce(has_owner_or_manager_access, false) or coalesce(has_active_agent_auth, false) then
+  if coalesce(has_active_agent_auth, false) then
     return true;
   end if;
 
@@ -803,16 +829,21 @@ begin
       and ada.agent_id = target_partner_id
       and ada.decision = 'accepted'
       and ad.status = 'published'
+      and ad.starts_on <= current_date
       and (ad.expires_on is null or ad.expires_on >= current_date)
+      and (ad.exclusivity <> 'exclusive_agent' or ad.exclusive_agent_id = target_partner_id)
   ) into has_accepted_deal;
 
   if coalesce(has_accepted_deal, false) then
     return true;
   end if;
 
-  return prop_allow_sharing;
+  return false;
 end;
 $$;
+
+revoke all on function public.can_partner_share_property(text, uuid) from public, anon;
+grant execute on function public.can_partner_share_property(text, uuid) to authenticated, service_role;
 
 create or replace function public.upsert_owner_agent_deal(
   deal_payload jsonb
@@ -1007,6 +1038,7 @@ declare
   actor_id uuid := (select auth.uid());
   deal_row public.agent_deals%rowtype;
   prop_status text;
+  prop_allow_sharing boolean := true;
   snapshot_json jsonb;
   link_row public.partner_share_links%rowtype;
   acc_id uuid;
@@ -1049,9 +1081,14 @@ begin
     raise exception 'Your agent authorisation on this property has been revoked.';
   end if;
 
-  select status into prop_status
+  select status, coalesce(allow_partner_sharing, true)
+    into prop_status, prop_allow_sharing
     from public.properties
     where id = deal_row.property_id;
+
+  if decision_input = 'accepted' and not prop_allow_sharing then
+    raise exception 'External agent sharing is currently paused on this property by the owner or manager.';
+  end if;
 
   snapshot_json := jsonb_build_object(
     'deal_id', deal_row.id,

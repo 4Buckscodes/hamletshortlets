@@ -254,12 +254,12 @@ export default function PartnerDashboardPage() {
     try {
       const { error: rpcError } = await db.rpc('set_property_sharing_permission', {
         target_property_id: property.id,
-        allow_sharing: nextValue,
+        enabled: nextValue,
       });
       if (rpcError) throw new Error(rpcError.message);
       setNotice(
         nextValue
-          ? `"${property.title}" is now open to HAMLET partner network sharing.`
+          ? `"${property.title}" is now enabled for authorised agents and accepted deal partners.`
           : `"${property.title}" is restricted to direct owner and manager sharing only.`,
       );
       await load();
@@ -618,8 +618,10 @@ export default function PartnerDashboardPage() {
                                 className="cursor-pointer text-[11px] font-bold text-brass-700 underline underline-offset-2 hover:text-ink-950 disabled:opacity-50"
                               >
                                 {p.allow_partner_sharing === false
-                                  ? 'Network sharing: Off (Enable)'
-                                  : 'Network sharing: Open'}
+                                  ? 'Agent sharing: Paused (Enable)'
+                                  : sprintSchemaReady
+                                    ? 'Agent sharing: Authorised only'
+                                    : 'Network sharing: Open'}
                               </button>
                             )}
                           </div>
