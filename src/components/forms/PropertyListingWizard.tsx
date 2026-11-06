@@ -17,6 +17,7 @@ import {
   deletePropertyMediaObjects,
   extractPropertyMediaObjectPath,
 } from '@/lib/imageOptimiser';
+import { detectLikelyPropertyDuplicates } from '@/lib/competitive-readiness';
 import {
   PropertyMediaManager,
   type MediaUploadActivityState,
@@ -237,30 +238,52 @@ export function PropertyListingWizard({
     clearDraft();
   }, [clearDraft, db, mediaActivity.sessionUploadedPaths, mode]);
 
-  // Check potential duplicate title + area as user completes Step 1
+  // Check potential duplicate address / title / photo similarity as user completes wizard
   useEffect(() => {
     const timer = window.setTimeout(async () => {
-      if (!db || values.title.trim().length < 8) {
+      if (!db || (values.title.trim().length < 6 && values.address.trim().length < 8)) {
         setDuplicateWarning('');
         return;
       }
       const { data } = await db
         .from('properties')
-        .select('id,title,area')
+        .select('id,title,area,public_address,image_urls,status')
         .eq('area', values.area)
-        .ilike('title', values.title.trim())
-        .limit(2);
-      const conflict = (data ?? []).find(row => row.id !== propertyId);
-      if (conflict) {
+        .limit(30);
+      const candidates = detectLikelyPropertyDuplicates(
+        {
+          id: propertyId,
+          title: values.title,
+          area: values.area,
+          publicAddress: values.address,
+          imageUrls: values.imageUrls,
+        },
+        ((data ?? []) as Array<{
+          id: string;
+          title: string;
+          area: string;
+          public_address: string;
+          image_urls?: string[];
+          status?: string;
+        }>).map(row => ({
+          id: row.id,
+          title: row.title,
+          area: row.area,
+          publicAddress: row.public_address || '',
+          imageUrls: row.image_urls || [],
+          status: row.status,
+        })),
+      );
+      if (candidates.length > 0) {
         setDuplicateWarning(
-          `Heads up: another listing in ${values.area} already uses a very similar title ("${conflict.title}"). Make sure this is not a duplicate submission.`,
+          `Heads up: this submission closely resembles "${candidates[0].matchedTitle}" (${candidates[0].confidenceScore}% similarity). Distinct units in the same building are allowed, and HAMLET operations will verify ownership/unit separation during review.`,
         );
       } else {
         setDuplicateWarning('');
       }
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [db, propertyId, values.area, values.title]);
+  }, [db, propertyId, values.address, values.area, values.imageUrls, values.title]);
 
   const samplePricing = useMemo(() => {
     const cleanFee = Math.max(0, Math.round(Number(values.cleaningFee) || 0));

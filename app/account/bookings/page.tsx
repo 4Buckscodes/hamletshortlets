@@ -17,6 +17,11 @@ import {
   triggerBookingNotificationDispatchBestEffort,
 } from '@/lib/next-supabase';
 import { isQuoteExpired } from '@/lib/pricing';
+import {
+  CAUTION_STATUS_LABELS,
+  computeBookingResponseIndicator,
+  type CautionDepositLifecycleStatus,
+} from '@/lib/competitive-readiness';
 import { formatCurrencyAmount, useCurrency, type DisplayCurrency } from '@/lib/currency';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -43,6 +48,30 @@ type Booking = {
   quote_expires_at?: string | null;
   created_at: string;
   properties?: { title?: string; area?: string } | null;
+};
+
+type GuestCautionRecord = {
+  booking_id: string;
+  amount_ngn: number;
+  status: CautionDepositLifecycleStatus;
+  deducted_amount_ngn?: number;
+  refunded_amount_ngn?: number;
+  damage_claimed_amount_ngn?: number;
+  damage_issue_description?: string | null;
+  guest_deduction_response?: string | null;
+  admin_review_note?: string | null;
+};
+
+type GuestInspectionRecord = {
+  id: string;
+  booking_id: string;
+  inspection_stage: 'check_in' | 'check_out';
+  property_condition: string;
+  furniture_and_appliances: string;
+  existing_or_reported_damage: string;
+  missing_items: string;
+  utilities_and_facilities: string;
+  guest_acknowledgement_status: 'pending' | 'acknowledged' | 'disputed';
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -143,6 +172,17 @@ export default function GuestBookingsPage() {
   const [rating, setRating] = useState(5);
   const [feedbackComment, setFeedbackComment] = useState('');
 
+  // Caution & Inspection state (schema-tolerant)
+  const [cautionMap, setCautionMap] = useState<Record<string, GuestCautionRecord>>({});
+  const [inspectionMap, setInspectionMap] = useState<
+    Record<string, GuestInspectionRecord[]>
+  >({});
+  const [activeInspection, setActiveInspection] =
+    useState<GuestInspectionRecord | null>(null);
+  const [inspectionAckNote, setInspectionAckNote] = useState('');
+  const [claimResponseBookingId, setClaimResponseBookingId] = useState('');
+  const [claimResponseText, setClaimResponseText] = useState('');
+
   const load = useCallback(async () => {
     if (!db) {
       setError('Account access is not configured on this deployment.');
@@ -161,18 +201,46 @@ export default function GuestBookingsPage() {
       () => undefined,
     );
 
-    const { data, error: queryError } = await db
-      .from('bookings')
-      .select(
-        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at,properties(title,area)',
-      )
-      .order('created_at', { ascending: false });
+    const [bookingRes, cautionRes, inspRes] = await Promise.all([
+      db
+        .from('bookings')
+        .select(
+          'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at,properties(title,area)',
+        )
+        .order('created_at', { ascending: false }),
+      db
+        .from('booking_caution_deposits')
+        .select(
+          'booking_id,amount_ngn,status,deducted_amount_ngn,refunded_amount_ngn,damage_claimed_amount_ngn,damage_issue_description,guest_deduction_response,admin_review_note',
+        ),
+      db
+        .from('property_inspections')
+        .select(
+          'id,booking_id,inspection_stage,property_condition,furniture_and_appliances,existing_or_reported_damage,missing_items,utilities_and_facilities,guest_acknowledgement_status',
+        ),
+    ]);
 
-    if (queryError) {
+    if (bookingRes.error) {
       setError('We could not load your booking requests. Please refresh and try again.');
     } else {
-      setItems((data || []) as unknown as Booking[]);
+      setItems((bookingRes.data || []) as unknown as Booking[]);
       setError('');
+    }
+
+    if (!cautionRes.error && Array.isArray(cautionRes.data)) {
+      const cmap: Record<string, GuestCautionRecord> = {};
+      for (const row of cautionRes.data as unknown as GuestCautionRecord[]) {
+        cmap[row.booking_id] = row;
+      }
+      setCautionMap(cmap);
+    }
+
+    if (!inspRes.error && Array.isArray(inspRes.data)) {
+      const imap: Record<string, GuestInspectionRecord[]> = {};
+      for (const row of inspRes.data as unknown as GuestInspectionRecord[]) {
+        imap[row.booking_id] = [...(imap[row.booking_id] || []), row];
+      }
+      setInspectionMap(imap);
     }
     setLoading(false);
   }, [db]);
@@ -338,6 +406,58 @@ export default function GuestBookingsPage() {
     }
   }
 
+  async function handleRespondInspection(ack: 'acknowledged' | 'disputed') {
+    if (!db || !activeInspection) return;
+    setBusyId(activeInspection.id);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcErr } = await db.rpc('respond_to_property_inspection', {
+        target_inspection_id: activeInspection.id,
+        acknowledgement_input: ack,
+        guest_note: inspectionAckNote,
+      });
+      if (rpcErr) throw new Error(rpcErr.message);
+      setActiveInspection(null);
+      setInspectionAckNote('');
+      setNotice(`Inspection marked ${ack}.`);
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Could not record inspection response.',
+      );
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  async function handleRespondCautionClaim(event: FormEvent) {
+    event.preventDefault();
+    if (!db || !claimResponseBookingId) return;
+    setBusyId(claimResponseBookingId);
+    setError('');
+    setNotice('');
+    try {
+      const { error: rpcErr } = await db.rpc('respond_to_caution_damage_claim', {
+        target_booking_id: claimResponseBookingId,
+        guest_response: claimResponseText,
+      });
+      if (rpcErr) throw new Error(rpcErr.message);
+      setClaimResponseBookingId('');
+      setClaimResponseText('');
+      setNotice('Your response to the caution deposit claim has been recorded.');
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : 'Could not save claim response.',
+      );
+    } finally {
+      setBusyId('');
+    }
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
@@ -417,16 +537,26 @@ export default function GuestBookingsPage() {
                       {b.guest_count} {b.guest_count === 1 ? 'guest' : 'guests'}
                     </p>
                   </div>
-                  <span className="rounded-full border border-ink-200 bg-paper px-3.5 py-1.5 text-xs font-bold text-ink-900">
-                    {STATUS_LABEL[b.status] || b.status}
-                  </span>
+                  <div className="text-right">
+                    <span className="inline-block rounded-full border border-ink-200 bg-paper px-3.5 py-1.5 text-xs font-bold text-ink-900">
+                      {STATUS_LABEL[b.status] || b.status}
+                    </span>
+                    <p className="m-0 mt-1 text-[11px] text-ink-500">
+                      {
+                        computeBookingResponseIndicator({
+                          status: b.status,
+                          createdAt: b.created_at,
+                        }).ownerResponseLabel
+                      }
+                    </p>
+                  </div>
                 </div>
 
                 <LifecycleBar status={b.status} />
 
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4 text-xs text-ink-700">
                   <span>
-                    Stay total:{' '}
+                    Stay total (excl. caution):{' '}
                     <strong className="font-mono text-ink-900">
                       {b.quote_currency &&
                       (b.quote_currency === 'USD' || b.quote_currency === 'GBP') &&
@@ -443,14 +573,18 @@ export default function GuestBookingsPage() {
                       </span>
                     )}
                   </span>
-                  {Number(b.refundable_deposit) > 0 && (
-                    <span>
-                      Refundable caution deposit:{' '}
-                      <strong className="font-mono text-ink-900">
-                        {formatCautionDeposit(Number(b.refundable_deposit))}
-                      </strong>
-                    </span>
-                  )}
+                  <span>
+                    Caution deposit:{' '}
+                    <strong className="font-mono text-ink-900">
+                      {Number(b.refundable_deposit) > 0
+                        ? `${formatCautionDeposit(Number(b.refundable_deposit))} · ${
+                            CAUTION_STATUS_LABELS[
+                              cautionMap[b.id]?.status || 'due'
+                            ]
+                          }`
+                        : CAUTION_STATUS_LABELS.not_applicable}
+                    </strong>
+                  </span>
                   {b.status === 'awaiting_payment' && b.payment_deadline && (
                     <span className="font-semibold text-brass-700">
                       48h payment hold until{' '}
@@ -467,6 +601,57 @@ export default function GuestBookingsPage() {
                     </span>
                   )}
                 </div>
+
+                {(inspectionMap[b.id]?.length || 0) > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {inspectionMap[b.id].map(insp => (
+                      <button
+                        key={insp.id}
+                        type="button"
+                        onClick={() => {
+                          setInspectionAckNote('');
+                          setActiveInspection(insp);
+                        }}
+                        className="cursor-pointer rounded-full border border-ink-200 bg-paper px-3 py-1.5 text-xs font-semibold text-ink-800 hover:border-ink-900"
+                      >
+                        {insp.inspection_stage === 'check_in' ? 'Check-in' : 'Check-out'}{' '}
+                        checklist ({insp.guest_acknowledgement_status}) →
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {cautionMap[b.id]?.damage_issue_description && (
+                  <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-950">
+                    <p className="m-0 font-bold">
+                      Caution deduction claim (₦
+                      {Number(
+                        cautionMap[b.id].damage_claimed_amount_ngn || 0,
+                      ).toLocaleString('en-NG')}
+                      ):
+                    </p>
+                    <p className="m-0 mt-1">
+                      {cautionMap[b.id].damage_issue_description}
+                    </p>
+                    {cautionMap[b.id].guest_deduction_response ? (
+                      <p className="m-0 mt-1.5 text-emerald-900">
+                        <strong>Your response:</strong>{' '}
+                        {cautionMap[b.id].guest_deduction_response}
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setClaimResponseText('');
+                          setClaimResponseBookingId(b.id);
+                        }}
+                        className="secondary-button mt-2 min-h-[36px] text-xs"
+                      >
+                        Respond to claim
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-4 flex flex-wrap gap-2.5">
                   {b.status === 'awaiting_payment' && (
@@ -631,6 +816,104 @@ export default function GuestBookingsPage() {
               className="primary-button min-h-[48px] w-full"
             >
               {busyId ? 'Saving…' : 'Submit feedback'}
+            </button>
+          </form>
+        </FocusedDrawer>
+
+        <FocusedDrawer
+          open={Boolean(activeInspection)}
+          title={
+            activeInspection?.inspection_stage === 'check_in'
+              ? 'Check-in condition checklist'
+              : 'Check-out condition checklist'
+          }
+          subtitle={activeInspection?.property_condition.replace('_', ' ') || ''}
+          onClose={() => setActiveInspection(null)}
+        >
+          {activeInspection && (
+            <div className="space-y-3 text-xs text-ink-700">
+              <div className="space-y-1.5 rounded-2xl bg-paper p-3.5">
+                <p className="m-0">
+                  <strong>Furniture & appliances:</strong>{' '}
+                  {activeInspection.furniture_and_appliances}
+                </p>
+                <p className="m-0">
+                  <strong>Utilities & facilities:</strong>{' '}
+                  {activeInspection.utilities_and_facilities}
+                </p>
+                {activeInspection.existing_or_reported_damage && (
+                  <p className="m-0">
+                    <strong>Reported damage:</strong>{' '}
+                    {activeInspection.existing_or_reported_damage}
+                  </p>
+                )}
+                {activeInspection.missing_items && (
+                  <p className="m-0">
+                    <strong>Missing items:</strong> {activeInspection.missing_items}
+                  </p>
+                )}
+              </div>
+
+              <FormField label="Optional guest note" optional>
+                {fieldProps => (
+                  <textarea
+                    {...fieldProps}
+                    rows={2}
+                    value={inspectionAckNote}
+                    onChange={e => setInspectionAckNote(e.target.value)}
+                    className={`${FIELD_INPUT_CLASS} resize-y`}
+                  />
+                )}
+              </FormField>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={Boolean(busyId)}
+                  onClick={() => void handleRespondInspection('acknowledged')}
+                  className="primary-button min-h-[44px] flex-1"
+                >
+                  Acknowledge checklist
+                </button>
+                <button
+                  type="button"
+                  disabled={Boolean(busyId)}
+                  onClick={() => void handleRespondInspection('disputed')}
+                  className="secondary-button min-h-[44px] flex-1"
+                >
+                  Dispute entry
+                </button>
+              </div>
+            </div>
+          )}
+        </FocusedDrawer>
+
+        <FocusedDrawer
+          open={Boolean(claimResponseBookingId)}
+          title="Respond to caution deduction claim"
+          onClose={() => setClaimResponseBookingId('')}
+        >
+          <form onSubmit={handleRespondCautionClaim} className="space-y-4">
+            <FormField label="Your statement for HAMLET operations review">
+              {fieldProps => (
+                <textarea
+                  {...fieldProps}
+                  rows={3}
+                  required
+                  minLength={4}
+                  value={claimResponseText}
+                  onChange={e => setClaimResponseText(e.target.value)}
+                  placeholder="Share context or dispute details for admin reconciliation…"
+                  className={`${FIELD_INPUT_CLASS} resize-y`}
+                />
+              )}
+            </FormField>
+            <button
+              type="submit"
+              disabled={Boolean(busyId)}
+              className="primary-button min-h-[46px] w-full"
+            >
+              Submit response
             </button>
           </form>
         </FocusedDrawer>
