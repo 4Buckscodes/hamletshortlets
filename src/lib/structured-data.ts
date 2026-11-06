@@ -6,6 +6,7 @@ import {
   isApprovedBookableStay,
 } from './discovery';
 import type { PublicStayRecord } from './next-supabase';
+import { buildPropertyPath } from './property-slugs';
 
 export const HAMLET_CANONICAL_ORIGIN = 'https://hamlet.rest';
 export const HAMLET_BRAND = 'HAMLET';
@@ -322,7 +323,7 @@ function buildApprovedStaysItemListNode(
       '@type': 'ListItem',
       position: index + 1,
       name: stay.title.trim(),
-      url: buildNextCanonicalUrl(`/stays/${encodeURIComponent(stay.id)}`),
+      url: buildNextCanonicalUrl(buildPropertyPath(stay)),
     })),
   };
 }
@@ -571,8 +572,7 @@ export function buildPropertyDetailSchema({
   stay,
   publicLocationSummary,
 }: PropertyDetailSchemaInput): Record<string, unknown> {
-  const encodedId = encodeURIComponent(stay.id);
-  const relativePath = `/stays/${encodedId}`;
+  const relativePath = buildPropertyPath(stay);
   const canonicalUrl = buildNextCanonicalUrl(relativePath);
   const cleanTitle = stay.title.trim();
   const cleanArea = (stay.area || '').trim();
