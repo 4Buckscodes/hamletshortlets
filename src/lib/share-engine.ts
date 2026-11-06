@@ -1,5 +1,6 @@
 import { formatAccommodationLabel, getValidGuestNightlyNgn } from './discovery';
 import { formatNaira } from './pricing';
+import { buildPropertyPath } from './property-slugs';
 
 export const HAMLET_SHARE_ORIGIN = 'https://hamlet.rest';
 export const SHARE_TOKEN_REGEX = /^hsl_[a-z0-9]{16,64}$/i;
@@ -175,8 +176,9 @@ export function buildPartnerPropertyTrackingUrl(
   propertyId: string,
   shareToken: string,
   origin: string = HAMLET_SHARE_ORIGIN,
+  property?: { title: string; area?: string | null },
 ): string {
-  const canonical = buildPropertyCanonicalShareUrl(propertyId, origin);
+  const canonical = buildPropertyCanonicalShareUrl(propertyId, origin, property);
   const validToken = normalizeShareToken(shareToken);
   if (!validToken) return canonical;
   return `${canonical}?ref=${encodeURIComponent(validToken)}`;
