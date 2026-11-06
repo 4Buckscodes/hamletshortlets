@@ -24,7 +24,7 @@ import {
   serializeJsonLd,
 } from './structured-data';
 import type { PublicStayRecord } from './next-supabase';
-import { buildPropertyPath, buildPropertySlug } from './property-slugs';
+import { buildPropertyPath } from './property-slugs';
 
 const ROOT = resolve(process.cwd());
 
