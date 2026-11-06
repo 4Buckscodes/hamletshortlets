@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 const ADMIN_LINKS = [
   { href: '/admin', label: 'Overview', id: 'overview' },
+  { href: '/admin/communications', label: 'Communications', id: 'communications' },
   { href: '/admin/properties', label: 'Property review', id: 'properties' },
   { href: '/admin/partners', label: 'Partner queue', id: 'partners' },
   { href: '/admin/partners/network', label: 'Partner network', id: 'network' },
