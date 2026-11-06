@@ -398,7 +398,7 @@ function PartnerMarketingContent() {
         });
         const token = (data as { share_token?: string } | null)?.share_token;
         if (token) {
-          targetUrl = buildPartnerPropertyTrackingUrl(selectedStay.id, token, origin);
+          targetUrl = buildPartnerPropertyTrackingUrl(selectedStay.id, token, origin, { title: selectedStay.title, area: selectedStay.area });
         }
       }
 
