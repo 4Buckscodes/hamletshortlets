@@ -1223,6 +1223,10 @@ begin
       where ada.property_id = new.property_id
         and ada.agent_id = new.closing_agent_id
         and ada.decision = 'accepted'
+        and ad.status = 'published'
+        and ad.starts_on <= current_date
+        and (ad.expires_on is null or ad.expires_on >= current_date)
+        and (ad.exclusivity <> 'exclusive_agent' or ad.exclusive_agent_id = new.closing_agent_id)
         and (
           (new.deal_code_input is not null and ad.deal_code = upper(btrim(new.deal_code_input)))
           or (
@@ -2144,6 +2148,57 @@ drop trigger if exists z2_sync_property_trust_checks on public.properties;
 create trigger z2_sync_property_trust_checks
   after insert or update on public.properties
   for each row execute function public.sync_property_trust_checks_from_property();
+
+-- Backfill structured 7-check rows for any pre-existing non-draft properties
+do $$
+declare
+  prop_rec record;
+  v jsonb;
+  s_val text;
+begin
+  for prop_rec in
+    select id, status, verification, created_at, updated_at
+    from public.properties
+    where status <> 'draft'
+  loop
+    v := coalesce(prop_rec.verification, '{}'::jsonb);
+
+    insert into public.property_trust_checks (property_id, check_code, status, public_summary, reviewed_at)
+      values (prop_rec.id, 'details_submitted', 'verified', 'Property details, specifications and rules submitted.', coalesce(prop_rec.created_at, now()))
+      on conflict (property_id, check_code) do nothing;
+
+    insert into public.property_trust_checks (property_id, check_code, status, public_summary, reviewed_at)
+      values (prop_rec.id, 'property_info_updated', 'verified', 'Property rates and availability metadata recorded.', coalesce(prop_rec.updated_at, now()))
+      on conflict (property_id, check_code) do nothing;
+
+    if prop_rec.status = 'approved' then
+      insert into public.property_trust_checks (property_id, check_code, status, public_summary, reviewed_at)
+        values (prop_rec.id, 'listing_reviewed', 'verified', 'Listing reviewed for marketplace publication by HAMLET.', coalesce(prop_rec.updated_at, now()))
+        on conflict (property_id, check_code) do nothing;
+    end if;
+
+    s_val := case when v ->> 'identity' = 'verified' then 'verified' when v ->> 'identity' = 'pending_review' then 'pending_review' else 'not_started' end;
+    insert into public.property_trust_checks (property_id, check_code, status, reviewed_at)
+      values (prop_rec.id, 'owner_identity_reviewed', s_val, case when s_val = 'verified' then coalesce(prop_rec.updated_at, now()) else null end)
+      on conflict (property_id, check_code) do nothing;
+
+    s_val := case when v ->> 'authority' = 'verified' then 'verified' when v ->> 'authority' = 'pending_review' then 'pending_review' else 'not_started' end;
+    insert into public.property_trust_checks (property_id, check_code, status, reviewed_at)
+      values (prop_rec.id, 'management_authority_reviewed', s_val, case when s_val = 'verified' then coalesce(prop_rec.updated_at, now()) else null end)
+      on conflict (property_id, check_code) do nothing;
+
+    s_val := case when v ->> 'ownership' = 'verified' then 'verified' when v ->> 'ownership' = 'pending_review' then 'pending_review' else 'not_started' end;
+    insert into public.property_trust_checks (property_id, check_code, status, reviewed_at)
+      values (prop_rec.id, 'documents_reviewed', s_val, case when s_val = 'verified' then coalesce(prop_rec.updated_at, now()) else null end)
+      on conflict (property_id, check_code) do nothing;
+
+    s_val := case when v ->> 'inspection' = 'verified' then 'verified' when v ->> 'inspection' = 'pending_review' then 'pending_review' else 'not_started' end;
+    insert into public.property_trust_checks (property_id, check_code, status, reviewed_at)
+      values (prop_rec.id, 'physical_inspection_completed', s_val, case when s_val = 'verified' then coalesce(prop_rec.updated_at, now()) else null end)
+      on conflict (property_id, check_code) do nothing;
+  end loop;
+end
+$$;
 
 -- Safe public RPC returning ONLY non-confidential trust checks for approved properties
 create or replace function public.get_public_property_trust_profile(

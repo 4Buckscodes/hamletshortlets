@@ -389,6 +389,27 @@ describe('HAMLET Competitive Readiness Sprint — Journeys A–G, Financial Snap
     });
     expect(agentBEarnings.deals).toHaveLength(0);
     expect(agentBEarnings.attributed_bookings).toHaveLength(0);
+
+    // 7. When Owner withdraws the deal, Agent A loses deal-only share permission for future visits, while historical booking snapshot stays frozen
+    await asUser(db, ownerId, async tx => {
+      await tx.query(`select public.set_owner_agent_deal_status($1, 'withdrawn')`, [
+        fixedDealId,
+      ]);
+    });
+    const postWithdrawShare = await asUser(db, agentAId, async tx => {
+      const { rows } = await tx.query<{ ok: boolean }>(
+        `select public.can_partner_share_property($1, $2) as ok`,
+        [approvedPropertyId, agentAId],
+      );
+      return rows[0].ok;
+    });
+    expect(postWithdrawShare).toBe(false);
+
+    const { rows: stillFrozen } = await db.query<{ agreed_agent_deal_payout_ngn: number }>(
+      `select agreed_agent_deal_payout_ngn from public.bookings where id = $1`,
+      [booking.id],
+    );
+    expect(stillFrozen[0].agreed_agent_deal_payout_ngn).toBe(60_000);
   });
 
   it('Journey B: Submitter role separation prevents sourcing agents from becoming owners, and near-duplicate submissions enter Admin review queue without auto-deletion', async () => {
