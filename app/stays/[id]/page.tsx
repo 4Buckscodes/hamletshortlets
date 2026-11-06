@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -21,6 +21,7 @@ import {
 } from '@/lib/discovery';
 import { formatNaira } from '@/lib/pricing';
 import { buildPropertyPreviewVersion } from '@/lib/share-engine';
+import { buildPropertyPath, buildPropertySlug } from '@/lib/property-slugs';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   PUBLIC_PROPERTY_SELECT,
@@ -39,7 +40,38 @@ import BookingRequestForm from './booking-request-form';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+type PublicSupabaseClient = NonNullable<ReturnType<typeof getPublicSupabase>>;
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+async function findPublicStay(db: PublicSupabaseClient, routeKey: string) {
+  if (UUID_PATTERN.test(routeKey)) {
+    const { data } = await db
+      .from('properties')
+      .select(PUBLIC_PROPERTY_SELECT)
+      .eq('id', routeKey)
+      .eq('status', 'approved')
+      .maybeSingle();
+    if (data) return data as PublicStayRecord;
+  }
+
+  // Slugs are derived from approved listing data, so no extra database column or migration
+  // is required. The current inventory is bounded to the public sitemap's 5,000-item limit.
+  const { data, error } = await db
+    .from('properties')
+    .select(PUBLIC_PROPERTY_SELECT)
+    .eq('status', 'approved')
+    .order('updated_at', { ascending: false })
+    .limit(5000);
+
+  if (error || !data) return null;
+  return (data as PublicStayRecord[]).find(stay => buildPropertySlug(stay) === routeKey) ?? null;
+}
 
 const PILLAR_LABELS: Array<{ key: string; label: string }> = [
   { key: 'ownership', label: 'Ownership / title evidence' },
@@ -76,12 +108,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: false, follow: false },
     };
   }
-  const { data } = await db
-    .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,nightly_rate,image_urls,updated_at')
-    .eq('id', id)
-    .eq('status', 'approved')
-    .maybeSingle();
+  const data = await findPublicStay(db, id);
 
   if (!data) {
     return {
@@ -100,7 +127,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     guestNightly !== null ? ` · ${formatNaira(guestNightly)}/night` : '';
   const title = `${data.title} in ${areaLabel}`;
   const description = `${accommodationSummary} in ${areaLabel}, Lagos${priceSnippet}. View photos, verification status, house rules and request dates on HAMLET.`;
-  const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(id)}`);
+  const canonicalUrl = buildNextCanonicalUrl(buildPropertyPath(data));
   const previewVersion = buildPropertyPreviewVersion(data);
   const shareImage = `${HAMLET_CANONICAL_ORIGIN}/api/og/property/${encodeURIComponent(
     id,
@@ -135,26 +162,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PropertyDetailPage({ params }: Props) {
-  const { id } = await params;
+export default async function PropertyDetailPage({ params, searchParams }: Props) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const db = getPublicSupabase();
 
   if (!db) {
     notFound();
   }
 
-  const { data, error } = await db
-    .from('properties')
-    .select(PUBLIC_PROPERTY_SELECT)
-    .eq('id', id)
-    .eq('status', 'approved')
-    .maybeSingle();
+  const data = await findPublicStay(db, id);
 
-  if (error || !data) {
+  if (!data) {
     notFound();
   }
 
   const stay = data as PublicStayRecord;
+  const canonicalPath = buildPropertyPath(stay);
+  if (id !== buildPropertySlug(stay)) {
+    const preserved = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (Array.isArray(value)) value.forEach(item => preserved.append(key, item));
+      else if (typeof value === 'string') preserved.set(key, value);
+    }
+    const suffix = preserved.toString();
+    permanentRedirect(suffix ? `${canonicalPath}?${suffix}` : canonicalPath);
+  }
   const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,
