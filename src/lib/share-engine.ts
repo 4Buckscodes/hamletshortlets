@@ -169,7 +169,7 @@ export function buildPropertyCanonicalShareUrl(
   origin: string = HAMLET_SHARE_ORIGIN,
   property?: { title: string; area?: string | null },
 ): string {
-  const cleanOrigin = (origin || HAMLET_SHARE_ORIGIN).replace(/\\/+$/, '');
+  const cleanOrigin = (origin || HAMLET_SHARE_ORIGIN).replace(/\/+$/, '');
   const path = property
     ? buildPropertyPath({ id: propertyId, title: property.title, area: property.area })
     : `/stays/${encodeURIComponent(propertyId.trim())}`;
