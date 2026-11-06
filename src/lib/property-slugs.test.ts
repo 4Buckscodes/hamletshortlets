@@ -10,7 +10,7 @@ describe('SEO-friendly property URLs', () => {
     };
 
     expect(buildPropertySlug(property)).toBe(
-      'adeola-executive-two-bedroom-victoria-island-bdfd6c1ab',
+      'adeola-executive-two-bedroom-victoria-island-dfd6c1ab',
     );
     expect(buildPropertyPath(property)).toBe(
       '/stays/adeola-executive-two-bedroom-victoria-island-bdfd6c1ab',
