@@ -70,7 +70,14 @@ async function findPublicStay(db: PublicSupabaseClient, routeKey: string) {
     .limit(5000);
 
   if (error || !data) return null;
-  return (data as PublicStayRecord[]).find(stay => buildPropertySlug(stay) === routeKey) ?? null;
+  const stays = data as PublicStayRecord[];
+  const exact = stays.find(stay => buildPropertySlug(stay) === routeKey);
+  if (exact) return exact;
+  // If a title or area changes, old slug links still resolve through the stable short ID suffix.
+  const suffix = routeKey.match(/-([a-f0-9]{8})$/i)?.[1];
+  return suffix
+    ? stays.find(stay => stay.id.replace(/-/g, '').toLowerCase().endsWith(suffix.toLowerCase())) ?? null
+    : null;
 }
 
 const PILLAR_LABELS: Array<{ key: string; label: string }> = [
