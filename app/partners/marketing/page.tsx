@@ -152,14 +152,36 @@ function PartnerMarketingContent() {
       }));
       setStays(normalized);
     } else if (isMissingSchemaObjectError(rpcRes.error)) {
-      // Schema-tolerant fallback if migration is pending on an environment
-      const { data: fallbackRows } = await db
-        .from('properties')
-        .select(PUBLIC_PROPERTY_SELECT)
-        .eq('status', 'approved')
-        .order('updated_at', { ascending: false });
+      // Schema-tolerant fallback if Share Engine RPC is pending: restrict non-admins to their own active property_access rows
+      let allowedIds: string[] | null = null;
+      if (userRole !== 'admin') {
+        const { data: accessRows } = await db
+          .from('property_access')
+          .select('property_id')
+          .eq('user_id', session.user.id)
+          .eq('status', 'active');
+        allowedIds = (accessRows || []).map(r => String(r.property_id));
+      }
 
-      const normalized: ShareablePropertyRow[] = (fallbackRows || []).map(raw => {
+      const fallbackRows =
+        allowedIds !== null && allowedIds.length === 0
+          ? []
+          : (
+              await (allowedIds !== null
+                ? db
+                    .from('properties')
+                    .select(PUBLIC_PROPERTY_SELECT)
+                    .eq('status', 'approved')
+                    .in('id', allowedIds)
+                    .order('updated_at', { ascending: false })
+                : db
+                    .from('properties')
+                    .select(PUBLIC_PROPERTY_SELECT)
+                    .eq('status', 'approved')
+                    .order('updated_at', { ascending: false }))
+            ).data || [];
+
+      const normalized: ShareablePropertyRow[] = fallbackRows.map(raw => {
         const rate = Number(raw.nightly_rate || 0);
         const estPerNight = multiplyNairaBasisPoints(rate, 1_000);
         return {
@@ -179,10 +201,10 @@ function PartnerMarketingContent() {
           share_token: null,
           deal_terms: {
             authorised: true,
-            relationship: 'closing_agent',
-            commission_rate: 0.1,
-            estimated_per_night_ngn: estPerNight,
-            basis_label: '10% of owner base rate on completed stays',
+            relationship: 'owner_network_offer',
+            commission_rate: null,
+            estimated_per_night_ngn: userRole === 'admin' ? estPerNight : null,
+            basis_label: null,
             disclaimer: 'Estimated opportunity on completed stays; not a guaranteed payout.',
           },
         };
@@ -508,11 +530,16 @@ function PartnerMarketingContent() {
         ) : stays.length === 0 ? (
           <section className="mt-8 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              No approved stays open for sharing yet
+              No stays authorised for your account yet
             </h2>
             <p className="mx-auto mt-2 max-w-md text-xs text-ink-600">
-              Only approved, live properties authorised for partner sharing appear here. Draft, paused, and under-review stays cannot be shared publicly.
+              Only approved stays you own, manage, hold active owner authorisation for, or have accepted an active owner deal on appear here.
             </p>
+            <div className="mt-5">
+              <Link href="/partners/deals" className="secondary-button">
+                Browse Agent Deal Board →
+              </Link>
+            </div>
           </section>
         ) : (
           <>

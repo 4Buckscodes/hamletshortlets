@@ -16,14 +16,19 @@ import { getPublicSupabase } from '@/lib/supabase-public';
 import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
-  getStayTrustStatus,
   getValidGuestNightlyNgn,
 } from '@/lib/discovery';
-import { formatNaira } from '@/lib/pricing';
+import { formatDate, formatNaira } from '@/lib/pricing';
+import {
+  buildPublicPropertyTrustSummary,
+  computeAvailabilityFreshness,
+  HONEST_CAUTION_CUSTODY_DISCLOSURE,
+} from '@/lib/competitive-readiness';
 import { buildPropertyPreviewVersion } from '@/lib/share-engine';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   PUBLIC_PROPERTY_SELECT,
+  probePropertyReadinessMeta,
   probePropertyWayfinderMeta,
   type PublicStayRecord,
 } from '@/lib/next-supabase';
@@ -36,36 +41,11 @@ import {
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
+import { GuestShareStrip } from './guest-share-strip';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
 type Props = { params: Promise<{ id: string }> };
-
-const PILLAR_LABELS: Array<{ key: string; label: string }> = [
-  { key: 'ownership', label: 'Ownership / title evidence' },
-  { key: 'identity', label: 'Partner identity check' },
-  { key: 'authority', label: 'Authority to list' },
-  { key: 'inspection', label: 'Physical property inspection' },
-];
-
-const STATUS_BADGE: Record<string, { text: string; cls: string }> = {
-  verified: {
-    text: 'Verified by HAMLET',
-    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  },
-  self_reported: {
-    text: 'Self-reported',
-    cls: 'border-ink-200 bg-paper text-ink-700',
-  },
-  pending_review: {
-    text: 'Pending review',
-    cls: 'border-brass-300 bg-brass-200/40 text-brass-700',
-  },
-  missing: {
-    text: 'Not yet provided',
-    cls: 'border-ink-200 bg-ink-50 text-ink-500',
-  },
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -155,15 +135,27 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const stay = data as PublicStayRecord;
-  const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,
     stay.bedrooms,
   );
   const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
-  const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
+  const [wayfinderMeta, readinessMeta] = await Promise.all([
+    probePropertyWayfinderMeta(db, stay.id),
+    probePropertyReadinessMeta(db, stay.id),
+  ]);
   const images = stay.image_urls ?? [];
   const verification = stay.verification ?? {};
+  const trustSummary = buildPublicPropertyTrustSummary({
+    trustChecks: readinessMeta.checks,
+    legacyVerification: verification,
+    propertyUpdatedAt: stay.updated_at,
+  });
+  const availabilitySummary = computeAvailabilityFreshness({
+    bookingMode: readinessMeta.booking_mode,
+    lastAvailabilityUpdate: readinessMeta.last_availability_update,
+    confirmationStatus: stay.availability_confirmation_status,
+  });
   const structuredData = buildPropertyDetailSchema({
     stay,
     publicLocationSummary: wayfinderMeta.public_location_summary,
@@ -203,23 +195,41 @@ export default async function PropertyDetailPage({ params }: Props) {
           </span>
           <span
             className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold normal-case ${
-              trust.verified
+              trustSummary.allChecksVerified
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                 : 'border-ink-200 bg-white text-ink-800'
             }`}
           >
-            {trust.verified ? (
+            {trustSummary.allChecksVerified ? (
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
             ) : (
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
             )}
-            {trust.badge}
+            {trustSummary.headlineLabel}
           </span>
+          {readinessMeta.hamlet_property_code && (
+            <span className="rounded-full border border-ink-200 bg-white px-2.5 py-0.5 font-mono text-[11px] font-bold text-ink-600">
+              {readinessMeta.hamlet_property_code}
+            </span>
+          )}
         </div>
 
         <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
           {stay.title}
         </h1>
+
+        <GuestShareStrip
+          stay={{
+            id: stay.id,
+            title: stay.title,
+            area: stay.area,
+            propertyType: stay.property_type,
+            bedrooms: stay.bedrooms,
+            capacity: stay.capacity,
+            ownerNightlyRateNgn:
+              stay.nightly_rate !== null ? Number(stay.nightly_rate) : null,
+          }}
+        />
 
         <div className="mt-6">
           <StayGallery title={stay.title} images={images} />
@@ -272,9 +282,13 @@ export default async function PropertyDetailPage({ params }: Props) {
                   ))}
                 </div>
               )}
-              <div className="mt-4 flex items-center gap-2 text-xs text-ink-500">
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-ink-600">
                 <Clock className="h-4 w-4 shrink-0 text-brass-600" />
-                <span>Host confirms dates before payment opens.</span>
+                <span>
+                  <strong>{availabilitySummary.bookingModeLabel}:</strong>{' '}
+                  {availabilitySummary.bookingModeDescription} (
+                  {availabilitySummary.lastUpdatedLabel})
+                </span>
               </div>
             </section>
 
@@ -297,40 +311,80 @@ export default async function PropertyDetailPage({ params }: Props) {
               </section>
             )}
 
-            {/* Honest 4-Pillar Verification Breakdown */}
+            {/* Structured 7-Check Property Trust Profile */}
             <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-              <div className="flex items-center gap-2.5">
-                <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-700" />
-                <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                  Verification status
-                </h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-700" />
+                  <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+                    Property trust profile
+                  </h2>
+                </div>
+                <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
+                  {trustSummary.headlineLabel}
+                </span>
               </div>
+              <p className="mt-2 text-xs leading-relaxed text-ink-600">
+                HAMLET displays only trust checks that have genuinely been completed. Underlying identity and ownership documents remain confidential.
+              </p>
 
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                {PILLAR_LABELS.map(({ key, label }) => {
-                  const raw = verification[key] || 'pending_review';
-                  const badge = STATUS_BADGE[raw] || STATUS_BADGE.pending_review;
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-paper/50 px-3.5 py-3"
-                    >
-                      <span className="text-xs font-bold text-ink-900">{label}</span>
-                      <span
-                        className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${badge.cls}`}
+              {trustSummary.completedChecks.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-emerald-800">
+                    Completed checks ({trustSummary.completedChecks.length})
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {trustSummary.completedChecks.map(item => (
+                      <div
+                        key={item.check_code}
+                        className="rounded-2xl border border-emerald-200 bg-emerald-50/50 px-3.5 py-3 text-xs"
                       >
-                        {badge.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-ink-950">{item.label}</span>
+                          <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
+                            Completed
+                          </span>
+                        </div>
+                        <p className="m-0 mt-1 text-[11px] text-ink-600">
+                          {item.public_summary || item.guestDescription}
+                          {item.reviewed_at ? ` · ${formatDate(item.reviewed_at)}` : ''}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {trustSummary.pendingChecks.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
+                    Not yet completed ({trustSummary.pendingChecks.length})
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {trustSummary.pendingChecks.map(item => (
+                      <div
+                        key={item.check_code}
+                        className="flex items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-paper/50 px-3.5 py-2.5 text-xs"
+                      >
+                        <span className="font-semibold text-ink-700">{item.label}</span>
+                        <span className="shrink-0 rounded-full border border-ink-200 bg-white px-2.5 py-0.5 text-[10px] font-bold text-ink-600">
+                          {item.status === 'pending_review'
+                            ? 'Pending review'
+                            : item.status === 'additional_docs_requested'
+                              ? 'Docs requested'
+                              : 'Not completed'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
-            {/* House Rules & Refundable Caution Terms */}
+            {/* House Rules & Pre-Booking Caution Disclosure */}
             <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                House rules
+                House rules & caution policy
               </h2>
               {stay.house_rules && stay.house_rules.length > 0 ? (
                 <ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
@@ -343,11 +397,32 @@ export default async function PropertyDetailPage({ params }: Props) {
                   Valid ID at check-in, guests within stated capacity, and no unauthorized events.
                 </p>
               )}
-              {Number(stay.refundable_deposit || 0) > 0 && (
-                <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
-                  <strong>Refundable caution deposit:</strong> Itemised separately without service fee or FX buffer; refunded after post-checkout inspection.
+
+              <div className="mt-4 space-y-1.5 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-700">
+                <p className="m-0 font-bold text-ink-950">
+                  Caution deposit:{' '}
+                  {Number(stay.refundable_deposit || 0) > 0
+                    ? `${formatNaira(Number(stay.refundable_deposit))} (tracked separately from stay revenue)`
+                    : 'Not applicable (₦0)'}
                 </p>
-              )}
+                {Number(stay.refundable_deposit || 0) > 0 && (
+                  <>
+                    <p className="m-0">
+                      <strong>Refund conditions:</strong>{' '}
+                      {readinessMeta.caution_refund_conditions ||
+                        'Refundable following post-checkout condition inspection if no documented damage or missing items are reported.'}
+                    </p>
+                    <p className="m-0">
+                      <strong>Inspection & damage policy:</strong>{' '}
+                      {readinessMeta.caution_inspection_policy ||
+                        'Structured check-in and check-out inspection checklists with timestamped photo/video evidence. Normal wear and tear is never treated as damage.'}
+                    </p>
+                    <p className="m-0 text-[11px] text-ink-500">
+                      {HONEST_CAUTION_CUSTODY_DISCLOSURE}
+                    </p>
+                  </>
+                )}
+              </div>
             </section>
           </div>
 
@@ -360,6 +435,10 @@ export default async function PropertyDetailPage({ params }: Props) {
               deposit={Number(stay.refundable_deposit || 0)}
               capacity={stay.capacity}
               firstAvailableDate={stay.first_available_date}
+              bookingModeLabel={availabilitySummary.bookingModeLabel}
+              availabilityLastUpdatedLabel={availabilitySummary.lastUpdatedLabel}
+              cautionRefundConditions={readinessMeta.caution_refund_conditions}
+              cautionInspectionPolicy={readinessMeta.caution_inspection_policy}
             />
             <PropertyEnquiryCard
               propertyId={stay.id}

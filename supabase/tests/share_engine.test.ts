@@ -138,6 +138,18 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
       'Pending Yaba Residence',
       false,
     );
+
+    // Explicit owner authorisation is required for external agents to market/share a property
+    await asUser(db, ownerPartnerId, async tx => {
+      await tx.query(
+        `select public.grant_owner_agent_authorisation($1, $2, array['market_and_share', 'accept_deals']::text[], null, 'Authorised closing agent A')`,
+        [approvedPropertyId, closingPartnerId],
+      );
+      await tx.query(
+        `select public.grant_owner_agent_authorisation($1, $2, array['market_and_share', 'accept_deals']::text[], null, 'Authorised closing agent B')`,
+        [approvedPropertyId, secondAgentId],
+      );
+    });
   });
 
   it('Scenario A + Ledger Reconciliation: tracks share -> visit -> auth bind -> enquiry -> booking -> confirmation -> completion -> reversal accurately', async () => {
@@ -380,7 +392,31 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     expect(booking.closing_agent_id).toBe(closingPartnerId);
   });
 
-  it('Scenario D: blocks sharing of unapproved, paused, opted-out, or revoked-access properties', async () => {
+  it('Scenario D: blocks sharing by unauthorised partners and blocks unapproved, paused, opted-out, or revoked-access properties', async () => {
+    // 0. Ordinary active partner WITHOUT explicit owner authorisation or accepted deal CANNOT share even when allow_partner_sharing = true
+    const unauthorisedPartnerId = await createTestUser(db, {
+      email: 'unauthorised-agent@hamlet.rest',
+      fullName: 'Unauthorised Agent',
+      role: 'partner',
+    });
+
+    const unauthCanShare = await asUser(db, unauthorisedPartnerId, async tx => {
+      const { rows } = await tx.query<{ ok: boolean }>(
+        `select public.can_partner_share_property($1, $2) as ok`,
+        [approvedPropertyId, unauthorisedPartnerId],
+      );
+      return rows[0].ok;
+    });
+    expect(unauthCanShare).toBe(false);
+
+    await expect(
+      asUser(db, unauthorisedPartnerId, async tx => {
+        await tx.query(`select public.get_or_create_partner_share_link($1)`, [
+          approvedPropertyId,
+        ]);
+      }),
+    ).rejects.toThrow(/not authorised/i);
+
     // 1. Unapproved property cannot be shared even by its owner
     await expect(
       asUser(db, ownerPartnerId, async tx => {

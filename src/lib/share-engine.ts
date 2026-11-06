@@ -323,3 +323,42 @@ export function readPropertyShareTokenHint(propertyId: string): string | null {
     return null;
   }
 }
+
+export const DEAL_CODE_REGEX = /^HDL-[A-Z0-9]{4,16}$/i;
+export const SHARE_PROPERTY_DEAL_PREFIX = 'hamlet:share-deal:';
+
+export function normalizeDealCode(value: string | null | undefined): string | null {
+  const trimmed = value?.trim().toUpperCase() || '';
+  return DEAL_CODE_REGEX.test(trimmed) ? trimmed : null;
+}
+
+export function extractDealCodeFromSearchParams(params: {
+  get: (key: string) => string | null;
+}): string | null {
+  return normalizeDealCode(params.get('deal'));
+}
+
+export function storePropertyDealCodeHint(propertyId: string, dealCode: string): void {
+  if (typeof window === 'undefined') return;
+  const cleanDeal = normalizeDealCode(dealCode);
+  if (!propertyId.trim() || !cleanDeal) return;
+  try {
+    window.localStorage.setItem(
+      `${SHARE_PROPERTY_DEAL_PREFIX}${propertyId.trim()}`,
+      cleanDeal,
+    );
+  } catch {
+    // Ignore storage quota errors cleanly
+  }
+}
+
+export function readPropertyDealCodeHint(propertyId: string): string | null {
+  if (typeof window === 'undefined' || !propertyId.trim()) return null;
+  try {
+    const raw = window.localStorage.getItem(`${SHARE_PROPERTY_DEAL_PREFIX}${propertyId.trim()}`);
+    return normalizeDealCode(raw);
+  } catch {
+    return null;
+  }
+}
+

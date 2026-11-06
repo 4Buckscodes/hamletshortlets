@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 
 export type PartnerTab =
   | 'overview'
+  | 'deals'
   | 'marketing'
   | 'analytics'
   | 'bookings'
@@ -15,6 +16,7 @@ export type PartnerTab =
 
 const ITEMS: Array<{ id: PartnerTab; label: string; href: string }> = [
   { id: 'overview', label: 'Overview', href: '/partners' },
+  { id: 'deals', label: 'Deal Board', href: '/partners/deals' },
   { id: 'marketing', label: 'Share & Studio', href: '/partners/marketing' },
   { id: 'analytics', label: 'Performance', href: '/partners/analytics' },
   { id: 'bookings', label: 'Booking requests', href: '/partners/bookings' },

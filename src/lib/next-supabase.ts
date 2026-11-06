@@ -145,6 +145,68 @@ export async function probePropertyWayfinderMeta(
   };
 }
 
+export interface PublicStayReadinessMeta {
+  hamlet_property_code: string | null;
+  booking_mode: string | null;
+  last_availability_update: string | null;
+  caution_refund_conditions: string | null;
+  caution_inspection_policy: string | null;
+  checks: Array<{
+    check_code: string;
+    status: string;
+    public_summary?: string | null;
+    inspection_outcome?: string | null;
+    reviewed_at?: string | null;
+  }>;
+}
+
+/**
+ * Schema-tolerant probe for the sprint `get_public_property_trust_profile` RPC.
+ * Degrades cleanly if the migration has not yet been applied.
+ */
+export async function probePropertyReadinessMeta(
+  db: SupabaseClient | null,
+  propertyId: string,
+): Promise<PublicStayReadinessMeta> {
+  const empty: PublicStayReadinessMeta = {
+    hamlet_property_code: null,
+    booking_mode: null,
+    last_availability_update: null,
+    caution_refund_conditions: null,
+    caution_inspection_policy: null,
+    checks: [],
+  };
+  if (!db || !propertyId) return empty;
+  try {
+    const { data, error } = await db.rpc('get_public_property_trust_profile', {
+      target_property_id: propertyId,
+    });
+    if (error || !data) {
+      return empty;
+    }
+    const payload = data as {
+      found?: boolean;
+      hamlet_property_code?: string | null;
+      booking_mode?: string | null;
+      last_availability_update?: string | null;
+      caution_refund_conditions?: string | null;
+      caution_inspection_policy?: string | null;
+      checks?: PublicStayReadinessMeta['checks'];
+    };
+    if (!payload.found) return empty;
+    return {
+      hamlet_property_code: payload.hamlet_property_code || null,
+      booking_mode: payload.booking_mode || null,
+      last_availability_update: payload.last_availability_update || null,
+      caution_refund_conditions: payload.caution_refund_conditions || null,
+      caution_inspection_policy: payload.caution_inspection_policy || null,
+      checks: Array.isArray(payload.checks) ? payload.checks : [],
+    };
+  } catch {
+    return empty;
+  }
+}
+
 /**
  * Loads configured exchange rates from `currency_exchange_rates`, falling back cleanly
  * to `buildDefaultExchangeRates()` if Supabase is unconfigured or unreachable.
