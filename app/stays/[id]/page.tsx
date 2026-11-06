@@ -42,7 +42,7 @@ import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 type PublicSupabaseClient = NonNullable<ReturnType<typeof getPublicSupabase>>;
@@ -178,7 +178,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PropertyDetailPage({ params, searchParams }: Props) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const [{ id }, query] = await Promise.all([
+    params,
+    searchParams ?? Promise.resolve({} as Record<string, string | string[] | undefined>),
+  ]);
   const db = getPublicSupabase();
 
   if (!db) {
