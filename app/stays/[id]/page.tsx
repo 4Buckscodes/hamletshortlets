@@ -60,24 +60,32 @@ async function findPublicStay(db: PublicSupabaseClient, routeKey: string) {
     if (data) return data as PublicStayRecord;
   }
 
-  // Slugs are derived from approved listing data, so no extra database column or migration
-  // is required. The current inventory is bounded to the public sitemap's 5,000-item limit.
-  const { data, error } = await db
+  // Slugs are derived from approved listing data. Fetch only the compact identity fields
+  // for matching, then load the full public record for the single resolved property.
+  const { data: candidates, error } = await db
     .from('properties')
-    .select(PUBLIC_PROPERTY_SELECT)
+    .select('id,title,area')
     .eq('status', 'approved')
     .order('updated_at', { ascending: false })
     .limit(5000);
 
-  if (error || !data) return null;
-  const stays = data as PublicStayRecord[];
-  const exact = stays.find(stay => buildPropertySlug(stay) === routeKey);
-  if (exact) return exact;
-  // If a title or area changes, old slug links still resolve through the stable short ID suffix.
+  if (error || !candidates) return null;
+  const rows = candidates as Array<{ id: string; title: string; area: string | null }>;
+  const exact = rows.find(stay => buildPropertySlug(stay) === routeKey);
   const suffix = routeKey.match(/-([a-f0-9]{8})$/i)?.[1];
-  return suffix
-    ? stays.find(stay => stay.id.replace(/-/g, '').toLowerCase().endsWith(suffix.toLowerCase())) ?? null
-    : null;
+  const matched = exact ?? (suffix
+    ? rows.find(stay => stay.id.replace(/-/g, '').toLowerCase().endsWith(suffix.toLowerCase()))
+    : null);
+  if (!matched) return null;
+
+  const { data: fullRecord } = await db
+    .from('properties')
+    .select(PUBLIC_PROPERTY_SELECT)
+    .eq('id', matched.id)
+    .eq('status', 'approved')
+    .maybeSingle();
+
+  return (fullRecord as PublicStayRecord | null) ?? null;
 }
 
 const PILLAR_LABELS: Array<{ key: string; label: string }> = [
