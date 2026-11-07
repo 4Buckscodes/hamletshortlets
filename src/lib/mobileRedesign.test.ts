@@ -44,21 +44,28 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('Show stays');
   });
 
-  it('uses editorial Verified stays cards, horizontal neighbourhood rail, 4-step verification grid, and Midnight Navy partner card', () => {
+  it('places the former Explore Lagos neighbourhoods photo rail right below the search pill and above Verified stays, followed by 4-step verification and Partner card', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
+
+    // Former Explore Lagos neighbourhoods photo rail placed BEFORE Verified stays
+    expect(homeSource).toContain('Island &amp; Lagos Mainland corridors');
+    expect(homeSource).toContain('Explore Lagos neighbourhoods');
+    expect(homeSource).toContain('DISCOVERY_NEIGHBOURHOODS');
+    expect(homeSource).toContain('Every corridor');
+    expect(homeSource).toContain('All Lagos');
+    expect(homeSource).toContain('Island &amp; Mainland');
+    expect(homeSource).toMatch(/overflow-x-auto[\s\S]*overscroll-x-contain|overscroll-x-contain[\s\S]*overflow-x-auto/);
+
+    const railIdx = homeSource.indexOf('Explore Lagos neighbourhoods');
+    const staysIdx = homeSource.indexOf('id="stays"');
+    expect(railIdx).toBeGreaterThan(-1);
+    expect(staysIdx).toBeGreaterThan(railIdx);
 
     // Verified stays cards with swipeable gallery & monogram fallback
     expect(homeSource).toContain('Verified stays');
     expect(homeSource).toContain('Photos coming soon');
     expect(homeSource).toContain('View stay →');
     expect(homeSource).toContain('See all stays →');
-
-    // Horizontal snap-scroll neighbourhood rail across Lagos Island & Mainland
-    expect(homeSource).toContain('Explore neighbourhoods');
-    expect(homeSource).toMatch(/overflow-x-auto[\s\S]*overscroll-x-contain|overscroll-x-contain[\s\S]*overflow-x-auto/);
-    expect(homeSource).toContain('All Lagos');
-    expect(homeSource).toContain('Lagos Island');
-    expect(homeSource).toContain('Lagos Mainland');
 
     // 4-pillar verification grid
     expect(homeSource).toContain('Verified before it’s bookable');
