@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   computePaystackHmacSha512,
   handlePaystackWebhook,
-  type ConfirmWebhookParams,
 } from './handler.ts';
 
 const SECRET = 'sk_test_hamlet_webhook_validation';
@@ -33,7 +32,7 @@ describe('Paystack webhook payload validation', () => {
 
     const response = await handlePaystackWebhook(req, {
       paystackSecretKey: SECRET,
-      confirmPaymentRpc: async (_params: ConfirmWebhookParams) => {
+      confirmPaymentRpc: async () => {
         rpcCalls += 1;
         return { data: null, error: null };
       },
@@ -58,7 +57,7 @@ describe('Paystack webhook payload validation', () => {
 
     const response = await handlePaystackWebhook(req, {
       paystackSecretKey: SECRET,
-      confirmPaymentRpc: async (_params: ConfirmWebhookParams) => {
+      confirmPaymentRpc: async () => {
         rpcCalls += 1;
         return { data: null, error: null };
       },
@@ -82,7 +81,7 @@ describe('Paystack webhook payload validation', () => {
 
     const response = await handlePaystackWebhook(req, {
       paystackSecretKey: SECRET,
-      confirmPaymentRpc: async (_params: ConfirmWebhookParams) => {
+      confirmPaymentRpc: async () => {
         rpcCalls += 1;
         return { data: null, error: null };
       },
@@ -108,7 +107,7 @@ describe('Paystack webhook payload validation', () => {
 
     const response = await handlePaystackWebhook(req, {
       paystackSecretKey: SECRET,
-      confirmPaymentRpc: async (_params: ConfirmWebhookParams) => {
+      confirmPaymentRpc: async () => {
         rpcCalls += 1;
         return { data: null, error: null };
       },
