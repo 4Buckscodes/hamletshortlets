@@ -245,7 +245,7 @@ export default function PartnerDashboardPage() {
 
         {(role === 'partner' || role === 'admin') && (
           <div className="mt-5">
-            <PartnerNav current="overview" hideNewListingAction />
+            <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
           </div>
         )}
 
@@ -326,7 +326,8 @@ export default function PartnerDashboardPage() {
               </Link>
             </div>
 
-            {/* HAMLET Share Engine Banner */}
+            {role !== 'partner_applicant' && (
+            <>{/* HAMLET Share Engine Banner */}
             <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-ink-950 p-5 text-white sm:flex-row sm:items-center sm:p-6">
               <div className="max-w-2xl">
                 <p className="m-0 text-[11px] font-extrabold uppercase tracking-widest text-brass-400">
@@ -355,7 +356,8 @@ export default function PartnerDashboardPage() {
                   <span>My performance</span>
                 </Link>
               </div>
-            </section>
+            </section></>
+            )}
 
             {/* Properties Section */}
             <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
