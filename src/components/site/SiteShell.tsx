@@ -34,7 +34,7 @@ import {
   Send,
   LayoutDashboard,
 } from 'lucide-react';
-import { HamletMark, HamletWordmark } from '../Logo';
+import { HamletWordmark } from '../Logo';
 import {
   CurrencyProvider,
   useCurrency,
@@ -499,28 +499,23 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-40 transition-colors lg:border-b lg:border-ink-100/90 lg:bg-paper/92 lg:backdrop-blur-xl ${
+      className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B]'
-          : 'border-b border-ink-100/90 bg-paper/95'
+          ? 'border-b border-[#1D3158] bg-[#121F3C] text-[#F8F5EE] lg:backdrop-blur-xl'
+          : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-6">
-        <div className="flex min-w-0 items-center gap-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-6">
+        <div className="flex min-w-0 items-center gap-7">
           <Link
             href="/"
             aria-label="HAMLET.REST home"
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
             {isHome ? (
-              <>
-                <span className="font-display text-[24px] font-bold tracking-[1px] text-[#F8F5EE] lg:hidden">
-                  HAMLET<span className="text-[#C9A45C]">.</span>
-                </span>
-                <span className="hidden lg:inline-flex">
-                  <HamletWordmark />
-                </span>
-              </>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
+                HAMLET<span className="text-[#C9A45C]">.</span>
+              </span>
             ) : (
               <HamletWordmark />
             )}
@@ -538,9 +533,13 @@ export function SiteHeader() {
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={`inline-flex min-h-[36px] items-center rounded-full px-3.5 text-[13px] font-semibold transition ${
-                    active
-                      ? 'bg-ink-900 font-bold text-white shadow-2xs'
-                      : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
+                    isHome
+                      ? active
+                        ? 'bg-white/15 font-bold text-[#F8F5EE]'
+                        : 'text-[#C5CCDA] hover:bg-white/10 hover:text-[#F8F5EE]'
+                      : active
+                        ? 'bg-ink-900 font-bold text-white shadow-2xs'
+                        : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
                   }`}
                 >
                   {item.label}
@@ -555,18 +554,30 @@ export function SiteHeader() {
             type="button"
             onClick={() => openHoratio()}
             aria-label="Ask Horatio — HAMLET assistant"
-            className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full border border-brass-400/60 bg-white px-3.5 text-[12px] font-bold text-ink-900 shadow-2xs transition hover:border-brass-500 hover:bg-brass-200/25"
+            className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
+              isHome
+                ? 'border border-[#C9A45C]/65 bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#223963]'
+                : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
+            }`}
           >
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-brass-600" />
+            <Sparkles
+              className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+            />
             <span>Horatio</span>
           </button>
 
           {(!session || session.role === 'guest') && (
             <Link
               href="/partners/apply"
-              className="hidden min-h-[38px] items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3.5 text-[12px] font-bold text-ink-800 transition hover:border-brass-500 hover:text-ink-950 xl:inline-flex"
+              className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
+                isHome
+                  ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                  : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
+              }`}
             >
-              <LayoutDashboard className="h-3.5 w-3.5 shrink-0 text-brass-600" />
+              <LayoutDashboard
+                className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+              />
               <span>Partner with us</span>
             </Link>
           )}
@@ -575,14 +586,24 @@ export function SiteHeader() {
             <div className="flex items-center gap-1.5">
               <Link
                 href={workspaceHref}
-                className="inline-flex min-h-[38px] items-center gap-2 rounded-full border border-ink-200 bg-white px-3.5 text-xs font-bold text-ink-900 transition hover:border-ink-900"
+                className={`inline-flex min-h-[38px] items-center gap-2 rounded-full px-3.5 text-xs font-bold transition ${
+                  isHome
+                    ? 'border border-[#2C3F63] bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C]'
+                    : 'border border-ink-200 bg-white text-ink-900 hover:border-ink-900'
+                }`}
               >
                 {session.role === 'admin' ? (
-                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brass-600" />
+                  <ShieldCheck
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                  />
                 ) : session.role === 'partner' ? (
-                  <Building2 className="h-3.5 w-3.5 shrink-0 text-brass-600" />
+                  <Building2
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                  />
                 ) : (
-                  <User className="h-3.5 w-3.5 shrink-0 text-brass-600" />
+                  <User
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                  />
                 )}
                 <span>{workspaceLabel}</span>
               </Link>
@@ -591,7 +612,11 @@ export function SiteHeader() {
                 onClick={() => void handleSignOut()}
                 aria-label="Sign out"
                 title="Sign out"
-                className="inline-flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-ink-400 hover:text-ink-900"
+                className={`inline-flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full transition ${
+                  isHome
+                    ? 'border border-[#2C3F63] bg-transparent text-[#C5CCDA] hover:border-[#C9A45C] hover:text-[#F8F5EE]'
+                    : 'border border-ink-200 bg-white text-ink-600 hover:border-ink-400 hover:text-ink-900'
+                }`}
               >
                 <LogOut className="h-3.5 w-3.5 shrink-0" />
               </button>
@@ -599,7 +624,11 @@ export function SiteHeader() {
           ) : (
             <Link
               href="/signin"
-              className="inline-flex min-h-[38px] items-center justify-center rounded-full bg-ink-900 px-4.5 text-[12.5px] font-bold text-white shadow-2xs transition hover:bg-ink-800"
+              className={`inline-flex min-h-[38px] items-center justify-center rounded-full px-4.5 text-[12.5px] font-bold shadow-2xs transition ${
+                isHome
+                  ? 'bg-[#C9A45C] text-[#121F3C] hover:bg-[#d5b36d]'
+                  : 'bg-ink-900 text-white hover:bg-ink-800'
+              }`}
             >
               Sign in
             </Link>
@@ -616,7 +645,7 @@ export function SiteHeader() {
             className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
               isHome
                 ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
-                : 'border border-[#DDD7C8] bg-white text-[#0E1F3B] shadow-2xs hover:border-[#0E1F3B]'
+                : 'border border-[#D6D0C0] bg-white text-[#121F3C] shadow-2xs hover:border-[#121F3C]'
             }`}
           >
             {drawerOpen ? (
@@ -641,31 +670,30 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#0E1F3B] lg:hidden">
+        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#121F3C] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
-            className="mx-auto flex h-dvh max-w-lg flex-col overflow-y-auto overscroll-y-contain px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+            className="mx-auto flex h-dvh max-w-[440px] flex-col overflow-y-auto overscroll-y-contain px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
-            <div className="flex items-center justify-between pb-3">
+            <div className="mb-2.5 flex items-center justify-between">
               <Link
                 href="/"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="HAMLET.REST home"
-                className="inline-flex min-h-[44px] items-center gap-2"
+                className="inline-flex min-h-[44px] items-center"
               >
-                <HamletMark size={28} />
-                <span className="font-display text-[20px] font-bold tracking-[0.06em] text-[#0E1F3B]">
-                  HAMLET
+                <span className="font-display text-[26px] font-bold tracking-[1px] text-[#121F3C]">
+                  HAMLET<span className="text-[#C9A45C]">.</span>
                 </span>
               </Link>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close navigation menu"
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#DDD7C8] bg-white text-[#0E1F3B] transition hover:border-[#0E1F3B]"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D6D0C0] bg-transparent text-[#121F3C] transition hover:border-[#121F3C]"
               >
-                <X className="h-5 w-5 shrink-0" />
+                <X className="h-[18px] w-[18px] shrink-0" />
               </button>
             </div>
 
@@ -675,26 +703,16 @@ export function SiteHeader() {
                 setDrawerOpen(false);
                 openHoratio();
               }}
-              className="mt-2 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border border-[#C9A45C] bg-white px-4.5 text-[16px] font-semibold text-[#0E1F3B] transition hover:bg-[#FCFBF8]"
+              className="mt-1 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border-[1.5px] border-[#C9A45C] bg-white px-4 text-[17px] font-semibold text-[#121F3C] transition hover:bg-[#FCFBF8]"
             >
-              <span className="inline-flex items-center gap-2.5">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  aria-hidden="true"
-                  className="shrink-0 text-[#0E1F3B]"
-                >
-                  <path d="M8 1L9.65 6.35L15 8L9.65 9.65L8 15L6.35 9.65L1 8L6.35 6.35L8 1Z" />
-                </svg>
-                <span>Ask Horatio</span>
+              <span>✦ Ask Horatio</span>
+              <span aria-hidden="true" className="text-[#7A5E22]">
+                →
               </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-[#8A7035]" />
             </button>
 
-            <div className="mt-6">
-              <p className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8A7035]">
+            <div className="mt-5">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#7A5E22]">
                 For Guests
               </p>
               <div className="space-y-2">
@@ -706,26 +724,27 @@ export function SiteHeader() {
                       href={item.href}
                       onClick={() => setDrawerOpen(false)}
                       aria-current={active ? 'page' : undefined}
-                      className={`flex min-h-[54px] items-center justify-between rounded-[16px] px-4.5 text-[16px] font-semibold transition ${
+                      className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
                         active
-                          ? 'bg-[#0E1F3B] text-[#F8F5EE]'
-                          : 'bg-white text-[#0E1F3B] shadow-[0_1px_2px_rgba(14,31,59,0.04)] hover:bg-[#F3EFE4]'
+                          ? 'bg-[#121F3C] text-[#F8F5EE]'
+                          : 'bg-white text-[#121F3C] hover:bg-[#F3EFE4]'
                       }`}
                     >
                       <span>{item.label}</span>
-                      <ArrowRight
-                        className={`h-4 w-4 shrink-0 ${
-                          active ? 'text-[#C9A45C]' : 'text-[#8A7035]'
-                        }`}
-                      />
+                      <span
+                        aria-hidden="true"
+                        className={active ? 'text-[#C9A45C]' : 'text-[#7A5E22]'}
+                      >
+                        →
+                      </span>
                     </Link>
                   );
                 })}
               </div>
             </div>
 
-            <div className="mt-6">
-              <p className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8A7035]">
+            <div className="mt-5">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#7A5E22]">
                 For Hosts &amp; About
               </p>
               <div className="space-y-2">
@@ -737,31 +756,32 @@ export function SiteHeader() {
                       href={item.href}
                       onClick={() => setDrawerOpen(false)}
                       aria-current={active ? 'page' : undefined}
-                      className={`flex min-h-[54px] items-center justify-between rounded-[16px] px-4.5 text-[16px] font-semibold transition ${
+                      className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
                         active
-                          ? 'bg-[#0E1F3B] text-[#F8F5EE]'
-                          : 'bg-white text-[#0E1F3B] shadow-[0_1px_2px_rgba(14,31,59,0.04)] hover:bg-[#F3EFE4]'
+                          ? 'bg-[#121F3C] text-[#F8F5EE]'
+                          : 'bg-white text-[#121F3C] hover:bg-[#F3EFE4]'
                       }`}
                     >
                       <span>{item.label}</span>
-                      <ArrowRight
-                        className={`h-4 w-4 shrink-0 ${
-                          active ? 'text-[#C9A45C]' : 'text-[#8A7035]'
-                        }`}
-                      />
+                      <span
+                        aria-hidden="true"
+                        className={active ? 'text-[#C9A45C]' : 'text-[#7A5E22]'}
+                      >
+                        →
+                      </span>
                     </Link>
                   );
                 })}
               </div>
             </div>
 
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-5">
               {session ? (
                 <div className="grid gap-2.5">
                   <Link
                     href={workspaceHref}
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-[#0E1F3B] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#16294A]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
                   >
                     {workspaceLabel}
                   </Link>
@@ -769,7 +789,7 @@ export function SiteHeader() {
                     <Link
                       href="/account"
                       onClick={() => setDrawerOpen(false)}
-                      className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-[#D6D0C0] bg-white px-5 text-sm font-semibold text-[#0E1F3B]"
+                      className="flex min-h-[52px] w-full items-center justify-center rounded-[28px] border border-[#121F3C] bg-white px-5 text-[15px] font-semibold text-[#121F3C]"
                     >
                       Guest account &amp; bookings
                     </Link>
@@ -777,19 +797,28 @@ export function SiteHeader() {
                   <button
                     type="button"
                     onClick={() => void handleSignOut()}
-                    className="flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-full border border-[#D6D0C0] bg-white px-5 text-sm font-semibold text-[#0E1F3B]"
+                    className="flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-[28px] border border-[#D6D0C0] bg-white px-5 text-sm font-semibold text-[#121F3C]"
                   >
                     Sign out ({session.email})
                   </button>
                 </div>
               ) : (
-                <Link
-                  href="/signin"
-                  onClick={() => setDrawerOpen(false)}
-                  className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-[#0E1F3B] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#16294A]"
-                >
-                  Sign in
-                </Link>
+                <div className="grid gap-2.5">
+                  <Link
+                    href="/signin"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/signin?mode=signup"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] border border-[#121F3C] bg-white px-6 text-[16px] font-semibold text-[#121F3C] transition hover:bg-[#F3EFE4]"
+                  >
+                    Create guest account
+                  </Link>
+                </div>
               )}
             </div>
           </nav>
@@ -843,29 +872,29 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="border-t border-ink-800 bg-ink-950 text-ink-100">
-      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 md:py-12">
+    <footer className="border-t border-[#2C3F63] bg-[#121F3C] text-[#F8F5EE]">
+      <div className="mx-auto max-w-6xl px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:py-12">
         {/* Mobile editorial brand block + collapsible accordion navigation (< md) */}
         <div className="md:hidden">
           <Link href="/" className="inline-flex items-center">
-            <span className="font-display text-[26px] font-bold tracking-[0.04em] text-[#F8F5EE]">
+            <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
               HAMLET<span className="text-[#C9A45C]">.</span>
             </span>
           </Link>
-          <p className="mt-3.5 text-[15px] leading-[1.55] text-[#B8C2D4]">
+          <p className="mt-2.5 text-[14px] leading-[1.5] text-[#C5CCDA]">
             Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
           </p>
-          <p className="mt-4 text-[15px] text-[#B8C2D4]">
+          <p className="mt-2.5 text-[14px] text-[#C5CCDA]">
             Contact:{' '}
             <a
               href="mailto:hello@hamlet.rest"
-              className="font-medium text-[#D7B56D] underline underline-offset-4 transition hover:text-white"
+              className="font-medium text-[#E6CF98] underline underline-offset-4 transition hover:text-white"
             >
               hello@hamlet.rest
             </a>
           </p>
 
-          <div className="mt-7 divide-y divide-[#1E3150] border-y border-[#1E3150]">
+          <div className="mt-5 divide-y divide-[#2C3F63] border-t border-[#2C3F63]">
             {FOOTER_LINK_GROUPS.map(group => {
               const isOpen = Boolean(openSections[group.id]);
               const panelId = `footer-accordion-${group.id}`;
@@ -876,9 +905,9 @@ export function SiteFooter() {
                     onClick={() => toggleSection(group.id)}
                     aria-expanded={isOpen}
                     aria-controls={panelId}
-                    className="flex min-h-[56px] w-full cursor-pointer items-center justify-between py-4 text-left"
+                    className="flex min-h-[52px] w-full cursor-pointer items-center justify-between py-3 text-left"
                   >
-                    <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#C9A45C]">
+                    <span className="text-[12px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
                       {group.title}
                     </span>
                     <span
@@ -891,13 +920,13 @@ export function SiteFooter() {
                   {isOpen && (
                     <ul
                       id={panelId}
-                      className="space-y-2.5 pb-4 text-[14px] text-[#D0D7E3]"
+                      className="space-y-1 pb-3 text-[15px] text-[#F8F5EE]"
                     >
                       {group.links.map(link => (
                         <li key={link.href}>
                           <Link
                             href={link.href}
-                            className="inline-block py-1 transition hover:text-white"
+                            className="block py-2 transition hover:text-[#E6CF98]"
                           >
                             {link.label}
                           </Link>
@@ -915,16 +944,18 @@ export function SiteFooter() {
         <div className="hidden gap-8 md:grid md:grid-cols-4">
           <div className="md:col-span-1">
             <Link href="/" className="inline-flex items-center">
-              <HamletWordmark light />
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
+                HAMLET<span className="text-[#C9A45C]">.</span>
+              </span>
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-ink-300">
-              Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island — built by Abundance Abodes.
+            <p className="mt-3 text-sm leading-relaxed text-[#C5CCDA]">
+              Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
             </p>
-            <p className="mt-2.5 text-xs text-ink-300">
+            <p className="mt-2.5 text-xs text-[#C5CCDA]">
               Contact:{' '}
               <a
                 href="mailto:hello@hamlet.rest"
-                className="font-semibold text-brass-300 transition hover:text-white"
+                className="font-semibold text-[#E6CF98] transition hover:text-white"
               >
                 hello@hamlet.rest
               </a>
@@ -933,15 +964,15 @@ export function SiteFooter() {
 
           {FOOTER_LINK_GROUPS.map(group => (
             <div key={group.id}>
-              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
                 {group.title}
               </h2>
-              <ul className="mt-3 space-y-2 text-sm text-ink-200">
+              <ul className="mt-3 space-y-2 text-sm text-[#F8F5EE]">
                 {group.links.map(link => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-block py-1 transition hover:text-white"
+                      className="inline-block py-1 transition hover:text-[#E6CF98]"
                     >
                       {link.label}
                     </Link>
@@ -952,9 +983,12 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-7 space-y-1 text-[13px] leading-[1.6] text-[#8E9BB0] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-ink-800 md:pt-6 md:text-xs md:text-ink-400">
+        <div className="mt-5 space-y-1 text-[12px] leading-[1.5] text-[#9AA6BD] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-[#2C3F63] md:pt-6">
           <p className="m-0">
-            © {new Date().getFullYear()} HAMLET.REST · Abundance Abodes · Lagos, Nigeria.
+            © {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.
+          </p>
+          <p className="m-0">
+            Bookings confirm only after partner acceptance and server-verified payment.
           </p>
         </div>
       </div>

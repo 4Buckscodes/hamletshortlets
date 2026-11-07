@@ -131,16 +131,16 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
   }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Places worth staying in/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Verified stays/i })).toBeVisible();
 
     const rail = page.getByRole('region', { name: 'Lagos neighbourhoods' });
-    await expect(rail.getByRole('button', { name: /Lekki Phase 1/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Ikate/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Victoria Island/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Yaba/i })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Lekki Phase 1/i })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Ikate/i })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Victoria Island/i })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Yaba/i })).toBeVisible();
 
-    await rail.getByRole('button', { name: /Ikate/i }).click();
-    await expect(page).toHaveURL(/area=Ikate/);
+    await rail.getByRole('link', { name: /Ikate/i }).click();
+    await expect(page).toHaveURL(/\/stays\?area=Ikate/);
     await expect(page.getByRole('button', { name: /Clear filters/i }).first()).toBeVisible();
 
     // Navigate to /stays with combined filters & verify invalid min > max price validation
@@ -223,19 +223,29 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     const mobilePage = await mobileCtx.newPage();
     await mobilePage.goto('/');
 
-    // Mobile hero Lagoon toggle + chips + 4-pillar strip
-    const mobileSearchForm = mobilePage.getByRole('form', {
-      name: /Search Lagos shortlet stays on mobile/i,
+    // Mobile hero search pill + "Find a stay" sheet
+    const mobileSearchRegion = mobilePage.getByRole('search', {
+      name: /Search Lagos shortlets/i,
     });
-    await expect(mobileSearchForm).toBeVisible();
+    await expect(mobileSearchRegion).toBeVisible();
+    await mobileSearchRegion.getByRole('button', { name: /Anywhere in Lagos/i }).click();
+
+    const findStayDialog = mobilePage.getByRole('dialog', { name: /Find a stay/i });
+    await expect(findStayDialog).toBeVisible();
     await expect(
-      mobileSearchForm.getByRole('button', { name: 'Island', exact: true }),
-    ).toHaveAttribute('aria-pressed', 'true');
-    await mobileSearchForm.getByRole('button', { name: 'Mainland', exact: true }).click();
+      findStayDialog.getByRole('tab', { name: 'Anywhere', exact: true }),
+    ).toHaveAttribute('aria-selected', 'true');
+    await findStayDialog.getByRole('tab', { name: 'Mainland', exact: true }).click();
     await expect(
-      mobileSearchForm.getByRole('button', { name: 'Yaba', exact: true }),
+      findStayDialog.getByRole('button', { name: 'Yaba', exact: true }),
     ).toBeVisible();
-    await expect(mobileSearchForm.getByText('· INSPECTION')).toBeVisible();
+    await findStayDialog.getByRole('button', { name: /Close search/i }).click();
+    await expect(findStayDialog).toBeHidden();
+
+    // 4-pillar verification grid on homepage
+    await expect(
+      mobilePage.getByRole('heading', { name: /Verified before it’s bookable/i }),
+    ).toBeVisible();
 
     // Mobile full-screen navigation drawer
     await mobilePage.getByRole('button', { name: /Open navigation menu/i }).click();
@@ -245,6 +255,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(mobileDrawer.getByRole('link', { name: 'Explore stays' })).toBeVisible();
     await expect(mobileDrawer.getByRole('link', { name: 'Lagos guide' })).toBeVisible();
     await expect(mobileDrawer.getByRole('link', { name: 'Partner with us' })).toBeVisible();
+    await expect(mobileDrawer.getByRole('link', { name: 'Create guest account' })).toBeVisible();
     await mobileDrawer.getByRole('button', { name: /Close navigation menu/i }).click();
     await expect(mobileDrawer).toBeHidden();
 
