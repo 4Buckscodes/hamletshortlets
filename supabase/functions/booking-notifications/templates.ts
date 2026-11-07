@@ -104,19 +104,19 @@ export function resolveSafeAssetUrl(rawAssetUrl: unknown, appBaseUrl: string): s
 }
 
 export function buildGuestBookingUrl(appBaseUrl: string, bookingId: string): string {
-  return `${appBaseUrl}/#/account?booking=${encodeURIComponent(bookingId)}`;
+  return `${appBaseUrl}/account/bookings?booking=${encodeURIComponent(bookingId)}`;
 }
 
 export function buildPartnerBookingReviewUrl(appBaseUrl: string, bookingId: string): string {
-  return `${appBaseUrl}/#/partner/bookings/${encodeURIComponent(bookingId)}`;
+  return `${appBaseUrl}/partners/bookings?booking=${encodeURIComponent(bookingId)}`;
 }
 
 export function buildAdminBookingUrl(appBaseUrl: string, bookingId: string): string {
-  return `${appBaseUrl}/#/admin/bookings?booking=${encodeURIComponent(bookingId)}`;
+  return `${appBaseUrl}/admin/bookings?booking=${encodeURIComponent(bookingId)}`;
 }
 
 export function buildExploreStaysUrl(appBaseUrl: string): string {
-  return `${appBaseUrl}/#/stays`;
+  return `${appBaseUrl}/stays`;
 }
 
 function formatNairaEmail(amount: number | undefined | null): string {

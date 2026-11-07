@@ -83,6 +83,7 @@ export async function createMigratedTestDb(): Promise<PGlite> {
 export async function resetTestData(db: PGlite): Promise<void> {
   await db.exec(`
     truncate table
+      public.admin_notifications,
       public.property_share_events,
       public.property_enquiries,
       public.share_attribution_sessions,

@@ -49,3 +49,26 @@ Do not guess SPF, DKIM or MX values. Copy exact records from Resend and Zoho das
 
 ## Release safety
 The dispatcher and queue are code changes only until migrations, Edge Functions and secrets are deployed to the correct Supabase project. A Vercel deployment does not deploy Supabase functions or migrations. Do not use live Paystack charges as a test.
+
+## Non-destructive rollback & independent controls
+Never drop `public.admin_notifications`, delete post-deployment notification rows, or rewrite `supabase_migrations.schema_migrations` during an operational rollback. Each subsystem can be paused and restored independently:
+
+1. **Disable the partner-application event trigger only** *(new partner applications and status reviews continue succeeding; existing `admin_notifications` rows remain intact)*:
+   ```sql
+   alter table public.partner_applications
+     disable trigger partner_application_admin_notification;
+   -- Restore:
+   -- alter table public.partner_applications
+   --   enable trigger partner_application_admin_notification;
+   ```
+2. **Disable queue claiming / processing only** *(blocks `claim_admin_notifications` from dequeuing rows while leaving queued rows preserved in `pending` / `failed`)*:
+   ```sql
+   revoke execute on function public.claim_admin_notifications(integer)
+     from service_role;
+   -- Restore:
+   -- grant execute on function public.claim_admin_notifications(integer)
+   --   to service_role;
+   ```
+3. **Disable outbound email dispatch only** *(keeps database event capture and the `/admin/communications` inbox active while pausing Resend API calls)*:
+   - Unschedule the `pg_cron` job (`select cron.unschedule('hamlet-admin-notifications-dispatch');` when scheduled) and/or pause invocations of `admin-notifications-dispatch`. Queued rows remain in `public.admin_notifications` (`delivery_status = 'pending'`) for replay once restored.
+
