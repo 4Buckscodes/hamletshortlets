@@ -26,6 +26,12 @@ Paystack Dashboard inspection on 2026-10-30 confirmed:
 
 Never expose, commit, paste into source files, or add `PAYSTACK_SECRET_KEY` as a `NEXT_PUBLIC_*` variable.
 
+## Payment return URL configuration
+
+The checkout function now constructs the Paystack return URL on the server and ignores any browser-supplied `callback_url`. Configure the Supabase Edge Function secret `HAMLET_APP_URL=https://hamlet.rest` (or the approved canonical HAMLET HTTPS host) for clarity and environment consistency. If it is absent or invalid, the function safely falls back to `https://hamlet.rest`. The return page is `/account/bookings?payment=return&booking=<booking-reference>`.
+
+The webhook rejects non-whole-NGN kobo amounts, invalid provider fee values, missing booking metadata, and missing or non-NGN currency before invoking the booking-confirmation RPC. These checks must be deployed with the Edge Function source; a Vercel website deployment alone does not update Supabase Edge Functions.
+
 ## Existing integration behavior
 
 - Guest checkout is initialized by the Supabase Edge Function `paystack-initialize`.
