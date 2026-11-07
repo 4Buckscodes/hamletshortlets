@@ -3,11 +3,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { isMainlandArea } from '@/lib/areas';
 import { CURRENCY_SYMBOLS, useCurrency } from '@/lib/currency';
 import {
   buildDiscoverySearchParams,
   DEFAULT_DISCOVERY_FILTERS,
+  DISCOVERY_NEIGHBOURHOODS,
+  filterAndSortApprovedStays,
   formatAccommodationLabel,
   getStayTrustStatus,
   getValidGuestNightlyNgn,
@@ -33,87 +36,6 @@ const ISLAND_CHIPS = [
 const MAINLAND_CHIPS = ['Yaba', 'Surulere', 'Shomolu'] as const;
 
 const ALL_CHIPS = [...ISLAND_CHIPS, ...MAINLAND_CHIPS] as const;
-
-interface NeighbourhoodRailCard {
-  name: string;
-  tag?: string;
-  sub: string;
-  href: string;
-  variant: 'gold' | 'navy' | 'slate';
-}
-
-const NEIGHBOURHOOD_RAIL_CARDS: readonly NeighbourhoodRailCard[] = [
-  {
-    name: 'All Lagos',
-    tag: 'Every verified stay',
-    sub: 'Explore →',
-    href: '/stays',
-    variant: 'gold',
-  },
-  {
-    name: 'Lagos Island',
-    tag: 'Island',
-    sub: 'VI · Lekki · Ikoyi',
-    href: '/stays?side=island',
-    variant: 'slate',
-  },
-  {
-    name: 'Lagos Mainland',
-    tag: 'Mainland',
-    sub: 'Yaba · Surulere · Shomolu',
-    href: '/stays?area=Lagos%20Mainland',
-    variant: 'navy',
-  },
-  {
-    name: 'Lekki Phase 1',
-    tag: 'Island',
-    sub: 'Browse stays →',
-    href: '/stays?area=Lekki%20Phase%201',
-    variant: 'slate',
-  },
-  {
-    name: 'Ikate',
-    tag: 'Island',
-    sub: 'Browse stays →',
-    href: '/stays?area=Ikate',
-    variant: 'navy',
-  },
-  {
-    name: 'Victoria Island',
-    tag: 'Island',
-    sub: 'Browse stays →',
-    href: '/stays?area=Victoria%20Island',
-    variant: 'slate',
-  },
-  {
-    name: 'Ikoyi',
-    tag: 'Island',
-    sub: 'Browse stays →',
-    href: '/stays?area=Ikoyi',
-    variant: 'navy',
-  },
-  {
-    name: 'Yaba',
-    tag: 'Mainland',
-    sub: 'Browse stays →',
-    href: '/stays?area=Yaba',
-    variant: 'slate',
-  },
-  {
-    name: 'Surulere',
-    tag: 'Mainland',
-    sub: 'Browse stays →',
-    href: '/stays?area=Surulere',
-    variant: 'navy',
-  },
-  {
-    name: 'Shomolu',
-    tag: 'Mainland',
-    sub: 'Browse stays →',
-    href: '/stays?area=Shomolu',
-    variant: 'slate',
-  },
-] as const;
 
 const VERIFICATION_PILLARS = [
   {
@@ -491,6 +413,7 @@ export function HomeMarketplaceExperience({
 }: HomeMarketplaceExperienceProps) {
   const router = useRouter();
   const { currency } = useCurrency();
+  const railRef = useRef<HTMLDivElement | null>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedSide, setSelectedSide] = useState<CorridorSideFilter>('all');
@@ -499,6 +422,7 @@ export function HomeMarketplaceExperience({
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
   const [guestsTouched, setGuestsTouched] = useState(false);
+  const [activeRailArea, setActiveRailArea] = useState('');
 
   const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
   const minCheckOutIso = useMemo(
@@ -510,6 +434,55 @@ export function HomeMarketplaceExperience({
     () => approvedStays.filter(isApprovedBookableStay),
     [approvedStays],
   );
+
+  const displayedStays = useMemo(
+    () =>
+      activeRailArea
+        ? filterAndSortApprovedStays(bookableStays, {
+            ...DEFAULT_DISCOVERY_FILTERS,
+            area: activeRailArea,
+          })
+        : bookableStays,
+    [activeRailArea, bookableStays],
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const readAreaFromUrl = () => {
+      const areaFromQuery =
+        new URLSearchParams(window.location.search).get('area')?.trim() || '';
+      setActiveRailArea(areaFromQuery);
+    };
+    const timer = window.setTimeout(readAreaFromUrl, 0);
+    window.addEventListener('popstate', readAreaFromUrl);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('popstate', readAreaFromUrl);
+    };
+  }, []);
+
+  const syncRailAreaToUrl = (nextArea: string) => {
+    setActiveRailArea(nextArea);
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (nextArea) {
+      url.searchParams.set('area', nextArea);
+    } else {
+      url.searchParams.delete('area');
+    }
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  };
+
+  const scrollNeighbourhoodRail = (direction: -1 | 1) => {
+    const node = railRef.current;
+    if (!node) return;
+    const distance = Math.max(240, Math.round(node.clientWidth * 0.72));
+    node.scrollBy({ left: direction * distance, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (!sheetOpen) return;
@@ -616,18 +589,18 @@ export function HomeMarketplaceExperience({
 
   return (
     <div className="bg-[#F8F5EE] text-[#121F3C]">
-      {/* ── Hero: Midnight Navy + Lagos Lagoon & Bridge Skyline + Cream Search Sheet ── */}
-      <section className="overflow-hidden bg-[#121F3C] text-[#F8F5EE]">
-        <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
-          <div className="px-5 pt-[26px] lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
+      {/* ── Hero: Deep Navy (#0E1F3B) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
+      <section className="relative overflow-hidden bg-[#0E1F3B] text-[#F8F5EE]">
+        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
+          <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
               Verified Shortlets · Lagos
             </p>
-            <h1 className="mt-2.5 mb-2.5 font-display text-[clamp(36px,10.8vw,44px)] font-bold leading-[1.1] text-[#F8F5EE] lg:text-[52px]">
+            <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F8F5EE] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
               Find your next stay.
             </h1>
-            <p className="m-0 text-[16px] leading-[1.5] text-[#C5CCDA] lg:max-w-lg lg:text-[18px]">
-              Island or Mainland — pick your side of the lagoon.
+            <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#C5CCDA] sm:max-w-md lg:max-w-lg lg:text-[17px]">
+              Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.
             </p>
             <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#9AA6BD] lg:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-[#C9A45C]" aria-hidden="true" />
@@ -637,41 +610,33 @@ export function HomeMarketplaceExperience({
 
           <div className="lg:col-span-6">
             <svg
+              viewBox="0 0 390 210"
               aria-hidden="true"
-              viewBox="0 0 390 190"
-              preserveAspectRatio="xMidYMax slice"
-              className="mt-4 block h-[178px] w-full lg:mt-0 lg:h-[224px] lg:rounded-t-2xl"
+              className="pointer-events-none -mt-2 -mb-7 block h-auto w-full max-w-2xl mx-auto select-none lg:mt-0 lg:-mb-9 lg:max-w-none"
             >
-              <circle cx="296" cy="54" r="30" fill="#C9A45C" />
+              <circle cx="296" cy="64" r="30" fill="#C9A45C" />
+              <g fill="#16294A">
+                <rect x="8" y="110" width="26" height="100" />
+                <rect x="40" y="86" width="22" height="124" />
+                <rect x="68" y="120" width="30" height="90" />
+                <rect x="104" y="98" width="20" height="112" />
+              </g>
+              <g fill="#1B3358">
+                <rect x="262" y="104" width="28" height="106" />
+                <rect x="296" y="124" width="24" height="86" />
+                <rect x="326" y="92" width="22" height="118" />
+                <rect x="354" y="116" width="30" height="94" />
+              </g>
               <path
-                d="M0 140V116H26V98H58V122H84V90H116V128H146V104H174V140Z"
-                fill="#1A2D50"
-              />
-              <path
-                d="M222 140V112H250V86H282V120H308V96H340V118H366V104H390V140Z"
-                fill="#1D355C"
-              />
-              <path
-                d="M0 140Q195 60 390 140"
+                d="M0 150Q195 70 390 150"
+                stroke="#C9A45C"
+                strokeWidth="2"
                 fill="none"
-                stroke="#C9A45C"
-                strokeWidth="2.5"
               />
-              <path d="M0 146H390" stroke="#C9A45C" strokeWidth="3" />
-              <path
-                d="M65 122V146M130 107V146M195 100V146M260 107V146M325 122V146"
-                stroke="#C9A45C"
-                strokeWidth="1.4"
-                opacity=".8"
-              />
-              <rect y="149" width="390" height="41" fill="#172A4D" />
-              <path
-                d="M40 162H140M230 170H340M90 178H200"
-                stroke="#C9A45C"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                opacity=".55"
-              />
+              <path d="M0 156H390" stroke="#C9A45C" strokeWidth="2" />
+              <g stroke="#C9A45C" strokeWidth="1" opacity="0.6">
+                <path d="M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156" />
+              </g>
             </svg>
           </div>
         </div>
@@ -680,7 +645,7 @@ export function HomeMarketplaceExperience({
         <div
           role="search"
           aria-label="Search Lagos shortlets"
-          className="rounded-t-[28px] bg-[#F8F5EE] px-5 pt-[22px] pb-[26px] text-[#121F3C] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
+          className="relative z-10 rounded-t-[28px] bg-[#F8F5EE] px-5 pt-[22px] pb-[26px] text-[#121F3C] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
         >
           <div className="mx-auto max-w-2xl">
             <button
@@ -936,6 +901,128 @@ export function HomeMarketplaceExperience({
         </div>
       )}
 
+      {/* ── Explore Lagos Neighbourhoods Rail (Immediately Below Filters) ── */}
+      <section
+        aria-labelledby="neighbourhood-rail-heading"
+        className="mx-auto max-w-6xl space-y-3.5 px-5 pt-2 pb-6 sm:px-6 lg:pt-4 lg:pb-8"
+      >
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
+              Island &amp; Lagos Mainland corridors
+            </p>
+            <h2
+              id="neighbourhood-rail-heading"
+              className="mt-1 font-display text-xl font-bold text-ink-950 sm:text-2xl"
+            >
+              Explore Lagos neighbourhoods
+            </h2>
+          </div>
+
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <button
+              type="button"
+              onClick={() => scrollNeighbourhoodRail(-1)}
+              aria-label="Scroll neighbourhoods left"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-ink-200 bg-white text-ink-800 shadow-2xs transition hover:border-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+            >
+              <ChevronLeft className="h-4 w-4 shrink-0" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollNeighbourhoodRail(1)}
+              aria-label="Scroll neighbourhoods right"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-ink-200 bg-white text-ink-800 shadow-2xs transition hover:border-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+            >
+              <ChevronRight className="h-4 w-4 shrink-0" />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={railRef}
+          role="region"
+          aria-label="Lagos neighbourhoods"
+          className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-5 pb-2 pt-0.5 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <button
+            type="button"
+            aria-pressed={!activeRailArea}
+            onClick={() => syncRailAreaToUrl('')}
+            className={`group flex min-h-[76px] w-[156px] shrink-0 snap-start cursor-pointer flex-col justify-between rounded-2xl border p-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 sm:w-[172px] ${
+              !activeRailArea
+                ? 'border-ink-950 bg-ink-950 text-white shadow-sm'
+                : 'border-ink-200 bg-white text-ink-900 hover:border-ink-500'
+            }`}
+          >
+            <span
+              className={`text-[10px] font-extrabold uppercase tracking-wider ${
+                !activeRailArea ? 'text-brass-300' : 'text-brass-700'
+              }`}
+            >
+              Every corridor
+            </span>
+            <span className="font-display text-base font-bold leading-tight">
+              All Lagos
+            </span>
+            <span
+              className={`text-[11px] ${
+                !activeRailArea ? 'text-ink-200' : 'text-ink-500'
+              }`}
+            >
+              Island &amp; Mainland
+            </span>
+          </button>
+
+          {DISCOVERY_NEIGHBOURHOODS.map(hood => {
+            const selected =
+              activeRailArea.trim().toLowerCase() === hood.name.toLowerCase();
+            return (
+              <button
+                key={hood.name}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => syncRailAreaToUrl(selected ? '' : hood.name)}
+                className={`group flex min-h-[76px] w-[204px] shrink-0 snap-start cursor-pointer items-center gap-3 rounded-2xl border p-2.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 sm:w-[224px] ${
+                  selected
+                    ? 'border-ink-950 bg-ink-950 text-white shadow-sm'
+                    : 'border-ink-200 bg-white text-ink-900 hover:border-ink-500'
+                }`}
+              >
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-clay">
+                  <img
+                    src={hood.image}
+                    alt={hood.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span
+                    className={`block text-[10px] font-extrabold uppercase tracking-wider ${
+                      selected ? 'text-brass-300' : 'text-brass-700'
+                    }`}
+                  >
+                    Lagos {hood.corridor}
+                  </span>
+                  <span className="mt-0.5 block truncate font-display text-sm font-bold leading-snug sm:text-base">
+                    {hood.name}
+                  </span>
+                  <span
+                    className={`mt-0.5 block truncate text-[11px] ${
+                      selected ? 'text-ink-200' : 'text-ink-500'
+                    }`}
+                  >
+                    {hood.subtitle}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── Available Stays Marketplace Board ── */}
       <section
         id="stays"
@@ -947,9 +1034,28 @@ export function HomeMarketplaceExperience({
             Verified stays
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#4A5468]">
-            {bookableStays.length} available · {currencyLabel}
+            {displayedStays.length} available · {currencyLabel}
           </span>
         </div>
+
+        {activeRailArea && (
+          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E5DFD0] bg-white px-4 py-2.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4A5468]">
+              Active filter:
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#121F3C] px-3 py-1 text-xs font-semibold text-[#F8F5EE]">
+              {activeRailArea}
+            </span>
+            <button
+              type="button"
+              onClick={() => syncRailAreaToUrl('')}
+              className="ml-auto inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-full px-3 text-xs font-extrabold text-[#7A5E22] underline-offset-4 hover:underline"
+            >
+              <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+              <span>Clear filters</span>
+            </button>
+          </div>
+        )}
 
         {Boolean(queryError) && (
           <div className="mb-5 rounded-[20px] border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
@@ -962,22 +1068,38 @@ export function HomeMarketplaceExperience({
           </div>
         )}
 
-        {bookableStays.length === 0 ? (
+        {displayedStays.length === 0 ? (
           <div className="rounded-[26px] border border-[#E5DFD0] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
             <h3 className="font-display text-[22px] font-bold text-[#121F3C]">
-              Verified stays are updating
+              {activeRailArea
+                ? `No verified stays in ${activeRailArea} right now`
+                : 'Verified stays are updating'}
             </h3>
             <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-[#4A5468]">
-              Every property on HAMLET is physically inspected in Lagos before it goes live. Check back shortly or ask Horatio to help source a verified stay.
+              {activeRailArea
+                ? 'Clear filters to see all verified stays across Lagos, or ask Horatio to help source a stay in this neighbourhood.'
+                : 'Every property on HAMLET is physically inspected in Lagos before it goes live. Check back shortly or ask Horatio to help source a verified stay.'}
             </p>
+            {activeRailArea && (
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => syncRailAreaToUrl('')}
+                  className="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#121F3C] px-6 text-sm font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                >
+                  <RotateCcw className="h-4 w-4 shrink-0" />
+                  <span>Clear filters</span>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div
             className={`grid grid-cols-1 gap-6 md:grid-cols-2 ${
-              bookableStays.length >= 3 ? 'lg:grid-cols-3' : ''
+              displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
             }`}
           >
-            {bookableStays.map((stay: PublicStayRecord) => (
+            {displayedStays.map((stay: PublicStayRecord) => (
               <HomepageStayCard key={stay.id} property={stay} />
             ))}
           </div>
@@ -990,63 +1112,6 @@ export function HomeMarketplaceExperience({
           >
             See all stays →
           </Link>
-        </div>
-      </section>
-
-      {/* ── Explore Neighbourhoods Rail ── */}
-      <section
-        role="region"
-        aria-label="Lagos neighbourhoods"
-        className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10"
-      >
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
-            Explore neighbourhoods
-          </h2>
-        </div>
-
-        <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-5 pb-1.5 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {NEIGHBOURHOOD_RAIL_CARDS.map(card => {
-            const isGold = card.variant === 'gold';
-            const surfaceClass = isGold
-              ? 'bg-[#C9A45C] text-[#121F3C]'
-              : card.variant === 'slate'
-                ? 'bg-[#1D355C] text-[#F8F5EE]'
-                : 'bg-[#121F3C] text-[#F8F5EE]';
-
-            return (
-              <Link
-                key={card.name}
-                href={card.href}
-                className={`flex min-h-[126px] min-w-[164px] shrink-0 snap-start flex-col justify-between rounded-[22px] p-[18px] transition hover:-translate-y-0.5 sm:min-w-[186px] ${surfaceClass}`}
-              >
-                {card.tag ? (
-                  <span
-                    className={`text-[10.5px] font-semibold uppercase tracking-[1.6px] ${
-                      isGold ? 'text-[#121F3C]' : 'text-[#C9A45C]'
-                    }`}
-                  >
-                    {card.tag}
-                  </span>
-                ) : (
-                  <span aria-hidden="true" />
-                )}
-
-                <div>
-                  <strong className="block font-display text-[19px] font-bold leading-[1.2]">
-                    {card.name}
-                  </strong>
-                  <small
-                    className={`mt-1 block text-[12.5px] ${
-                      isGold ? 'text-[#2B2410]' : 'text-[#C5CCDA]'
-                    }`}
-                  >
-                    {card.sub}
-                  </small>
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </section>
 

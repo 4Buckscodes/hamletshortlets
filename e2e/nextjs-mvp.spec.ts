@@ -132,18 +132,23 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
     await expect(
+      page.getByRole('heading', { name: /Explore Lagos neighbourhoods/i }),
+    ).toBeVisible();
+    await expect(
       page.getByRole('heading', { level: 2, name: 'Verified stays', exact: true }),
     ).toBeVisible();
 
     const rail = page.getByRole('region', { name: 'Lagos neighbourhoods' });
-    await expect(rail.getByRole('link', { name: /Lekki Phase 1/i })).toBeVisible();
-    await expect(rail.getByRole('link', { name: /Ikate/i })).toBeVisible();
-    await expect(rail.getByRole('link', { name: /Victoria Island/i })).toBeVisible();
-    await expect(rail.getByRole('link', { name: /Mainland Yaba Browse stays/i })).toBeVisible();
+    await expect(rail.getByRole('button', { name: /Lekki Phase 1/i })).toBeVisible();
+    await expect(rail.getByRole('button', { name: /Ikate/i })).toBeVisible();
+    await expect(rail.getByRole('button', { name: /Victoria Island/i })).toBeVisible();
+    await expect(rail.getByRole('button', { name: /Yaba/i })).toBeVisible();
 
-    await rail.getByRole('link', { name: /Ikate/i }).click();
-    await expect(page).toHaveURL(/\/stays\?area=Ikate/);
+    await rail.getByRole('button', { name: /Ikate/i }).click();
+    await expect(page).toHaveURL(/area=Ikate/);
     await expect(page.getByRole('button', { name: /Clear filters/i }).first()).toBeVisible();
+    await page.getByRole('button', { name: /Clear filters/i }).first().click();
+    await expect(page).not.toHaveURL(/area=Ikate/);
 
     // Navigate to /stays with combined filters & verify invalid min > max price validation
     await page.goto('/stays?area=Yaba&minPrice=300000&maxPrice=100000');

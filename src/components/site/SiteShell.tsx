@@ -501,7 +501,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#1D3158] bg-[#121F3C] text-[#F8F5EE] lg:backdrop-blur-xl'
+          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B] text-[#F8F5EE] lg:backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
