@@ -243,7 +243,7 @@ export default function PartnerDashboardPage() {
           )}
         </div>
 
-        {(role === 'partner' || role === 'admin') && (
+        {(['partner', 'partner_applicant', 'admin'].includes(role)) && (
           <div className="mt-5">
             <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
           </div>
