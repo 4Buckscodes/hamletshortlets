@@ -150,8 +150,13 @@ export async function handlePaystackWebhook(
   }
 
   const amountKobo = typeof data.amount === 'number' ? data.amount : Number.NaN;
-  if (!Number.isInteger(amountKobo) || amountKobo <= 0) {
-    return jsonResponse({ ok: false, error: 'Invalid transaction amount in kobo.' }, 400);
+  if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0 || amountKobo % 100 !== 0) {
+    return jsonResponse({ ok: false, error: 'Invalid transaction amount in kobo; NGN payments must resolve to whole Naira.' }, 400);
+  }
+
+  if (data.fees !== undefined && data.fees !== null &&
+    (typeof data.fees !== 'number' || !Number.isSafeInteger(data.fees) || data.fees < 0)) {
+    return jsonResponse({ ok: false, error: 'Invalid Paystack provider fee in kobo.' }, 400);
   }
 
   const metadataBookingId =
@@ -159,7 +164,10 @@ export async function handlePaystackWebhook(
       ? data.metadata.booking_id.trim()
       : typeof data.metadata?.booking_reference === 'string' && data.metadata.booking_reference.trim()
         ? data.metadata.booking_reference.trim()
-        : providerRef;
+        : ''; 
+  if (!metadataBookingId) {
+    return jsonResponse({ ok: false, error: 'Booking metadata is missing from the Paystack transaction.' }, 400);
+  }
 
   const paidAmountNaira = Math.floor(amountKobo / 100);
   const providerFeeNaira =
