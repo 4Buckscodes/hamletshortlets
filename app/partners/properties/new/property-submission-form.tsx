@@ -23,13 +23,28 @@ export default function PropertySubmissionForm() {
         window.location.assign('/signin?next=/partners/properties/new');
         return;
       }
-      const { data: profile } = await db
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
+      const [{ data: profile }, { data: applications }] = await Promise.all([
+        db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        db
+          .from('partner_applications')
+          .select('id,status,role')
+          .eq('applicant_id', user.id)
+          .in('status', ['pending', 'needs_correction'])
+          .order('submitted_at', { ascending: false })
+          .limit(1),
+      ]);
+      const application = applications?.[0];
+      const canStartListing =
+        application &&
+        ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
+          String(application.role),
+        );
       if (active) {
-        setAllowed(profile?.role === 'partner' || profile?.role === 'admin');
+        setAllowed(
+          profile?.role === 'partner' ||
+            profile?.role === 'admin' ||
+            Boolean(canStartListing),
+        );
         setChecking(false);
       }
     }
