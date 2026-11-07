@@ -131,7 +131,9 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
   }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Verified stays/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Verified stays', exact: true }),
+    ).toBeVisible();
 
     const rail = page.getByRole('region', { name: 'Lagos neighbourhoods' });
     await expect(rail.getByRole('link', { name: /Lekki Phase 1/i })).toBeVisible();
