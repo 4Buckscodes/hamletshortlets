@@ -26,9 +26,11 @@ const ITEMS: Array<{ id: PartnerTab; label: string; href: string }> = [
 export function PartnerNav({
   current,
   hideNewListingAction = false,
+  applicant = false,
 }: {
   current: PartnerTab;
   hideNewListingAction?: boolean;
+  applicant?: boolean;
 }) {
   const isNewPropertyActive = current === 'new-property';
 
@@ -48,7 +50,7 @@ export function PartnerNav({
           <span>Add a new listing</span>
         </Link>
       )}
-      {ITEMS.map(item => {
+      {(applicant ? ITEMS.filter(item => item.id === 'overview') : ITEMS).map(item => {
         const active = item.id === current;
         return (
           <Link
