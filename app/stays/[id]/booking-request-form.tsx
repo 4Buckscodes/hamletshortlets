@@ -13,13 +13,10 @@ import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
-  extractDealCodeFromSearchParams,
   extractShareTokenFromSearchParams,
-  readPropertyDealCodeHint,
   readPropertyShareTokenHint,
   readVisitorSessionKey,
 } from '@/lib/share-engine';
-import { HONEST_CAUTION_CUSTODY_DISCLOSURE } from '@/lib/competitive-readiness';
 import {
   FocusedDrawer,
   FormField,
@@ -37,10 +34,6 @@ type Props = {
   deposit: number;
   capacity: number | null;
   firstAvailableDate?: string | null;
-  bookingModeLabel?: string;
-  availabilityLastUpdatedLabel?: string;
-  cautionRefundConditions?: string | null;
-  cautionInspectionPolicy?: string | null;
 };
 
 const BOOKING_STEPS = [
@@ -64,10 +57,6 @@ export default function BookingRequestForm({
   deposit,
   capacity,
   firstAvailableDate,
-  bookingModeLabel = 'Request to book',
-  availabilityLastUpdatedLabel = 'Host confirms dates on each request',
-  cautionRefundConditions,
-  cautionInspectionPolicy,
 }: Props) {
   const db = useMemo(() => getBrowserSupabase(), []);
   const { currency, formatPrice, formatCautionDeposit } = useCurrency();
@@ -161,12 +150,7 @@ export default function BookingRequestForm({
       (typeof window !== 'undefined'
         ? extractShareTokenFromSearchParams(new URLSearchParams(window.location.search))
         : null) || readPropertyShareTokenHint(propertyId);
-    const activeDealCode =
-      (typeof window !== 'undefined'
-        ? extractDealCodeFromSearchParams(new URLSearchParams(window.location.search))
-        : null) || readPropertyDealCodeHint(propertyId);
     if (activeShareToken) qs.set('ref', activeShareToken);
-    if (activeDealCode) qs.set('deal', activeDealCode);
     return `/stays/${encodeURIComponent(propertyId)}?${qs.toString()}`;
   }
 
@@ -234,9 +218,6 @@ export default function BookingRequestForm({
           shareToken:
             extractShareTokenFromSearchParams(new URLSearchParams(window.location.search)) ||
             readPropertyShareTokenHint(propertyId),
-          dealCode:
-            extractDealCodeFromSearchParams(new URLSearchParams(window.location.search)) ||
-            readPropertyDealCodeHint(propertyId),
         }),
       });
       const result = (await response.json()) as {
@@ -461,33 +442,17 @@ export default function BookingRequestForm({
               </div>
             )}
             <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
-              <span>Total stay payable (excl. caution)</span>
+              <span>Total stay price</span>
               <span className="font-mono">{formatPrice(pricing.guestTotal)}</span>
             </div>
-            <div className="mt-2 rounded-xl border border-ink-200/80 bg-white p-2.5 text-[11px] leading-relaxed text-ink-600">
-              <div className="flex justify-between gap-2 font-bold text-ink-900">
-                <span>Separate caution deposit</span>
-                <span className="font-mono">
-                  {deposit > 0 ? formatCautionDeposit(deposit) : 'Not applicable (₦0)'}
+            {deposit > 0 && (
+              <div className="flex justify-between gap-2 pt-1 text-ink-600">
+                <span>Refundable caution deposit</span>
+                <span className="font-mono font-semibold">
+                  {formatCautionDeposit(deposit)}
                 </span>
               </div>
-              {deposit > 0 && (
-                <p className="m-0 mt-1">
-                  {cautionRefundConditions ||
-                    'Excluded from accommodation revenue and service fees. Subject to check-in/check-out condition review (normal wear and tear excluded).'}
-                </p>
-              )}
-              {deposit > 0 && cautionInspectionPolicy && (
-                <p className="m-0 mt-1 text-ink-500">
-                  Inspection policy: {cautionInspectionPolicy}
-                </p>
-              )}
-              {deposit > 0 && (
-                <p className="m-0 mt-1 text-[10px] text-ink-500">
-                  {HONEST_CAUTION_CUSTODY_DISCLOSURE}
-                </p>
-              )}
-            </div>
+            )}
             {currency !== 'NGN' && (
               <p className="m-0 pt-1 text-[11px] leading-relaxed text-ink-500">
                 {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
@@ -545,9 +510,6 @@ export default function BookingRequestForm({
             </span>
           )}
         </div>
-        <p className="m-0 mb-3 text-[11px] font-medium text-ink-600">
-          <strong>{bookingModeLabel}</strong> · {availabilityLastUpdatedLabel}
-        </p>
 
         {renderFormBody()}
       </div>

@@ -10,7 +10,7 @@ import {
   isMissingSchemaObjectError,
   loadActiveExchangeRates,
 } from '@/lib/next-supabase';
-import { normalizeDealCode, normalizeShareToken } from '@/lib/share-engine';
+import { normalizeShareToken } from '@/lib/share-engine';
 import type { SupportedCurrency } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -24,7 +24,6 @@ type RequestBody = {
   quoteCurrency?: string;
   visitorSessionKey?: string | null;
   shareToken?: string | null;
-  dealCode?: string | null;
 };
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -86,7 +85,6 @@ export async function POST(request: Request) {
       ? body.visitorSessionKey.trim()
       : null;
   const shareTokenInput = normalizeShareToken(body.shareToken);
-  const dealCodeInput = normalizeDealCode(body.dealCode);
 
   if (!propertyId || !checkIn || !checkOut || !isValidDate(checkIn) || !isValidDate(checkOut)) {
     return errorResponse('Choose a property, check-in date and check-out date.');
@@ -238,25 +236,11 @@ export async function POST(request: Request) {
         }
       : fullInsertPayload;
 
-  const payloadWithDealAndShare = dealCodeInput
-    ? { ...payloadWithShare, deal_code_input: dealCodeInput }
-    : payloadWithShare;
-
   let { data: booking, error: insertError } = await db
     .from('bookings')
-    .insert(payloadWithDealAndShare)
+    .insert(payloadWithShare)
     .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
     .single();
-
-  if (insertError && isMissingSchemaObjectError(insertError) && payloadWithDealAndShare !== payloadWithShare) {
-    const retryShareRes = await db
-      .from('bookings')
-      .insert(payloadWithShare)
-      .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
-      .single();
-    booking = retryShareRes.data;
-    insertError = retryShareRes.error;
-  }
 
   if (insertError && isMissingSchemaObjectError(insertError) && payloadWithShare !== fullInsertPayload) {
     const retryRes = await db
@@ -270,9 +254,6 @@ export async function POST(request: Request) {
 
   if (insertError || !booking) {
     const detail = insertError?.message || '';
-    if (/minimum stay/i.test(detail)) {
-      return errorResponse(detail, 400);
-    }
     if (/date conflict|dates conflict|overlap|unavailable|calendar/i.test(detail)) {
       return errorResponse(
         'Those dates are no longer available. Please choose different dates.',
