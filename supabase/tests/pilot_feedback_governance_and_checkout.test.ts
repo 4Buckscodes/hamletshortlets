@@ -622,6 +622,7 @@ describe('HAMLET Release 1 — partner suspension, property corrections, private
         }),
         {
           paystackSecretKey: TEST_SECRET,
+          hamletAppUrl: 'https://hamlet.rest',
           getAuthenticatedUser: async () => ({ id: guestId, email: 'guest1@hamlet.test' }),
           loadBookingSnapshot: loadSnapshot,
           initializeTransaction: async params => {
@@ -647,7 +648,7 @@ describe('HAMLET Release 1 — partner suspension, property corrections, private
         amountKobo: 37_500_000,
         bookingId: booking.id,
         bookingReference: booking.reference,
-        callbackUrl: 'https://hamlet.ng/#/account?payment=returned',
+        callbackUrl: 'https://hamlet.rest/account/bookings?payment=return&booking=HML-INIT-01',
       });
     });
 
