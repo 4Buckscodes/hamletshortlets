@@ -45,3 +45,5 @@ verify_jwt = false
 [functions.booking-notifications]
 verify_jwt = false
 
+[functions.admin-notifications-dispatch]
+verify_jwt = false
