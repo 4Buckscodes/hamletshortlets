@@ -374,7 +374,7 @@ export default function PartnerApplicationForm() {
         if (insertError) throw new Error(insertError.message);
         clearDraft();
         setMessage(
-          'Your partner application has been submitted. HAMLET operations will review your details before activating partner access.',
+          'Your partner application has been submitted. You can start uploading properties immediately while HAMLET reviews your partner profile. Your listings will remain under review until approved, and earnings are withheld until partner verification is complete.',
         );
       }
 
@@ -783,12 +783,18 @@ export default function PartnerApplicationForm() {
         )}
 
         {message && (
-          <p
+          <div
             role="status"
-            className="m-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-semibold text-emerald-800"
+            className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-semibold text-emerald-800"
           >
-            {message}
-          </p>
+            <p className="m-0">{message}</p>
+            <Link
+              href="/partners/properties/new"
+              className="mt-3 inline-flex min-h-[42px] items-center rounded-full bg-ink-900 px-5 text-xs font-extrabold text-white"
+            >
+              Upload your first property →
+            </Link>
+          </div>
         )}
 
         <StepFooterActions
