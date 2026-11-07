@@ -70,17 +70,36 @@ export default function PartnerDashboardPage() {
       return;
     }
 
-    const { data: profile } = await db
-      .from('profiles')
-      .select('role,full_name')
-      .eq('id', user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: applications }] = await Promise.all([
+      db
+        .from('profiles')
+        .select('role,full_name')
+        .eq('id', user.id)
+        .maybeSingle(),
+      db
+        .from('partner_applications')
+        .select('role,status')
+        .eq('applicant_id', user.id)
+        .in('status', ['pending', 'needs_correction'])
+        .order('submitted_at', { ascending: false })
+        .limit(1),
+    ]);
 
-    const userRole = String(profile?.role || 'guest');
+    const application = applications?.[0];
+    const hasPendingInventoryApplication =
+      Boolean(application) &&
+      ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
+        String(application?.role),
+      );
+    const profileRole = String(profile?.role || 'guest');
+    const userRole =
+      profileRole === 'guest' && hasPendingInventoryApplication
+        ? 'partner_applicant'
+        : profileRole;
     setRole(userRole);
     setPartnerName(String(profile?.full_name || ''));
 
-    if (userRole !== 'partner' && userRole !== 'admin') {
+    if (!['partner', 'partner_applicant', 'admin'].includes(userRole)) {
       setLoading(false);
       return;
     }
@@ -211,7 +230,7 @@ export default function PartnerDashboardPage() {
                 : 'Manage stays & bookings'}
             </h1>
           </div>
-          {(role === 'partner' || role === 'admin') && (
+          {(['partner', 'partner_applicant', 'admin'].includes(role)) && (
             <Link
               href="/partners/properties/new"
               className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
@@ -251,17 +270,17 @@ export default function PartnerDashboardPage() {
           <p role="status" className="mt-8 text-sm text-ink-600">
             Loading partner workspace…
           </p>
-        ) : role !== 'partner' && role !== 'admin' ? (
+        ) : !['partner', 'partner_applicant', 'admin'].includes(role) ? (
           <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              Partner approval required
+              Partner application received
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Your account currently has guest access. Apply or check your application status to unlock property submissions, calendar controls and referral earnings.
+              Your partner application is being reviewed. You can already upload properties for HAMLET review. Booking operations and earnings access become available after partner verification.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/partners/apply" className="primary-button">
-                Open partner application →
+              <Link href="/partners/properties/new" className="primary-button">
+                Upload your first property →
               </Link>
               <Link href="/account" className="secondary-button">
                 Back to guest account
