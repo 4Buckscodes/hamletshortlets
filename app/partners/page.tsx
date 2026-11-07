@@ -273,14 +273,14 @@ export default function PartnerDashboardPage() {
         ) : !['partner', 'partner_applicant', 'admin'].includes(role) ? (
           <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              Partner application received
+              Partner application required
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Your partner application is being reviewed. You can already upload properties for HAMLET review. Booking operations and earnings access become available after partner verification.
+              Create a partner application to start uploading properties. Once submitted, you can list immediately while HAMLET reviews your profile. Earnings remain unavailable until partner verification is complete.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/partners/properties/new" className="primary-button">
-                Upload your first property →
+              <Link href="/partners/apply" className="primary-button">
+                Open partner application →
               </Link>
               <Link href="/account" className="secondary-button">
                 Back to guest account
