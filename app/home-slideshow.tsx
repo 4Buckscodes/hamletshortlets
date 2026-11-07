@@ -616,18 +616,18 @@ export function HomeMarketplaceExperience({
 
   return (
     <div className="bg-[#F8F5EE] text-[#121F3C]">
-      {/* ── Hero: Midnight Navy + Lagos Lagoon & Bridge Skyline + Cream Search Sheet ── */}
-      <section className="overflow-hidden bg-[#121F3C] text-[#F8F5EE]">
-        <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
-          <div className="px-5 pt-[26px] lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
+      {/* ── Hero: Deep Navy (#0E1F3B) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
+      <section className="relative overflow-hidden bg-[#0E1F3B] text-[#F8F5EE]">
+        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
+          <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
               Verified Shortlets · Lagos
             </p>
-            <h1 className="mt-2.5 mb-2.5 font-display text-[clamp(36px,10.8vw,44px)] font-bold leading-[1.1] text-[#F8F5EE] lg:text-[52px]">
+            <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F8F5EE] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
               Find your next stay.
             </h1>
-            <p className="m-0 text-[16px] leading-[1.5] text-[#C5CCDA] lg:max-w-lg lg:text-[18px]">
-              Island or Mainland — pick your side of the lagoon.
+            <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#C5CCDA] sm:max-w-md lg:max-w-lg lg:text-[17px]">
+              Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.
             </p>
             <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#9AA6BD] lg:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-[#C9A45C]" aria-hidden="true" />
@@ -637,41 +637,33 @@ export function HomeMarketplaceExperience({
 
           <div className="lg:col-span-6">
             <svg
+              viewBox="0 0 390 210"
               aria-hidden="true"
-              viewBox="0 0 390 190"
-              preserveAspectRatio="xMidYMax slice"
-              className="mt-4 block h-[178px] w-full lg:mt-0 lg:h-[224px] lg:rounded-t-2xl"
+              className="pointer-events-none -mt-2 -mb-7 block h-auto w-full max-w-2xl mx-auto select-none lg:mt-0 lg:-mb-9 lg:max-w-none"
             >
-              <circle cx="296" cy="54" r="30" fill="#C9A45C" />
+              <circle cx="296" cy="64" r="30" fill="#C9A45C" />
+              <g fill="#16294A">
+                <rect x="8" y="110" width="26" height="100" />
+                <rect x="40" y="86" width="22" height="124" />
+                <rect x="68" y="120" width="30" height="90" />
+                <rect x="104" y="98" width="20" height="112" />
+              </g>
+              <g fill="#1B3358">
+                <rect x="262" y="104" width="28" height="106" />
+                <rect x="296" y="124" width="24" height="86" />
+                <rect x="326" y="92" width="22" height="118" />
+                <rect x="354" y="116" width="30" height="94" />
+              </g>
               <path
-                d="M0 140V116H26V98H58V122H84V90H116V128H146V104H174V140Z"
-                fill="#1A2D50"
-              />
-              <path
-                d="M222 140V112H250V86H282V120H308V96H340V118H366V104H390V140Z"
-                fill="#1D355C"
-              />
-              <path
-                d="M0 140Q195 60 390 140"
+                d="M0 150Q195 70 390 150"
+                stroke="#C9A45C"
+                strokeWidth="2"
                 fill="none"
-                stroke="#C9A45C"
-                strokeWidth="2.5"
               />
-              <path d="M0 146H390" stroke="#C9A45C" strokeWidth="3" />
-              <path
-                d="M65 122V146M130 107V146M195 100V146M260 107V146M325 122V146"
-                stroke="#C9A45C"
-                strokeWidth="1.4"
-                opacity=".8"
-              />
-              <rect y="149" width="390" height="41" fill="#172A4D" />
-              <path
-                d="M40 162H140M230 170H340M90 178H200"
-                stroke="#C9A45C"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                opacity=".55"
-              />
+              <path d="M0 156H390" stroke="#C9A45C" strokeWidth="2" />
+              <g stroke="#C9A45C" strokeWidth="1" opacity="0.6">
+                <path d="M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156" />
+              </g>
             </svg>
           </div>
         </div>
@@ -680,7 +672,7 @@ export function HomeMarketplaceExperience({
         <div
           role="search"
           aria-label="Search Lagos shortlets"
-          className="rounded-t-[28px] bg-[#F8F5EE] px-5 pt-[22px] pb-[26px] text-[#121F3C] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
+          className="relative z-10 rounded-t-[28px] bg-[#F8F5EE] px-5 pt-[22px] pb-[26px] text-[#121F3C] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
         >
           <div className="mx-auto max-w-2xl">
             <button
