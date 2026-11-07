@@ -374,7 +374,7 @@ export default function PartnerApplicationForm() {
         if (insertError) throw new Error(insertError.message);
         clearDraft();
         setMessage(
-          'Your partner application has been submitted. HAMLET operations will review your details before activating partner access.',
+          'Your partner application has been submitted. You can start uploading properties immediately while HAMLET reviews your partner profile. Your listings will remain under review until approved, and earnings are withheld until partner verification is complete.',
         );
       }
 
