@@ -62,3 +62,21 @@ $$;
 
 comment on function public.can_submit_partner_property() is
   'Allows active approved partners/admins and active applicants with a pending or correction-requested inventory partner application to submit or correct listings. Does not confer payout eligibility.';
+
+
+-- Allow pending inventory applicants to upload only into their own user-scoped folder.
+do $$
+begin
+  if to_regclass('storage.objects') is not null then
+    drop policy if exists "Active partners and admins can upload property media" on storage.objects;
+    drop policy if exists "Active partner applicants and admins can upload property media" on storage.objects;
+    create policy "Active partner applicants and admins can upload property media"
+      on storage.objects for insert to authenticated
+      with check (
+        bucket_id = 'property-media'
+        and public.can_submit_partner_property()
+        and (storage.foldername(name))[1] = (select auth.uid())::text
+      );
+  end if;
+end
+$$;
