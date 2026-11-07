@@ -14,8 +14,19 @@ type AdminNotification = {
   target_type: string | null;
   target_id: string | null;
   recipient_email: string | null;
+  delivery_status: 'pending' | 'processing' | 'sent' | 'failed';
+  delivery_attempts: number;
+  delivered_at: string | null;
+  last_delivery_error: string | null;
   read_at: string | null;
   created_at: string;
+};
+
+const DELIVERY_LABELS: Record<AdminNotification['delivery_status'], string> = {
+  pending: 'Email queued',
+  processing: 'Email sending',
+  sent: 'Email accepted',
+  failed: 'Email needs retry',
 };
 
 export default function AdminCommunicationsPage() {
@@ -46,10 +57,10 @@ export default function AdminCommunicationsPage() {
     setAllowed(true);
     const { data, error: queryError } = await db
       .from('admin_notifications')
-      .select('id,event_type,title,message,target_type,target_id,recipient_email,read_at,created_at')
+      .select('id,event_type,title,message,target_type,target_id,recipient_email,delivery_status,delivery_attempts,delivered_at,last_delivery_error,read_at,created_at')
       .order('created_at', { ascending: false })
       .limit(200);
-    if (queryError) setError('Could not load notifications. Apply the communications-centre migration and try again.');
+    if (queryError) setError('Could not load notifications. Apply the communications-centre migrations and try again.');
     else setRows((data || []) as AdminNotification[]);
     setLoading(false);
   }, [db]);
@@ -61,12 +72,13 @@ export default function AdminCommunicationsPage() {
 
   async function markRead(id: string) {
     if (!db) return;
+    const readAt = new Date().toISOString();
     const { error: updateError } = await db
       .from('admin_notifications')
-      .update({ read_at: new Date().toISOString() })
+      .update({ read_at: readAt })
       .eq('id', id);
     if (updateError) setError('Could not update notification status.');
-    else setRows(current => current.map(row => row.id === id ? { ...row, read_at: new Date().toISOString() } : row));
+    else setRows(current => current.map(row => row.id === id ? { ...row, read_at: readAt } : row));
   }
 
   const unread = rows.filter(row => !row.read_at).length;
@@ -95,9 +107,11 @@ export default function AdminCommunicationsPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="m-0 text-sm font-bold text-ink-900">{row.title}</h2>
                       {!row.read_at && <span className="rounded-full bg-brass-100 px-2 py-1 text-[10px] font-bold text-brass-800">NEW</span>}
+                      <span className="rounded-full bg-ink-50 px-2 py-1 text-[10px] font-semibold text-ink-600">{DELIVERY_LABELS[row.delivery_status]}</span>
                     </div>
                     <p className="mt-2 text-sm text-ink-700">{row.message}</p>
-                    <p className="mt-2 text-xs text-ink-500">{row.event_type} · {new Date(row.created_at).toLocaleString('en-NG')}{row.recipient_email ? ` · ${row.recipient_email}` : ''}</p>
+                    <p className="mt-2 text-xs text-ink-500">{row.event_type} · {new Date(row.created_at).toLocaleString('en-NG')} · Attempts: {row.delivery_attempts}{row.delivered_at ? ` · Accepted: ${new Date(row.delivered_at).toLocaleString('en-NG')}` : ''}</p>
+                    {row.last_delivery_error && <p className="mt-2 text-xs text-red-700">Last delivery error: {row.last_delivery_error}</p>}
                     {row.target_type === 'partner_application' && row.target_id && <Link className="mt-3 inline-block text-xs font-bold text-brass-800 underline" href="/admin/partners">Open partner queue →</Link>}
                   </div>
                   {!row.read_at && <button type="button" onClick={() => void markRead(row.id)} className="secondary-button min-h-[38px] text-xs">Mark read</button>}
