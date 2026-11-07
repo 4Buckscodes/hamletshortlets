@@ -139,7 +139,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(rail.getByRole('link', { name: /Lekki Phase 1/i })).toBeVisible();
     await expect(rail.getByRole('link', { name: /Ikate/i })).toBeVisible();
     await expect(rail.getByRole('link', { name: /Victoria Island/i })).toBeVisible();
-    await expect(rail.getByRole('link', { name: /Yaba/i })).toBeVisible();
+    await expect(rail.getByRole('link', { name: /Mainland Yaba Browse stays/i })).toBeVisible();
 
     await rail.getByRole('link', { name: /Ikate/i }).click();
     await expect(page).toHaveURL(/\/stays\?area=Ikate/);
