@@ -46,6 +46,7 @@ if (denoRuntime) {
 
     return handlePaystackInitialize(req, {
       paystackSecretKey,
+      hamletAppUrl: denoRuntime.env.get('HAMLET_APP_URL'),
       getAuthenticatedUser: async (bearerToken: string) => {
         const { data, error } = await serviceClient.auth.getUser(bearerToken);
         if (error || !data.user || !data.user.email) return null;
