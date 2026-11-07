@@ -259,7 +259,7 @@ export async function handleBookingNotifications(
     return jsonResponse({ ok: false, error: 'Method not allowed. Use POST.' }, 405);
   }
 
-  let body: { bookingId?: unknown; batchLimit?: unknown; forceRetry?: unknown } = {};
+  let body: { bookingId?: unknown; booking_id?: unknown; batchLimit?: unknown; forceRetry?: unknown } = {};
   try {
     const rawText = await req.text();
     if (rawText.trim()) {
@@ -273,8 +273,20 @@ export async function handleBookingNotifications(
     return jsonResponse({ ok: false, error: 'Invalid JSON request body.' }, 400);
   }
 
-  const requestedBookingId =
-    typeof body.bookingId === 'string' && body.bookingId.trim() ? body.bookingId.trim() : null;
+  const hasCamelBookingId = body.bookingId !== undefined;
+  const hasSnakeBookingId = body.booking_id !== undefined;
+  if (
+    (hasCamelBookingId && typeof body.bookingId !== 'string') ||
+    (hasSnakeBookingId && typeof body.booking_id !== 'string')
+  ) {
+    return jsonResponse({ ok: false, error: 'bookingId must be a string when provided.' }, 400);
+  }
+  const camelBookingId = typeof body.bookingId === 'string' ? body.bookingId.trim() : '';
+  const snakeBookingId = typeof body.booking_id === 'string' ? body.booking_id.trim() : '';
+  if (camelBookingId && snakeBookingId && camelBookingId !== snakeBookingId) {
+    return jsonResponse({ ok: false, error: 'bookingId and booking_id must identify the same booking.' }, 400);
+  }
+  const requestedBookingId = camelBookingId || snakeBookingId || null;
   const requestedBatchLimit =
     typeof body.batchLimit === 'number' && Number.isFinite(body.batchLimit)
       ? Math.max(1, Math.min(Math.trunc(body.batchLimit), 50))
