@@ -66,10 +66,10 @@ export default function PropertySubmissionForm() {
     return (
       <div className="rounded-3xl border border-ink-200 bg-white p-7">
         <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-          Verified partner access required
+          Apply as a property partner first
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Only approved HAMLET partners can submit property listings. Apply first so operations can verify your partner profile.
+          Submit your partner application to unlock property uploads immediately. HAMLET reviews each property before it can appear publicly; partner verification is completed separately before earnings can be paid.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link href="/partners/apply" className="primary-button">
