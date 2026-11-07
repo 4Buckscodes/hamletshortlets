@@ -174,9 +174,10 @@ export async function handlePaystackWebhook(
     typeof data.fees === 'number' && Number.isFinite(data.fees) && data.fees > 0
       ? Math.round(data.fees / 100)
       : 0;
-  const currencyCode = typeof data.currency === 'string' && data.currency.trim()
-    ? data.currency.trim().toUpperCase()
-    : 'NGN';
+  const currencyCode = typeof data.currency === 'string' ? data.currency.trim().toUpperCase() : '';
+  if (currencyCode !== 'NGN') {
+    return jsonResponse({ ok: false, error: 'Unsupported or missing Paystack payment currency. HAMLET currently accepts NGN settlement only.' }, 400);
+  }
 
   let rpcResult: ConfirmWebhookResult | null = null;
   let error: { message: string } | null = null;
