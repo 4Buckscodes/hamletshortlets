@@ -301,7 +301,7 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
     expect(guestEmail.html).toContain('Bourdillon Terrace Residence');
     expect(guestEmail.html).toContain('4 guests');
     expect(guestEmail.html).toContain('not confirmed yet');
-    expect(guestEmail.html).toContain('https://hamletshortlets.vercel.app/#/account?booking=bkg-notify-001');
+    expect(guestEmail.html).toContain('https://hamletshortlets.vercel.app/account/bookings?booking=bkg-notify-001');
     expect(guestEmail.text).toContain('NOT yet confirmed');
 
     // 2) Partner email verification (property details + resolved thumbnail + exact review link)
@@ -311,15 +311,15 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
     expect(partnerEmail.html).toContain('Bourdillon Terrace Residence');
     expect(partnerEmail.html).toContain('https://hamletshortlets.vercel.app/images/ikoyi-penthouse.jpg');
     expect(partnerEmail.html).toContain('Review booking request');
-    expect(partnerEmail.html).toContain('https://hamletshortlets.vercel.app/#/partner/bookings/bkg-notify-001');
+    expect(partnerEmail.html).toContain('https://hamletshortlets.vercel.app/partners/bookings?booking=bkg-notify-001');
     expect(partnerEmail.html).toContain('Arriving on evening flight around 7 PM');
-    expect(partnerEmail.text).toContain('https://hamletshortlets.vercel.app/#/partner/bookings/bkg-notify-001');
+    expect(partnerEmail.text).toContain('https://hamletshortlets.vercel.app/partners/bookings?booking=bkg-notify-001');
 
     // 3) HAMLET operations email verification (uses HAMLET_BOOKINGS_EMAIL secret)
     const opsEmail = sentEmails.find(e => e.to === 'bookings-ops@hamlet-internal.test')!;
     expect(opsEmail).toBeDefined();
     expect(opsEmail.subject).toBe('New HAMLET booking request — HML-2026-9001');
-    expect(opsEmail.html).toContain('https://hamletshortlets.vercel.app/#/admin/bookings?booking=bkg-notify-001');
+    expect(opsEmail.html).toContain('https://hamletshortlets.vercel.app/admin/bookings?booking=bkg-notify-001');
     expect(opsEmail.text).toContain('HML-2026-9001');
 
     // Verify provider_message_id and sent_at persisted in booking_notifications
@@ -710,9 +710,13 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
     expect(guestDeclineEmail.subject).toBe('Update on your HAMLET booking request (HML-2026-9005)');
     expect(guestDeclineEmail.html).toContain('Scheduled inverter maintenance during requested dates');
     expect(guestDeclineEmail.html).toContain('No payment was charged');
+    expect(guestDeclineEmail.html).toContain('https://hamletshortlets.vercel.app/stays');
+    expect(guestDeclineEmail.html).toContain('https://hamletshortlets.vercel.app/account/bookings?booking=bkg-decline-001');
+    expect(guestDeclineEmail.text).toContain('https://hamletshortlets.vercel.app/stays');
 
     const opsDeclineEmail = eventCEmails.find(e => e.to === 'bookings-ops@hamlet-internal.test')!;
     expect(opsDeclineEmail.subject).toBe('Booking request declined — HAMLET HML-2026-9005');
+    expect(opsDeclineEmail.html).toContain('https://hamletshortlets.vercel.app/admin/bookings?booking=bkg-decline-001');
   });
 
   it('enforces strict RLS on booking_notifications and rejects unauthorized Edge Function dispatch callers', async () => {

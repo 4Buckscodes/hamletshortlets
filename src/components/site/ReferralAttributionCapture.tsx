@@ -4,11 +4,9 @@ import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
-  extractDealCodeFromSearchParams,
   extractShareTokenFromSearchParams,
   getOrCreateVisitorSessionKey,
   readVisitorSessionKey,
-  storePropertyDealCodeHint,
   storePropertyShareTokenHint,
 } from '@/lib/share-engine';
 
@@ -25,10 +23,6 @@ export default function ReferralAttributionCapture() {
       const propertyIdFromPath = stayMatch?.[1] ? decodeURIComponent(stayMatch[1]) : null;
       if (propertyIdFromPath) {
         storePropertyShareTokenHint(propertyIdFromPath, shareToken);
-        const dealCode = extractDealCodeFromSearchParams(searchParams);
-        if (dealCode) {
-          storePropertyDealCodeHint(propertyIdFromPath, dealCode);
-        }
       }
 
       const visitorSessionKey = getOrCreateVisitorSessionKey();

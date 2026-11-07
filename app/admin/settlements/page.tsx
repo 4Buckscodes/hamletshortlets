@@ -1,15 +1,7 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  getBrowserSupabase,
-  isMissingSchemaObjectError,
-} from '@/lib/next-supabase';
-import {
-  CAUTION_STATUS_LABELS,
-  HONEST_CAUTION_CUSTODY_DISCLOSURE,
-  type CautionDepositLifecycleStatus,
-} from '@/lib/competitive-readiness';
+import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
   FocusedDrawer,
@@ -21,30 +13,25 @@ import { AdminNav } from '../admin-nav';
 type LedgerEntry = {
   id: string;
   booking_id: string;
-  record_type: string;
+  booking_reference: string;
+  entry_type: string;
   amount: number;
   status: string;
   payout_status: string | null;
   provider_reference: string | null;
   description: string | null;
   created_at: string;
-  bookings?: { reference?: string } | null;
 };
 
 type CautionRow = {
   id: string;
   booking_id: string;
-  amount_ngn: number;
+  booking_reference: string;
+  deposit_amount_ngn: number;
   deducted_amount_ngn: number;
   refunded_amount_ngn: number;
-  status: CautionDepositLifecycleStatus;
-  inspection_notes: string | null;
-  deduction_reason: string | null;
-  damage_issue_description?: string | null;
-  damage_claimed_amount_ngn?: number;
-  guest_deduction_response?: string | null;
-  evidence?: Array<{ url?: string; caption?: string; captured_at?: string }> | null;
-  bookings?: { reference?: string } | null;
+  status: string;
+  inspection_note: string | null;
 };
 
 export default function AdminSettlementsPage() {
@@ -52,16 +39,12 @@ export default function AdminSettlementsPage() {
   const [allowed, setAllowed] = useState(false);
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [cautions, setCautions] = useState<CautionRow[]>([]);
-  const [sprintReady, setSprintReady] = useState(false);
-
   const [selectedEntry, setSelectedEntry] = useState<LedgerEntry | null>(null);
   const [nextPayoutStatus, setNextPayoutStatus] = useState('approved');
   const [payoutNote, setPayoutNote] = useState('');
 
   const [selectedCaution, setSelectedCaution] = useState<CautionRow | null>(null);
-  const [cautionStatus, setCautionStatus] = useState<
-    'refund_approved' | 'partially_refunded' | 'refunded' | 'disputed'
-  >('refund_approved');
+  const [cautionStatus, setCautionStatus] = useState('released');
   const [deductedNgn, setDeductedNgn] = useState(0);
   const [inspectionNote, setInspectionNote] = useState('');
 
@@ -94,42 +77,28 @@ export default function AdminSettlementsPage() {
     }
     setAllowed(true);
 
-    const [ledgerRes, sprintCautionRes] = await Promise.all([
+    const [ledgerRes, cautionRes] = await Promise.all([
       db
         .from('booking_payment_records')
         .select(
-          'id,booking_id,record_type,amount,status,payout_status,provider_reference,description,created_at,bookings(reference)',
+          'id,booking_id,booking_reference,entry_type,amount,status,payout_status,provider_reference,description,created_at',
         )
         .order('created_at', { ascending: false })
         .limit(100),
       db
         .from('booking_caution_deposits')
         .select(
-          'id,booking_id,amount_ngn,deducted_amount_ngn,refunded_amount_ngn,status,inspection_notes,deduction_reason,damage_issue_description,damage_claimed_amount_ngn,guest_deduction_response,evidence,bookings(reference)',
+          'id,booking_id,booking_reference,deposit_amount_ngn,deducted_amount_ngn,refunded_amount_ngn,status,inspection_note',
         )
         .order('created_at', { ascending: false })
         .limit(50),
     ]);
 
-    if (!ledgerRes.error && Array.isArray(ledgerRes.data)) {
-      setEntries(ledgerRes.data as unknown as LedgerEntry[]);
+    if (!ledgerRes.error) {
+      setEntries((ledgerRes.data || []) as LedgerEntry[]);
     }
-
-    if (!sprintCautionRes.error && Array.isArray(sprintCautionRes.data)) {
-      setSprintReady(true);
-      setCautions(sprintCautionRes.data as unknown as CautionRow[]);
-    } else if (isMissingSchemaObjectError(sprintCautionRes.error)) {
-      setSprintReady(false);
-      const fallbackCaution = await db
-        .from('booking_caution_deposits')
-        .select(
-          'id,booking_id,amount_ngn,deducted_amount_ngn,refunded_amount_ngn,status,inspection_notes,deduction_reason,evidence,bookings(reference)',
-        )
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (!fallbackCaution.error && Array.isArray(fallbackCaution.data)) {
-        setCautions(fallbackCaution.data as unknown as CautionRow[]);
-      }
+    if (!cautionRes.error) {
+      setCautions((cautionRes.data || []) as CautionRow[]);
     }
     setLoading(false);
   }, [db]);
@@ -176,38 +145,23 @@ export default function AdminSettlementsPage() {
     setError('');
     setNotice('');
     try {
-      const total = Number(selectedCaution.amount_ngn || 0);
+      const total = Number(selectedCaution.deposit_amount_ngn || 0);
       const cleanDeduct = Math.max(0, Math.min(total, Math.round(deductedNgn)));
       const refunded = Math.max(0, total - cleanDeduct);
 
-      if (sprintReady) {
-        const { error: rpcErr } = await db.rpc('admin_resolve_caution_deposit_status', {
-          target_booking_id: selectedCaution.booking_id,
-          next_status: cautionStatus,
-          approved_deduction_ngn: cleanDeduct,
-          approved_refund_ngn: refunded,
-          review_note: inspectionNote.trim() || 'Reviewed by HAMLET operations.',
-        });
-        if (rpcErr) throw new Error(rpcErr.message);
-      } else {
-        const legacyStatus =
-          cautionStatus === 'refunded' ? 'refund_completed' : cautionStatus;
-        const { error: rpcError } = await db.rpc('transition_caution_deposit', {
-          target_booking_id: selectedCaution.booking_id,
-          next_status: legacyStatus,
-          deducted_ngn: cleanDeduct,
-          refunded_ngn: refunded,
-          inspection_note: inspectionNote.trim() || 'Inspection recorded by operations.',
-          deduction_note: cleanDeduct > 0 ? inspectionNote.trim() : null,
-          refund_ref: null,
-          evidence_items: null,
-        });
-        if (rpcError) throw new Error(rpcError.message);
-      }
-
-      setNotice(
-        `Caution deposit for ${selectedCaution.bookings?.reference || selectedCaution.booking_id} updated to ${cautionStatus.replace(/_/g, ' ')}.`,
-      );
+      const { error: rpcError } = await db.rpc('transition_caution_deposit', {
+        target_booking_id: selectedCaution.booking_id,
+        next_status: cautionStatus,
+        deducted_ngn: cleanDeduct,
+        refunded_ngn: refunded,
+        inspection_note: inspectionNote.trim() || 'Inspection recorded by operations.',
+        deduction_note:
+          cleanDeduct > 0 ? inspectionNote.trim() : null,
+        refund_ref: null,
+        evidence_items: null,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      setNotice(`Caution deposit for ${selectedCaution.booking_reference} updated to ${cautionStatus}.`);
       setSelectedCaution(null);
       await load();
     } catch (caught) {
@@ -233,7 +187,7 @@ export default function AdminSettlementsPage() {
               Financial reconciliation
             </h1>
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
-              Accommodation revenue, platform fees, agent allocations, and separate refundable caution deposits are reconciled independently.
+              Ledger status tracks reconciliation only — bank transfers run separately.
             </p>
           </div>
           {allowed && <AdminNav current="settlements" />}
@@ -269,12 +223,9 @@ export default function AdminSettlementsPage() {
                     >
                       <div>
                         <strong className="font-mono text-ink-900">
-                          {item.bookings?.reference || item.booking_id}
+                          {item.booking_reference}
                         </strong>{' '}
-                        ·{' '}
-                        <span className="capitalize">
-                          {item.record_type.replace(/_/g, ' ')}
-                        </span>
+                        · <span className="capitalize">{item.entry_type.replace(/_/g, ' ')}</span>
                         <p className="m-0 mt-0.5 text-ink-500">
                           {item.description || 'Ledger entry'}
                           {item.provider_reference
@@ -313,11 +264,8 @@ export default function AdminSettlementsPage() {
 
             <section className="rounded-3xl border border-ink-100 bg-white p-6">
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                Caution deposits & inspection claims ({cautions.length})
+                Refundable caution deposits ({cautions.length})
               </h2>
-              <p className="mt-1 text-xs text-ink-500">
-                {HONEST_CAUTION_CUSTODY_DISCLOSURE}
-              </p>
               {cautions.length > 0 ? (
                 <div className="mt-4 divide-y divide-ink-100 text-xs">
                   {cautions.map(c => (
@@ -325,53 +273,27 @@ export default function AdminSettlementsPage() {
                       key={c.id}
                       className="flex flex-wrap items-center justify-between gap-3 py-3.5"
                     >
-                      <div className="space-y-1">
-                        <div>
-                          <strong className="font-mono text-ink-900">
-                            {c.bookings?.reference || c.booking_id}
-                          </strong>{' '}
-                          · Caution deposit: ₦
-                          {Number(c.amount_ngn || 0).toLocaleString('en-NG')}
-                        </div>
-                        <p className="m-0 text-ink-600">
-                          Status:{' '}
-                          <strong>
-                            {CAUTION_STATUS_LABELS[c.status] || c.status}
-                          </strong>{' '}
-                          · Approved deduction: ₦
-                          {Number(c.deducted_amount_ngn || 0).toLocaleString('en-NG')} ·
-                          Refunded: ₦
-                          {Number(c.refunded_amount_ngn || 0).toLocaleString('en-NG')}
+                      <div>
+                        <strong className="font-mono text-ink-900">
+                          {c.booking_reference}
+                        </strong>{' '}
+                        · Deposit: ₦{Number(c.deposit_amount_ngn || 0).toLocaleString('en-NG')}
+                        <p className="m-0 mt-0.5 text-ink-500">
+                          Status: <strong>{c.status}</strong> · Deducted: ₦
+                          {Number(c.deducted_amount_ngn || 0).toLocaleString('en-NG')}
                         </p>
-                        {c.damage_issue_description && (
-                          <p className="m-0 text-amber-900">
-                            <strong>Claimed issue (₦{Number(c.damage_claimed_amount_ngn || 0).toLocaleString('en-NG')}):</strong>{' '}
-                            {c.damage_issue_description}
-                          </p>
-                        )}
-                        {c.guest_deduction_response && (
-                          <p className="m-0 text-emerald-900">
-                            <strong>Guest response:</strong> {c.guest_deduction_response}
-                          </p>
-                        )}
                       </div>
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedCaution(c);
-                          setCautionStatus('refund_approved');
-                          setDeductedNgn(
-                            Number(
-                              c.damage_claimed_amount_ngn || c.deducted_amount_ngn || 0,
-                            ),
-                          );
-                          setInspectionNote(
-                            c.inspection_notes || c.damage_issue_description || '',
-                          );
+                          setCautionStatus('released');
+                          setDeductedNgn(Number(c.deducted_amount_ngn || 0));
+                          setInspectionNote(c.inspection_note || '');
                         }}
                         className="secondary-button min-h-[36px] px-3 text-xs"
                       >
-                        Review & resolve
+                        Inspect / release
                       </button>
                     </div>
                   ))}
@@ -388,7 +310,7 @@ export default function AdminSettlementsPage() {
         <FocusedDrawer
           open={Boolean(selectedEntry)}
           title="Update payout reconciliation status"
-          subtitle={selectedEntry?.bookings?.reference || selectedEntry?.booking_id}
+          subtitle={selectedEntry?.booking_reference}
           onClose={() => setSelectedEntry(null)}
         >
           {selectedEntry && (
@@ -436,67 +358,35 @@ export default function AdminSettlementsPage() {
 
         <FocusedDrawer
           open={Boolean(selectedCaution)}
-          title="Resolve caution deposit & claim"
-          subtitle={
-            selectedCaution?.bookings?.reference || selectedCaution?.booking_id
-          }
+          title="Caution deposit inspection"
+          subtitle={selectedCaution?.booking_reference}
           onClose={() => setSelectedCaution(null)}
         >
           {selectedCaution && (
             <form onSubmit={saveCautionTransition} className="space-y-4">
-              {Array.isArray(selectedCaution.evidence) &&
-                selectedCaution.evidence.length > 0 && (
-                  <div className="space-y-1.5 rounded-2xl bg-paper p-3 text-xs">
-                    <strong className="text-ink-900">Submitted media evidence:</strong>
-                    {selectedCaution.evidence.map((ev, idx) => (
-                      <p key={idx} className="m-0">
-                        <a
-                          href={ev.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-bold text-brass-700 underline"
-                        >
-                          Evidence #{idx + 1}
-                        </a>
-                        {ev.caption ? ` — ${ev.caption}` : ''}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-              <FormField label="Resolution status">
+              <FormField label="Next caution status">
                 {fieldProps => (
                   <select
                     {...fieldProps}
                     value={cautionStatus}
-                    onChange={e =>
-                      setCautionStatus(
-                        e.target.value as
-                          | 'refund_approved'
-                          | 'partially_refunded'
-                          | 'refunded'
-                          | 'disputed',
-                      )
-                    }
+                    onChange={e => setCautionStatus(e.target.value)}
                     className={FIELD_INPUT_CLASS}
                   >
-                    <option value="refund_approved">Refund approved</option>
-                    <option value="partially_refunded">
-                      Partially refunded (documented deduction)
-                    </option>
-                    <option value="refunded">Refunded (completed)</option>
-                    <option value="disputed">Keep in disputed review</option>
+                    <option value="inspecting">inspecting</option>
+                    <option value="released">released (full return)</option>
+                    <option value="partially_deducted">partially_deducted</option>
+                    <option value="forfeited">forfeited</option>
                   </select>
                 )}
               </FormField>
 
-              <FormField label="Approved deduction (₦ — normal wear & tear excluded)">
+              <FormField label="Documented deduction (NGN)">
                 {fieldProps => (
                   <input
                     {...fieldProps}
                     type="number"
                     min={0}
-                    max={selectedCaution.amount_ngn}
+                    max={selectedCaution.deposit_amount_ngn}
                     value={deductedNgn}
                     onChange={e => setDeductedNgn(Number(e.target.value))}
                     className={FIELD_INPUT_CLASS}
@@ -504,7 +394,7 @@ export default function AdminSettlementsPage() {
                 )}
               </FormField>
 
-              <FormField label="Admin review & reconciliation note">
+              <FormField label="Inspection / deduction note">
                 {fieldProps => (
                   <textarea
                     {...fieldProps}
@@ -513,7 +403,7 @@ export default function AdminSettlementsPage() {
                     rows={3}
                     value={inspectionNote}
                     onChange={e => setInspectionNote(e.target.value)}
-                    placeholder="Record evidence review outcome…"
+                    placeholder="Post-checkout inspection outcome…"
                     className={`${FIELD_INPUT_CLASS} resize-y`}
                   />
                 )}
@@ -524,7 +414,7 @@ export default function AdminSettlementsPage() {
                 disabled={busy}
                 className="primary-button min-h-[48px] w-full"
               >
-                {busy ? 'Saving…' : 'Save caution resolution'}
+                {busy ? 'Saving…' : 'Save caution decision'}
               </button>
             </form>
           )}

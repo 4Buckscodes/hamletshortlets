@@ -311,4 +311,20 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     });
     expect([401, 503]).toContain(unauthBooking.status());
   });
+
+  test('renders PR #76 /admin/communications cleanly without horizontal overflow and returns 404 for excluded PR #74 /partners/deals route', async ({
+    page,
+  }) => {
+    const commRes = await page.goto('/admin/communications');
+    expect(commRes?.status()).toBe(200);
+    await expect(page.getByRole('main')).toBeVisible();
+    const commOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth + 1,
+    );
+    expect(commOverflow).toBe(false);
+
+    const excludedPr74Res = await page.goto('/partners/deals');
+    expect(excludedPr74Res?.status()).toBe(404);
+    await expect(page.getByText(/Page not found\./i)).toBeVisible();
+  });
 });
