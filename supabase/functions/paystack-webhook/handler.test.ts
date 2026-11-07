@@ -68,6 +68,30 @@ describe('Paystack webhook payload validation', () => {
     expect(rpcCalls).toBe(0);
   });
 
+  it('rejects missing or non-NGN currency before calling the database', async () => {
+    let rpcCalls = 0;
+    const req = await signedRequest({
+      event: 'charge.success',
+      data: {
+        status: 'success',
+        reference: 'PSK_MISSING_CURRENCY',
+        amount: 10000,
+        metadata: { booking_id: 'booking-123' },
+      },
+    });
+
+    const response = await handlePaystackWebhook(req, {
+      paystackSecretKey: SECRET,
+      confirmPaymentRpc: async (_params: ConfirmWebhookParams) => {
+        rpcCalls += 1;
+        return { data: null, error: null };
+      },
+    });
+
+    expect(response.status).toBe(400);
+    expect(rpcCalls).toBe(0);
+  });
+
   it('rejects malformed provider fee values before calling the database', async () => {
     let rpcCalls = 0;
     const req = await signedRequest({
