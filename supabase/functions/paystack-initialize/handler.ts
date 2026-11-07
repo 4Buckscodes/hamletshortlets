@@ -40,6 +40,7 @@ export interface PaystackInitializeGatewayResult {
 
 export interface PaystackInitializeDeps {
   paystackSecretKey: string | undefined;
+  hamletAppUrl?: string | undefined;
   now?: () => Date;
   getAuthenticatedUser: (bearerToken: string) => Promise<AuthenticatedCheckoutUser | null>;
   loadBookingSnapshot: (bookingId: string) => Promise<{
@@ -70,15 +71,24 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-function sanitizeCallbackUrl(input: unknown): string | undefined {
-  if (typeof input !== 'string' || !input.trim()) return undefined;
+function buildTrustedCallbackUrl(appUrl: string | undefined, bookingReference: string): string {
+  const configuredBase = appUrl?.trim() || 'https://hamlet.rest';
+  let base: URL;
   try {
-    const parsed = new URL(input.trim());
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return undefined;
-    return parsed.toString();
+    base = new URL(configuredBase);
   } catch {
-    return undefined;
+    base = new URL('https://hamlet.rest');
   }
+
+  // Never allow a client-provided callback to redirect guests away from HAMLET.
+  if (base.protocol !== 'https:' || !['hamlet.rest', 'www.hamlet.rest'].includes(base.hostname.toLowerCase())) {
+    base = new URL('https://hamlet.rest');
+  }
+
+  const callback = new URL('/account/bookings', base.origin);
+  callback.searchParams.set('payment', 'return');
+  callback.searchParams.set('booking', bookingReference);
+  return callback.toString();
 }
 
 export async function defaultInitializePaystackTransaction(
@@ -312,7 +322,7 @@ export async function handlePaystackInitialize(
 
   // Authoritative stay settlement total from PostgreSQL in kobo; never accept client-sent amounts.
   const amountKobo = authoritativeNgnAmount * 100;
-  const callbackUrl = sanitizeCallbackUrl(body.callback_url);
+  const callbackUrl = buildTrustedCallbackUrl(deps.hamletAppUrl, booking.reference);
   const initFn = deps.initializeTransaction ?? defaultInitializePaystackTransaction;
 
   const { data: initialized, error: gatewayError } = await initFn({
