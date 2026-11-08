@@ -48,7 +48,7 @@ begin
     updated_definition := replace(
       function_definition,
       'not public.has_role(''partner'')',
-      'not public.can_submit_partner_property()'
+      'not public.is_account_active() then raise exception ''Your partner account is currently suspended. Contact HAMLET operations.''; end if; if actor_id is null or not public.can_submit_partner_property()'
     );
 
     if updated_definition = function_definition then
