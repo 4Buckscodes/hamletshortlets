@@ -199,7 +199,7 @@ begin
     perform public.enqueue_customer_email_notification(
       'partner_application_status_changed',
       new.applicant_id,
-      coalesce(account_email, new.email),
+      account_email,
       coalesce(profile_name, new.full_name),
       event_subject,
       event_payload,
