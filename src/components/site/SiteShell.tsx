@@ -501,7 +501,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B] text-[#F8F5EE] lg:backdrop-blur-xl'
+          ? 'border-b border-[#1A3158]/60 bg-[#173F32] text-[#F7F4ED] lg:backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
@@ -513,8 +513,8 @@ export function SiteHeader() {
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
             {isHome ? (
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
-                HAMLET<span className="text-[#C9A45C]">.</span>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
+                HAMLET<span className="text-[#B58A52]">.</span>
               </span>
             ) : (
               <HamletWordmark />
@@ -535,8 +535,8 @@ export function SiteHeader() {
                   className={`inline-flex min-h-[36px] items-center rounded-full px-3.5 text-[13px] font-semibold transition ${
                     isHome
                       ? active
-                        ? 'bg-white/15 font-bold text-[#F8F5EE]'
-                        : 'text-[#C5CCDA] hover:bg-white/10 hover:text-[#F8F5EE]'
+                        ? 'bg-white/15 font-bold text-[#F7F4ED]'
+                        : 'text-[#C5CCDA] hover:bg-white/10 hover:text-[#F7F4ED]'
                       : active
                         ? 'bg-ink-900 font-bold text-white shadow-2xs'
                         : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
@@ -556,12 +556,12 @@ export function SiteHeader() {
             aria-label="Ask Horatio — HAMLET assistant"
             className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
               isHome
-                ? 'border border-[#C9A45C]/65 bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#223963]'
+                ? 'border border-[#B58A52]/65 bg-[#1A2D50] text-[#F7F4ED] hover:border-[#B58A52] hover:bg-[#223963]'
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
             <Sparkles
-              className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+              className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
             />
             <span>Horatio</span>
           </button>
@@ -571,12 +571,12 @@ export function SiteHeader() {
               href="/partners/apply"
               className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
                 isHome
-                  ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                  ? 'border border-[#2C3F63] bg-transparent text-[#F7F4ED] hover:border-[#B58A52]'
                   : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
               }`}
             >
               <LayoutDashboard
-                className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
               />
               <span>Partner with us</span>
             </Link>
@@ -588,21 +588,21 @@ export function SiteHeader() {
                 href={workspaceHref}
                 className={`inline-flex min-h-[38px] items-center gap-2 rounded-full px-3.5 text-xs font-bold transition ${
                   isHome
-                    ? 'border border-[#2C3F63] bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C]'
+                    ? 'border border-[#2C3F63] bg-[#1A2D50] text-[#F7F4ED] hover:border-[#B58A52]'
                     : 'border border-ink-200 bg-white text-ink-900 hover:border-ink-900'
                 }`}
               >
                 {session.role === 'admin' ? (
                   <ShieldCheck
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
                   />
                 ) : session.role === 'partner' ? (
                   <Building2
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
                   />
                 ) : (
                   <User
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
                   />
                 )}
                 <span>{workspaceLabel}</span>
@@ -614,7 +614,7 @@ export function SiteHeader() {
                 title="Sign out"
                 className={`inline-flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full transition ${
                   isHome
-                    ? 'border border-[#2C3F63] bg-transparent text-[#C5CCDA] hover:border-[#C9A45C] hover:text-[#F8F5EE]'
+                    ? 'border border-[#2C3F63] bg-transparent text-[#C5CCDA] hover:border-[#B58A52] hover:text-[#F7F4ED]'
                     : 'border border-ink-200 bg-white text-ink-600 hover:border-ink-400 hover:text-ink-900'
                 }`}
               >
@@ -626,7 +626,7 @@ export function SiteHeader() {
               href="/signin"
               className={`inline-flex min-h-[38px] items-center justify-center rounded-full px-4.5 text-[12.5px] font-bold shadow-2xs transition ${
                 isHome
-                  ? 'bg-[#C9A45C] text-[#121F3C] hover:bg-[#d5b36d]'
+                  ? 'bg-[#B58A52] text-[#121F3C] hover:bg-[#d5b36d]'
                   : 'bg-ink-900 text-white hover:bg-ink-800'
               }`}
             >
@@ -644,7 +644,7 @@ export function SiteHeader() {
             aria-label={drawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
             className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
               isHome
-                ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                ? 'border border-[#2C3F63] bg-transparent text-[#F7F4ED] hover:border-[#B58A52]'
                 : 'border border-[#D6D0C0] bg-white text-[#121F3C] shadow-2xs hover:border-[#121F3C]'
             }`}
           >
@@ -670,7 +670,7 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#121F3C] lg:hidden">
+        <div className="fixed inset-0 z-50 bg-[#F7F4ED] text-[#121F3C] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
@@ -684,7 +684,7 @@ export function SiteHeader() {
                 className="inline-flex min-h-[44px] items-center"
               >
                 <span className="font-display text-[26px] font-bold tracking-[1px] text-[#121F3C]">
-                  HAMLET<span className="text-[#C9A45C]">.</span>
+                  HAMLET<span className="text-[#B58A52]">.</span>
                 </span>
               </Link>
               <button
@@ -703,16 +703,16 @@ export function SiteHeader() {
                 setDrawerOpen(false);
                 openHoratio();
               }}
-              className="mt-1 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border-[1.5px] border-[#C9A45C] bg-white px-4 text-[17px] font-semibold text-[#121F3C] transition hover:bg-[#FCFBF8]"
+              className="mt-1 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border-[1.5px] border-[#B58A52] bg-white px-4 text-[17px] font-semibold text-[#121F3C] transition hover:bg-[#FCFBF8]"
             >
               <span>✦ Ask Horatio</span>
-              <span aria-hidden="true" className="text-[#7A5E22]">
+              <span aria-hidden="true" className="text-[#755638]">
                 →
               </span>
             </button>
 
             <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#7A5E22]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#755638]">
                 For Guests
               </p>
               <div className="space-y-2">
@@ -726,14 +726,14 @@ export function SiteHeader() {
                       aria-current={active ? 'page' : undefined}
                       className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
                         active
-                          ? 'bg-[#121F3C] text-[#F8F5EE]'
+                          ? 'bg-[#121F3C] text-[#F7F4ED]'
                           : 'bg-white text-[#121F3C] hover:bg-[#F3EFE4]'
                       }`}
                     >
                       <span>{item.label}</span>
                       <span
                         aria-hidden="true"
-                        className={active ? 'text-[#C9A45C]' : 'text-[#7A5E22]'}
+                        className={active ? 'text-[#B58A52]' : 'text-[#755638]'}
                       >
                         →
                       </span>
@@ -744,7 +744,7 @@ export function SiteHeader() {
             </div>
 
             <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#7A5E22]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#755638]">
                 For Hosts &amp; About
               </p>
               <div className="space-y-2">
@@ -758,14 +758,14 @@ export function SiteHeader() {
                       aria-current={active ? 'page' : undefined}
                       className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
                         active
-                          ? 'bg-[#121F3C] text-[#F8F5EE]'
+                          ? 'bg-[#121F3C] text-[#F7F4ED]'
                           : 'bg-white text-[#121F3C] hover:bg-[#F3EFE4]'
                       }`}
                     >
                       <span>{item.label}</span>
                       <span
                         aria-hidden="true"
-                        className={active ? 'text-[#C9A45C]' : 'text-[#7A5E22]'}
+                        className={active ? 'text-[#B58A52]' : 'text-[#755638]'}
                       >
                         →
                       </span>
@@ -781,7 +781,7 @@ export function SiteHeader() {
                   <Link
                     href={workspaceHref}
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#1D355C]"
                   >
                     {workspaceLabel}
                   </Link>
@@ -807,7 +807,7 @@ export function SiteHeader() {
                   <Link
                     href="/signin"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#121F3C] px-6 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#1D355C]"
                   >
                     Sign in
                   </Link>
@@ -872,13 +872,13 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="border-t border-[#2C3F63] bg-[#121F3C] text-[#F8F5EE]">
+    <footer className="border-t border-[#2C3F63] bg-[#121F3C] text-[#F7F4ED]">
       <div className="mx-auto max-w-6xl px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:py-12">
         {/* Mobile editorial brand block + collapsible accordion navigation (< md) */}
         <div className="md:hidden">
           <Link href="/" className="inline-flex items-center">
-            <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
-              HAMLET<span className="text-[#C9A45C]">.</span>
+            <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
+              HAMLET<span className="text-[#B58A52]">.</span>
             </span>
           </Link>
           <p className="mt-2.5 text-[14px] leading-[1.5] text-[#C5CCDA]">
@@ -907,12 +907,12 @@ export function SiteFooter() {
                     aria-controls={panelId}
                     className="flex min-h-[52px] w-full cursor-pointer items-center justify-between py-3 text-left"
                   >
-                    <span className="text-[12px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
+                    <span className="text-[12px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
                       {group.title}
                     </span>
                     <span
                       aria-hidden="true"
-                      className="text-xl font-normal leading-none text-[#C9A45C]"
+                      className="text-xl font-normal leading-none text-[#B58A52]"
                     >
                       {isOpen ? '−' : '+'}
                     </span>
@@ -920,7 +920,7 @@ export function SiteFooter() {
                   {isOpen && (
                     <ul
                       id={panelId}
-                      className="space-y-1 pb-3 text-[15px] text-[#F8F5EE]"
+                      className="space-y-1 pb-3 text-[15px] text-[#F7F4ED]"
                     >
                       {group.links.map(link => (
                         <li key={link.href}>
@@ -944,8 +944,8 @@ export function SiteFooter() {
         <div className="hidden gap-8 md:grid md:grid-cols-4">
           <div className="md:col-span-1">
             <Link href="/" className="inline-flex items-center">
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
-                HAMLET<span className="text-[#C9A45C]">.</span>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
+                HAMLET<span className="text-[#B58A52]">.</span>
               </span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-[#C5CCDA]">
@@ -964,10 +964,10 @@ export function SiteFooter() {
 
           {FOOTER_LINK_GROUPS.map(group => (
             <div key={group.id}>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
                 {group.title}
               </h2>
-              <ul className="mt-3 space-y-2 text-sm text-[#F8F5EE]">
+              <ul className="mt-3 space-y-2 text-sm text-[#F7F4ED]">
                 {group.links.map(link => (
                   <li key={link.href}>
                     <Link
