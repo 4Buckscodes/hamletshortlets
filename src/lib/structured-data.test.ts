@@ -24,6 +24,7 @@ import {
   serializeJsonLd,
 } from './structured-data';
 import type { PublicStayRecord } from './next-supabase';
+import { buildPropertyPath } from './property-slugs';
 
 const ROOT = resolve(process.cwd());
 
@@ -161,7 +162,7 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     )!;
     expect(rental.identifier).toBe('stay-vi-101');
     expect(rental.name).toBe('Adeola Executive Two-Bedroom');
-    expect(rental.url).toBe('https://hamlet.rest/stays/stay-vi-101');
+    expect(rental.url).toBe(`https://hamlet.rest${buildPropertyPath(SAMPLE_APPROVED_STAY)}`);
     expect(rental.additionalType).toBe('Apartment');
     expect(rental.provider).toEqual({ '@id': HAMLET_ORGANIZATION_ID });
     expect(rental.image).toEqual([

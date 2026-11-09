@@ -387,7 +387,7 @@ function PartnerMarketingContent() {
     try {
       const origin =
         typeof window !== 'undefined' ? window.location.origin : 'https://hamlet.rest';
-      let targetUrl = buildPropertyCanonicalShareUrl(selectedStay.id, origin);
+      let targetUrl = buildPropertyCanonicalShareUrl(selectedStay.id, origin, { title: selectedStay.title, area: selectedStay.area });
 
       if (qrTracked) {
         const { data } = await db.rpc('record_partner_share_action', {
@@ -398,7 +398,7 @@ function PartnerMarketingContent() {
         });
         const token = (data as { share_token?: string } | null)?.share_token;
         if (token) {
-          targetUrl = buildPartnerPropertyTrackingUrl(selectedStay.id, token, origin);
+          targetUrl = buildPartnerPropertyTrackingUrl(selectedStay.id, token, origin, { title: selectedStay.title, area: selectedStay.area });
         }
       }
 

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { HAMLET_CANONICAL_ORIGIN } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import { buildPropertyPath } from '@/lib/property-slugs';
 
 const site = HAMLET_CANONICAL_ORIGIN;
 
@@ -26,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data, error } = await db
     .from('properties')
-    .select('id,updated_at,created_at')
+    .select('id,title,area,updated_at,created_at')
     .eq('status', 'approved')
     .order('updated_at', { ascending: false })
     .limit(5000);
@@ -35,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const property of data ?? []) {
     routes.push({
-      url: `${site}/stays/${encodeURIComponent(property.id)}`,
+      url: `${site}${buildPropertyPath(property)}`,
       lastModified: property.updated_at
         ? new Date(property.updated_at)
         : property.created_at

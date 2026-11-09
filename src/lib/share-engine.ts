@@ -1,5 +1,6 @@
 import { formatAccommodationLabel, getValidGuestNightlyNgn } from './discovery';
 import { formatNaira } from './pricing';
+import { buildPropertyPath } from './property-slugs';
 
 export const HAMLET_SHARE_ORIGIN = 'https://hamlet.rest';
 export const SHARE_TOKEN_REGEX = /^hsl_[a-z0-9]{16,64}$/i;
@@ -166,17 +167,21 @@ export function extractShareTokenFromSearchParams(params: {
 export function buildPropertyCanonicalShareUrl(
   propertyId: string,
   origin: string = HAMLET_SHARE_ORIGIN,
+  property?: { title: string; area?: string | null },
 ): string {
   const cleanOrigin = (origin || HAMLET_SHARE_ORIGIN).replace(/\/+$/, '');
-  return `${cleanOrigin}/stays/${encodeURIComponent(propertyId.trim())}`;
+  const path = property
+    ? buildPropertyPath({ id: propertyId, title: property.title, area: property.area })
+    : `/stays/${encodeURIComponent(propertyId.trim())}`;
+  return `${cleanOrigin}${path}`;
 }
-
 export function buildPartnerPropertyTrackingUrl(
   propertyId: string,
   shareToken: string,
   origin: string = HAMLET_SHARE_ORIGIN,
+  property?: { title: string; area?: string | null },
 ): string {
-  const canonical = buildPropertyCanonicalShareUrl(propertyId, origin);
+  const canonical = buildPropertyCanonicalShareUrl(propertyId, origin, property);
   const validToken = normalizeShareToken(shareToken);
   if (!validToken) return canonical;
   return `${canonical}?ref=${encodeURIComponent(validToken)}`;
