@@ -20,7 +20,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
 
     // Editorial full-bleed Lagos photography with a clear headline and booking search.
     expect(homeSource).toContain('Find a stay that feels like');
-    expect(homeSource).toContain('images.unsplash.com/photo-1719314313652-d9835e0c52c3');
+    expect(homeSource).toContain('images.pexels.com/photos/37405043/pexels-photo-37405043.jpeg');
     expect(homeSource).toContain('Thoughtful spaces. Distinct neighbourhoods.');
     expect(homeSource).toContain('Destination');
     expect(homeSource).toContain('Dates');
