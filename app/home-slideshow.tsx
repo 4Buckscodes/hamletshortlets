@@ -644,7 +644,8 @@ export function HomeMarketplaceExperience({
                 Lagos Island · Mainland · Beyond
               </div>
             </div>
-          </div>        </div>
+          </div>
+        </div>
 
         {/* Curved Warm Ivory Search Sheet */}
         <div
