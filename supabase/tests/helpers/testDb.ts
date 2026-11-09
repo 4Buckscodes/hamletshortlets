@@ -13,8 +13,10 @@ const MIGRATIONS_DIR = path.resolve(__dirname, '../../migrations');
  */
 const SUPABASE_AUTH_BOOTSTRAP_SQL = `
 create schema if not exists auth;
+create schema if not exists extensions;
+create extension if not exists pgcrypto with schema extensions;
 
-do $$
+do $
 begin
   if not exists (select 1 from pg_roles where rolname = 'anon') then
     create role anon nologin noinherit;
