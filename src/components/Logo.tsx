@@ -52,7 +52,7 @@ export function HamletMark({
         {/* Subtle sculptural shadow where the gold clasp embraces the vertical pillars */}
         <path
           d="M12 20.4C13.3 25.4 16.6 28.1 21 28.1V35.5C16.6 35.5 13.3 38.2 12 43.2V20.4ZM52 20.4V43.2C50.7 38.2 47.4 35.5 43 35.5V28.1C47.4 28.1 50.7 25.4 52 20.4Z"
-          fill="#060F1E"
+          fill="#102D24"
           fillOpacity={contained || light ? '0.28' : '0.36'}
         />
 
