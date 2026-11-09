@@ -118,7 +118,7 @@ export default function AdminOverviewPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">HAMLET Operations Console</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+            <h1 className="serif mt-2 text-3xl font-medium text-[#173F32] sm:text-5xl">
               Marketplace operations overview
             </h1>
           </div>
@@ -126,7 +126,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {loading ? (
-          <p className="mt-8 text-sm text-ink-600">Checking administrator access…</p>
+          <p className="mt-8 text-sm text-[#596B60]">Checking administrator access…</p>
         ) : !allowed ? (
           <div
             role="alert"
@@ -150,101 +150,101 @@ export default function AdminOverviewPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Link
                 href="/admin/properties"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Property Review Queue
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-[#173F32]">
                   {counts.pendingProperties}
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   {counts.approvedProperties} live →
                 </p>
               </Link>
 
               <Link
                 href="/admin/partners"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Partner Applications
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-[#173F32]">
                   {counts.pendingPartners}
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   Pending review →
                 </p>
               </Link>
 
               <Link
                 href="/admin/bookings"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Active Bookings & Holds
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-[#173F32]">
                   {counts.activeBookings}
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   Active requests & stays →
                 </p>
               </Link>
 
               <Link
                 href="/admin/issues"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Open Support Issues
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-[#173F32]">
                   {counts.openIssues}
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   Open reports →
                 </p>
               </Link>
 
               <Link
                 href="/admin/settlements"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Ledger & Caution Queue
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-[#173F32]">
                   {counts.pendingLedger}
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   Pending reconciliation →
                 </p>
               </Link>
 
               <Link
                 href="/admin/audit"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="rounded-3xl border border-[#E8E6DD] bg-white p-6 transition hover:border-[#173F32]"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#755638]">
                   Governance & Directory
                 </span>
-                <p className="m-0 mt-2 serif text-2xl font-medium text-ink-900">
+                <p className="m-0 mt-2 serif text-2xl font-medium text-[#173F32]">
                   Accounts & Audit Log
                 </p>
-                <p className="m-0 mt-1 text-xs text-ink-500">
+                <p className="m-0 mt-1 text-xs text-[#6C7D72]">
                   Directory & audit log →
                 </p>
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ink-100 bg-white p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[#E8E6DD] bg-white p-5">
               <div>
-                <p className="m-0 text-sm font-bold text-ink-900">
+                <p className="m-0 text-sm font-bold text-[#173F32]">
                   48-hour unpaid booking holds
                 </p>
-                <p className="m-0 text-xs text-ink-500">
+                <p className="m-0 text-xs text-[#6C7D72]">
                   Release expired awaiting-payment holds.
                 </p>
               </div>
