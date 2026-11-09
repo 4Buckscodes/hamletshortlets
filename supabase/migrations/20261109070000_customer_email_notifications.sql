@@ -181,13 +181,18 @@ set search_path = ''
 as $$
 declare
   event_key text;
+  account_email text;
 begin
+  select u.email into account_email
+  from auth.users u
+  where u.id = new.applicant_id;
+
   if tg_op = 'INSERT' then
     event_key := 'partner-application-received:' || new.id::text;
     perform public.enqueue_customer_email_notification(
       'partner_application_received',
       new.applicant_id,
-      new.email,
+      coalesce(nullif(btrim(account_email), ''), new.email),
       event_key,
       jsonb_build_object(
         'application_id', new.id,
@@ -206,7 +211,7 @@ begin
     perform public.enqueue_customer_email_notification(
       'partner_application_status_changed',
       new.applicant_id,
-      new.email,
+      coalesce(nullif(btrim(account_email), ''), new.email),
       event_key,
       jsonb_build_object(
         'application_id', new.id,
