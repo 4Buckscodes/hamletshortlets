@@ -189,12 +189,15 @@ export function getMarketingFormatSpec(format?: string | null): MarketingFormatS
 
 export function buildPropertyPreviewVersion(stay: {
   image_urls?: readonly string[] | null;
+  guest_nightly_ngn?: number | null;
   nightly_rate?: number | string | null;
   updated_at?: string | null;
   title?: string | null;
 }): string {
   const primaryImage = stay.image_urls?.[0] || 'fallback';
-  const raw = `${stay.title || ''}|${primaryImage}|${stay.nightly_rate ?? ''}|${stay.updated_at || ''}`;
+  const effectiveNightly =
+    stay.guest_nightly_ngn ?? getValidGuestNightlyNgn(stay.nightly_rate) ?? '';
+  const raw = `${stay.title || ''}|${primaryImage}|${effectiveNightly}|${stay.updated_at || ''}`;
   let hash = 2166136261;
   for (let i = 0; i < raw.length; i += 1) {
     hash ^= raw.charCodeAt(i);

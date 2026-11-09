@@ -91,7 +91,7 @@ const ROLE_OPTIONS = [
   {
     value: 'Closing agent',
     label: 'Closing agent',
-    badge: '10% booking commission',
+    badge: 'Commission on closed stays',
     description: 'Help guests book verified stays across HAMLET.',
   },
 ] as const;

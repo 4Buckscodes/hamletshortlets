@@ -33,7 +33,7 @@ import {
   type DiscoveryFilterState,
   type DiscoverySortKey,
 } from '@/lib/discovery';
-import { getBrowserSupabase, type PublicStayRecord } from '@/lib/next-supabase';
+import { getBrowserSupabase, type AnyPublicStay } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   FIELD_INPUT_CLASS,
@@ -45,7 +45,7 @@ import { StayListingCard } from './SiteShell';
 
 export interface DiscoveryMarketplaceProps {
   mode: 'homepage' | 'stays';
-  approvedStays: PublicStayRecord[];
+  approvedStays: AnyPublicStay[];
   initialFilters?: Partial<DiscoveryFilterState>;
   initialUnavailableIds?: string[] | null;
   availabilitySupported?: boolean;

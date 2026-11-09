@@ -55,9 +55,9 @@ export function createServerUserSupabase(accessToken: string): SupabaseClient | 
  * with PostgreSQL 42703 before the Wayfinder migration is applied.
  */
 export const PUBLIC_PROPERTY_SELECT =
-  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,calendar_responsible_person,created_at,updated_at';
+  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at';
 
-export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},review_note`;
+export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},calendar_responsible_person,review_note`;
 
 export interface PublicStayRecord {
   id: string;
@@ -81,10 +81,49 @@ export interface PublicStayRecord {
   trust_label: string | null;
   first_available_date: string | null;
   availability_confirmation_status: string | null;
-  calendar_responsible_person: string | null;
+  calendar_responsible_person?: string | null;
   created_at: string;
   updated_at?: string | null;
 }
+
+/**
+ * Commercial-redacted public stay view model safe to serialize across React Server Component
+ * boundaries, HTML, JSON-LD, sitemaps, and public discovery feeds.
+ *
+ * Strictly omits private owner base rate (`nightly_rate` / `B`), internal agent margins,
+ * operational contact fields (`calendar_responsible_person`), and admin `review_note`.
+ */
+export interface PublicStayView {
+  id: string;
+  title: string;
+  property_type: string | null;
+  area: string | null;
+  public_address: string | null;
+  /** Guest-facing domestic NGN nightly stay price computed via HAMLET central pricing logic. */
+  guest_nightly_ngn: number | null;
+  /** Disclosed mandatory cleaning/turnover charge in NGN. */
+  cleaning_fee: number;
+  /** Disclosed mandatory non-accommodation charges (sanitized to label + non-negative integer NGN). */
+  mandatory_charges: MandatoryCharge[];
+  /** Separate refundable caution deposit in NGN (never marked up or buffered). */
+  refundable_deposit: number;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  capacity: number | null;
+  bed_setup: string | null;
+  amenities: string[] | null;
+  image_urls: string[] | null;
+  house_rules: string[] | null;
+  status: string;
+  verification: Record<string, string> | null;
+  trust_label: string | null;
+  first_available_date: string | null;
+  availability_confirmation_status: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export type AnyPublicStay = PublicStayView | PublicStayRecord;
 
 export interface OptionalWayfinderLocationMeta {
   deployed: boolean;

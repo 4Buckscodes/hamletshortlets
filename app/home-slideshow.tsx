@@ -13,16 +13,16 @@ import {
   filterAndSortApprovedStays,
   formatAccommodationLabel,
   getStayTrustStatus,
-  getValidGuestNightlyNgn,
   isApprovedBookableStay,
   isStudioProperty,
+  resolveStayGuestNightlyNgn,
   type CorridorSideFilter,
 } from '@/lib/discovery';
-import type { PublicStayRecord } from '@/lib/next-supabase';
+import type { AnyPublicStay } from '@/lib/next-supabase';
 import { APPROVED_OWNER_SERVICES_POLICY_COPY, lagosIsoDateOffset } from '@/lib/pricing';
 
 export interface HomeMarketplaceExperienceProps {
-  approvedStays: PublicStayRecord[];
+  approvedStays: AnyPublicStay[];
   queryError?: boolean | string | null;
 }
 
@@ -102,7 +102,7 @@ function formatCompactBedFact(
   return count === 1 ? '1 bed' : `${count} beds`;
 }
 
-function HomepageStayCard({ property }: { property: PublicStayRecord }) {
+function HomepageStayCard({ property }: { property: AnyPublicStay }) {
   const { currency, formatPrice } = useCurrency();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -124,7 +124,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   );
   const bedFactLabel = formatCompactBedFact(property.bedrooms, property.property_type);
   const trust = getStayTrustStatus(property);
-  const guestNightlyNgn = getValidGuestNightlyNgn(property.nightly_rate);
+  const guestNightlyNgn = resolveStayGuestNightlyNgn(property);
   const bathrooms = Math.max(1, Math.trunc(Number(property.bathrooms ?? 1)));
   const maxGuests = Math.max(1, Math.trunc(Number(property.capacity ?? 1)));
 
@@ -184,7 +184,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
                     src={src}
                     alt={
                       index === 0
-                        ? `${property.title} — verified shortlet in ${areaName}, Lagos`
+                        ? `${property.title} — ${trust.verified ? 'verified' : 'approved'} shortlet in ${areaName}, Lagos`
                         : `${property.title} — photo ${index + 1}`
                     }
                     loading={index === 0 ? 'eager' : 'lazy'}
@@ -1099,7 +1099,7 @@ export function HomeMarketplaceExperience({
               displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
             }`}
           >
-            {displayedStays.map((stay: PublicStayRecord) => (
+            {displayedStays.map((stay: AnyPublicStay) => (
               <HomepageStayCard key={stay.id} property={stay} />
             ))}
           </div>

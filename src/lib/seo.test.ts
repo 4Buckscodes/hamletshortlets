@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import robotsRoute from '../../app/robots';
+import sitemapRoute, { revalidate as sitemapRevalidate } from '../../app/sitemap';
 import {
   buildCanonicalUrl,
   buildFaqStructuredData,
@@ -44,10 +46,13 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content).toContain('20%');
     expect(content).toContain('10% international currency buffer');
     expect(content).toContain('Paystack');
+    expect(content).not.toContain('B * 1.20');
+    expect(content).not.toContain('10% closing commission');
+    expect(content).not.toContain('2.5%');
     expect(content).not.toMatch(EXCLUDED_CITIES_RE);
   });
 
-  it('provides a comprehensive public/llms-full.txt covering verification, booking lifecycle, FX, referrals, and FAQs', () => {
+  it('provides a comprehensive public/llms-full.txt covering verification, booking lifecycle, FX, referrals, and FAQs without internal commercial splits', () => {
     const llmsFullPath = join(ROOT, 'public', 'llms-full.txt');
     expect(existsSync(llmsFullPath)).toBe(true);
     const content = readFileSync(llmsFullPath, 'utf8');
@@ -56,41 +61,63 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content).toContain(HAMLET_LLMS_TXT_URL);
     expect(content).toContain('Four Verification Pillars');
     expect(content).toContain('90-day');
-    expect(content).toContain('2.5%');
     expect(content).toContain('12. **What if I need help during my stay?**');
+    expect(content).not.toContain('0.20 * B');
+    expect(content).not.toContain('2.5%');
+    expect(content).not.toContain('17.5%');
+    expect(content).not.toContain('owner listed rate');
     expect(content).not.toMatch(EXCLUDED_CITIES_RE);
   });
 });
 
-describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & vercel.json routing', () => {
-  it('configures robots.txt for search engines and major AI crawlers with Sitemap and llms.txt discovery', () => {
-    const robots = readFileSync(join(ROOT, 'public', 'robots.txt'), 'utf8');
-    expect(robots).toContain('User-agent: *');
-    expect(robots).toContain('Allow: /llms.txt');
-    expect(robots).toContain('Allow: /llms-full.txt');
+describe('App Router crawler routes (app/robots.ts, app/sitemap.ts, site.webmanifest) & vercel.json routing', () => {
+  it('configures app/robots.ts with independent OAI-SearchBot rules, OG image allowlist, and zero duplicate public/robots.txt', () => {
+    expect(existsSync(join(ROOT, 'public', 'robots.txt'))).toBe(false);
+    const config = robotsRoute();
+    const rules = Array.isArray(config.rules) ? config.rules : [config.rules];
+
+    expect(config.sitemap).toBe('https://hamlet.rest/sitemap.xml');
+    expect(config.host).toBe('https://hamlet.rest');
+
+    const oaiSearchRule = rules.find(rule => rule.userAgent === 'OAI-SearchBot');
+    expect(oaiSearchRule).toBeDefined();
+
+    const allAgents = rules.flatMap(rule =>
+      Array.isArray(rule.userAgent) ? rule.userAgent : [rule.userAgent],
+    );
     for (const bot of [
-      'GPTBot',
+      '*',
       'OAI-SearchBot',
+      'GPTBot',
       'ChatGPT-User',
       'ClaudeBot',
       'PerplexityBot',
       'Google-Extended',
       'Applebot-Extended',
     ]) {
-      expect(robots).toContain(`User-agent: ${bot}`);
+      expect(allAgents).toContain(bot);
     }
-    expect(robots).toContain('Sitemap: https://hamlet.rest/sitemap.xml');
-    expect(robots).not.toMatch(EXCLUDED_CITIES_RE);
+
+    for (const rule of rules) {
+      const allowed = Array.isArray(rule.allow) ? rule.allow : [rule.allow];
+      expect(allowed).toContain('/api/og/');
+      expect(allowed).toContain('/llms.txt');
+      expect(allowed).toContain('/llms-full.txt');
+    }
   });
 
-  it('provides a valid XML sitemap and Web App Manifest without excluded city references', () => {
-    const sitemap = readFileSync(join(ROOT, 'public', 'sitemap.xml'), 'utf8');
-    expect(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(sitemap).toContain('<loc>https://hamlet.rest/</loc>');
-    expect(sitemap).toContain('<loc>https://hamlet.rest/llms.txt</loc>');
-    expect(sitemap).toContain('<loc>https://hamlet.rest/llms-full.txt</loc>');
-    expect(sitemap).not.toMatch(EXCLUDED_CITIES_RE);
+  it('provides an auto-revalidating App Router sitemap without duplicate public/sitemap.xml or excluded city references', async () => {
+    expect(existsSync(join(ROOT, 'public', 'sitemap.xml'))).toBe(false);
+    expect(sitemapRevalidate).toBe(900);
+
+    const entries = await sitemapRoute();
+    const urls = entries.map(entry => entry.url);
+    expect(urls).toContain('https://hamlet.rest/');
+    expect(urls).toContain('https://hamlet.rest/stays');
+    expect(urls).toContain('https://hamlet.rest/lagos');
+    expect(urls).toContain('https://hamlet.rest/llms.txt');
+    expect(urls).toContain('https://hamlet.rest/llms-full.txt');
+    expect(JSON.stringify(entries)).not.toMatch(EXCLUDED_CITIES_RE);
 
     const manifestRaw = readFileSync(join(ROOT, 'public', 'site.webmanifest'), 'utf8');
     expect(manifestRaw).not.toMatch(EXCLUDED_CITIES_RE);
@@ -150,7 +177,7 @@ describe('index.html head tags & Schema.org structured data', () => {
   it('builds canonical URLs, noindex rules, and route-level JSON-LD schemas accurately', () => {
     expect(normalizeSeoPathname('#/stays?area=Yaba&agent=HML-123')).toBe('/stays');
     expect(buildCanonicalUrl('/')).toBe(`${HAMLET_SITE_URL}/`);
-    expect(buildCanonicalUrl('#/lagos?utm_source=x')).toBe(`${HAMLET_SITE_URL}/#/lagos`);
+    expect(buildCanonicalUrl('#/lagos?utm_source=x')).toBe(`${HAMLET_SITE_URL}/lagos`);
     expect(resolveAbsoluteSeoUrl('/images/lagos-hero.jpg')).toBe(HAMLET_DEFAULT_OG_IMAGE);
 
     // Public pages are indexable; auth, guest account, partner workspace, and admin console are noindex

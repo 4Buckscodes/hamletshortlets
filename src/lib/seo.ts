@@ -64,11 +64,11 @@ export function isNoIndexPath(pathname: string): boolean {
   return false;
 }
 
-/** Builds a clean canonical URL on https://www.hamlet.rest without tracking query params. */
+/** Builds a clean canonical URL on https://hamlet.rest without tracking query params or hash fragments. */
 export function buildCanonicalUrl(pathname: string): string {
   const clean = normalizeSeoPathname(pathname);
   if (clean === '/') return `${HAMLET_SITE_URL}/`;
-  return `${HAMLET_SITE_URL}/#${clean}`;
+  return `${HAMLET_SITE_URL}${clean}`;
 }
 
 /** Resolves a relative or absolute asset URL against https://www.hamlet.rest. */

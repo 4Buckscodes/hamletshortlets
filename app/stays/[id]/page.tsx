@@ -18,6 +18,7 @@ import {
   formatBedroomCountLabel,
   getStayTrustStatus,
   getValidGuestNightlyNgn,
+  toPublicStayView,
 } from '@/lib/discovery';
 import { formatNaira } from '@/lib/pricing';
 import { buildPropertyPreviewVersion } from '@/lib/share-engine';
@@ -114,7 +115,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       siteName: HAMLET_BRAND,
       locale: 'en_NG',
-      title: `${title} | HAMLET`,
+      title: `${title} | HAMLET.REST`,
       description,
       url: canonicalUrl,
       images: [
@@ -128,7 +129,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | HAMLET`,
+      title: `${title} | HAMLET.REST`,
       description,
       images: [shareImage],
     },
@@ -154,7 +155,7 @@ export default async function PropertyDetailPage({ params }: Props) {
     notFound();
   }
 
-  const stay = data as PublicStayRecord;
+  const stay = toPublicStayView(data as PublicStayRecord);
   const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,
@@ -192,7 +193,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             propertyType: stay.property_type,
             bedrooms: stay.bedrooms,
             capacity: stay.capacity,
-            ownerNightlyRateNgn: stay.nightly_rate,
+            guestNightlyNgn: stay.guest_nightly_ngn,
           }}
         />
 
@@ -355,9 +356,9 @@ export default async function PropertyDetailPage({ params }: Props) {
             <BookingRequestForm
               propertyId={stay.id}
               propertyTitle={stay.title}
-              nightlyRate={Number(stay.nightly_rate || 0)}
-              cleaningFee={Number(stay.cleaning_fee || 0)}
-              deposit={Number(stay.refundable_deposit || 0)}
+              guestNightlyNgn={stay.guest_nightly_ngn}
+              cleaningFee={stay.cleaning_fee}
+              deposit={stay.refundable_deposit}
               capacity={stay.capacity}
               firstAvailableDate={stay.first_available_date}
             />

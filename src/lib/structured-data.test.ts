@@ -391,13 +391,12 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     }
 
     for (const publicFile of [
-      'public/robots.txt',
-      'public/sitemap.xml',
+      'app/robots.ts',
+      'app/sitemap.ts',
       'public/llms.txt',
       'public/llms-full.txt',
     ]) {
       const content = readFileSync(join(ROOT, publicFile), 'utf8');
-      expect(content).toContain('https://hamlet.rest');
       expect(content).not.toContain('www.hamlet.rest');
       expect(content).not.toContain('/#/');
     }

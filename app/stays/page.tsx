@@ -2,10 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   parseDiscoverySearchParams,
+  toPublicStayView,
   validateStayDates,
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import {
+  PUBLIC_PROPERTY_SELECT,
+  type PublicStayRecord,
+  type PublicStayView,
+} from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   buildPropertyListingPageSchema,
@@ -38,7 +43,7 @@ export default async function StaysCataloguePage({
   const initialFilters = parseDiscoverySearchParams(flatParams);
   const db = getPublicSupabase();
 
-  let approvedStays: PublicStayRecord[] = [];
+  let approvedStays: PublicStayView[] = [];
   let queryError = false;
   let initialUnavailableIds: string[] | null = null;
   let availabilitySupported = true;
@@ -54,7 +59,9 @@ export default async function StaysCataloguePage({
     if (error) {
       queryError = true;
     } else {
-      approvedStays = (data ?? []) as PublicStayRecord[];
+      approvedStays = (data ?? []).map(row =>
+        toPublicStayView(row as PublicStayRecord),
+      );
     }
 
     const dateCheck = validateStayDates(

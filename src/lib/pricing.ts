@@ -395,6 +395,68 @@ export function guestFacingNightlyNgn(ownerNightlyRateNgn: number): number {
   return safeBase + multiplyNairaBasisPoints(safeBase, 2_000);
 }
 
+export interface PublicStayQuoteInput {
+  /** Pre-computed domestic guest-facing nightly rate in NGN (already includes 20% guest service fee). */
+  guestNightlyNgn: number | null;
+  /** Number of nights (clamped to >= 1). */
+  nights: number;
+  /** Disclosed mandatory non-accommodation charges (e.g. cleaning & turnover). */
+  mandatoryCharges?: MandatoryCharge[];
+  /** Separate refundable caution deposit in NGN (never marked up or buffered). */
+  refundableDeposit?: number;
+}
+
+export interface PublicStayQuoteBreakdown {
+  guestNightlyNgn: number | null;
+  nights: number;
+  domesticGuestAccommodationNgn: number;
+  mandatoryCharges: MandatoryCharge[];
+  mandatoryChargesTotal: number;
+  guestTotal: number;
+  checkoutStayAmountNgn: number;
+  refundableDeposit: number;
+  rulesVersion: string;
+}
+
+/**
+ * Computes guest-facing multi-night stay totals strictly from pre-redacted `guestNightlyNgn`
+ * so client components never receive or serialize private owner base rates (`B`) or internal
+ * margin allocations. Server-side booking creation continues to use `calculateGuestPricing`.
+ */
+export function calculatePublicStayQuote(
+  input: PublicStayQuoteInput,
+): PublicStayQuoteBreakdown {
+  const safeNights = Math.max(1, Math.trunc(Number(input.nights) || 1));
+  const cleanNightly =
+    typeof input.guestNightlyNgn === 'number' &&
+    Number.isFinite(input.guestNightlyNgn) &&
+    input.guestNightlyNgn > 0
+      ? Math.round(input.guestNightlyNgn)
+      : null;
+  const charges = (input.mandatoryCharges ?? []).map(charge => ({
+    label: String(charge.label || 'Mandatory charge'),
+    amount: Math.max(0, Math.round(Number(charge.amount) || 0)),
+  }));
+  const mandatoryChargesTotal = charges.reduce((sum, charge) => sum + charge.amount, 0);
+  const domesticGuestAccommodationNgn =
+    cleanNightly !== null ? cleanNightly * safeNights : 0;
+  const guestTotal =
+    cleanNightly !== null ? domesticGuestAccommodationNgn + mandatoryChargesTotal : 0;
+  const refundableDeposit = Math.max(0, Math.round(Number(input.refundableDeposit ?? 0)));
+
+  return {
+    guestNightlyNgn: cleanNightly,
+    nights: safeNights,
+    domesticGuestAccommodationNgn,
+    mandatoryCharges: charges,
+    mandatoryChargesTotal,
+    guestTotal,
+    checkoutStayAmountNgn: guestTotal,
+    refundableDeposit,
+    rulesVersion: PRICING_RULES_VERSION,
+  };
+}
+
 export interface InternationalQuoteInput {
   /** Domestic guest-facing amount in NGN (already includes 20% domestic markup; never re-marked up). */
   domesticGuestAmountNgn: number;

@@ -345,4 +345,37 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     expect(excludedPr74Res?.status()).toBe(404);
     await expect(page.getByText(/Page not found\./i)).toBeVisible();
   });
+
+  test('serves crawlable /api/og/default, independent OAI-SearchBot robots.txt, and commercially redacted public HTML/RSC payloads', async ({
+    request,
+  }) => {
+    const robotsRes = await request.get('/robots.txt');
+    expect(robotsRes.status()).toBe(200);
+    const robotsText = await robotsRes.text();
+    expect(robotsText).toContain('User-Agent: OAI-SearchBot');
+    expect(robotsText).toContain('Allow: /api/og/');
+    expect(robotsText).toContain('Disallow: /partners/marketing');
+    expect(robotsText).toContain('Sitemap: https://hamlet.rest/sitemap.xml');
+
+    const ogRes = await request.get('/api/og/default');
+    expect(ogRes.status()).toBe(200);
+    expect(ogRes.headers()['content-type']).toContain('image/png');
+
+    const sitemapRes = await request.get('/sitemap.xml');
+    expect(sitemapRes.status()).toBe(200);
+    const sitemapXml = await sitemapRes.text();
+    expect(sitemapXml).toContain('<loc>https://hamlet.rest/</loc>');
+    expect(sitemapXml).toContain('<loc>https://hamlet.rest/stays</loc>');
+
+    for (const publicPath of ['/', '/stays', '/partners/apply/form', '/llms.txt', '/llms-full.txt']) {
+      const res = await request.get(publicPath);
+      expect(res.status()).toBe(200);
+      const body = await res.text();
+      expect(body).not.toContain('calendar_responsible_person');
+      expect(body).not.toContain('ownerNightlyRateNgn');
+      expect(body).not.toContain('10% booking commission');
+      expect(body).not.toContain('10% closing commission');
+      expect(body).not.toContain('0.20 * B');
+    }
+  });
 });

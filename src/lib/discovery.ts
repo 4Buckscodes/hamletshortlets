@@ -1,6 +1,7 @@
 import { hasReliableLocationData, isMainlandArea, matchesLagosAreaFilter } from './areas';
-import type { PublicStayRecord } from './next-supabase';
+import type { AnyPublicStay, PublicStayView } from './next-supabase';
 import { guestFacingNightlyNgn, lagosIsoDateOffset } from './pricing';
+import type { MandatoryCharge } from './types';
 
 export type AccommodationFilterValue = '' | 'studio' | '1_bed' | '2_bed' | '3_plus_bed' | string;
 
@@ -125,15 +126,15 @@ const VERIFICATION_PILLARS = ['ownership', 'identity', 'authority', 'inspection'
  * Only real properties whose `status` is `'approved'` and that are NOT preview-only
  * may appear as bookable marketplace listings.
  */
-export function isApprovedBookableStay(
-  stay: Partial<PublicStayRecord> & { preview_only?: boolean } | null | undefined,
-): stay is PublicStayRecord {
+export function isApprovedBookableStay<T extends Partial<AnyPublicStay> & { preview_only?: boolean }>(
+  stay: T | null | undefined,
+): stay is T & AnyPublicStay {
   if (!stay || !stay.id || !stay.title) return false;
   if (stay.preview_only === true) return false;
   return stay.status === 'approved';
 }
 
-export function getStayTrustStatus(stay: Pick<PublicStayRecord, 'status' | 'verification'>): {
+export function getStayTrustStatus(stay: Pick<AnyPublicStay, 'status' | 'verification'>): {
   verified: boolean;
   badge: 'Verified by HAMLET' | 'Approved listing';
   verifiedPillarsCount: number;
@@ -162,6 +163,118 @@ export function getValidGuestNightlyNgn(ownerNightlyRate: unknown): number | nul
   if (!Number.isFinite(num) || num <= 0) return null;
   const computed = guestFacingNightlyNgn(num);
   return Number.isFinite(computed) && computed > 0 ? computed : null;
+}
+
+/**
+ * Resolves the guest-facing domestic NGN nightly rate from either a pre-redacted
+ * `PublicStayView` (`guest_nightly_ngn`, without double-applying the 20% fee) or a raw
+ * server/test `PublicStayRecord` (`nightly_rate` -> `getValidGuestNightlyNgn`).
+ */
+export function resolveStayGuestNightlyNgn(
+  stay:
+    | {
+        guest_nightly_ngn?: number | null;
+        nightly_rate?: unknown;
+      }
+    | null
+    | undefined,
+): number | null {
+  if (!stay) return null;
+  if (
+    typeof stay.guest_nightly_ngn === 'number' &&
+    Number.isFinite(stay.guest_nightly_ngn) &&
+    stay.guest_nightly_ngn > 0
+  ) {
+    return Math.round(stay.guest_nightly_ngn);
+  }
+  if ('guest_nightly_ngn' in stay && stay.guest_nightly_ngn === null && !('nightly_rate' in stay)) {
+    return null;
+  }
+  return getValidGuestNightlyNgn(stay.nightly_rate);
+}
+
+/**
+ * Allowlist-based server mapper that converts a raw Supabase `properties` row into a
+ * commercial-redacted `PublicStayView` using HAMLET's central pricing logic.
+ *
+ * Strictly strips private owner rates (`nightly_rate` / `B`), operational contacts
+ * (`calendar_responsible_person`), admin `review_note`, and any unrecognised columns
+ * before data crosses into client components, HTML, RSC payloads, JSON-LD, or public feeds.
+ */
+export function toPublicStayView(record: AnyPublicStay): PublicStayView {
+  const guestNightlyNgn = resolveStayGuestNightlyNgn(record);
+  const rawCleaning = Number(record.cleaning_fee ?? 0);
+  const cleaningFee =
+    Number.isFinite(rawCleaning) && rawCleaning > 0 ? Math.round(rawCleaning) : 0;
+  const rawDeposit = Number(record.refundable_deposit ?? 0);
+  const refundableDeposit =
+    Number.isFinite(rawDeposit) && rawDeposit > 0 ? Math.round(rawDeposit) : 0;
+
+  const mandatoryCharges: MandatoryCharge[] = Array.isArray(record.mandatory_charges)
+    ? record.mandatory_charges
+        .map(item => ({
+          label: typeof item?.label === 'string' && item.label.trim() ? item.label.trim() : 'Mandatory charge',
+          amount: Math.max(0, Math.round(Number(item?.amount ?? 0) || 0)),
+        }))
+        .filter(item => item.amount > 0)
+    : [];
+
+  return {
+    id: String(record.id),
+    title: String(record.title),
+    property_type: record.property_type ?? null,
+    area: record.area ?? null,
+    public_address: record.public_address ?? null,
+    guest_nightly_ngn: guestNightlyNgn,
+    cleaning_fee: cleaningFee,
+    mandatory_charges: mandatoryCharges,
+    refundable_deposit: refundableDeposit,
+    bedrooms:
+      typeof record.bedrooms === 'number' && Number.isFinite(record.bedrooms)
+        ? Math.trunc(record.bedrooms)
+        : null,
+    bathrooms:
+      typeof record.bathrooms === 'number' && Number.isFinite(record.bathrooms)
+        ? Math.trunc(record.bathrooms)
+        : null,
+    capacity:
+      typeof record.capacity === 'number' && Number.isFinite(record.capacity)
+        ? Math.trunc(record.capacity)
+        : null,
+    bed_setup: record.bed_setup ?? null,
+    amenities: Array.isArray(record.amenities)
+      ? record.amenities.filter((item): item is string => typeof item === 'string')
+      : null,
+    image_urls: Array.isArray(record.image_urls)
+      ? record.image_urls.filter((item): item is string => typeof item === 'string')
+      : null,
+    house_rules: Array.isArray(record.house_rules)
+      ? record.house_rules.filter((item): item is string => typeof item === 'string')
+      : null,
+    status: String(record.status),
+    verification:
+      record.verification && typeof record.verification === 'object'
+        ? {
+            ...(typeof record.verification.ownership === 'string'
+              ? { ownership: record.verification.ownership }
+              : {}),
+            ...(typeof record.verification.identity === 'string'
+              ? { identity: record.verification.identity }
+              : {}),
+            ...(typeof record.verification.authority === 'string'
+              ? { authority: record.verification.authority }
+              : {}),
+            ...(typeof record.verification.inspection === 'string'
+              ? { inspection: record.verification.inspection }
+              : {}),
+          }
+        : null,
+    trust_label: record.trust_label ?? null,
+    first_available_date: record.first_available_date ?? null,
+    availability_confirmation_status: record.availability_confirmation_status ?? null,
+    created_at: String(record.created_at),
+    updated_at: record.updated_at ?? null,
+  };
 }
 
 export function isStudioProperty(propertyType: string | null | undefined, bedrooms: number | null | undefined): boolean {
@@ -366,14 +479,14 @@ export function validateStayDates(
   return { valid: true, hasAnyDate: true, error: null };
 }
 
-export function filterAndSortApprovedStays(
-  stays: ReadonlyArray<PublicStayRecord>,
+export function filterAndSortApprovedStays<T extends AnyPublicStay>(
+  stays: ReadonlyArray<T>,
   filters: DiscoveryFilterState,
   options?: {
     unavailableIds?: ReadonlySet<string> | null;
     todayIso?: string;
   },
-): PublicStayRecord[] {
+): T[] {
   const priceCheck = validatePriceRange(filters.minPriceInput, filters.maxPriceInput);
   if (!priceCheck.valid) return [];
 
@@ -419,7 +532,7 @@ export function filterAndSortApprovedStays(
       if (cap < filters.guests) return false;
     }
 
-    const nightlyNgn = getValidGuestNightlyNgn(stay.nightly_rate);
+    const nightlyNgn = resolveStayGuestNightlyNgn(stay);
     if (priceCheck.minPrice !== null) {
       if (nightlyNgn === null || nightlyNgn < priceCheck.minPrice) return false;
     }
@@ -441,8 +554,8 @@ export function filterAndSortApprovedStays(
 
   const sorted = [...filtered];
   sorted.sort((a, b) => {
-    const priceA = getValidGuestNightlyNgn(a.nightly_rate);
-    const priceB = getValidGuestNightlyNgn(b.nightly_rate);
+    const priceA = resolveStayGuestNightlyNgn(a);
+    const priceB = resolveStayGuestNightlyNgn(b);
 
     if (filters.sort === 'price_asc') {
       if (priceA === null && priceB === null) return 0;

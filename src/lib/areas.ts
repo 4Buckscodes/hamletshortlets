@@ -168,3 +168,54 @@ export function matchesLagosAreaFilter(
 
   return locationHaystack.includes(normalized);
 }
+
+/**
+ * Detects when a partner-supplied street/public address names a distinct Lagos neighbourhood
+ * that contradicts the listing's canonical `area` (for example `public_address: "Lekki-ikate"`
+ * on a listing recorded under `area: "Victoria Island"`), so structured data can omit
+ * contradictory streetAddress values instead of publishing conflicting location signals.
+ */
+export function hasContradictoryLagosStreetAddress(
+  area: string | null | undefined,
+  streetAddress: string | null | undefined,
+): boolean {
+  const cleanArea = (area || '').trim();
+  const cleanStreet = (streetAddress || '').trim();
+  if (!cleanArea || !cleanStreet) return false;
+
+  const areaLower = cleanArea.toLowerCase();
+  const streetLower = cleanStreet.toLowerCase();
+  if (areaLower === streetLower || streetLower.includes(areaLower)) {
+    return false;
+  }
+
+  // Umbrella corridors may legitimately contain specific sub-areas in streetAddress.
+  if (areaLower === 'lagos' || areaLower === 'lagos mainland' || areaLower === 'lagos island') {
+    return false;
+  }
+
+  const ownSynonyms = AREA_SYNONYMS[areaLower] ?? [areaLower];
+  if (ownSynonyms.some(term => streetLower.includes(term))) {
+    return false;
+  }
+
+  for (const candidateArea of LAGOS_AREAS) {
+    const candidateLower = candidateArea.toLowerCase();
+    if (
+      candidateLower === areaLower ||
+      candidateLower === 'lagos mainland'
+    ) {
+      continue;
+    }
+    const candidateTerms = AREA_SYNONYMS[candidateLower] ?? [candidateLower];
+    const mentionsOtherCorridor = candidateTerms.some(term => {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(cleanStreet);
+    });
+    if (mentionsOtherCorridor) {
+      return true;
+    }
+  }
+
+  return false;
+}

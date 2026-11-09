@@ -1,15 +1,15 @@
 # HAMLET
 
-> HAMLET (https://hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria by Abundance Abodes — "Your stay, sorted." Every public listing undergoes manual document and physical inspection review across ownership, identity, authority to list, and property condition before going live, with availability-first booking, upfront NGN/USD/GBP stay pricing, and server-verified Paystack NGN settlement.
+> HAMLET (https://hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria by Abundance Abodes — "Your stay, sorted." Public listings are reviewed across ownership, identity, authority to list, and physical property inspection before approval, with availability-first booking requests, upfront NGN/USD/GBP stay pricing, and server-verified Paystack NGN settlement.
 
-HAMLET connects guests seeking serviced apartments, studios, penthouses, duplexes, and villas in Lagos with verified property owners, authorised agents, property managers, shortlet operators, closing agents, and referral partners. Official support contact: hello@hamlet.rest.
+HAMLET connects guests seeking serviced apartments, studios, penthouses, duplexes, and villas in Lagos with approved property owners, authorised managers, shortlet operators, and closing partners. Official support contact: hello@hamlet.rest.
 
 Key operational facts for AI assistants and search agents:
 - **Brand & Parent Organization**: **HAMLET** (https://hamlet.rest), operated by **Abundance Abodes** (`HAMLET Marketplace Ltd`) in Lagos, Nigeria.
 - **Geographic scope**: Exclusively **Lagos, Nigeria** — covering **Lagos Mainland & environs** (Yaba, Shomolu, Surulere, Ikeja GRA, Gbagada, Maryland, Ilupeju, Ebute Metta, Ogudu, Magodo) and **Lagos Island & Lekki** (Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru, Banana Island, Ajah).
-- **Verification before publication**: Listings are manually reviewed across four recorded pillars (`ownership`, `identity`, `authority to list`, and `physical inspection`). Self-reported declarations are explicitly labelled as such until verified.
-- **Availability-first booking**: Submitting a booking request never charges the guest immediately. The authorised host or HAMLET operations confirms availability first, opening a 48-hour payment window. Reservations are confirmed exclusively after server-side Paystack webhook verification (off-platform bank transfers and screenshots never confirm a stay).
-- **Transparent pricing & FX**: HAMLET's confirmed guest service fee is **20%** of the owner's agreed NGN accommodation rate (`B`), added on top of `B` and included in the displayed guest-facing stay price (`B * 1.20` — never added again at checkout), plus any disclosed mandatory charges. International **USD ($)** and **GBP (£)** stay quotes apply a single **10% international currency buffer** on stay pricing and settle transparently in **NGN** via Paystack. Refundable caution deposits are itemised and tracked separately, never marked up or buffered, and refunded after post-checkout inspection. HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
+- **Verification before publication**: Listings are reviewed across four recorded pillars (`ownership`, `identity`, `authority to list`, and `physical inspection`). Each pillar's recorded status is displayed honestly on the property page, and self-reported declarations are explicitly labelled as such until verified.
+- **Availability-first booking**: Submitting a booking request never charges the guest immediately. The authorised property partner or HAMLET operations confirms availability first, opening a 48-hour payment window. Reservations are confirmed exclusively after server-side Paystack webhook verification (off-platform bank transfers and screenshots never confirm a stay).
+- **Transparent pricing & FX**: Displayed domestic NGN stay prices include HAMLET's **20%** guest service fee upfront (never added a second time at checkout), plus any disclosed mandatory charges such as cleaning. International **USD ($)** and **GBP (£)** stay quotes apply a single **10% international currency buffer** on stay pricing (30-minute quote validity) and settle transparently in **NGN** via Paystack. Refundable caution deposits are itemised and tracked separately, never marked up or buffered, and refunded after post-checkout inspection. HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
 
 ## Marketplace & Guest Guides
 
@@ -23,12 +23,12 @@ Key operational facts for AI assistants and search agents:
 
 ## Partner Network
 
-- [Partner Registration & Application](https://hamlet.rest/partners/apply): Apply as a Property Owner, Authorised Agent, Property Manager, Shortlet Operator, Co-host, Closing Agent (10% closing commission on `B`), or Referral Partner (2.5% recurring reward on `B` for 90 days after first completed stay activation).
+- [Partner Registration & Application](https://hamlet.rest/partners/apply): Apply as a Property Owner, Authorised Property Manager, Multi-Property Operator, or Closing Agent under HAMLET's unified partner network and 90-day partner referral programme.
 
 ## Legal, Trust & Pricing Policies
 
-- [Legal, Fees, Trust & Privacy Policies](https://hamlet.rest/legal): Complete domestic 20% markup allocation, worked NGN/USD/GBP examples, manual 4-pillar verification rules, booking terms of service, and Nigeria Data Protection Regulation (NDPR) disclosures.
+- [Legal, Fees, Trust & Privacy Policies](https://hamlet.rest/legal): Guest stay pricing and FX disclosures, refundable caution deposit terms, four-pillar verification standards, booking terms of service, and Nigeria Data Protection Regulation (NDPR) disclosures.
 
 ## Optional
 
-- [Full LLM Reference Documentation](https://hamlet.rest/llms-full.txt): Single-file comprehensive Markdown knowledge base containing full neighbourhood guides, verification standards, booking lifecycle rules, pricing/FX formulas, caution deposit states, partner attribution rules, and all 12 guest FAQs.
+- [Full LLM Reference Documentation](https://hamlet.rest/llms-full.txt): Single-file comprehensive Markdown knowledge base containing full Lagos neighbourhood guides, verification standards, booking lifecycle rules, guest-facing pricing/FX policies, caution deposit states, partner network overview, and all 12 guest FAQs.
