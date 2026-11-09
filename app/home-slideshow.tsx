@@ -637,7 +637,7 @@ export function HomeMarketplaceExperience({
               <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[28px] border border-white/25 bg-[#285744] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]">
                 <img src={LAGOS_LANDMARKS[0].src} alt={LAGOS_LANDMARKS[0].alt} fetchPriority="high" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
               </div>
-              {LAGOS_LANDMARKS.slice(1).map((landmark, index) => (
+              {LAGOS_LANDMARKS.slice(1).map(landmark => (
                 <div key={landmark.src} className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]">
                   <img src={landmark.src} alt={landmark.alt} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
                 </div>
