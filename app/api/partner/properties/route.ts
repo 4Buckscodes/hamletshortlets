@@ -212,17 +212,36 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: profile, error: profileError } = await db
-    .from('profiles')
-    .select('role')
-    .eq('id', auth.user.id)
-    .maybeSingle();
+  const [{ data: profile, error: profileError }, { data: applications, error: applicationError }] =
+    await Promise.all([
+      db.from('profiles').select('role').eq('id', auth.user.id).maybeSingle(),
+      db
+        .from('partner_applications')
+        .select('id,status,role')
+        .eq('applicant_id', auth.user.id)
+        .in('status', ['pending', 'needs_correction'])
+        .order('submitted_at', { ascending: false })
+        .limit(1),
+    ]);
 
-  if (profileError || profile?.role !== 'partner') {
+  const application = applications?.[0];
+  const hasPendingInventoryApplication =
+    !applicationError &&
+    Boolean(application) &&
+    ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
+      String(application?.role),
+    );
+  const maySubmit =
+    !profileError &&
+    (profile?.role === 'partner' ||
+      profile?.role === 'admin' ||
+      hasPendingInventoryApplication);
+
+  if (!maySubmit) {
     return NextResponse.json(
       {
         error:
-          'Only verified HAMLET partners can submit property listings. Partner access is granted after review.',
+          'Submit a property-owner, authorised-manager or multi-property-operator application before uploading a listing. You can upload while HAMLET reviews your partner application.',
       },
       { status: 403 },
     );
