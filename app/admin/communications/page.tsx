@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import { AdminNav } from '../admin-nav';
+import { dispatchPendingCommunications } from '@/lib/communications';
 
 type AdminNotification = {
   id: string;
@@ -55,6 +56,7 @@ export default function AdminCommunicationsPage() {
       return;
     }
     setAllowed(true);
+    await dispatchPendingCommunications(db);
     const { data, error: queryError } = await db
       .from('admin_notifications')
       .select('id,event_type,title,message,target_type,target_id,recipient_email,delivery_status,delivery_attempts,delivered_at,last_delivery_error,read_at,created_at')
