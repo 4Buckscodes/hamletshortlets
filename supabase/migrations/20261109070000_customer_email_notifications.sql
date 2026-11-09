@@ -234,7 +234,11 @@ begin
     left join public.profiles pr on pr.id = new.user_id
     where p.id = new.property_id;
 
-  if not found or property_row.status not in ('submitted', 'needs_correction') then
+  if not found then
+    return new;
+  end if;
+
+  if property_row.status not in ('submitted', 'needs_correction') then
     return new;
   end if;
 
