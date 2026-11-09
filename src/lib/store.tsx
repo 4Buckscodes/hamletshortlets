@@ -32,6 +32,7 @@ import {
   buildPartnerReferralCode, evaluateReferralOnBookingCompletion, normalizeReferralCode,
 } from './referrals';
 import { extractEdgeFunctionError, isSupabaseConfigured, supabase } from './supabase';
+import { dispatchPendingCommunications } from './communications';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const PARTNER_REF_STORAGE_KEY = 'hamlet_partner_ref_code_v1';
@@ -3295,6 +3296,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           },
         });
         if (error) return { ok: false, error: `Could not submit property: ${error.message}` };
+        void dispatchPendingCommunications(supabase);
         try {
           const { data: authData, error: authError } = await supabase.auth.getUser();
           if (authError) throw authError;
@@ -3930,6 +3932,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           correction_note: correctionNote?.trim() || null,
         });
         if (error) throw new Error(`Could not save corrections: ${error.message}`);
+        void dispatchPendingCommunications(supabase);
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) throw new Error(`Corrections saved, but refresh failed: ${authError.message}`);
         dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
