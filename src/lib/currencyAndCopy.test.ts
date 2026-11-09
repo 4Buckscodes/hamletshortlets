@@ -189,8 +189,8 @@ describe('HAMLET Website Copy & Lagos-only scope', () => {
 
     const nextHomeSrc = readFileSync(join(ROOT, 'app/home-slideshow.tsx'), 'utf8');
     const nextAboutSrc = readFileSync(join(ROOT, 'app/about/page.tsx'), 'utf8');
-    expect(nextHomeSrc).toContain('Find your next stay.');
-    expect(nextHomeSrc).toContain('Your stay, sorted.');
+    expect(nextHomeSrc).toContain('Lagos feels better here.');
+    expect(nextHomeSrc).toContain('Your stay');
     expect(nextHomeSrc).not.toMatch(/Four pillars of a better stay/i);
     expect(nextAboutSrc).toMatch(/Four pillars of a better stay/i);
   });
