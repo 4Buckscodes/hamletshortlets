@@ -19,8 +19,11 @@
 - Admin-only `admin_notifications` table and RLS.
 - Database trigger records partner application submissions and status changes.
 - Elsinore admin page at `/admin/communications` with unread count and mark-as-read.
-- Durable email dispatch queue with attempts, next-attempt time, delivery status and last error.
+- Durable operations-email queue with attempts, next-attempt time, delivery status and last error.
 - `admin-notifications-dispatch` Supabase Edge Function sends queued partner-application alerts to the configured operations inbox using Resend idempotency keys.
+- Separate private `customer_email_notifications` queue and `customer-notifications-dispatch` Edge Function for customer-facing transactional emails. Customer recipient addresses are not exposed in the admin inbox.
+- Customer email events: confirmed registration, partner application received, partner application decision, property submitted for review, and property review/status decision.
+- Property messages are sent only to the user's active `submitter` access record. Draft edits do not generate emails; approval/correction/rejection and other status decisions do.
 - Claiming uses a database function with row locks and `SKIP LOCKED` to avoid concurrent workers claiming the same row.
 
 ## Supabase Edge Function secrets
@@ -42,7 +45,7 @@ Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the Edge Fun
 6. Add Resend delivery/bounce webhook processing. An API acceptance response is not proof of inbox delivery.
 7. Test submission and status-change events end-to-end in a staging Supabase project first. Confirm idempotency, retry exhaustion, and admin-only access.
 8. WhatsApp Business Platform remains unimplemented. Select an approved provider, sender, credentials and templates; only message opted-in recipients.
-9. Extend event coverage to property review, booking lifecycle, refunds and support events as those workflows are finalized.
+9. Booking lifecycle emails continue through `booking-notifications`; refund and support emails remain future coverage as those workflows are finalized.
 
 ## DNS safety
 Do not guess SPF, DKIM or MX values. Copy exact records from Resend and Zoho dashboards. Keep one SPF record, preserve existing mail routing until a deliberate Zoho MX cutover, and verify inbound/outbound delivery after DNS propagation.
