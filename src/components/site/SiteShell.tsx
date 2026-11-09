@@ -704,8 +704,8 @@ export function SiteHeader() {
                     href={item.href}
                     onClick={() => setDrawerOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`flex min-h-[48px] items-center justify-between rounded-xl px-4 text-[15px] font-semibold transition ${
-                      active ? 'bg-[#173F32] text-[#F7F4ED]' : 'bg-white text-[#173F32] hover:bg-[#EEEAE0]'
+                    className={`flex min-h-[48px] items-center justify-between border-b border-[#E8E6DD] px-1 text-[15px] font-semibold transition ${
+                      active ? 'text-[#173F32] underline decoration-[#B58A52] decoration-2 underline-offset-8' : 'text-[#596B60] hover:text-[#173F32]'
                     }`}
                   >
                     <span>{item.label}</span>
