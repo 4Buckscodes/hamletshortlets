@@ -588,25 +588,19 @@ async function invokeBookingNotificationsEdgeFunction(
     };
   }
   try {
-    const { data, error } = await supabase.functions.invoke('booking-notifications', {
-      body: {
-        bookingId,
-        ...(opts?.forceRetry ? { forceRetry: true } : {}),
-      },
+    try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return { ok: false, sent: 0, failed: 0, error: 'Sign in before dispatching notifications.' };
+    const response = await fetch('/api/communications/dispatch', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
-    if (error) {
-      const detailedError = await extractEdgeFunctionError(
-        error,
-        'Notification dispatch request failed.',
-      );
-      return { ok: false, sent: 0, failed: 0, error: detailedError };
+    if (!response.ok) {
+      return { ok: false, sent: 0, failed: 0, error: `Dispatch HTTP ${response.status}` };
     }
-    const payload = (data ?? {}) as {
-      ok?: boolean;
-      sent?: number;
-      failed?: number;
-      error?: string;
-    };
+    const payload = await response.json() as { sent?: number; failed?: number; ok?: boolean; error?: string };
     return {
       ok: Boolean(payload.ok),
       sent: typeof payload.sent === 'number' ? payload.sent : 0,
