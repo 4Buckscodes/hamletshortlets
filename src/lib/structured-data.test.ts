@@ -37,7 +37,7 @@ const SAMPLE_APPROVED_STAY: PublicStayRecord = {
   bathrooms: 2,
   bed_setup: '2 Queen beds',
   capacity: 4,
-  nightly_rate: 200_000,
+  guest_nightly_ngn: 240_000,
   cleaning_fee: 25_000,
   refundable_deposit: 100_000,
   amenities: ['High-speed Wi-Fi', '24/7 Power', 'Air conditioning'],
@@ -192,7 +192,7 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
       bathrooms: null,
       bed_setup: null,
       capacity: null,
-      nightly_rate: 0,
+      guest_nightly_ngn: null,
       amenities: [],
       image_urls: [],
     };
