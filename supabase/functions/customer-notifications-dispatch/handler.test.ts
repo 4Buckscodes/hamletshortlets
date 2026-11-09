@@ -75,6 +75,19 @@ describe('customer email lifecycle dispatcher', () => {
     expect(claimNotifications).not.toHaveBeenCalled();
   });
 
+  it('accepts a valid Vault-backed scheduler secret when no Edge Function secret is set', async () => {
+    const verifyVaultDispatchSecret = vi.fn(async (candidate: string) => candidate === INTERNAL_SECRET);
+    const { deps, claimNotifications } = makeDeps({
+      internalDispatchSecret: undefined,
+      verifyVaultDispatchSecret,
+    });
+    const response = await dispatch(deps);
+
+    expect(response.status).toBe(200);
+    expect(verifyVaultDispatchSecret).toHaveBeenCalledWith(INTERNAL_SECRET);
+    expect(claimNotifications).toHaveBeenCalledOnce();
+  });
+
   it('does not claim queue rows when Resend configuration is missing', async () => {
     const { deps, claimNotifications } = makeDeps({ resendApiKey: undefined });
     const response = await dispatch(deps);

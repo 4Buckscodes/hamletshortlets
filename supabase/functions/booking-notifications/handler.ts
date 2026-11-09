@@ -75,6 +75,7 @@ export interface BookingNotificationsDeps {
   hamletBookingsEmail: string | undefined;
   hamletAppUrl: string | undefined;
   internalDispatchSecret?: string | undefined;
+  verifyVaultDispatchSecret?: (candidate: string) => Promise<boolean>;
   requestTimeoutMs?: number;
   maxTransientRetries?: number;
   transientRetryDelayMs?: number;
@@ -299,11 +300,20 @@ export async function handleBookingNotifications(
   let callerRole: 'guest' | 'partner' | 'admin' | 'internal' | null = null;
   let scopedBookingId: string | null = requestedBookingId;
 
-  if (
+  const authorizedByEnvironment =
     configuredInternalSecret.length >= 16 &&
     providedInternalSecret.length > 0 &&
-    timingSafeEquals(providedInternalSecret, configuredInternalSecret)
-  ) {
+    timingSafeEquals(providedInternalSecret, configuredInternalSecret);
+  let authorizedByVault = false;
+  if (!authorizedByEnvironment && providedInternalSecret.length >= 32 && deps.verifyVaultDispatchSecret) {
+    try {
+      authorizedByVault = await deps.verifyVaultDispatchSecret(providedInternalSecret);
+    } catch {
+      authorizedByVault = false;
+    }
+  }
+
+  if (authorizedByEnvironment || authorizedByVault) {
     callerRole = 'internal';
   } else {
     const authHeader = req.headers.get('authorization') ?? '';
