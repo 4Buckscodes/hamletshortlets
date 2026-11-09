@@ -52,6 +52,12 @@ if (denoRuntime) {
       hamletBookingsEmail: denoRuntime.env.get('HAMLET_BOOKINGS_EMAIL'),
       hamletAppUrl: denoRuntime.env.get('HAMLET_APP_URL'),
       internalDispatchSecret: denoRuntime.env.get('HAMLET_INTERNAL_DISPATCH_SECRET'),
+      verifyVaultDispatchSecret: async (candidate: string) => {
+        const { data, error } = await serviceClient.rpc('verify_hamlet_email_dispatch_secret', {
+          candidate_secret: candidate,
+        });
+        return !error && data === true;
+      },
       getAuthenticatedUser: async (bearerToken: string) => {
         const { data, error } = await serviceClient.auth.getUser(bearerToken);
         if (error || !data.user) return null;
