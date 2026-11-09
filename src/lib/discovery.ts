@@ -164,6 +164,12 @@ export function getValidGuestNightlyNgn(ownerNightlyRate: unknown): number | nul
   return Number.isFinite(computed) && computed > 0 ? computed : null;
 }
 
+/** Validates an already-computed guest-facing price without applying markup again. */
+export function getValidPublicGuestNightlyNgn(value: unknown): number | null {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+}
+
 export function isStudioProperty(propertyType: string | null | undefined, bedrooms: number | null | undefined): boolean {
   const cleanType = (propertyType || '').trim().toLowerCase();
   const bedCount = bedrooms === null || bedrooms === undefined ? null : Number(bedrooms);
@@ -419,7 +425,7 @@ export function filterAndSortApprovedStays(
       if (cap < filters.guests) return false;
     }
 
-    const nightlyNgn = getValidGuestNightlyNgn(stay.nightly_rate);
+    const nightlyNgn = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
     if (priceCheck.minPrice !== null) {
       if (nightlyNgn === null || nightlyNgn < priceCheck.minPrice) return false;
     }
@@ -441,8 +447,8 @@ export function filterAndSortApprovedStays(
 
   const sorted = [...filtered];
   sorted.sort((a, b) => {
-    const priceA = getValidGuestNightlyNgn(a.nightly_rate);
-    const priceB = getValidGuestNightlyNgn(b.nightly_rate);
+    const priceA = getValidPublicGuestNightlyNgn(a.guest_nightly_ngn);
+    const priceB = getValidPublicGuestNightlyNgn(b.guest_nightly_ngn);
 
     if (filters.sort === 'price_asc') {
       if (priceA === null && priceB === null) return 0;
