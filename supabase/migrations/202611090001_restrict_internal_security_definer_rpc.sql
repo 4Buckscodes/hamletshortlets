@@ -2,26 +2,52 @@
 -- Trigger execution does not depend on caller EXECUTE privileges; trigger functions remain
 -- attached to their existing triggers and continue to run as their function owner.
 -- Authenticated callers retain access to role/property authorization predicates used by RLS.
+--
+-- Use to_regprocedure so this migration is safe across supported schema histories where
+-- optional legacy helpers may not exist. Only existing exact signatures are revoked.
 
-revoke execute on function public.approve_partner_application() from public, anon, authenticated;
-revoke execute on function public.assign_profile_referral_code_on_role() from public, anon, authenticated;
-revoke execute on function public.create_profile_for_new_user() from public, anon, authenticated;
-revoke execute on function public.enforce_booking_request_integrity() from public, anon, authenticated;
-revoke execute on function public.enqueue_partner_application_customer_email() from public, anon, authenticated;
-revoke execute on function public.enqueue_property_lifecycle_emails() from public, anon, authenticated;
-revoke execute on function public.enqueue_registration_welcome_after_confirmation() from public, anon, authenticated;
-revoke execute on function public.enqueue_registration_welcome_from_profile() from public, anon, authenticated;
-revoke execute on function public.grant_submitter_property_access() from public, anon, authenticated;
-revoke execute on function public.handle_booking_notification_trigger() from public, anon, authenticated;
-revoke execute on function public.initialize_booking_caution_deposit() from public, anon, authenticated;
-revoke execute on function public.initialize_booking_issue_timeline() from public, anon, authenticated;
-revoke execute on function public.record_share_booking_lifecycle_events() from public, anon, authenticated;
-revoke execute on function public.resolve_share_attribution_before_booking() from public, anon, authenticated;
-revoke execute on function public.validate_partner_application_referral() from public, anon, authenticated;
+do $migration$
+declare
+  helper_signature text;
+  helper_function regprocedure;
+begin
+  foreach helper_signature in array array[
+    'public.approve_partner_application()',
+    'public.assign_profile_referral_code_on_role()',
+    'public.create_profile_for_new_user()',
+    'public.enforce_booking_request_integrity()',
+    'public.enqueue_partner_application_customer_email()',
+    'public.enqueue_property_lifecycle_emails()',
+    'public.enqueue_registration_welcome_after_confirmation()',
+    'public.enqueue_registration_welcome_from_profile()',
+    'public.grant_submitter_property_access()',
+    'public.handle_booking_notification_trigger()',
+    'public.initialize_booking_caution_deposit()',
+    'public.initialize_booking_issue_timeline()',
+    'public.record_share_booking_lifecycle_events()',
+    'public.resolve_share_attribution_before_booking()',
+    'public.validate_partner_application_referral()',
+    'public.generate_unique_referral_code(text)'
+  ]
+  loop
+    helper_function := to_regprocedure(helper_signature);
+    if helper_function is not null then
+      execute format(
+        'revoke execute on function %s from public, anon, authenticated',
+        helper_function
+      );
+    end if;
+  end loop;
 
--- Referral code generation is an internal trigger helper, not a public RPC.
-revoke execute on function public.generate_unique_referral_code(text) from public, anon, authenticated;
+  -- These predicates are required by authenticated RLS policies, but have no anonymous use.
+  helper_function := to_regprocedure('public.can_manage_property(text)');
+  if helper_function is not null then
+    execute format('revoke execute on function %s from public, anon', helper_function);
+  end if;
 
--- These predicates are required by authenticated RLS policies, but have no anonymous use.
-revoke execute on function public.can_manage_property(text) from public, anon;
-revoke execute on function public.has_role(text) from public, anon;
+  helper_function := to_regprocedure('public.has_role(text)');
+  if helper_function is not null then
+    execute format('revoke execute on function %s from public, anon', helper_function);
+  end if;
+end;
+$migration$;
