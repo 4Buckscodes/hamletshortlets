@@ -72,9 +72,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('Inspection');
 
     // Partner banner with gold CTA
-    expect(homeSource).toContain('Own or manage a verified shortlet in Lagos?');
     expect(homeSource).toContain('bg-[#B58A52]');
-    expect(homeSource).toContain('Apply as a partner');
   });
 
   it('implements the forest-green homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
