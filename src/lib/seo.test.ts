@@ -41,9 +41,8 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content).toContain('Lagos Island');
     expect(content).not.toContain('0% owner fee');
     expect(content).toContain("HAMLET's current pricing and service policies");
-    expect(content).toContain('20%');
-    expect(content).toContain('10% international currency buffer');
-    expect(content).toContain('Paystack');
+    expect(content).toContain('A booking request is not a confirmed reservation');
+    expect(content).not.toMatch(/\\b\\d+(?:\\.\\d+)?%/);
     expect(content).not.toMatch(EXCLUDED_CITIES_RE);
   });
 
@@ -55,9 +54,11 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content.startsWith('# HAMLET')).toBe(true);
     expect(content).toContain(HAMLET_LLMS_TXT_URL);
     expect(content).toContain('Four Verification Pillars');
-    expect(content).toContain('90-day');
-    expect(content).toContain('2.5%');
-    expect(content).toContain('12. **What if I need help during my stay?**');
+    expect(content).toContain('HAMLET provides property owners with access to listing, visibility, booking and property management services.');
+    expect(content).toContain('Four Verification Pillars');
+    expect(content).not.toMatch(/\\b\\d+(?:\\.\\d+)?%/);
+    expect(content).not.toMatch(/payment.{0,20}reserve/i);
+    expect(content).not.toMatch(/owner-only rates/i);
     expect(content).not.toMatch(EXCLUDED_CITIES_RE);
   });
 });
