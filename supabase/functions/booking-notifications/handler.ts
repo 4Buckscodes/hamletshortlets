@@ -300,7 +300,7 @@ export async function handleBookingNotifications(
   let callerRole: 'guest' | 'partner' | 'admin' | 'internal' | null = null;
   let scopedBookingId: string | null = requestedBookingId;
 
-  let authorizedByEnvironment =
+  const authorizedByEnvironment =
     configuredInternalSecret.length >= 16 &&
     providedInternalSecret.length > 0 &&
     timingSafeEquals(providedInternalSecret, configuredInternalSecret);
