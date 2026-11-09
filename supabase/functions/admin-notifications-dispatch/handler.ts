@@ -41,6 +41,7 @@ export interface AdminNotificationUpdateInput {
 
 export interface AdminNotificationsDispatchDeps {
   internalDispatchSecret: string | undefined;
+  verifyVaultDispatchSecret?: (candidate: string) => Promise<boolean>;
   supabaseConfigured: boolean;
   resendApiKey: string | undefined;
   resendFromEmail: string | undefined;
@@ -149,9 +150,18 @@ export async function handleAdminNotificationsDispatch(
     return jsonResponse({ ok: false, error: 'POST required.' }, 405);
   }
 
-  const expected = deps.internalDispatchSecret ?? '';
-  const supplied = req.headers.get('x-hamlet-internal-secret') ?? '';
-  if (expected.length < 32 || !constantTimeEqual(supplied, expected)) {
+  const expected = deps.internalDispatchSecret?.trim() ?? '';
+  const supplied = req.headers.get('x-hamlet-internal-secret')?.trim() ?? '';
+  const authorizedByEnvironment = expected.length >= 32 && constantTimeEqual(supplied, expected);
+  let authorizedByVault = false;
+  if (!authorizedByEnvironment && supplied.length >= 32 && deps.verifyVaultDispatchSecret) {
+    try {
+      authorizedByVault = await deps.verifyVaultDispatchSecret(supplied);
+    } catch {
+      authorizedByVault = false;
+    }
+  }
+  if (!authorizedByEnvironment && !authorizedByVault) {
     return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
 
