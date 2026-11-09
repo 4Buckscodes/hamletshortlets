@@ -3,12 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, CalendarDays, ShieldCheck } from 'lucide-react';
-import {
-  calculateGuestPricing,
-  lagosIsoDateOffset,
-  nightsBetween,
-} from '@/lib/pricing';
-import { getValidGuestNightlyNgn } from '@/lib/discovery';
+import { lagosIsoDateOffset, nightsBetween } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -29,7 +24,7 @@ import {
 type Props = {
   propertyId: string;
   propertyTitle: string;
-  nightlyRate: number;
+  guestNightlyRate: number;
   cleaningFee: number;
   deposit: number;
   capacity: number | null;
@@ -52,7 +47,7 @@ const BOOKING_STEPS = [
 export default function BookingRequestForm({
   propertyId,
   propertyTitle,
-  nightlyRate,
+  guestNightlyRate,
   cleaningFee,
   deposit,
   capacity,
@@ -127,18 +122,13 @@ export default function BookingRequestForm({
     };
   }, [db, propertyId, checkIn, checkOut, nights]);
 
-  const pricing = useMemo(
-    () =>
-      calculateGuestPricing({
-        accommodationSubtotal: nightlyRate * Math.max(1, nights),
-        mandatoryCharges:
-          cleaningFee > 0 ? [{ label: 'Cleaning & turnover', amount: cleaningFee }] : [],
-        refundableDeposit: deposit,
-      }),
-    [nightlyRate, nights, cleaningFee, deposit],
-  );
-
-  const domesticNightly = getValidGuestNightlyNgn(nightlyRate);
+  // This prop is already the guest-facing nightly price (markup included).
+  // Do not feed it back through calculateGuestPricing or the markup would be applied twice.
+  const domesticNightly = Number.isFinite(guestNightlyRate) && guestNightlyRate > 0
+    ? Math.round(guestNightlyRate)
+    : null;
+  const guestAccommodationTotal = domesticNightly === null ? 0 : domesticNightly * Math.max(1, nights);
+  const guestStayTotal = guestAccommodationTotal + Math.max(0, Math.round(cleaningFee));
 
   function buildIntentReturnUrl(targetStep: number) {
     const qs = new URLSearchParams();
@@ -432,7 +422,7 @@ export default function BookingRequestForm({
                 {nights === 1 ? 'night' : 'nights'})
               </span>
               <span className="font-mono font-semibold">
-                {formatPrice(pricing.domesticGuestAccommodationNgn)}
+                {formatPrice(guestAccommodationTotal)}
               </span>
             </div>
             {cleaningFee > 0 && (
@@ -443,7 +433,7 @@ export default function BookingRequestForm({
             )}
             <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
               <span>Total stay price</span>
-              <span className="font-mono">{formatPrice(pricing.guestTotal)}</span>
+              <span className="font-mono">{formatPrice(guestStayTotal)}</span>
             </div>
             {deposit > 0 && (
               <div className="flex justify-between gap-2 pt-1 text-ink-600">
