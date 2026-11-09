@@ -350,9 +350,9 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
       }
     }
 
-    // Homepage, Horatio, legal, partner onboarding, listing wizard & AI knowledge surfaces include the approved owner services statement
+    // Legal, Horatio, partner onboarding, listing wizard & AI knowledge surfaces include the approved owner services statement.
+    // The homepage intentionally keeps this detailed policy copy off the hero and discovery flow.
     for (const relPath of [
-      ['app', 'home-slideshow.tsx'],
       ['app', 'legal', 'page.tsx'],
       ['app', 'partners', 'apply', 'form', 'page.tsx'],
       ['app', 'partners', 'start', 'page.tsx'],
