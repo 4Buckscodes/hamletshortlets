@@ -92,7 +92,9 @@ export function toPublicStayRecord(raw: Record<string, unknown>): PublicStayReco
   const guestNightly = Number.isFinite(ownerRate) && ownerRate > 0
     ? guestFacingNightlyNgn(ownerRate)
     : null;
-  const { nightly_rate: _privateOwnerRate, calendar_responsible_person: _privateCalendarContact, ...publicFields } = raw;
+  const publicFields = { ...raw };
+  delete publicFields.nightly_rate;
+  delete publicFields.calendar_responsible_person;
   return { ...publicFields, guest_nightly_ngn: guestNightly } as PublicStayRecord;
 }
 
