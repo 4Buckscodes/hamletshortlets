@@ -1,58 +1,71 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { PropertyListingWizard } from '@/components/forms/PropertyListingWizard';
 
 export default function PropertySubmissionForm() {
-  const db = useMemo(() => getBrowserSupabase(), []);
   const [checking, setChecking] = useState(true);
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     let active = true;
     async function verifyPartner() {
-      if (!db) {
-        if (active) setChecking(false);
-        return;
-      }
-      const { data: session } = await db.auth.getSession();
-      const user = session.session?.user;
-      if (!user) {
-        window.location.assign('/signin?next=/partners/properties/new');
-        return;
-      }
-      const [{ data: profile }, { data: applications }] = await Promise.all([
-        db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
-        db
-          .from('partner_applications')
-          .select('id,status,role')
-          .eq('applicant_id', user.id)
-          .in('status', ['pending', 'needs_correction'])
-          .order('submitted_at', { ascending: false })
-          .limit(1),
-      ]);
-      const application = applications?.[0];
-      const canStartListing =
-        application &&
-        ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-          String(application.role),
-        );
-      if (active) {
-        setAllowed(
-          profile?.role === 'partner' ||
-            profile?.role === 'admin' ||
-            Boolean(canStartListing),
-        );
-        setChecking(false);
+      try {
+        // Resolve the browser client inside the effect. The server-rendered
+        // useMemo value can be null and must not be reused during hydration;
+        // this also honours the browser auth client in the mobile upload flow.
+        const db = getBrowserSupabase();
+        if (!db) {
+          if (active) setChecking(false);
+          return;
+        }
+        const { data: session } = await db.auth.getSession();
+        const user = session.session?.user;
+        if (!user) {
+          window.location.assign('/signin?next=/partners/properties/new');
+          return;
+        }
+        const [{ data: profile, error: profileError }, { data: applications, error: applicationError }] =
+          await Promise.all([
+            db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+            db
+              .from('partner_applications')
+              .select('id,status,role')
+              .eq('applicant_id', user.id)
+              .in('status', ['pending', 'needs_correction'])
+              .order('submitted_at', { ascending: false })
+              .limit(1),
+          ]);
+        const application = applications?.[0];
+        const canStartListing =
+          !applicationError &&
+          application &&
+          ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
+            String(application.role),
+          );
+        if (active) {
+          setAllowed(
+            !profileError &&
+              (profile?.role === 'partner' ||
+                profile?.role === 'admin' ||
+                Boolean(canStartListing)),
+          );
+          setChecking(false);
+        }
+      } catch {
+        if (active) {
+          setAllowed(false);
+          setChecking(false);
+        }
       }
     }
     void verifyPartner();
     return () => {
       active = false;
     };
-  }, [db]);
+  }, []);
 
   if (checking) {
     return (
