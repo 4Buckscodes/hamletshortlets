@@ -92,6 +92,7 @@ export function toPublicStayRecord(raw: Record<string, unknown>): PublicStayReco
   const guestNightly = Number.isFinite(ownerRate) && ownerRate > 0
     ? guestFacingNightlyNgn(ownerRate)
     : null;
+  // Delete sensitive columns explicitly so no unused destructured aliases enter the public projection.
   const publicFields = { ...raw };
   delete publicFields.nightly_rate;
   delete publicFields.calendar_responsible_person;
