@@ -190,17 +190,17 @@ export async function triggerBookingNotificationDispatchBestEffort(
 ): Promise<{ dispatched: boolean; detail?: string }> {
   if (!db || !bookingId) return { dispatched: false };
   try {
-    const { data, error } = await db.functions.invoke('booking-notifications', {
-      body: { booking_id: bookingId },
+    const { data: session } = await db.auth.getSession();
+    const token = session.session?.access_token;
+    if (!token) return { dispatched: false, detail: 'No active session.' };
+    const response = await fetch('/api/communications/dispatch', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
-    if (error) {
-      return { dispatched: false, detail: error.message };
-    }
-    const payload = data as { ok?: boolean; sent?: number; skipped?: number } | null;
-    return {
-      dispatched: Boolean(payload?.ok),
-      detail: payload?.ok ? 'Outbox processed' : undefined,
-    };
+    if (!response.ok) return { dispatched: false, detail: `Dispatch HTTP ${response.status}` };
+    const result = await response.json() as { sent?: number; processed?: number };
+    return { dispatched: true, detail: `${result.sent ?? 0} email(s) sent; ${result.processed ?? 0} processed.` };
   } catch {
     return { dispatched: false };
   }
