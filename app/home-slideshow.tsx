@@ -165,7 +165,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#1D355C]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#285744]">
         {images.length > 0 ? (
           <>
             <div
@@ -221,10 +221,10 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           <Link
             href={detailHref}
             aria-label={`View ${property.title} in ${areaName}`}
-            className="grid h-full w-full place-items-center p-6 text-center text-[13px] text-[#C5CCDA]"
+            className="grid h-full w-full place-items-center p-6 text-center text-[13px] text-[#DADFD5]"
           >
             <div>
-              <strong className="mb-1 block font-display text-[30px] font-bold text-[#C9A45C]">
+              <strong className="mb-1 block font-display text-[30px] font-bold text-[#B58A52]">
                 H
               </strong>
               <span>Photos coming soon</span>
@@ -233,13 +233,13 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
         )}
 
         {/* Verification Badge */}
-        <span className="pointer-events-none absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-[20px] border border-[#9AD3AE] bg-[#E9F7EE] px-3 py-1.5 text-[12px] font-semibold text-[#14532D] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+        <span className="pointer-events-none absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-[20px] border border-[#A6F4C5] bg-[#ECFDF3] px-3 py-1.5 text-[12px] font-semibold text-[#0B5534] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
           <svg
             width="14"
             height="14"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#14532D"
+            stroke="#0B5534"
             strokeWidth="2.6"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -254,8 +254,8 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
       {/* Card Body */}
       <div className="flex flex-1 flex-col px-5 pt-[18px] pb-5">
-        <div className="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.2px] text-[#7A5E22]">
-          <span className="rounded-[12px] bg-[#121F3C] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#C9A45C]">
+        <div className="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.2px] text-[#755638]">
+          <span className="rounded-[12px] bg-[#173F32] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#B58A52]">
             {isMainland ? 'Mainland' : 'Island'}
           </span>
           <span>
@@ -263,14 +263,14 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           </span>
         </div>
 
-        <h3 className="mt-2.5 font-display text-[22px] font-bold leading-[1.25] text-[#121F3C]">
-          <Link href={detailHref} className="transition hover:text-[#7A5E22]">
+        <h3 className="mt-2.5 font-display text-[22px] font-bold leading-[1.25] text-[#173F32]">
+          <Link href={detailHref} className="transition hover:text-[#755638]">
             {property.title}
           </Link>
         </h3>
 
         {/* Bed / Bath / Guest Facts */}
-        <ul className="mt-3 flex list-none flex-wrap gap-3.5 p-0 text-[14px] text-[#2B3548]">
+        <ul className="mt-3 flex list-none flex-wrap gap-3.5 p-0 text-[14px] text-[#34483D]">
           <li className="inline-flex items-center gap-1.5">
             <svg
               width="16"
@@ -282,7 +282,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              className="shrink-0 text-[#4A5468]"
+              className="shrink-0 text-[#596B60]"
             >
               <path d="M3 18v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5M3 13V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5M2 18h20" />
             </svg>
@@ -299,7 +299,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              className="shrink-0 text-[#4A5468]"
+              className="shrink-0 text-[#596B60]"
             >
               <path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3zM6 12V5a2 2 0 0 1 2-2h1" />
             </svg>
@@ -318,7 +318,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              className="shrink-0 text-[#4A5468]"
+              className="shrink-0 text-[#596B60]"
             >
               <circle cx="9" cy="8" r="3" />
               <path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M16 11a2.5 2.5 0 1 0 0-5M21 19c0-2.4-2-4.2-4.5-4.5" />
@@ -335,13 +335,13 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
             {visibleAmenities.map((amenity: string) => (
               <span
                 key={amenity}
-                className="rounded-[14px] border border-[#D6D0C0] bg-white px-2.5 py-[5px] text-[12.5px] text-[#2B3548]"
+                className="rounded-[14px] border border-[#D9D8CD] bg-white px-2.5 py-[5px] text-[12.5px] text-[#34483D]"
               >
                 {amenity}
               </span>
             ))}
             {remainingAmenityCount > 0 && (
-              <span className="rounded-[14px] border border-transparent bg-transparent px-1 py-[5px] text-[12.5px] font-semibold text-[#7A5E22]">
+              <span className="rounded-[14px] border border-transparent bg-transparent px-1 py-[5px] text-[12.5px] font-semibold text-[#755638]">
                 +{remainingAmenityCount} more
               </span>
             )}
@@ -354,32 +354,32 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
             <div className="min-w-0">
               {guestNightlyNgn !== null ? (
                 <>
-                  <b className="block text-[24px] font-semibold leading-[1.1] tracking-[-0.3px] text-[#121F3C]">
+                  <b className="block text-[24px] font-semibold leading-[1.1] tracking-[-0.3px] text-[#173F32]">
                     {formatPrice(guestNightlyNgn, { roundWhole: true })}
                   </b>
-                  <small className="text-[12.5px] text-[#4A5468]">
+                  <small className="text-[12.5px] text-[#596B60]">
                     {currency === 'NGN' ? 'per night' : `per night (${currency})`}
                   </small>
                 </>
               ) : (
                 <>
-                  <b className="block text-[18px] font-semibold leading-[1.2] text-[#121F3C]">
+                  <b className="block text-[18px] font-semibold leading-[1.2] text-[#173F32]">
                     Rate on request
                   </b>
-                  <small className="text-[12.5px] text-[#4A5468]">contact concierge</small>
+                  <small className="text-[12.5px] text-[#596B60]">contact concierge</small>
                 </>
               )}
             </div>
 
             <Link
               href={detailHref}
-              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#121F3C] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F8F5EE] transition hover:bg-[#1D355C]"
+              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#173F32] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F7F4ED] transition hover:bg-[#285744]"
             >
               View stay →
             </Link>
           </div>
 
-          <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-[#4A5468]">
+          <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-[#596B60]">
             <svg
               width="14"
               height="14"
@@ -588,22 +588,22 @@ export function HomeMarketplaceExperience({
   const currencyLabel = `${CURRENCY_SYMBOLS[currency]} ${currency}`;
 
   return (
-    <div className="bg-[#F8F5EE] text-[#121F3C]">
-      {/* ── Hero: Deep Navy (#0E1F3B) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
-      <section className="relative overflow-hidden bg-[#0E1F3B] text-[#F8F5EE]">
+    <div className="bg-[#F7F4ED] text-[#173F32]">
+      {/* ── Hero: Deep Navy (#173F32) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
+      <section className="relative overflow-hidden bg-[#173F32] text-[#F7F4ED]">
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
           <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
-            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
-              Verified Shortlets · Lagos
+            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
+              STAYS WITH ACCOUNTABILITY · LAGOS
             </p>
-            <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F8F5EE] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
-              Find your next stay.
+            <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F7F4ED] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
+              Lagos feels better here.
             </h1>
-            <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#C5CCDA] sm:max-w-md lg:max-w-lg lg:text-[17px]">
-              Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.
+            <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#DADFD5] sm:max-w-md lg:max-w-lg lg:text-[17px]">
+              Find a stay that fits your Lagos. Explore neighbourhoods, compare the details that matter, and request with confidence.
             </p>
-            <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#9AA6BD] lg:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#C9A45C]" aria-hidden="true" />
+            <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#AAB8AC] lg:inline-flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#B58A52]" aria-hidden="true" />
               <span>Your stay, sorted. No card charged until the host confirms availability.</span>
             </p>
           </div>
@@ -614,7 +614,7 @@ export function HomeMarketplaceExperience({
               aria-hidden="true"
               className="pointer-events-none -mt-2 -mb-7 block h-auto w-full max-w-2xl mx-auto select-none lg:mt-0 lg:-mb-9 lg:max-w-none"
             >
-              <circle cx="296" cy="64" r="30" fill="#C9A45C" />
+              <circle cx="296" cy="64" r="30" fill="#B58A52" />
               <g fill="#16294A">
                 <rect x="8" y="110" width="26" height="100" />
                 <rect x="40" y="86" width="22" height="124" />
@@ -629,12 +629,12 @@ export function HomeMarketplaceExperience({
               </g>
               <path
                 d="M0 150Q195 70 390 150"
-                stroke="#C9A45C"
+                stroke="#B58A52"
                 strokeWidth="2"
                 fill="none"
               />
-              <path d="M0 156H390" stroke="#C9A45C" strokeWidth="2" />
-              <g stroke="#C9A45C" strokeWidth="1" opacity="0.6">
+              <path d="M0 156H390" stroke="#B58A52" strokeWidth="2" />
+              <g stroke="#B58A52" strokeWidth="1" opacity="0.6">
                 <path d="M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156" />
               </g>
             </svg>
@@ -645,7 +645,7 @@ export function HomeMarketplaceExperience({
         <div
           role="search"
           aria-label="Search Lagos shortlets"
-          className="relative z-10 rounded-t-[28px] bg-[#F8F5EE] px-5 pt-[22px] pb-[26px] text-[#121F3C] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
+          className="relative z-10 rounded-t-[28px] bg-[#F7F4ED] px-5 pt-[22px] pb-[26px] text-[#173F32] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
         >
           <div className="mx-auto max-w-2xl">
             <button
@@ -653,14 +653,14 @@ export function HomeMarketplaceExperience({
               onClick={() => setSheetOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={sheetOpen}
-              className="flex min-h-[68px] w-full cursor-pointer items-center gap-3.5 rounded-[34px] border border-[#D6D0C0] bg-white pr-2.5 pl-[22px] text-left shadow-[0_6px_18px_rgba(18,31,60,0.08)] transition hover:border-[#C9A45C]"
+              className="flex min-h-[68px] w-full cursor-pointer items-center gap-3.5 rounded-[34px] border border-[#D9D8CD] bg-white pr-2.5 pl-[22px] text-left shadow-[0_6px_18px_rgba(18,31,60,0.08)] transition hover:border-[#B58A52]"
             >
               <svg
                 width="22"
                 height="22"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#7A5E22"
+                stroke="#755638"
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 aria-hidden="true"
@@ -671,17 +671,17 @@ export function HomeMarketplaceExperience({
               </svg>
 
               <span className="min-w-0 flex-1">
-                <strong className="block truncate text-[16px] font-semibold text-[#121F3C]">
+                <strong className="block truncate text-[16px] font-semibold text-[#173F32]">
                   {pillWhereLabel}
                 </strong>
-                <span className="mt-0.5 block truncate text-[13px] text-[#4A5468]">
+                <span className="mt-0.5 block truncate text-[13px] text-[#596B60]">
                   {pillSubLabel}
                 </span>
               </span>
 
               <span
                 aria-hidden="true"
-                className="ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#121F3C] text-[#C9A45C]"
+                className="ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#173F32] text-[#B58A52]"
               >
                 <svg
                   width="18"
@@ -714,22 +714,22 @@ export function HomeMarketplaceExperience({
             role="dialog"
             aria-modal="true"
             aria-label="Find a stay"
-            className="max-h-[92dvh] w-full max-w-[440px] overflow-y-auto overscroll-y-contain rounded-t-[28px] bg-[#F8F5EE] px-5 pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] text-[#121F3C] shadow-2xl sm:max-w-[480px] sm:rounded-[28px] sm:pt-5"
+            className="max-h-[92dvh] w-full max-w-[440px] overflow-y-auto overscroll-y-contain rounded-t-[28px] bg-[#F7F4ED] px-5 pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] text-[#173F32] shadow-2xl sm:max-w-[480px] sm:rounded-[28px] sm:pt-5"
           >
             <div
               aria-hidden="true"
-              className="mx-auto mb-3.5 h-1 w-10 rounded-full bg-[#C9C2B0] sm:hidden"
+              className="mx-auto mb-3.5 h-1 w-10 rounded-full bg-[#C9C8BC] sm:hidden"
             />
 
             <div className="mb-1 flex items-center justify-between">
-              <h2 className="m-0 font-display text-[24px] font-bold text-[#121F3C]">
+              <h2 className="m-0 font-display text-[24px] font-bold text-[#173F32]">
                 Find a stay
               </h2>
               <button
                 type="button"
                 onClick={() => setSheetOpen(false)}
                 aria-label="Close search"
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D6D0C0] bg-transparent text-[#121F3C] transition hover:border-[#121F3C]"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D9D8CD] bg-transparent text-[#173F32] transition hover:border-[#173F32]"
               >
                 <svg
                   width="18"
@@ -747,13 +747,13 @@ export function HomeMarketplaceExperience({
             </div>
 
             {/* Where */}
-            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#7A5E22]">
+            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#755638]">
               Where
             </label>
             <div
               role="tablist"
               aria-label="Lagos corridor"
-              className="grid grid-cols-3 rounded-[24px] bg-[#ECE7DB] p-1"
+              className="grid grid-cols-3 rounded-[24px] bg-[#EEEAE0] p-1"
             >
               {(
                 [
@@ -772,8 +772,8 @@ export function HomeMarketplaceExperience({
                     onClick={() => handleSelectSide(option.value)}
                     className={`min-h-[44px] cursor-pointer rounded-[20px] border-0 text-[14px] font-semibold transition ${
                       active
-                        ? 'bg-[#121F3C] text-[#F8F5EE]'
-                        : 'bg-transparent text-[#121F3C]'
+                        ? 'bg-[#173F32] text-[#F7F4ED]'
+                        : 'bg-transparent text-[#173F32]'
                     }`}
                   >
                     {option.label}
@@ -793,8 +793,8 @@ export function HomeMarketplaceExperience({
                     onClick={() => handleToggleChip(chip)}
                     className={`min-h-[40px] cursor-pointer rounded-[20px] border px-3.5 text-[13.5px] font-medium transition ${
                       active
-                        ? 'border-[#121F3C] bg-[#121F3C] text-[#F8F5EE]'
-                        : 'border-[#D6D0C0] bg-white text-[#121F3C] hover:border-[#121F3C]'
+                        ? 'border-[#173F32] bg-[#173F32] text-[#F7F4ED]'
+                        : 'border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#173F32]'
                     }`}
                   >
                     {chip}
@@ -804,12 +804,12 @@ export function HomeMarketplaceExperience({
             </div>
 
             {/* When */}
-            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#7A5E22]">
+            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#755638]">
               When
             </label>
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-[16px] border border-[#D6D0C0] bg-white px-3.5 py-2.5 focus-within:border-[#121F3C]">
-                <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#4A5468]">
+              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#173F32]">
+                <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#596B60]">
                   Check-in
                 </span>
                 <input
@@ -818,12 +818,12 @@ export function HomeMarketplaceExperience({
                   min={todayIso}
                   value={checkIn}
                   onChange={event => handleCheckInChange(event.target.value)}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#121F3C] focus:outline-none"
+                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#173F32] focus:outline-none"
                 />
               </div>
 
-              <div className="rounded-[16px] border border-[#D6D0C0] bg-white px-3.5 py-2.5 focus-within:border-[#121F3C]">
-                <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#4A5468]">
+              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#173F32]">
+                <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#596B60]">
                   Check-out
                 </span>
                 <input
@@ -832,19 +832,19 @@ export function HomeMarketplaceExperience({
                   min={minCheckOutIso}
                   value={checkOut}
                   onChange={event => setCheckOut(event.target.value)}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#121F3C] focus:outline-none"
+                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#173F32] focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Who */}
-            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#7A5E22]">
+            <label className="mt-[18px] mb-2 block text-[11px] font-semibold uppercase tracking-[1.8px] text-[#755638]">
               Who
             </label>
-            <div className="flex items-center justify-between rounded-[16px] border border-[#D6D0C0] bg-white px-4 py-3">
+            <div className="flex items-center justify-between rounded-[16px] border border-[#D9D8CD] bg-white px-4 py-3">
               <div>
-                <b className="block text-[15px] font-semibold text-[#121F3C]">Guests</b>
-                <small className="text-[12.5px] text-[#4A5468]">Adults &amp; children</small>
+                <b className="block text-[15px] font-semibold text-[#173F32]">Guests</b>
+                <small className="text-[12.5px] text-[#596B60]">Adults &amp; children</small>
               </div>
               <div className="flex items-center gap-3.5">
                 <button
@@ -855,13 +855,13 @@ export function HomeMarketplaceExperience({
                     setGuestsTouched(true);
                     setGuests(prev => Math.max(1, prev - 1));
                   }}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#121F3C] bg-white text-[20px] leading-none text-[#121F3C] transition disabled:cursor-not-allowed disabled:opacity-35"
+                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#173F32] bg-white text-[20px] leading-none text-[#173F32] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   −
                 </button>
                 <output
                   aria-live="polite"
-                  className="min-w-[20px] text-center text-[17px] font-semibold text-[#121F3C]"
+                  className="min-w-[20px] text-center text-[17px] font-semibold text-[#173F32]"
                 >
                   {guests}
                 </output>
@@ -873,7 +873,7 @@ export function HomeMarketplaceExperience({
                     setGuestsTouched(true);
                     setGuests(prev => Math.min(10, prev + 1));
                   }}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#121F3C] bg-white text-[20px] leading-none text-[#121F3C] transition disabled:cursor-not-allowed disabled:opacity-35"
+                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#173F32] bg-white text-[20px] leading-none text-[#173F32] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   +
                 </button>
@@ -885,14 +885,14 @@ export function HomeMarketplaceExperience({
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="min-h-[54px] cursor-pointer rounded-[27px] border border-[#121F3C] bg-transparent px-[22px] text-[15px] font-semibold text-[#121F3C] transition hover:bg-[#ECE7DB]"
+                className="min-h-[54px] cursor-pointer rounded-[27px] border border-[#173F32] bg-transparent px-[22px] text-[15px] font-semibold text-[#173F32] transition hover:bg-[#EEEAE0]"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={handleShowStays}
-                className="min-h-[54px] flex-1 cursor-pointer rounded-[27px] border-0 bg-[#121F3C] px-5 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                className="min-h-[54px] flex-1 cursor-pointer rounded-[27px] border-0 bg-[#173F32] px-5 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
               >
                 Show stays
               </button>
@@ -1030,26 +1030,26 @@ export function HomeMarketplaceExperience({
         className="mx-auto max-w-6xl px-5 pt-2 pb-8 sm:px-6 lg:pt-4 lg:pb-12"
       >
         <div className="mb-4 flex items-baseline justify-between gap-3 lg:mb-6">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
+          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#173F32] lg:text-[32px]">
             Verified stays
           </h2>
-          <span className="shrink-0 text-[13px] font-medium text-[#4A5468]">
+          <span className="shrink-0 text-[13px] font-medium text-[#596B60]">
             {displayedStays.length} available · {currencyLabel}
           </span>
         </div>
 
         {activeRailArea && (
-          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E5DFD0] bg-white px-4 py-2.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4A5468]">
+          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E6DD] bg-white px-4 py-2.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#596B60]">
               Active filter:
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#121F3C] px-3 py-1 text-xs font-semibold text-[#F8F5EE]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#173F32] px-3 py-1 text-xs font-semibold text-[#F7F4ED]">
               {activeRailArea}
             </span>
             <button
               type="button"
               onClick={() => syncRailAreaToUrl('')}
-              className="ml-auto inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-full px-3 text-xs font-extrabold text-[#7A5E22] underline-offset-4 hover:underline"
+              className="ml-auto inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-full px-3 text-xs font-extrabold text-[#755638] underline-offset-4 hover:underline"
             >
               <RotateCcw className="h-3.5 w-3.5 shrink-0" />
               <span>Clear filters</span>
@@ -1069,13 +1069,13 @@ export function HomeMarketplaceExperience({
         )}
 
         {displayedStays.length === 0 ? (
-          <div className="rounded-[26px] border border-[#E5DFD0] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
-            <h3 className="font-display text-[22px] font-bold text-[#121F3C]">
+          <div className="rounded-[26px] border border-[#E8E6DD] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
+            <h3 className="font-display text-[22px] font-bold text-[#173F32]">
               {activeRailArea
                 ? `No verified stays in ${activeRailArea} right now`
                 : 'Verified stays are updating'}
             </h3>
-            <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-[#4A5468]">
+            <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-[#596B60]">
               {activeRailArea
                 ? 'Clear filters to see all verified stays across Lagos, or ask Horatio to help source a stay in this neighbourhood.'
                 : 'Every property on HAMLET is physically inspected in Lagos before it goes live. Check back shortly or ask Horatio to help source a verified stay.'}
@@ -1085,7 +1085,7 @@ export function HomeMarketplaceExperience({
                 <button
                   type="button"
                   onClick={() => syncRailAreaToUrl('')}
-                  className="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#121F3C] px-6 text-sm font-semibold text-[#F8F5EE] transition hover:bg-[#1D355C]"
+                  className="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#173F32] px-6 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
                 >
                   <RotateCcw className="h-4 w-4 shrink-0" />
                   <span>Clear filters</span>
@@ -1108,7 +1108,7 @@ export function HomeMarketplaceExperience({
         <div className="mt-[18px] lg:mt-7">
           <Link
             href="/stays"
-            className="flex min-h-[52px] w-full items-center justify-center rounded-[26px] border border-[#121F3C] px-7 text-[15px] font-semibold text-[#121F3C] transition hover:bg-[#121F3C] hover:text-[#F8F5EE] sm:inline-flex sm:w-auto"
+            className="flex min-h-[52px] w-full items-center justify-center rounded-[26px] border border-[#173F32] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#173F32] hover:text-[#F7F4ED] sm:inline-flex sm:w-auto"
           >
             See all stays →
           </Link>
@@ -1118,7 +1118,7 @@ export function HomeMarketplaceExperience({
       {/* ── 4-Pillar Verification Standard ── */}
       <section className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10">
         <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
+          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#173F32] lg:text-[32px]">
             Verified before it’s bookable
           </h2>
         </div>
@@ -1127,15 +1127,15 @@ export function HomeMarketplaceExperience({
           {VERIFICATION_PILLARS.map(pillar => (
             <div
               key={pillar.num}
-              className="rounded-[20px] border border-[#E5DFD0] bg-white p-4 sm:p-5"
+              className="rounded-[20px] border border-[#E8E6DD] bg-white p-4 sm:p-5"
             >
-              <span className="font-display text-[14px] font-bold text-[#7A5E22]">
+              <span className="font-display text-[14px] font-bold text-[#755638]">
                 {pillar.num}
               </span>
-              <b className="mt-1.5 mb-1 block text-[15px] font-semibold text-[#121F3C]">
+              <b className="mt-1.5 mb-1 block text-[15px] font-semibold text-[#173F32]">
                 {pillar.title}
               </b>
-              <p className="m-0 text-[13px] leading-[1.45] text-[#4A5468]">
+              <p className="m-0 text-[13px] leading-[1.45] text-[#596B60]">
                 {pillar.description}
               </p>
             </div>
@@ -1145,18 +1145,18 @@ export function HomeMarketplaceExperience({
 
       {/* ── Partner CTA Card ── */}
       <section className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14">
-        <div className="rounded-[28px] bg-[#121F3C] px-[22px] py-[26px] text-[#F8F5EE] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
+        <div className="rounded-[28px] bg-[#173F32] px-[22px] py-[26px] text-[#F7F4ED] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
           <div className="lg:max-w-2xl">
-            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
+            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
               Property Owners &amp; Managers
             </p>
-            <h2 className="mt-2.5 mb-2 font-display text-[24px] font-bold leading-[1.2] text-[#F8F5EE] lg:text-[30px]">
+            <h2 className="mt-2.5 mb-2 font-display text-[24px] font-bold leading-[1.2] text-[#F7F4ED] lg:text-[30px]">
               Own or manage a verified shortlet in Lagos?
             </h2>
-            <p className="m-0 text-[14.5px] leading-[1.55] text-[#C5CCDA]">
+            <p className="m-0 text-[14.5px] leading-[1.55] text-[#DADFD5]">
               List with HAMLET for visibility, booking and property management support.
             </p>
-            <p className="mt-2.5 mb-0 text-[12px] leading-[1.5] text-[#9AA6BD]">
+            <p className="mt-2.5 mb-0 text-[12px] leading-[1.5] text-[#AAB8AC]">
               {APPROVED_OWNER_SERVICES_POLICY_COPY}
             </p>
           </div>
@@ -1164,7 +1164,7 @@ export function HomeMarketplaceExperience({
           <div className="mt-[18px] shrink-0 lg:mt-0">
             <Link
               href="/partners/apply"
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[26px] bg-[#C9A45C] px-7 text-[15px] font-semibold text-[#121F3C] transition hover:bg-[#d5b36d] sm:w-auto"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[26px] bg-[#B58A52] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#d5b36d] sm:w-auto"
             >
               Apply as a partner
             </Link>
