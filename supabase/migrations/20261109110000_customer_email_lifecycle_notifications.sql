@@ -180,7 +180,7 @@ begin
     perform public.enqueue_customer_email_notification(
       'partner_application_submitted',
       new.applicant_id,
-      coalesce(account_email, new.email),
+      account_email,
       coalesce(profile_name, new.full_name),
       event_subject,
       event_payload,
@@ -371,7 +371,7 @@ create or replace function public.complete_customer_email_notification(
   target_notification_id uuid,
   next_delivery_status text,
   resolved_recipient_email text default null,
-  provider_message_id text default null,
+  resolved_provider_message_id text default null,
   error_detail text default null,
   backoff_seconds integer default 60
 )
@@ -388,7 +388,7 @@ begin
   update public.customer_email_notifications
   set delivery_status = next_delivery_status,
       recipient_email = coalesce(nullif(resolved_recipient_email, ''), recipient_email),
-      provider_message_id = coalesce(provider_message_id, provider_message_id),
+      provider_message_id = coalesce(resolved_provider_message_id, customer_email_notifications.provider_message_id),
       sent_at = case when next_delivery_status = 'sent' then now() else sent_at end,
       last_error = case when next_delivery_status = 'failed' then left(coalesce(error_detail, 'Delivery failed.'), 480) else null end,
       next_attempt_at = case
