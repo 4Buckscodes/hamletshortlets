@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { getBrowserSupabase, PARTNER_PROPERTY_SELECT } from '@/lib/next-supabase';
+import { dispatchPendingCommunications } from '@/lib/communications';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
   FocusedDrawer,
@@ -175,6 +176,7 @@ export default function AdminPropertiesPage() {
         verification_data: pillars,
       });
       if (rpcError) throw new Error(rpcError.message);
+      await dispatchPendingCommunications(db);
       setNotice(`"${selected.title}" updated to ${decision}.`);
       setSelected(null);
       await load();
