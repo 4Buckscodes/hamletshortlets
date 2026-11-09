@@ -274,13 +274,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // Best-effort trigger of notification outbox (never blocks request creation)
+  // Best-effort delivery through HAMLET's unified transactional email outbox.
   try {
-    await db.functions.invoke('booking-notifications', {
-      body: { booking_id: booking.id },
+    await fetch(new URL('/api/communications/dispatch', request.url), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
   } catch {
-    // Outbox entries remain durable in booking_notifications if provider is unconfigured.
+    // The database outbox remains durable; the scheduled worker retries it.
   }
 
   return NextResponse.json(
