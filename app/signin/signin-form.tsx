@@ -10,6 +10,7 @@ import {
   resolvePostSignUpRedirect,
 } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { dispatchPendingCommunications } from '@/lib/communications';
 import { GoogleContinueButton } from '@/components/auth/GoogleContinueButton';
 import {
   FormField,
@@ -88,6 +89,7 @@ export default function SignInForm() {
   async function resolveRoleAndNavigate(userId: string, isSignup: boolean) {
     if (!client) return;
     if (isSignup) {
+      await dispatchPendingCommunications(client);
       window.location.assign(resolvePostSignUpRedirect(requestedNext));
       return;
     }
@@ -96,6 +98,7 @@ export default function SignInForm() {
       .select('role')
       .eq('id', userId)
       .maybeSingle();
+    await dispatchPendingCommunications(client);
     const target = resolveNextAppPostSignInRedirect(
       profile?.role as string | undefined,
       requestedNext,
