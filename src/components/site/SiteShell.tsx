@@ -983,6 +983,7 @@ export function StayListingCard({
   );
   const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [carouselPaused, setCarouselPaused] = useState(false);
 
   const usableImages = useMemo(
     () => validImages.filter(url => !failedUrls[url]),
@@ -1001,6 +1002,17 @@ export function StayListingCard({
   const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
   const detailHref = `/stays/${encodeURIComponent(stay.id)}${querySuffix}`;
 
+  useEffect(() => {
+    if (usableImages.length < 2 || carouselPaused) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (media.matches) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      setPhotoIndex(prev => (prev + 1) % usableImages.length);
+    }, 4800);
+    return () => window.clearInterval(timer);
+  }, [carouselPaused, usableImages.length]);
+
   function stepPhoto(event: MouseEvent<HTMLButtonElement>, delta: number) {
     event.preventDefault();
     event.stopPropagation();
@@ -1010,7 +1022,7 @@ export function StayListingCard({
 
   return (
     <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay" onMouseEnter={() => setCarouselPaused(true)} onMouseLeave={() => setCarouselPaused(false)} onFocusCapture={() => setCarouselPaused(true)} onBlurCapture={() => setCarouselPaused(false)}>
         <Link
           href={detailHref}
           aria-label={`View ${stay.title} in ${locationText}`}
