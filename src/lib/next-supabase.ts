@@ -55,9 +55,10 @@ export function createServerUserSupabase(accessToken: string): SupabaseClient | 
  * with PostgreSQL 42703 before the Wayfinder migration is applied.
  */
 export const PUBLIC_PROPERTY_SELECT =
-  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,calendar_responsible_person,created_at,updated_at';
+  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at';
 
-export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},review_note`;
+/** Partner-only extension fields. Never add these to public listing selections. */
+export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},calendar_responsible_person,review_note`;
 
 export interface PublicStayRecord {
   id: string;
@@ -81,7 +82,6 @@ export interface PublicStayRecord {
   trust_label: string | null;
   first_available_date: string | null;
   availability_confirmation_status: string | null;
-  calendar_responsible_person: string | null;
   created_at: string;
   updated_at?: string | null;
 }
