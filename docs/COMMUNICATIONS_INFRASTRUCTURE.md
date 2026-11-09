@@ -20,6 +20,9 @@
 - Database trigger records partner application submissions and status changes.
 - Elsinore admin page at `/admin/communications` with unread count and mark-as-read.
 - Durable email dispatch queue with attempts, next-attempt time, delivery status and last error.
+- Separate private `customer_email_notifications` queue for customer-facing transactional mail, with idempotency keys, bounded retries and provider message IDs.
+- Customer lifecycle events: verified-account welcome, partner application receipt and status updates, and property submission / approval / correction / rejection updates. Draft property saves do not send email.
+- Property lifecycle events also create an operations alert in `admin_notifications`; partner-application operations alerts remain on the existing queue.
 - `admin-notifications-dispatch` Supabase Edge Function sends queued partner-application alerts to the configured operations inbox using Resend idempotency keys.
 - Claiming uses a database function with row locks and `SKIP LOCKED` to avoid concurrent workers claiming the same row.
 
