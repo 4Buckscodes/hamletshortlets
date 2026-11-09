@@ -68,7 +68,12 @@
     font-family: "Playfair Display Variable", "Playfair Display", Georgia, serif;
   }
 
-  .hamlet-depth {\n    transform-style: preserve-3d;\n    backface-visibility: hidden;\n  }\n\n  .pill {
+  .hamlet-depth {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+
+  .pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
