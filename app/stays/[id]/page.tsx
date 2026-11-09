@@ -25,6 +25,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import {
   PUBLIC_PROPERTY_SELECT,
   probePropertyWayfinderMeta,
+  toPublicStayRecord,
   type PublicStayRecord,
 } from '@/lib/next-supabase';
 import {
@@ -154,7 +155,7 @@ export default async function PropertyDetailPage({ params }: Props) {
     notFound();
   }
 
-  const stay = data as PublicStayRecord;
+  const stay = toPublicStayRecord(data as Record<string, unknown>);
   const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,
@@ -192,7 +193,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             propertyType: stay.property_type,
             bedrooms: stay.bedrooms,
             capacity: stay.capacity,
-            ownerNightlyRateNgn: stay.nightly_rate,
+            guestNightlyNgn: stay.guest_nightly_ngn,
           }}
         />
 
@@ -355,7 +356,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             <BookingRequestForm
               propertyId={stay.id}
               propertyTitle={stay.title}
-              nightlyRate={Number(stay.nightly_rate || 0)}
+              guestNightlyRate={Number(stay.guest_nightly_ngn || 0)}
               cleaningFee={Number(stay.cleaning_fee || 0)}
               deposit={Number(stay.refundable_deposit || 0)}
               capacity={stay.capacity}
