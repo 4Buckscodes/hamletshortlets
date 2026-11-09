@@ -48,6 +48,7 @@ export interface CustomerEmailCompletion {
 
 export interface CustomerEmailDispatchDeps {
   internalDispatchSecret: string | undefined;
+  verifyVaultDispatchSecret?: (candidate: string) => Promise<boolean>;
   supabaseConfigured: boolean;
   resendApiKey: string | undefined;
   resendFromEmail: string | undefined;
@@ -275,7 +276,16 @@ export async function handleCustomerEmailDispatch(
 
   const expected = deps.internalDispatchSecret?.trim() ?? '';
   const supplied = req.headers.get('x-hamlet-internal-secret')?.trim() ?? '';
-  if (expected.length < 32 || !timingSafeEqual(supplied, expected)) {
+  let authorizedByEnvironment = expected.length >= 32 && timingSafeEqual(supplied, expected);
+  let authorizedByVault = false;
+  if (!authorizedByEnvironment && supplied.length >= 32 && deps.verifyVaultDispatchSecret) {
+    try {
+      authorizedByVault = await deps.verifyVaultDispatchSecret(supplied);
+    } catch {
+      authorizedByVault = false;
+    }
+  }
+  if (!authorizedByEnvironment && !authorizedByVault) {
     return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
 
