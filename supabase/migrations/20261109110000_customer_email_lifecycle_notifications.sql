@@ -83,14 +83,15 @@ set search_path = ''
 as $$
 declare
   account_email text;
-  confirmation_time timestamptz;
+  confirmation_marker text;
 begin
-  select u.email, u.email_confirmed_at
-    into account_email, confirmation_time
+  select u.email,
+         coalesce(to_jsonb(u) ->> 'email_confirmed_at', to_jsonb(u) ->> 'confirmed_at')
+    into account_email, confirmation_marker
   from auth.users u
   where u.id = new.id;
 
-  if confirmation_time is not null and account_email is not null then
+  if nullif(confirmation_marker, '') is not null and account_email is not null then
     perform public.enqueue_customer_email_notification(
       'registration_completed',
       new.id,
@@ -115,7 +116,8 @@ as $$
 declare
   profile_name text;
 begin
-  if old.email_confirmed_at is null and new.email_confirmed_at is not null
+  if coalesce(to_jsonb(old) ->> 'email_confirmed_at', to_jsonb(old) ->> 'confirmed_at') is null
+     and coalesce(to_jsonb(new) ->> 'email_confirmed_at', to_jsonb(new) ->> 'confirmed_at') is not null
      and new.email is not null then
     select p.full_name into profile_name
     from public.profiles p
@@ -145,7 +147,7 @@ create trigger customer_registration_welcome_from_profile
 
 drop trigger if exists customer_registration_welcome_after_confirmation on auth.users;
 create trigger customer_registration_welcome_after_confirmation
-  after update of email_confirmed_at on auth.users
+  after update on auth.users
   for each row execute function public.enqueue_registration_welcome_after_confirmation();
 
 create or replace function public.enqueue_partner_application_customer_email()
