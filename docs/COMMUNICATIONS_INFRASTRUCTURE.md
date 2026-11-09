@@ -38,9 +38,9 @@ Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the Edge Fun
 
 ## Still required before operational use
 1. Apply the communications migrations to the intended Supabase project after reviewing the target project and migration history.
-2. Deploy both `booking-notifications` and `admin-notifications-dispatch` Edge Functions.
+2. Deploy `booking-notifications`, `admin-notifications-dispatch`, and `customer-notifications-dispatch` Edge Functions.
 3. Configure the secrets above in Supabase; no secret values belong in Git.
-4. Configure a trusted scheduled invocation for `admin-notifications-dispatch` using the internal secret. The worker is not self-scheduling; without a scheduler or operator invocation, queued events remain pending.
+4. Configure a trusted scheduled invocation for `admin-notifications-dispatch`, `customer-notifications-dispatch`, and `booking-notifications` (internal batch mode) using `x-hamlet-internal-secret`. The workers are not self-scheduling; without a scheduler or operator invocation, queued events and retryable failures remain pending.
 5. Create and verify the Zoho mailboxes/aliases before setting reply-to or changing MX records.
 6. Add Resend delivery/bounce webhook processing. An API acceptance response is not proof of inbox delivery.
 7. Test submission and status-change events end-to-end in a staging Supabase project first. Confirm idempotency, retry exhaustion, and admin-only access.
