@@ -1,98 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getBrowserSupabase } from '@/lib/next-supabase';
 import { PropertyListingWizard } from '@/components/forms/PropertyListingWizard';
 
+/**
+ * Property intake is intentionally rendered without a client-side role gate.
+ * The authenticated API, database RPCs and Storage RLS policies are the
+ * authorization boundary. This avoids stale/hydration-dependent browser role
+ * checks while still preventing guests and ineligible applicants from
+ * persisting listings or uploading media.
+ */
 export default function PropertySubmissionForm() {
-  const [checking, setChecking] = useState(true);
-  const [allowed, setAllowed] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    async function verifyPartner() {
-      try {
-        // Resolve the browser client inside the effect. The server-rendered
-        // useMemo value can be null and must not be reused during hydration;
-        // this also honours the browser auth client in the mobile upload flow.
-        const db = getBrowserSupabase();
-        if (!db) {
-          if (active) setChecking(false);
-          return;
-        }
-        const { data: session } = await db.auth.getSession();
-        const user = session.session?.user;
-        if (!user) {
-          window.location.assign('/signin?next=/partners/properties/new');
-          return;
-        }
-        const [{ data: profile, error: profileError }, { data: applications, error: applicationError }] =
-          await Promise.all([
-            db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
-            db
-              .from('partner_applications')
-              .select('id,status,role')
-              .eq('applicant_id', user.id)
-              .in('status', ['pending', 'needs_correction'])
-              .order('submitted_at', { ascending: false })
-              .limit(1),
-          ]);
-        const application = applications?.[0];
-        const canStartListing =
-          !applicationError &&
-          application &&
-          ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-            String(application.role),
-          );
-        if (active) {
-          setAllowed(
-            !profileError &&
-              (profile?.role === 'partner' ||
-                profile?.role === 'admin' ||
-                Boolean(canStartListing)),
-          );
-          setChecking(false);
-        }
-      } catch {
-        if (active) {
-          setAllowed(false);
-          setChecking(false);
-        }
-      }
-    }
-    void verifyPartner();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (checking) {
-    return (
-      <div className="rounded-3xl border border-ink-100 bg-white p-6 text-sm text-ink-600">
-        Checking partner permissions…
-      </div>
-    );
-  }
-
-  if (!allowed) {
-    return (
-      <div className="rounded-3xl border border-ink-200 bg-white p-7">
-        <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-          Apply as a property partner first
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Submit your partner application to unlock property uploads immediately. HAMLET reviews each property before it can appear publicly; partner verification is completed separately before earnings can be paid.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link href="/partners/apply" className="primary-button">
-            Open partner application →
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <PropertyListingWizard
       mode="create"
