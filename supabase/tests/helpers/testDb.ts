@@ -31,6 +31,7 @@ $$;
 create table if not exists auth.users (
   id uuid primary key default gen_random_uuid(),
   email varchar(255) unique,
+  email_confirmed_at timestamptz,
   raw_user_meta_data jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
@@ -83,6 +84,7 @@ export async function createMigratedTestDb(): Promise<PGlite> {
 export async function resetTestData(db: PGlite): Promise<void> {
   await db.exec(`
     truncate table
+      public.communications_outbox,
       public.admin_notifications,
       public.property_share_events,
       public.property_enquiries,
