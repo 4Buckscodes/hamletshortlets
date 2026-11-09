@@ -516,7 +516,7 @@ export default function BookingRequestForm({
               ) : (
                 <>
                   {nights > 0
-                    ? formatPrice(pricing.guestTotal)
+                    ? formatPrice(guestStayTotal)
                     : formatPrice(domesticNightly, { roundWhole: true })}
                   <span className="ml-1 font-sans text-xs font-normal text-ink-500">
                     {nights > 0 ? `total (${nights}n)` : '/ night'}
