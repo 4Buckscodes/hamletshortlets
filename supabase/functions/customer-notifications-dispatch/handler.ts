@@ -276,7 +276,7 @@ export async function handleCustomerEmailDispatch(
 
   const expected = deps.internalDispatchSecret?.trim() ?? '';
   const supplied = req.headers.get('x-hamlet-internal-secret')?.trim() ?? '';
-  let authorizedByEnvironment = expected.length >= 32 && timingSafeEqual(supplied, expected);
+  const authorizedByEnvironment = expected.length >= 32 && timingSafeEqual(supplied, expected);
   let authorizedByVault = false;
   if (!authorizedByEnvironment && supplied.length >= 32 && deps.verifyVaultDispatchSecret) {
     try {
