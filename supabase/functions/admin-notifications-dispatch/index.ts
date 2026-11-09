@@ -25,6 +25,13 @@ if (runtime) {
 
     return handleAdminNotificationsDispatch(req, {
       internalDispatchSecret: runtime.env.get('HAMLET_INTERNAL_DISPATCH_SECRET'),
+      verifyVaultDispatchSecret: async (candidate: string) => {
+        if (!db) return false;
+        const { data, error } = await db.rpc('verify_hamlet_email_dispatch_secret', {
+          candidate_secret: candidate,
+        });
+        return !error && data === true;
+      },
       supabaseConfigured: Boolean(db),
       resendApiKey: runtime.env.get('RESEND_API_KEY'),
       resendFromEmail: runtime.env.get('RESEND_FROM_EMAIL'),
