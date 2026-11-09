@@ -37,16 +37,16 @@ const MAINLAND_CHIPS = ['Yaba', 'Surulere', 'Shomolu'] as const;
 
 const LAGOS_LANDMARKS = [
   {
-    src: 'https://images.unsplash.com/photo-1719314313652-d9835e0c52c3?auto=format&fit=crop&fm=jpg&q=85&w=1800',
-    alt: 'Lekki–Ikoyi Link Bridge over the Lagos Lagoon',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Night-view-of-lekki-link-bridge.jpg?width=1500',
+    alt: 'Lekki–Ikoyi Link Bridge illuminated at night over the Lagos Lagoon',
   },
   {
-    src: 'https://www.ekoatlantic.com/wp-content/uploads/2023/11/DJI_0042.jpg',
-    alt: 'Eko Atlantic coastline and skyline, Lagos',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Eko_Atlantic_(Lagos)_Skyline.jpg?width=1200',
+    alt: 'Eko Atlantic skyline on the Lagos coastline',
   },
   {
-    src: 'https://global.ariseplay.com/amg/www.arise.tv/uploads/2021/02/National-Theatre.jpg',
-    alt: 'National Theatre, Iganmu, Lagos',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/National_Arts_Theatre_Iganmu_Lagos.jpg?width=1200',
+    alt: 'National Arts Theatre in Iganmu, Lagos',
   },
 ] as const;
 
@@ -625,21 +625,36 @@ export function HomeMarketplaceExperience({
     <div className="bg-[#F7F4ED] text-[#173F32]">
       {/* ── Hero: Lagos landmarks + Cream Search Sheet ── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#102D24] via-[#173F32] to-[#285744] text-[#F7F4ED]">
-        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-6 lg:pt-8">
-          <div className="px-5 pt-8 pb-8 lg:col-span-6 lg:px-0 lg:pt-10 lg:pb-12">
-            <h1 className="mt-0 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F7F4ED] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
-              Lagos feels better here.
+        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-6 lg:px-6 lg:pt-8">
+          <div className="relative z-10 px-5 pt-10 pb-7 lg:col-span-5 lg:px-0 lg:pt-12 lg:pb-14">
+            <div className="pointer-events-none absolute -left-24 top-4 h-64 w-64 rounded-full bg-[#B58A52]/15 blur-3xl" />
+            <h1 className="relative mt-0 max-w-[560px] font-display text-[38px] font-bold leading-[1.04] tracking-tight text-[#F7F4ED] min-[375px]:text-[44px] sm:text-5xl lg:text-[58px]">
+              Find your place in Lagos.
             </h1>
+            <p className="relative mt-4 max-w-[390px] text-[15px] leading-7 text-[#E1E9E1] sm:text-base">
+              From the Island to the Mainland, discover stays that feel like yours.
+            </p>
+            <div className="relative mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/stays" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#C99A5A] px-6 text-sm font-bold text-[#102D24] shadow-[0_8px_24px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#D9AE73]">
+                Explore stays <span aria-hidden="true" className="ml-2">↗</span>
+              </Link>
+              <Link href="/lagos" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/35 bg-white/[0.06] px-6 text-sm font-semibold text-white transition hover:bg-white/10">
+                Discover Lagos
+              </Link>
+            </div>
           </div>
 
-          <div className="relative px-5 pb-8 lg:col-span-6 lg:px-0 lg:pb-10">
-            <div className="relative mx-auto grid aspect-[1.28/1] w-full max-w-[560px] grid-cols-[1.15fr_.85fr] grid-rows-2 gap-3 sm:gap-4">
-              <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[28px] border border-white/25 bg-[#285744] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]">
-                <img src={LAGOS_LANDMARKS[0].src} alt={LAGOS_LANDMARKS[0].alt} fetchPriority="high" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+          <div className="relative px-5 pb-9 lg:col-span-7 lg:px-0 lg:pb-10">
+            <div className="pointer-events-none absolute -right-16 top-8 h-72 w-72 rounded-full bg-[#C99A5A]/15 blur-3xl" />
+            <div className="relative mx-auto grid aspect-[1.22/1] w-full max-w-[680px] grid-cols-[1.25fr_.9fr] grid-rows-2 gap-3 sm:gap-4 lg:translate-x-3">
+              <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[30px] border border-white/25 bg-[#285744] shadow-[0_28px_60px_-26px_rgba(0,0,0,.72)]">
+                <img src={LAGOS_LANDMARKS[0].src} alt={LAGOS_LANDMARKS[0].alt} fetchPriority="high" onError={event => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#102D24]/35 via-transparent to-white/5" />
               </div>
               {LAGOS_LANDMARKS.slice(1).map(landmark => (
-                <div key={landmark.src} className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]">
-                  <img src={landmark.src} alt={landmark.alt} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+                <div key={landmark.src} className="hamlet-depth group relative overflow-hidden rounded-[25px] border border-white/25 bg-gradient-to-br from-[#B58A52] to-[#285744] shadow-[0_22px_48px_-24px_rgba(0,0,0,.68)]">
+                  <img src={landmark.src} alt={landmark.alt} loading="lazy" decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#102D24]/25 to-transparent" />
                 </div>
               ))}
             </div>
