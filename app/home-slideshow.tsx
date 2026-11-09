@@ -35,21 +35,6 @@ const ISLAND_CHIPS = [
 
 const MAINLAND_CHIPS = ['Yaba', 'Surulere', 'Shomolu'] as const;
 
-const LAGOS_LANDMARKS = [
-  {
-    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Night-view-of-lekki-link-bridge.jpg?width=1500',
-    alt: 'Lekki–Ikoyi Link Bridge illuminated at night over the Lagos Lagoon',
-  },
-  {
-    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Eko_Atlantic_(Lagos)_Skyline.jpg?width=1200',
-    alt: 'Eko Atlantic skyline on the Lagos coastline',
-  },
-  {
-    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/National_Arts_Theatre_Iganmu_Lagos.jpg?width=1200',
-    alt: 'National Arts Theatre in Iganmu, Lagos',
-  },
-] as const;
-
 const ALL_CHIPS = [...ISLAND_CHIPS, ...MAINLAND_CHIPS] as const;
 
 const VERIFICATION_PILLARS = [
@@ -623,112 +608,44 @@ export function HomeMarketplaceExperience({
 
   return (
     <div className="bg-[#F7F4ED] text-[#173F32]">
-      {/* ── Hero: Lagos landmarks + Cream Search Sheet ── */}
-      <section
-        className="relative isolate overflow-hidden text-[#F7F4ED]"
-        style={{
-          backgroundColor: '#102D24',
-          backgroundImage: [
-            'radial-gradient(ellipse at 78% 18%, rgba(190, 151, 96, 0.25) 0%, transparent 34%)',
-            'radial-gradient(ellipse at 12% 82%, rgba(69, 119, 96, 0.42) 0%, transparent 42%)',
-            'radial-gradient(ellipse at 52% 48%, rgba(37, 82, 65, 0.55) 0%, transparent 58%)',
-            'linear-gradient(118deg, #0D2922 0%, #153D31 48%, #1B4939 100%)',
-          ].join(', '),
-        }}
-      >
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-0 opacity-[0.13]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)', backgroundSize: '54px 54px', maskImage: 'linear-gradient(to bottom, black, transparent 88%)' }} />
-        <div aria-hidden="true" className="pointer-events-none absolute -right-28 -top-40 -z-0 h-[520px] w-[520px] rounded-full border border-[#D5B27B]/20 shadow-[0_0_0_42px_rgba(213,178,123,.035),0_0_0_92px_rgba(213,178,123,.025)]" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-52 left-[28%] -z-0 h-[420px] w-[680px] rounded-full bg-[#B58A52]/[0.07] blur-3xl" />
-        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-6 lg:px-6 lg:pt-8">
-          <div className="relative z-10 px-5 pt-10 pb-7 lg:col-span-5 lg:px-0 lg:pt-12 lg:pb-14">
-            <div className="pointer-events-none absolute -left-24 top-4 h-64 w-64 rounded-full bg-[#B58A52]/15 blur-3xl" />
-            <h1 className="relative mt-0 max-w-[560px] font-display text-[38px] font-bold leading-[1.04] tracking-tight text-[#F7F4ED] min-[375px]:text-[44px] sm:text-5xl lg:text-[58px]">
-              Find your place in Lagos.
+      {/* ── Editorial Lagos hero + integrated booking search ── */}
+      <section className="relative isolate min-h-[660px] overflow-hidden bg-[#172B24] text-[#FBF8F1] sm:min-h-[700px] lg:min-h-[720px]">
+        <div aria-hidden="true" className="absolute inset-0 -z-20 bg-cover bg-[center_48%]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1719314313652-d9835e0c52c3?auto=format&fit=crop&fm=jpg&q=90&w=2400')" }} />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(10,24,19,.84)_0%,rgba(10,24,19,.58)_48%,rgba(10,24,19,.16)_100%),linear-gradient(0deg,rgba(10,24,19,.76)_0%,transparent_58%)]" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #B58A52 0, transparent 28%)' }} />
+
+        <div className="mx-auto flex min-h-[660px] max-w-[1320px] flex-col justify-between px-5 pb-8 pt-16 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
+          <div className="max-w-[780px] pt-5 sm:pt-10 lg:pt-12">
+            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#E7C99B]">Lagos · Nigeria</p>
+            <h1 className="max-w-[760px] font-display text-[46px] font-medium leading-[0.99] tracking-[-0.045em] text-[#FBF8F1] min-[390px]:text-[52px] sm:text-[68px] lg:text-[88px]">
+              Find a stay that feels like <span className="italic text-[#E7C99B]">Lagos.</span>
             </h1>
-            <p className="relative mt-4 max-w-[390px] text-[15px] leading-7 text-[#E1E9E1] sm:text-base">
-              From the Island to the Mainland, discover stays that feel like yours.
+            <p className="mt-5 max-w-[480px] text-[15px] leading-7 text-white/85 sm:text-[17px] sm:leading-8">
+              Thoughtful spaces. Distinct neighbourhoods. A better way to experience the city.
             </p>
-            <div className="relative mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/stays" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#C99A5A] px-6 text-sm font-bold text-[#102D24] shadow-[0_8px_24px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5 hover:bg-[#D9AE73]">
-                Explore stays <span aria-hidden="true" className="ml-2">↗</span>
-              </Link>
-              <Link href="/lagos" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/35 bg-white/[0.06] px-6 text-sm font-semibold text-white transition hover:bg-white/10">
-                Discover Lagos
-              </Link>
-            </div>
+            <Link href="/stays" className="mt-7 inline-flex min-h-12 items-center gap-3 border-b border-[#E7C99B] pb-1 text-[14px] font-semibold text-white transition hover:gap-5">
+              Explore stays <span aria-hidden="true" className="text-[#E7C99B]">↗</span>
+            </Link>
           </div>
 
-          <div className="relative px-5 pb-9 lg:col-span-7 lg:px-0 lg:pb-10">
-            <div className="pointer-events-none absolute -right-16 top-8 h-72 w-72 rounded-full bg-[#C99A5A]/15 blur-3xl" />
-            <div className="relative mx-auto grid aspect-[1.22/1] w-full max-w-[680px] grid-cols-[1.25fr_.9fr] grid-rows-2 gap-3 sm:gap-4 lg:translate-x-3">
-              <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[30px] border border-white/25 bg-[#285744] shadow-[0_28px_60px_-26px_rgba(0,0,0,.72)]">
-                <img src={LAGOS_LANDMARKS[0].src} alt={LAGOS_LANDMARKS[0].alt} fetchPriority="high" onError={event => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#102D24]/35 via-transparent to-white/5" />
-              </div>
-              {LAGOS_LANDMARKS.slice(1).map(landmark => (
-                <div key={landmark.src} className="hamlet-depth group relative overflow-hidden rounded-[25px] border border-white/25 bg-gradient-to-br from-[#B58A52] to-[#285744] shadow-[0_22px_48px_-24px_rgba(0,0,0,.68)]">
-                  <img src={landmark.src} alt={landmark.alt} loading="lazy" decoding="async" onError={event => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#102D24]/25 to-transparent" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Curved Warm Ivory Search Sheet */}
-        <div
-          role="search"
-          aria-label="Search Lagos shortlets"
-          className="relative z-10 rounded-t-[28px] bg-[#F7F4ED] px-5 pt-[22px] pb-[26px] text-[#173F32] lg:rounded-t-[36px] lg:px-6 lg:pt-7 lg:pb-8"
-        >
-          <div className="mx-auto max-w-2xl">
-            <button
-              type="button"
-              onClick={() => setSheetOpen(true)}
-              aria-haspopup="dialog"
-              aria-expanded={sheetOpen}
-              className="flex min-h-[68px] w-full cursor-pointer items-center gap-3.5 rounded-[34px] border border-[#D9D8CD] bg-white pr-2.5 pl-[22px] text-left shadow-[0_6px_18px_rgba(18,31,60,0.08)] transition hover:border-[#B58A52]"
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#755638"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                aria-hidden="true"
-                className="shrink-0"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20l-3.5-3.5" />
-              </svg>
-
-              <span className="min-w-0 flex-1">
-                <strong className="block truncate text-[16px] font-semibold text-[#173F32]">
-                  {pillWhereLabel}
-                </strong>
-                <span className="mt-0.5 block truncate text-[13px] text-[#596B60]">
-                  {pillSubLabel}
-                </span>
+          <div role="search" aria-label="Search Lagos shortlets" className="relative z-10 mx-auto mt-12 w-full max-w-[1040px] rounded-[22px] border border-white/55 bg-[#FBF8F1] p-2.5 text-[#173F32] shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-xl sm:rounded-full sm:p-2">
+            <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-expanded={sheetOpen} aria-label="Find a stay" className="grid min-h-[66px] w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-3 rounded-full px-4 text-left transition hover:bg-[#F1EDE4] sm:grid-cols-[1.2fr_1fr_.8fr_auto] sm:px-5">
+              <span className="min-w-0 border-b border-[#DED7C9] pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
+                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Destination</span>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{pillWhereLabel}</strong>
               </span>
-
-              <span
-                aria-hidden="true"
-                className="ml-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#173F32] text-[#B58A52]"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                >
-                  <path d="M4 6h16M7 12h10M10 18h4" />
-                </svg>
+              <span className="hidden min-w-0 border-r border-[#DED7C9] px-5 sm:block">
+                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Dates</span>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{checkIn && checkOut ? `${formatPillDate(checkIn)} – ${formatPillDate(checkOut)}` : 'Add your dates'}</strong>
               </span>
+              <span className="hidden min-w-0 px-5 sm:block">
+                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Guests</span>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{guests} {guests === 1 ? 'guest' : 'guests'}</strong>
+              </span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#173F32] text-[#F7F4ED] shadow-[0_6px_18px_rgba(23,63,50,.24)] transition hover:bg-[#285744]">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              </span>
+              <span className="col-span-2 px-1 text-[12px] text-[#766F63] sm:hidden">{pillSubLabel}</span>
             </button>
           </div>
         </div>
@@ -938,16 +855,14 @@ export function HomeMarketplaceExperience({
       {/* ── Explore Lagos Neighbourhoods Rail (Immediately Below Filters) ── */}
       <section
         aria-labelledby="neighbourhood-rail-heading"
-        className="mx-auto max-w-6xl space-y-3.5 px-5 pt-2 pb-6 sm:px-6 lg:pt-4 lg:pb-8"
+        className="mx-auto max-w-[1320px] space-y-5 px-5 pt-12 pb-8 sm:px-8 lg:pt-16 lg:pb-10"
       >
         <div className="flex items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
-              Island &amp; Lagos Mainland corridors
-            </p>
+            
             <h2
               id="neighbourhood-rail-heading"
-              className="mt-1 font-display text-xl font-bold text-ink-950 sm:text-2xl"
+              className="mt-0 font-display text-[27px] font-medium tracking-tight text-[#173F32] sm:text-[34px]"
             >
               Explore Lagos neighbourhoods
             </h2>
@@ -1061,10 +976,10 @@ export function HomeMarketplaceExperience({
       <section
         id="stays"
         aria-label="Verified stays"
-        className="mx-auto max-w-6xl px-5 pt-2 pb-8 sm:px-6 lg:pt-4 lg:pb-12"
+        className="mx-auto max-w-[1320px] px-5 pt-5 pb-12 sm:px-8 lg:pt-8 lg:pb-20"
       >
-        <div className="mb-4 flex items-baseline justify-between gap-3 lg:mb-6">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#173F32] lg:text-[32px]">
+        <div className="mb-6 flex items-baseline justify-between gap-3 lg:mb-8">
+          <h2 className="m-0 font-display text-[29px] font-medium leading-[1.12] tracking-tight text-[#173F32] lg:text-[38px]">
             Verified stays
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#596B60]">
@@ -1129,7 +1044,7 @@ export function HomeMarketplaceExperience({
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 ${
+            className={`grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-7 ${
               displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
             }`}
           >
@@ -1150,7 +1065,7 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── HAMLET editorial welcome and ecosystem strip ── */}
-      <section className="mx-auto grid max-w-6xl gap-5 px-5 pt-8 pb-5 sm:px-6 lg:grid-cols-[1.2fr_.8fr] lg:gap-8 lg:pt-12">
+      <section className="mx-auto grid max-w-[1320px] gap-5 px-5 pt-8 pb-16 sm:px-8 lg:grid-cols-[1.2fr_.8fr] lg:gap-8 lg:pt-12">
         <div className="hamlet-depth relative overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/90 to-[#EEEAE0] p-6 shadow-[0_16px_42px_-24px_rgba(23,63,50,.28),inset_0_1px_0_rgba(255,255,255,.9)] sm:p-8">
           <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#B58A52]/35" />
           <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#B58A52]/35" />
