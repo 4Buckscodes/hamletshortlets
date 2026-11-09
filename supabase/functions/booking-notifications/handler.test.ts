@@ -25,13 +25,17 @@ function makeDeps() {
   };
 }
 
-async function dispatch(body: unknown, deps: ReturnType<typeof makeDeps>['deps']) {
+async function dispatch(
+  body: unknown,
+  deps: ReturnType<typeof makeDeps>['deps'],
+  secret = INTERNAL_SECRET,
+) {
   return handleBookingNotifications(
     new Request('https://hamlet.test/functions/v1/booking-notifications', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-hamlet-internal-secret': INTERNAL_SECRET,
+        'x-hamlet-internal-secret': secret,
       },
       body: JSON.stringify(body),
     }),
@@ -48,6 +52,27 @@ describe('booking notification dispatch request contract', () => {
     expect(response.status).toBe(200);
     expect(claimPendingNotifications).toHaveBeenCalledWith({
       bookingId: 'booking-123',
+      batchLimit: 20,
+      ignoreBackoff: false,
+    });
+  });
+
+  it('accepts a Vault-backed scheduler secret when the Edge Function secret is not configured', async () => {
+    const vaultSecret = 'hamlet-vault-dispatch-secret-with-more-than-32-characters';
+    const { deps, claimPendingNotifications } = makeDeps();
+    const verifyVaultDispatchSecret = vi.fn(async (candidate: string) => candidate === vaultSecret);
+    const depsWithVault = {
+      ...deps,
+      internalDispatchSecret: undefined,
+      verifyVaultDispatchSecret,
+    };
+
+    const response = await dispatch({}, depsWithVault, vaultSecret);
+
+    expect(response.status).toBe(200);
+    expect(verifyVaultDispatchSecret).toHaveBeenCalledWith(vaultSecret);
+    expect(claimPendingNotifications).toHaveBeenCalledWith({
+      bookingId: null,
       batchLimit: 20,
       ignoreBackoff: false,
     });
