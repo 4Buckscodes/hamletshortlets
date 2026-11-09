@@ -467,6 +467,7 @@ export function filterAndSortApprovedStays(
 
   sorted.sort((a, b) => {
     const priceA = getValidPublicGuestNightlyNgn(a.guest_nightly_ngn);
+    const priceB = getValidPublicGuestNightlyNgn(b.guest_nightly_ngn);
 
     if (filters.sort === 'newest') {
       return String(b.created_at || '').localeCompare(String(a.created_at || ''));
