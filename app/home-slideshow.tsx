@@ -163,7 +163,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]">
+    <article className="hamlet-depth flex flex-col overflow-hidden rounded-[26px] border border-[#E8E6DD] bg-white shadow-[0_3px_8px_rgba(18,31,60,0.05),0_18px_42px_-20px_rgba(18,31,60,0.24)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_-12px_rgba(18,31,60,0.32)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
       <div className="relative aspect-[16/10] overflow-hidden bg-[#285744] sm:aspect-[4/3]">
         {images.length > 0 ? (
@@ -435,6 +435,11 @@ export function HomeMarketplaceExperience({
     [approvedStays],
   );
 
+  const heroInteriorStays = useMemo(
+    () => bookableStays.filter(stay => (stay.image_urls ?? []).some(url => url?.trim())).slice(0, 3),
+    [bookableStays],
+  );
+
   const displayedStays = useMemo(
     () =>
       activeRailArea
@@ -598,41 +603,12 @@ export function HomeMarketplaceExperience({
             </h1>
           </div>
 
-          <div className="relative lg:col-span-6 lg:min-h-[330px]">
-            <div className="relative mx-auto mt-5 aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-[30px] border border-white/15 bg-gradient-to-br from-[#D9B98B] via-[#8EA99A] to-[#173F32] shadow-[0_30px_70px_-35px_rgba(0,0,0,0.65)] lg:mt-0">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,235,190,0.85),transparent_24%),linear-gradient(150deg,rgba(255,255,255,0.14),transparent_50%)]" />
-              <svg viewBox="0 0 560 430" role="img" aria-label="Illustrated Lagos lagoon skyline and bridge at sunset" className="absolute inset-0 h-full w-full">
-                <defs>
-                  <linearGradient id="lagoonSky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#D9B98B" />
-                    <stop offset="0.56" stopColor="#E9D6B7" />
-                    <stop offset="1" stopColor="#6F9689" />
-                  </linearGradient>
-                  <linearGradient id="lagoonWater" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#648A7D" />
-                    <stop offset="1" stopColor="#173F32" />
-                  </linearGradient>
-                </defs>
-                <path d="M0 0h560v248H0z" fill="url(#lagoonSky)" />
-                <circle cx="416" cy="88" r="42" fill="#F6E4C6" opacity=".8" />
-                <path d="M0 246h560v184H0z" fill="url(#lagoonWater)" />
-                <path d="M0 250c98-22 156-20 247-2 102 20 186 14 313-9v24H0z" fill="#D9C19D" opacity=".55" />
-                <g fill="#274A3D">
-                  <path d="M22 244V160h44v84zm54 0V126h34v118zm45 0V177h52v67zm64 0V142h34v102zm46 0V112h48v132zm62 0V154h37v90zm50 0V130h43v114zm58 0V176h48v68zm59 0V147h39v97zm49 0V180h34v64z" />
-                </g>
-                <g stroke="#E7D2A9" strokeWidth="3" fill="none" opacity=".9">
-                  <path d="M0 262c116-55 255-65 390-12 62 24 116 26 170 9" />
-                  <path d="M82 245l100-102 90 102M182 143v103M280 245l100-102 90 102M380 143v103" />
-                  <path d="M0 276h560" strokeWidth="2" opacity=".65" />
-                </g>
-                <g stroke="#D9C19D" strokeWidth="2" opacity=".55">
-                  <path d="M40 303h135M222 324h105M370 300h142M92 357h205M330 374h150" />
-                </g>
-                <path d="M0 405c98-27 164-20 256 0 111 23 201 5 304-13v38H0z" fill="#102D24" opacity=".62" />
-              </svg>
-              <div className="absolute bottom-4 left-4 rounded-full border border-white/35 bg-[#102D24]/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#F7F4ED] backdrop-blur">
-                Lagos Island · Mainland · Beyond
-              </div>
+          <div className="relative px-5 pb-8 lg:col-span-6 lg:px-0 lg:pb-10">
+            <div className="relative mx-auto grid aspect-[1.28/1] w-full max-w-[560px] grid-cols-[1.15fr_.85fr] grid-rows-2 gap-3 sm:gap-4">
+              {heroInteriorStays[0] && <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[28px] border border-white/25 bg-[#285744] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]"><img src={heroInteriorStays[0].image_urls?.[0]} alt="Warm, contemporary shortlet interior in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
+              {heroInteriorStays[1] && <div className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]"><img src={heroInteriorStays[1].image_urls?.[0]} alt="Thoughtfully furnished shortlet living space in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
+              {heroInteriorStays[2] && <div className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]"><img src={heroInteriorStays[2].image_urls?.[0]} alt="Refined shortlet bedroom interior in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
+              {heroInteriorStays.length === 0 && <div className="col-span-2 row-span-2 rounded-[28px] border border-white/20 bg-gradient-to-br from-[#B58A52] via-[#8EA99A] to-[#173F32] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]" />}
             </div>
           </div>
         </div>
@@ -1113,7 +1089,7 @@ export function HomeMarketplaceExperience({
 
       {/* ── HAMLET editorial welcome and ecosystem strip ── */}
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pt-8 pb-5 sm:px-6 lg:grid-cols-[1.2fr_.8fr] lg:gap-8 lg:pt-12">
-        <div className="relative overflow-hidden rounded-[28px] border border-[#E8E6DD] bg-[#EEEAE0] p-6 sm:p-8">
+        <div className="hamlet-depth relative overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/90 to-[#EEEAE0] p-6 shadow-[0_16px_42px_-24px_rgba(23,63,50,.28),inset_0_1px_0_rgba(255,255,255,.9)] sm:p-8">
           <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#B58A52]/35" />
           <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#B58A52]/35" />
           <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#755638]">The HAMLET difference</p>
@@ -1129,7 +1105,7 @@ export function HomeMarketplaceExperience({
             ))}
           </div>
         </div>
-        <div className="flex flex-col justify-between overflow-hidden rounded-[28px] bg-[#173F32] p-6 text-[#F7F4ED] sm:p-8">
+        <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-[#245744] via-[#173F32] to-[#102D24] p-6 text-[#F7F4ED] shadow-[0_22px_48px_-22px_rgba(10,35,27,.62),inset_0_1px_0_rgba(255,255,255,.14)] sm:p-8">
           <div>
             <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#D5B879]">More than a place to stay</p>
             <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
@@ -1142,25 +1118,6 @@ export function HomeMarketplaceExperience({
         </div>
       </section>
 
-      {/* ── Partner CTA Card ── */}
-      <section className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14">
-        <div className="rounded-[28px] bg-[#173F32] px-[22px] py-[26px] text-[#F7F4ED] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
-          <div className="lg:max-w-2xl">
-            <h2 className="mt-2.5 mb-2 font-display text-[24px] font-bold leading-[1.2] text-[#F7F4ED] lg:text-[30px]">
-              Own or manage a verified shortlet in Lagos?
-            </h2>
-          </div>
-
-          <div className="mt-[18px] shrink-0 lg:mt-0">
-            <Link
-              href="/partners/apply"
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[26px] bg-[#B58A52] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#D5B879] sm:w-auto"
-            >
-              Apply as a partner
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
