@@ -1164,7 +1164,7 @@ export function HomeMarketplaceExperience({
           <div className="mt-[18px] shrink-0 lg:mt-0">
             <Link
               href="/partners/apply"
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[26px] bg-[#B58A52] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#d5b36d] sm:w-auto"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[26px] bg-[#B58A52] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#D5B879] sm:w-auto"
             >
               Apply as a partner
             </Link>
