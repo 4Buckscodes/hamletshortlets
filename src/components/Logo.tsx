@@ -11,7 +11,7 @@ export function HamletMark({
 }) {
   const rawId = useId();
   const gradId = `hamlet-gold-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  const stemFill = contained || light ? '#FFFFFF' : '#0E1F3B';
+  const stemFill = contained || light ? '#FFFFFF' : '#173F32';
 
   return (
     <svg
@@ -24,17 +24,17 @@ export function HamletMark({
     >
       <defs>
         <linearGradient id={gradId} x1="12" y1="31.8" x2="52" y2="31.8" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#946E21" />
-          <stop offset="16%" stopColor="#C9A44A" />
-          <stop offset="38%" stopColor="#E1C26E" />
-          <stop offset="52%" stopColor="#F6E5AB" />
-          <stop offset="68%" stopColor="#C9A44A" />
-          <stop offset="86%" stopColor="#B68E35" />
-          <stop offset="100%" stopColor="#8E691E" />
+          <stop offset="0%" stopColor="#755638" />
+          <stop offset="16%" stopColor="#B58A52" />
+          <stop offset="38%" stopColor="#D5B879" />
+          <stop offset="52%" stopColor="#F3E7CF" />
+          <stop offset="68%" stopColor="#B58A52" />
+          <stop offset="86%" stopColor="#987044" />
+          <stop offset="100%" stopColor="#755638" />
         </linearGradient>
       </defs>
 
-      {contained && <rect x="2" y="2" width="60" height="60" rx="14" fill="#0E1F3B" />}
+      {contained && <rect x="2" y="2" width="60" height="60" rx="14" fill="#173F32" />}
 
       <g transform={contained ? 'translate(5.12 5.12) scale(0.84)' : undefined}>
         {/* Left bracketed serif pillar */}
