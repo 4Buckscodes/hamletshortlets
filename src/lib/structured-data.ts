@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { hasReliableLocationData } from './areas';
 import {
   formatAccommodationLabel,
-  getValidGuestNightlyNgn,
+  getValidPublicGuestNightlyNgn,
   isApprovedBookableStay,
 } from './discovery';
 import type { PublicStayRecord } from './next-supabase';
@@ -692,7 +692,7 @@ export function buildPropertyDetailSchema({
     }));
   }
 
-  const domesticNightlyNgn = getValidGuestNightlyNgn(stay.nightly_rate);
+  const domesticNightlyNgn = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
   if (domesticNightlyNgn !== null) {
     vacationRental.offers = {
       '@type': 'Offer',
