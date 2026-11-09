@@ -19,7 +19,7 @@ import {
   type CorridorSideFilter,
 } from '@/lib/discovery';
 import type { PublicStayRecord } from '@/lib/next-supabase';
-import { APPROVED_OWNER_SERVICES_POLICY_COPY, lagosIsoDateOffset } from '@/lib/pricing';
+import { lagosIsoDateOffset } from '@/lib/pricing';
 
 export interface HomeMarketplaceExperienceProps {
   approvedStays: PublicStayRecord[];
@@ -165,7 +165,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#285744]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#285744] sm:aspect-[4/3]">
         {images.length > 0 ? (
           <>
             <div
@@ -253,7 +253,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
       </div>
 
       {/* Card Body */}
-      <div className="flex flex-1 flex-col px-5 pt-[18px] pb-5">
+      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4 sm:px-5 sm:pt-[18px] sm:pb-5">
         <div className="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.2px] text-[#755638]">
           <span className="rounded-[12px] bg-[#173F32] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#B58A52]">
             {isMainland ? 'Mainland' : 'Island'}
@@ -263,14 +263,14 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           </span>
         </div>
 
-        <h3 className="mt-2.5 font-display text-[22px] font-bold leading-[1.25] text-[#173F32]">
+        <h3 className="mt-2 font-display text-[18px] font-bold leading-[1.2] text-[#173F32] sm:mt-2.5 sm:text-[22px]">
           <Link href={detailHref} className="transition hover:text-[#755638]">
             {property.title}
           </Link>
         </h3>
 
         {/* Bed / Bath / Guest Facts */}
-        <ul className="mt-3 flex list-none flex-wrap gap-3.5 p-0 text-[14px] text-[#34483D]">
+        <ul className="mt-2.5 flex list-none flex-wrap gap-3 p-0 text-[13px] text-[#34483D] sm:mt-3 sm:gap-3.5 sm:text-[14px]">
           <li className="inline-flex items-center gap-1.5">
             <svg
               width="16"
@@ -331,7 +331,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
         {/* Amenity Pills */}
         {visibleAmenities.length > 0 && (
-          <div className="mt-3.5 flex flex-wrap gap-1.5">
+          <div className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3.5">
             {visibleAmenities.map((amenity: string) => (
               <span
                 key={amenity}
@@ -349,7 +349,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
         )}
 
         {/* Price + View Stay CTA */}
-        <div className="mt-auto pt-[18px]">
+        <div className="mt-auto pt-3 sm:pt-[18px]">
           <div className="flex items-center justify-between gap-3 border-t border-[#EEE9DC] pt-4">
             <div className="min-w-0">
               {guestNightlyNgn !== null ? (
@@ -379,7 +379,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
             </Link>
           </div>
 
-          <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-[#596B60]">
+          <p className="mt-3 hidden items-center gap-1.5 text-[12.5px] text-[#596B60] sm:flex">
             <svg
               width="14"
               height="14"
@@ -593,19 +593,9 @@ export function HomeMarketplaceExperience({
       <section className="relative overflow-hidden bg-gradient-to-br from-[#102D24] via-[#173F32] to-[#285744] text-[#F7F4ED]">
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-6 lg:pt-8">
           <div className="px-5 pt-8 pb-8 lg:col-span-6 lg:px-0 lg:pt-10 lg:pb-12">
-            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
-              STAYS WITH ACCOUNTABILITY · LAGOS
-            </p>
-            <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F7F4ED] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
+            <h1 className="mt-0 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F7F4ED] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
               Lagos feels better here.
             </h1>
-            <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#DADFD5] sm:max-w-md lg:max-w-lg lg:text-[17px]">
-              Find a stay that fits your Lagos. Explore neighbourhoods, compare the details that matter, and request with confidence.
-            </p>
-            <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#AAB8AC] lg:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#B58A52]" aria-hidden="true" />
-              <span>Your stay, sorted. No card charged until the host confirms availability.</span>
-            </p>
           </div>
 
           <div className="relative lg:col-span-6 lg:min-h-[330px]">
@@ -1101,7 +1091,7 @@ export function HomeMarketplaceExperience({
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 gap-6 md:grid-cols-2 ${
+            className={`grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 ${
               displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
             }`}
           >
@@ -1164,7 +1154,7 @@ export function HomeMarketplaceExperience({
           {VERIFICATION_PILLARS.map(pillar => (
             <div
               key={pillar.num}
-              className="rounded-[20px] border border-[#E8E6DD] bg-white p-4 sm:p-5"
+              className="border-t border-[#D9D8CD] py-3 sm:p-0 sm:pt-3"
             >
               <span className="font-display text-[14px] font-bold text-[#755638]">
                 {pillar.num}
@@ -1184,18 +1174,9 @@ export function HomeMarketplaceExperience({
       <section className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14">
         <div className="rounded-[28px] bg-[#173F32] px-[22px] py-[26px] text-[#F7F4ED] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
           <div className="lg:max-w-2xl">
-            <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
-              Property Owners &amp; Managers
-            </p>
             <h2 className="mt-2.5 mb-2 font-display text-[24px] font-bold leading-[1.2] text-[#F7F4ED] lg:text-[30px]">
               Own or manage a verified shortlet in Lagos?
             </h2>
-            <p className="m-0 text-[14.5px] leading-[1.55] text-[#DADFD5]">
-              List with HAMLET for visibility, booking and property management support.
-            </p>
-            <p className="mt-2.5 mb-0 text-[12px] leading-[1.5] text-[#AAB8AC]">
-              {APPROVED_OWNER_SERVICES_POLICY_COPY}
-            </p>
           </div>
 
           <div className="mt-[18px] shrink-0 lg:mt-0">
