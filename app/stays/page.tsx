@@ -90,10 +90,7 @@ export default async function StaysCataloguePage({
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-col gap-3 border-b border-[#DADFD5]/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#755638]">
-              Lagos Island &amp; Lagos Mainland
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-[#102D24] sm:text-4xl">
+            <h1 className="mt-0 font-display text-3xl font-bold leading-tight text-[#102D24] sm:text-4xl">
               Explore verified shortlet stays across Lagos.
             </h1>
           </div>
