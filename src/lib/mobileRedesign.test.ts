@@ -11,8 +11,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
     expect(homeSource).toContain('Lagos feels better here.');
-    expect(homeSource).toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
-    expect(homeSource).toContain('Find a stay that fits your Lagos.');
+    expect(homeSource).not.toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
   });
 
   it('includes the forest-green hospitality hero with an illustrated Lagos lagoon skyline while keeping the cream search pill and Find a stay sheet untouched', () => {
@@ -94,10 +93,10 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(siteShell).toContain('h-dvh');
     expect(siteShell).toContain('M4 8h16M4 16h16');
     expect(siteShell).toContain('Ask Horatio');
-    expect(siteShell).toContain('For Guests');
+    expect(siteShell).not.toContain('For Guests');
     expect(siteShell).toContain("{ href: '/stays', label: 'Explore stays' }");
     expect(siteShell).toContain("{ href: '/lagos', label: 'Lagos guide' }");
-    expect(siteShell).toContain("{ href: '/how-it-works', label: 'How it works' }");
+    expect(siteShell).not.toContain("{ href: '/how-it-works', label: 'How it works' }");
     expect(siteShell).toContain("{ href: '/safety', label: 'Safety' }");
     expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }");
     expect(siteShell).toContain('For Hosts &amp; About');
