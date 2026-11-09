@@ -35,6 +35,21 @@ const ISLAND_CHIPS = [
 
 const MAINLAND_CHIPS = ['Yaba', 'Surulere', 'Shomolu'] as const;
 
+const LAGOS_LANDMARKS = [
+  {
+    src: 'https://images.unsplash.com/photo-1719314313652-d9835e0c52c3?auto=format&fit=crop&fm=jpg&q=85&w=1800',
+    alt: 'Lekki–Ikoyi Link Bridge over the Lagos Lagoon',
+  },
+  {
+    src: 'https://www.ekoatlantic.com/wp-content/uploads/2023/11/DJI_0042.jpg',
+    alt: 'Eko Atlantic coastline and skyline, Lagos',
+  },
+  {
+    src: 'https://global.ariseplay.com/amg/www.arise.tv/uploads/2021/02/National-Theatre.jpg',
+    alt: 'National Theatre, Iganmu, Lagos',
+  },
+] as const;
+
 const ALL_CHIPS = [...ISLAND_CHIPS, ...MAINLAND_CHIPS] as const;
 
 const VERIFICATION_PILLARS = [
@@ -107,6 +122,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
+  const [carouselPaused, setCarouselPaused] = useState(false);
 
   const images = useMemo(
     () =>
@@ -162,10 +178,26 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
     setActiveSlide(clamped);
   };
 
+  useEffect(() => {
+    if (images.length < 2 || carouselPaused) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (media.matches) return;
+    const advance = () => {
+      if (document.visibilityState !== 'visible') return;
+      const next = (activeSlide + 1) % images.length;
+      const node = trackRef.current;
+      if (!node) return;
+      node.scrollTo({ left: next * node.clientWidth, behavior: 'smooth' });
+      setActiveSlide(next);
+    };
+    const timer = window.setInterval(advance, 4800);
+    return () => window.clearInterval(timer);
+  }, [activeSlide, carouselPaused, images.length]);
+
   return (
     <article className="hamlet-depth flex flex-col overflow-hidden rounded-[26px] border border-[#E8E6DD] bg-white shadow-[0_3px_8px_rgba(18,31,60,0.05),0_18px_42px_-20px_rgba(18,31,60,0.24)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_-12px_rgba(18,31,60,0.32)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#285744] sm:aspect-[4/3]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#285744] sm:aspect-[4/3]" onMouseEnter={() => setCarouselPaused(true)} onMouseLeave={() => setCarouselPaused(false)} onFocusCapture={() => setCarouselPaused(true)} onBlurCapture={() => setCarouselPaused(false)}>
         {images.length > 0 ? (
           <>
             <div
@@ -435,10 +467,7 @@ export function HomeMarketplaceExperience({
     [approvedStays],
   );
 
-  const heroInteriorStays = useMemo(
-    () => bookableStays.filter(stay => (stay.image_urls ?? []).some(url => url?.trim())).slice(0, 3),
-    [bookableStays],
-  );
+
 
   const displayedStays = useMemo(
     () =>
@@ -594,7 +623,7 @@ export function HomeMarketplaceExperience({
 
   return (
     <div className="bg-[#F7F4ED] text-[#173F32]">
-      {/* ── Hero: Deep Navy (#173F32) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
+      {/* ── Hero: Lagos landmarks + Cream Search Sheet ── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#102D24] via-[#173F32] to-[#285744] text-[#F7F4ED]">
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-6 lg:pt-8">
           <div className="px-5 pt-8 pb-8 lg:col-span-6 lg:px-0 lg:pt-10 lg:pb-12">
@@ -605,10 +634,14 @@ export function HomeMarketplaceExperience({
 
           <div className="relative px-5 pb-8 lg:col-span-6 lg:px-0 lg:pb-10">
             <div className="relative mx-auto grid aspect-[1.28/1] w-full max-w-[560px] grid-cols-[1.15fr_.85fr] grid-rows-2 gap-3 sm:gap-4">
-              {heroInteriorStays[0] && <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[28px] border border-white/25 bg-[#285744] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]"><img src={heroInteriorStays[0].image_urls?.[0]} alt="Warm, contemporary shortlet interior in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
-              {heroInteriorStays[1] && <div className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]"><img src={heroInteriorStays[1].image_urls?.[0]} alt="Thoughtfully furnished shortlet living space in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
-              {heroInteriorStays[2] && <div className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]"><img src={heroInteriorStays[2].image_urls?.[0]} alt="Refined shortlet bedroom interior in Lagos" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" /></div>}
-              {heroInteriorStays.length === 0 && <div className="col-span-2 row-span-2 rounded-[28px] border border-white/20 bg-gradient-to-br from-[#B58A52] via-[#8EA99A] to-[#173F32] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]" />}
+              <div className="hamlet-depth group relative row-span-2 overflow-hidden rounded-[28px] border border-white/25 bg-[#285744] shadow-[0_26px_54px_-28px_rgba(0,0,0,.72)]">
+                <img src={LAGOS_LANDMARKS[0].src} alt={LAGOS_LANDMARKS[0].alt} fetchPriority="high" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+              </div>
+              {LAGOS_LANDMARKS.slice(1).map((landmark, index) => (
+                <div key={landmark.src} className="hamlet-depth group relative overflow-hidden rounded-[24px] border border-white/25 bg-[#285744] shadow-[0_20px_42px_-24px_rgba(0,0,0,.7)]">
+                  <img src={landmark.src} alt={landmark.alt} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045]" />
+                </div>
+              ))}
             </div>
           </div>
         </div>
