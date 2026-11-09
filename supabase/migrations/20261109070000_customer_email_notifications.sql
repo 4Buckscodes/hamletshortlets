@@ -154,7 +154,7 @@ $$;
 
 -- Supabase Auth provides email_confirmed_at. Some local PGlite test schemas intentionally
 -- model a reduced auth.users table, so install this trigger only when the column exists.
-do $
+do $trigger$
 begin
   if exists (
     select 1
@@ -169,7 +169,7 @@ begin
       for each row execute function public.enqueue_registration_welcome_email();
   end if;
 end
-$;
+$trigger$;
 
 -- Applicant confirmation and decision emails. The existing admin trigger separately
 -- creates operations inbox notifications for the same lifecycle events.
