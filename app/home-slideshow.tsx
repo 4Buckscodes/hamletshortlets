@@ -610,11 +610,11 @@ export function HomeMarketplaceExperience({
     <div className="bg-[#F7F4ED] text-[#173F32]">
       {/* ── Editorial Lagos hero + integrated booking search ── */}
       <section className="relative isolate min-h-[660px] overflow-hidden bg-[#172B24] text-[#FBF8F1] sm:min-h-[700px] lg:min-h-[720px]">
-        <div aria-hidden="true" className="absolute inset-0 -z-20 bg-cover bg-[center_48%]" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1719314313652-d9835e0c52c3?auto=format&fit=crop&fm=jpg&q=90&w=2400')" }} />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(10,24,19,.84)_0%,rgba(10,24,19,.58)_48%,rgba(10,24,19,.16)_100%),linear-gradient(0deg,rgba(10,24,19,.76)_0%,transparent_58%)]" />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #B58A52 0, transparent 28%)' }} />
+        <div aria-hidden="true" className="absolute inset-0 z-0 bg-cover bg-[center_48%]" style={{ backgroundImage: "url('https://images.pexels.com/photos/37405043/pexels-photo-37405043.jpeg?auto=compress&cs=tinysrgb&w=2400')" }} />
+        <div aria-hidden="true" className="absolute inset-0 z-10 bg-[linear-gradient(90deg,rgba(10,24,19,.84)_0%,rgba(10,24,19,.58)_48%,rgba(10,24,19,.16)_100%),linear-gradient(0deg,rgba(10,24,19,.76)_0%,transparent_58%)]" />
+        <div aria-hidden="true" className="absolute inset-0 z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #B58A52 0, transparent 28%)' }} />
 
-        <div className="mx-auto flex min-h-[660px] max-w-[1320px] flex-col justify-between px-5 pb-8 pt-16 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
+        <div className="relative z-20 mx-auto flex min-h-[660px] max-w-[1320px] flex-col justify-between px-5 pb-8 pt-16 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
           <div className="max-w-[780px] pt-5 sm:pt-10 lg:pt-12">
             <h1 className="max-w-[760px] font-display text-[46px] font-medium leading-[0.99] tracking-[-0.045em] text-[#FBF8F1] min-[390px]:text-[52px] sm:text-[68px] lg:text-[88px]">
               Find a stay that feels like <span className="italic text-[#E7C99B]">Lagos.</span>
