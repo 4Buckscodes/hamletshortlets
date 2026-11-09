@@ -11,7 +11,7 @@ create table if not exists public.customer_email_notifications (
     'property_submitted',
     'property_status_changed'
   )),
-  recipient_user_id uuid references public.profiles(id) on delete set null,
+  recipient_user_id uuid references auth.users(id) on delete set null,
   recipient_email text not null,
   idempotency_key text not null unique,
   payload jsonb not null default '{}'::jsonb,
@@ -184,7 +184,11 @@ begin
     );
   elsif old.status is distinct from new.status then
     event_key := 'partner-application-status:' || new.id::text || ':' ||
-      new.status || ':' || coalesce(new.reviewed_at::text, clock_timestamp()::text);
+      new.status || ':' ||
+      case
+        when new.status = 'pending' then new.submitted_at::text
+        else coalesce(new.reviewed_at::text, clock_timestamp()::text)
+      end;
     perform public.enqueue_customer_email_notification(
       'partner_application_status_changed',
       new.applicant_id,
