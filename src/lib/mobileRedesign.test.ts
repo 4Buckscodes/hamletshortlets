@@ -19,11 +19,14 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
 
     // Deep green hero uses three interior photos, without a decorative skyline or image labels.
     expect(homeSource).toContain('Lagos feels better here.');
-    expect(homeSource).toContain('heroInteriorStays[0]');
-    expect(homeSource).toContain('heroInteriorStays[1]');
-    expect(homeSource).toContain('heroInteriorStays[2]');
-    expect(homeSource).toContain('Warm, contemporary shortlet interior in Lagos');
+    expect(homeSource).toContain('LAGOS_LANDMARKS[0].src');
+    expect(homeSource).toContain('LAGOS_LANDMARKS.slice(1)');
+    expect(homeSource).toContain('Lekki–Ikoyi Link Bridge over the Lagos Lagoon');
+    expect(homeSource).toContain('National Theatre, Iganmu, Lagos');
     expect(homeSource).not.toContain('Illustrated Lagos lagoon skyline');
+    expect(homeSource).toContain('window.setInterval(advance, 4800)');
+    expect(homeSource).toContain("prefers-reduced-motion: reduce");
+    expect(siteShell).toContain("}, 4800)");
 
     // Curved Warm Ivory cream search sheet & tactile search trigger pill (untouched)
     expect(homeSource).toContain('Anywhere in Lagos');
