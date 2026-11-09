@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { dispatchPendingCommunications } from '@/lib/communications';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
   FocusedDrawer,
@@ -101,6 +102,7 @@ export default function AdminPartnersPage() {
         reviewer_note: note.trim(),
       });
       if (rpcError) throw new Error(rpcError.message);
+      await dispatchPendingCommunications(db);
       setNotice(`Application for ${selected.company} marked ${decision}.`);
       setSelected(null);
       setNote('');
