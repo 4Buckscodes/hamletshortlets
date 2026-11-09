@@ -488,7 +488,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#204C3D]/60 bg-[#173F32] text-[#F7F4ED] lg:backdrop-blur-xl'
+          ? 'border-b border-[#E9E2D5] bg-[#F7F4ED]/95 text-[#173F32] shadow-[0_4px_24px_rgba(35,45,34,.04)] backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
@@ -500,7 +500,7 @@ export function SiteHeader() {
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
             {isHome ? (
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#173F32]">
                 HAMLET<span className="text-[#B58A52]">.</span>
               </span>
             ) : (
@@ -543,7 +543,7 @@ export function SiteHeader() {
             aria-label="Ask Horatio — HAMLET assistant"
             className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
               isHome
-                ? 'border border-[#B58A52]/65 bg-[#173F32] text-[#F7F4ED] hover:border-[#B58A52] hover:bg-[#285744]'
+                ? 'border border-[#D8C9B1] bg-white/70 text-[#173F32] hover:border-[#B58A52] hover:bg-white'
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
@@ -555,7 +555,7 @@ export function SiteHeader() {
               href="/partners/apply"
               className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
                 isHome
-                  ? 'border border-[#356B54] bg-transparent text-[#F7F4ED] hover:border-[#B58A52]'
+                  ? 'border border-[#D9D8CD] bg-transparent text-[#173F32] hover:border-[#B58A52]'
                   : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
               }`}
             >
@@ -572,7 +572,7 @@ export function SiteHeader() {
                 href={workspaceHref}
                 className={`inline-flex min-h-[38px] items-center gap-2 rounded-full px-3.5 text-xs font-bold transition ${
                   isHome
-                    ? 'border border-[#356B54] bg-[#173F32] text-[#F7F4ED] hover:border-[#B58A52]'
+                    ? 'border border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#B58A52]'
                     : 'border border-ink-200 bg-white text-ink-900 hover:border-ink-900'
                 }`}
               >
@@ -610,7 +610,7 @@ export function SiteHeader() {
               href="/signin"
               className={`inline-flex min-h-[38px] items-center justify-center rounded-full px-4.5 text-[12.5px] font-bold shadow-2xs transition ${
                 isHome
-                  ? 'bg-[#B58A52] text-[#173F32] hover:bg-[#D5B879]'
+                  ? 'bg-[#173F32] text-white hover:bg-[#285744]'
                   : 'bg-ink-900 text-white hover:bg-ink-800'
               }`}
             >
@@ -628,7 +628,7 @@ export function SiteHeader() {
             aria-label={drawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
             className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
               isHome
-                ? 'border border-[#356B54] bg-transparent text-[#F7F4ED] hover:border-[#B58A52]'
+                ? 'border border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#B58A52]'
                 : 'border border-[#D9D8CD] bg-white text-[#173F32] shadow-2xs hover:border-[#173F32]'
             }`}
           >
