@@ -180,9 +180,9 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   }, [activeSlide, carouselPaused, images.length]);
 
   return (
-    <article className="hamlet-depth flex flex-col overflow-hidden rounded-[26px] border border-[#E8E6DD] bg-white shadow-[0_3px_8px_rgba(18,31,60,0.05),0_18px_42px_-20px_rgba(18,31,60,0.24)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_-12px_rgba(18,31,60,0.32)]">
+    <article className="hamlet-depth flex flex-col overflow-hidden rounded-[18px] border border-[#E8E1D6] bg-white shadow-[0_8px_28px_rgba(43,49,39,.055)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(43,49,39,.12)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#285744] sm:aspect-[4/3]" onMouseEnter={() => setCarouselPaused(true)} onMouseLeave={() => setCarouselPaused(false)} onFocusCapture={() => setCarouselPaused(true)} onBlurCapture={() => setCarouselPaused(false)}>
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#E7E1D5]" onMouseEnter={() => setCarouselPaused(true)} onMouseLeave={() => setCarouselPaused(false)} onFocusCapture={() => setCarouselPaused(true)} onBlurCapture={() => setCarouselPaused(false)}>
         {images.length > 0 ? (
           <>
             <div
@@ -616,7 +616,6 @@ export function HomeMarketplaceExperience({
 
         <div className="mx-auto flex min-h-[660px] max-w-[1320px] flex-col justify-between px-5 pb-8 pt-16 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
           <div className="max-w-[780px] pt-5 sm:pt-10 lg:pt-12">
-            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#E7C99B]">Lagos · Nigeria</p>
             <h1 className="max-w-[760px] font-display text-[46px] font-medium leading-[0.99] tracking-[-0.045em] text-[#FBF8F1] min-[390px]:text-[52px] sm:text-[68px] lg:text-[88px]">
               Find a stay that feels like <span className="italic text-[#E7C99B]">Lagos.</span>
             </h1>
@@ -1065,11 +1064,10 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── HAMLET editorial welcome and ecosystem strip ── */}
-      <section className="mx-auto grid max-w-[1320px] gap-5 px-5 pt-8 pb-16 sm:px-8 lg:grid-cols-[1.2fr_.8fr] lg:gap-8 lg:pt-12">
-        <div className="hamlet-depth relative overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/90 to-[#EEEAE0] p-6 shadow-[0_16px_42px_-24px_rgba(23,63,50,.28),inset_0_1px_0_rgba(255,255,255,.9)] sm:p-8">
+      <section className="mx-auto grid max-w-[1320px] gap-6 px-5 pt-10 pb-20 sm:px-8 lg:grid-cols-[1.2fr_.8fr] lg:gap-10 lg:pt-16">
+        <div className="hamlet-depth relative overflow-hidden rounded-[18px] border border-[#E7E0D4] bg-[#F0ECE3] p-6 shadow-[0_14px_36px_rgba(43,49,39,.06)] sm:p-9">
           <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#B58A52]/35" />
           <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#B58A52]/35" />
-          <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#755638]">The HAMLET difference</p>
           <h2 className="serif mt-2 max-w-xl text-2xl font-medium leading-tight text-[#173F32] sm:text-3xl">A better stay starts with the details that matter.</h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#596B60]">From who is authorised to host you to the practical details of each apartment, we make the important information easier to understand before you request.</p>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -1082,10 +1080,9 @@ export function HomeMarketplaceExperience({
             ))}
           </div>
         </div>
-        <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-[#245744] via-[#173F32] to-[#102D24] p-6 text-[#F7F4ED] shadow-[0_22px_48px_-22px_rgba(10,35,27,.62),inset_0_1px_0_rgba(255,255,255,.14)] sm:p-8">
+        <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[18px] border border-[#315B49] bg-[#173F32] p-6 text-[#F7F4ED] shadow-[0_18px_44px_rgba(16,45,36,.16)] sm:p-9">
           <div>
-            <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#D5B879]">More than a place to stay</p>
-            <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
+              <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
             <p className="mt-3 text-sm leading-relaxed text-[#DADFD5]">Owners, managers and property professionals can bring quality stays to HAMLET and grow their business through a connected partner ecosystem.</p>
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
