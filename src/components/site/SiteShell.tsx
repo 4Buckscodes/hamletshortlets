@@ -30,7 +30,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  Sparkles,
   Send,
   LayoutDashboard,
 } from 'lucide-react';
@@ -380,9 +379,6 @@ export function NextCurrencySwitcher(_props?: {
 const PRIMARY_NAV = [
   { href: '/stays', label: 'Explore stays' },
   { href: '/lagos', label: 'Lagos' },
-  { href: '/how-it-works', label: 'How it works' },
-  { href: '/safety', label: 'Safety' },
-  { href: '/faqs', label: 'FAQs' },
 ] as const;
 
 export function SiteHeader() {
@@ -484,15 +480,9 @@ export function SiteHeader() {
         ? 'Partner workspace'
         : 'My account';
 
-  const mobileGuestNav = [
+  const mobileNav = [
     { href: '/stays', label: 'Explore stays' },
     { href: '/lagos', label: 'Lagos guide' },
-    { href: '/how-it-works', label: 'How it works' },
-    { href: '/safety', label: 'Safety' },
-    { href: '/faqs', label: 'FAQs' },
-  ] as const;
-
-  const mobileHostAndAboutNav = [
     { href: '/partners/apply', label: 'Partner with us' },
     { href: '/about', label: 'About HAMLET' },
   ] as const;
@@ -560,9 +550,6 @@ export function SiteHeader() {
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
-            <Sparkles
-              className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
-            />
             <span>Horatio</span>
           </button>
 
@@ -705,75 +692,31 @@ export function SiteHeader() {
               }}
               className="mt-1 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border-[1.5px] border-[#B58A52] bg-white px-4 text-[17px] font-semibold text-[#173F32] transition hover:bg-[#F7F4ED]"
             >
-              <span>✦ Ask Horatio</span>
+              <span>Ask Horatio</span>
               <span aria-hidden="true" className="text-[#755638]">
                 →
               </span>
             </button>
 
-            <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#755638]">
-                For Guests
-              </p>
-              <div className="space-y-2">
-                {mobileGuestNav.map(item => {
-                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setDrawerOpen(false)}
-                      aria-current={active ? 'page' : undefined}
-                      className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
-                        active
-                          ? 'bg-[#173F32] text-[#F7F4ED]'
-                          : 'bg-white text-[#173F32] hover:bg-[#EEEAE0]'
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <span
-                        aria-hidden="true"
-                        className={active ? 'text-[#B58A52]' : 'text-[#755638]'}
-                      >
-                        →
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[2px] text-[#755638]">
-                For Hosts &amp; About
-              </p>
-              <div className="space-y-2">
-                {mobileHostAndAboutNav.map(item => {
-                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setDrawerOpen(false)}
-                      aria-current={active ? 'page' : undefined}
-                      className={`flex min-h-[54px] items-center justify-between rounded-[18px] px-4 text-[17px] font-semibold transition ${
-                        active
-                          ? 'bg-[#173F32] text-[#F7F4ED]'
-                          : 'bg-white text-[#173F32] hover:bg-[#EEEAE0]'
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <span
-                        aria-hidden="true"
-                        className={active ? 'text-[#B58A52]' : 'text-[#755638]'}
-                      >
-                        →
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+            <nav aria-label="Quick links" className="mt-4 grid gap-2">
+              {mobileNav.map(item => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setDrawerOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex min-h-[48px] items-center justify-between rounded-xl px-4 text-[15px] font-semibold transition ${
+                      active ? 'bg-[#173F32] text-[#F7F4ED]' : 'bg-white text-[#173F32] hover:bg-[#EEEAE0]'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span aria-hidden="true" className={active ? 'text-[#B58A52]' : 'text-[#755638]'}>→</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
             <div className="mt-auto pt-5">
               {session ? (
