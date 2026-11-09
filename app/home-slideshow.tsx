@@ -590,9 +590,9 @@ export function HomeMarketplaceExperience({
   return (
     <div className="bg-[#F7F4ED] text-[#173F32]">
       {/* ── Hero: Deep Navy (#173F32) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
-      <section className="relative overflow-hidden bg-[#173F32] text-[#F7F4ED]">
-        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
-          <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#102D24] via-[#173F32] to-[#285744] text-[#F7F4ED]">
+        <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-6 lg:pt-8">
+          <div className="px-5 pt-8 pb-8 lg:col-span-6 lg:px-0 lg:pt-10 lg:pb-12">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
               STAYS WITH ACCOUNTABILITY · LAGOS
             </p>
