@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --navy: #0e1f3b;
-    --navy-deep: #091528;
-    --gold: #c9a44a;
-    --paper: #f8f5ee;
-    --clay: #efeade;
-    --muted: #64748b;
-    --line: #e8e4da;
+    --navy: #173F32;
+    --navy-deep: #102D24;
+    --gold: #B58A52;
+    --paper: #F7F4ED;
+    --clay: #E8E6DD;
+    --muted: #6C7D72;
+    --line: #E8E6DD;
   }
 
   * {
