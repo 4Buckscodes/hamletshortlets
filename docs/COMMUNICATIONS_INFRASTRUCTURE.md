@@ -20,6 +20,9 @@
 - Database trigger records partner application submissions and status changes.
 - Elsinore admin page at `/admin/communications` with unread count and mark-as-read.
 - Durable email dispatch queue with attempts, next-attempt time, delivery status and last error.
+- Separate private `customer_email_notifications` queue for customer-facing transactional mail, with idempotency keys, bounded retries and provider message IDs.
+- Customer lifecycle events: verified-account welcome, partner application receipt and status updates, and property submission / approval / correction / rejection updates. Draft property saves do not send email.
+- Property lifecycle events also create an operations alert in `admin_notifications`; partner-application operations alerts remain on the existing queue.
 - `admin-notifications-dispatch` Supabase Edge Function sends queued partner-application alerts to the configured operations inbox using Resend idempotency keys.
 - Claiming uses a database function with row locks and `SKIP LOCKED` to avoid concurrent workers claiming the same row.
 
@@ -35,14 +38,14 @@ Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the Edge Fun
 
 ## Still required before operational use
 1. Apply the communications migrations to the intended Supabase project after reviewing the target project and migration history.
-2. Deploy both `booking-notifications` and `admin-notifications-dispatch` Edge Functions.
+2. Deploy `booking-notifications`, `admin-notifications-dispatch` and `customer-notifications-dispatch` Edge Functions.
 3. Configure the secrets above in Supabase; no secret values belong in Git.
-4. Configure a trusted scheduled invocation for `admin-notifications-dispatch` using the internal secret. The worker is not self-scheduling; without a scheduler or operator invocation, queued events remain pending.
+4. Configure trusted scheduled invocations for both `admin-notifications-dispatch` and `customer-notifications-dispatch` using the internal secret. Neither worker self-schedules; without a scheduler or operator invocation, queued events remain pending.
 5. Create and verify the Zoho mailboxes/aliases before setting reply-to or changing MX records.
 6. Add Resend delivery/bounce webhook processing. An API acceptance response is not proof of inbox delivery.
 7. Test submission and status-change events end-to-end in a staging Supabase project first. Confirm idempotency, retry exhaustion, and admin-only access.
 8. WhatsApp Business Platform remains unimplemented. Select an approved provider, sender, credentials and templates; only message opted-in recipients.
-9. Extend event coverage to property review, booking lifecycle, refunds and support events as those workflows are finalized.
+9. Booking lifecycle events continue through the existing `booking_notifications` queue. Restore its Resend configuration before replaying failed booking emails; refund and support communications remain future coverage as those workflows are finalized.
 
 ## DNS safety
 Do not guess SPF, DKIM or MX values. Copy exact records from Resend and Zoho dashboards. Keep one SPF record, preserve existing mail routing until a deliberate Zoho MX cutover, and verify inbound/outbound delivery after DNS propagation.
