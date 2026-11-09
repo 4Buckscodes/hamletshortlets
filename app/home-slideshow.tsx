@@ -1121,6 +1121,37 @@ export function HomeMarketplaceExperience({
         </div>
       </section>
 
+      {/* ── HAMLET editorial welcome and ecosystem strip ── */}
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pt-8 pb-5 sm:px-6 lg:grid-cols-[1.2fr_.8fr] lg:gap-8 lg:pt-12">
+        <div className="relative overflow-hidden rounded-[28px] border border-[#E8E6DD] bg-[#EEEAE0] p-6 sm:p-8">
+          <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#B58A52]/35" />
+          <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#B58A52]/35" />
+          <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#755638]">The HAMLET difference</p>
+          <h2 className="serif mt-2 max-w-xl text-2xl font-medium leading-tight text-[#173F32] sm:text-3xl">A better stay starts with the details that matter.</h2>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#596B60]">From who is authorised to host you to the practical details of each apartment, we make the important information easier to understand before you request.</p>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {VERIFICATION_PILLARS.map(item => (
+              <div key={item.num} className="border-t border-[#B58A52]/60 pt-3">
+                <span className="block text-[10px] font-bold tracking-widest text-[#987044]">{item.num}</span>
+                <b className="mt-1 block text-sm text-[#173F32]">{item.title}</b>
+                <span className="mt-1 block text-[11px] leading-snug text-[#6C7D72]">{item.description}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col justify-between overflow-hidden rounded-[28px] bg-[#173F32] p-6 text-[#F7F4ED] sm:p-8">
+          <div>
+            <p className="m-0 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#D5B879]">More than a place to stay</p>
+            <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#DADFD5]">Owners, managers and property professionals can bring quality stays to HAMLET and grow their business through a connected partner ecosystem.</p>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link href="/partners/apply" className="inline-flex min-h-11 items-center rounded-full bg-[#B58A52] px-5 text-sm font-bold text-[#102D24] transition hover:bg-[#D5B879]">Become a partner ↗</Link>
+            <Link href="/partners" className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-5 text-sm font-semibold text-white transition hover:bg-white/10">Partner workspace</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── 4-Pillar Verification Standard ── */}
       <section className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10">
         <div className="mb-4 flex items-baseline justify-between gap-3">
