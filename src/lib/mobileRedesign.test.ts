@@ -10,12 +10,13 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
-    expect(homeSource).toContain('Find your place in Lagos.');
+    expect(homeSource).toContain('Find a stay that feels like');
     expect(homeSource).not.toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
   });
 
   it('includes the full-bleed editorial Lagos hero and integrated booking search', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
+    const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
 
     // Editorial full-bleed Lagos photography with a clear headline and booking search.
     expect(homeSource).toContain('Find a stay that feels like');
@@ -51,7 +52,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
     // Former Explore Lagos neighbourhoods photo rail placed BEFORE Verified stays
-    expect(homeSource).toContain('Island &amp; Lagos Mainland corridors');
+    expect(homeSource).not.toContain('Island &amp; Lagos Mainland corridors');
     expect(homeSource).toContain('Explore Lagos neighbourhoods');
     expect(homeSource).toContain('DISCOVERY_NEIGHBOURHOODS');
     expect(homeSource).toContain('Every corridor');
@@ -81,11 +82,11 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('bg-[#B58A52]');
   });
 
-  it('implements the forest-green homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
+  it('implements the warm editorial homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
     const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
 
-    // Midnight Navy homepage header + non-home paper header
-    expect(siteShell).toContain('bg-[#173F32]');
+    // Warm Ivory editorial homepage header + non-home paper header
+    expect(siteShell).toContain('bg-[#F7F4ED]/95');
     expect(siteShell).toContain('lg:backdrop-blur-xl');
 
     // Full-screen mobile drawer in Warm Ivory (#F8F5EE) with gold-accented Horatio & guest/partner actions
