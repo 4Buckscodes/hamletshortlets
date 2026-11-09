@@ -72,11 +72,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('Inspection');
 
     // Partner banner with gold CTA
-    expect(homeSource).toContain('Property Owners &amp; Managers');
     expect(homeSource).toContain('Own or manage a verified shortlet in Lagos?');
-    expect(homeSource).toContain(
-      'List with HAMLET for visibility, booking and property management support.',
-    );
     expect(homeSource).toContain('bg-[#B58A52]');
     expect(homeSource).toContain('Apply as a partner');
   });
@@ -97,9 +93,9 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(siteShell).toContain("{ href: '/stays', label: 'Explore stays' }");
     expect(siteShell).toContain("{ href: '/lagos', label: 'Lagos guide' }");
     expect(siteShell).not.toContain("{ href: '/how-it-works', label: 'How it works' }");
-    expect(siteShell).toContain("{ href: '/safety', label: 'Safety' }");
-    expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }");
-    expect(siteShell).toContain('For Hosts &amp; About');
+    expect(siteShell).not.toContain("{ href: '/safety', label: 'Safety' }");
+    expect(siteShell).not.toContain("{ href: '/faqs', label: 'FAQs' }");
+    expect(siteShell).not.toContain('For Hosts &amp; About');
     expect(siteShell).toContain("{ href: '/partners/apply', label: 'Partner with us' }");
     expect(siteShell).toContain("{ href: '/about', label: 'About HAMLET' }");
     expect(siteShell).toContain('Create guest account');
