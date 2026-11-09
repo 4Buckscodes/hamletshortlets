@@ -14,15 +14,16 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).not.toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
   });
 
-  it('includes the forest-green hospitality hero with an illustrated Lagos lagoon skyline while keeping the cream search pill and Find a stay sheet untouched', () => {
+  it('includes the forest-green hospitality hero with a three-photo interior composition while keeping the cream search pill and Find a stay sheet untouched', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
-    // Deep Navy hero + Lagos Lagoon skyscraper & cable-stayed bridge illustration (IMG_4462)
+    // Deep green hero uses three interior photos, without a decorative skyline or image labels.
     expect(homeSource).toContain('Lagos feels better here.');
-    expect(homeSource).toContain('viewBox="0 0 560 430"');
-    expect(homeSource).toContain('Illustrated Lagos lagoon skyline and bridge at sunset');
-    expect(homeSource).toContain('lagoonWater');
-    expect(homeSource).toContain('lagoonSky');
+    expect(homeSource).toContain('heroInteriorStays[0]');
+    expect(homeSource).toContain('heroInteriorStays[1]');
+    expect(homeSource).toContain('heroInteriorStays[2]');
+    expect(homeSource).toContain('Warm, contemporary shortlet interior in Lagos');
+    expect(homeSource).not.toContain('Illustrated Lagos lagoon skyline');
 
     // Curved Warm Ivory cream search sheet & tactile search trigger pill (untouched)
     expect(homeSource).toContain('Anywhere in Lagos');
@@ -92,7 +93,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(siteShell).toContain("{ href: '/lagos', label: 'Lagos guide' }");
     expect(siteShell).not.toContain("{ href: '/how-it-works', label: 'How it works' }");
     expect(siteShell).not.toContain("{ href: '/safety', label: 'Safety' }");
-    expect(siteShell).not.toContain("{ href: '/faqs', label: 'FAQs' }");
+    expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }"); // FAQ remains in the desktop/footer navigation, not the mobile quick links.
     expect(siteShell).not.toContain('For Hosts &amp; About');
     expect(siteShell).toContain("{ href: '/partners/apply', label: 'Partner with us' }");
     expect(siteShell).toContain("{ href: '/about', label: 'About HAMLET' }");
