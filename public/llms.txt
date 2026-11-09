@@ -2,39 +2,30 @@
 
 > HAMLET (https://hamlet.rest) is a shortlet marketplace for Lagos, Nigeria, operated under Abundance Abodes. Its public promise is: “Your stay, sorted.”
 
-HAMLET connects guests looking for shortlet accommodation with property owners, authorised agents, property managers and shortlet operators. Public listings are reviewed before publication. Guests can explore available properties, review listing details and submit booking requests.
+## Marketplace & Guest Guides
 
-## Public marketplace
-
-- [HAMLET Home](https://hamlet.rest/): Discover the HAMLET marketplace.
-- [Explore Lagos Shortlets](https://hamlet.rest/stays): Browse approved shortlet listings and filter by location, dates, guest capacity and property type.
-- [Lagos Neighbourhood Guide](https://hamlet.rest/lagos): Explore areas across Lagos Mainland and Lagos Island.
-- [How HAMLET Works](https://hamlet.rest/how-it-works): Understand the booking request and host-confirmation process.
-- [Guest Safety](https://hamlet.rest/safety): Learn about listing review, booking safeguards and support.
+- [HAMLET Home](https://hamlet.rest/): Discover the marketplace.
+- [Explore Lagos Shortlets](https://hamlet.rest/stays): Browse approved shortlet listings.
+- [Lagos Neighbourhood Guide](https://hamlet.rest/lagos): Explore Lagos Mainland and Lagos Island neighbourhoods.
+- [How HAMLET Works](https://hamlet.rest/how-it-works): Understand booking requests and host confirmation.
+- [Guest Safety](https://hamlet.rest/safety): Learn about listing review and booking safeguards.
 - [About HAMLET](https://hamlet.rest/about): Learn about HAMLET and its operating principles.
-- [Guest FAQs](https://hamlet.rest/faqs): Answers to common questions about stays and booking.
+- [Guest FAQs](https://hamlet.rest/faqs): Answers to common guest questions.
+
+## Partner Network
+
+HAMLET supports property owners, authorised agents, property managers and shortlet operators. Partners must have appropriate authority to submit or manage a property. Applicable access, eligibility and commercial arrangements are governed by current written partner terms.
+
+HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
+
+## Legal, Trust & Pricing Policies
+
 - [Legal and Privacy](https://hamlet.rest/legal): Review current marketplace terms and privacy information.
+- [Guest booking guidance](https://hamlet.rest/how-it-works): Review the booking request, availability confirmation and payment process.
+- [Guest safety](https://hamlet.rest/safety): Understand listing review and guest safeguards.
 
-## Listing review and trust
+A booking request is not a confirmed reservation. The host or authorised property partner must confirm availability and applicable terms before payment. Review the total payable amount, applicable charges and any refundable caution deposit in the booking flow before proceeding. A refundable caution deposit is distinct from accommodation charges and is handled under the applicable booking and inspection terms.
 
-HAMLET reviews property submissions across four areas: ownership evidence, identity, authority to list and physical property inspection. A partner's self-reported information is not the same as independent verification. Guests should review the verification status and the specific details shown on each listing.
+## Optional
 
-## Booking and payment
-
-A booking begins with a request. The host or authorised property partner must confirm availability and applicable terms before the guest proceeds to payment. A submitted request is not a confirmed reservation. Guests should use the payment method and instructions presented within HAMLET and should not rely on payment screenshots or informal messages as confirmation.
-
-## Pricing and deposits
-
-The total payable amount, applicable charges, payment currency and any refundable caution deposit should be reviewed in the listing and booking flow before payment. A refundable caution deposit is distinct from accommodation charges and is subject to the applicable booking and inspection terms. Do not infer a fee, commission, exchange-rate adjustment or partner reward from this reference; consult HAMLET's current public terms or the specific written agreement.
-
-## Partner network
-
-HAMLET supports property owners, authorised agents, property managers, shortlet operators and other approved partners. Partners must have the appropriate authority to submit or manage a property. Commercial arrangements, eligibility and any partner rewards are governed by the current written terms communicated by HAMLET.
-
-## Geographic scope
-
-HAMLET's current marketplace focus is Lagos, Nigeria, including Lagos Mainland and Lagos Island/Lekki neighbourhoods. Public inventory and location coverage may change as approved properties are added.
-
-## Accuracy
-
-This file is a concise public reference. Listing status, availability, pricing, payment instructions and partner terms can change. The live listing, booking flow and current public legal terms take precedence over this summary.
+For a more detailed public overview of HAMLET, see [llms-full.txt](https://hamlet.rest/llms-full.txt). Live listings, booking information, public legal terms and current written partner terms take precedence over this summary.
