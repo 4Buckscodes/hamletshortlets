@@ -12,6 +12,7 @@ import {
   resolveOAuthPostAuthRedirect,
 } from '@/lib/authRedirect';
 import { getBrowserSupabase, isMissingSchemaObjectError } from '@/lib/next-supabase';
+import { dispatchPendingCommunications } from '@/lib/communications';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 
 const OAUTH_CONTEXT_STORAGE_KEY = 'hamlet:oauth-context';
@@ -141,6 +142,7 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
+        await dispatchPendingCommunications(client);
         const { data: profileData } = await client
           .from('profiles')
           .select('id,full_name,phone,company,role')
