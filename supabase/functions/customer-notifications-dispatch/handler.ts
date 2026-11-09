@@ -338,7 +338,7 @@ export async function handleCustomerNotificationsDispatch(
   const from = deps.resendFromEmail?.trim() || '';
   const appUrl = normalizeAppUrl(deps.hamletAppUrl);
   const fromAddress = /<([^<>]+)>/.exec(from)?.[1]?.trim() || from;
-  if (!apiKey || !from || !validEmail(fromAddress) || !appUrl) {
+  if (!apiKey || !from || /[\\r\\n]/.test(from) || !validEmail(fromAddress) || !appUrl) {
     return jsonResponse({ ok: false, error: 'Customer email dispatch configuration is incomplete.' }, 503);
   }
 
@@ -372,18 +372,8 @@ export async function handleCustomerNotificationsDispatch(
       ? row.payload
       : {};
     const rendered = buildCustomerEmail(row.event_type, payload, appUrl);
-    let result = await sendEmail({
-      apiKey,
-      from,
-      to: recipient,
-      subject: rendered.subject,
-      html: rendered.html,
-      text: rendered.text,
-      idempotencyKey: row.idempotency_key,
-      timeoutMs: 10_000,
-    });
-
-    if (!result.id && result.retryable) {
+    let result: CustomerEmailSendResult;
+    try {
       result = await sendEmail({
         apiKey,
         from,
@@ -394,6 +384,21 @@ export async function handleCustomerNotificationsDispatch(
         idempotencyKey: row.idempotency_key,
         timeoutMs: 10_000,
       });
+
+      if (!result.id && result.retryable) {
+        result = await sendEmail({
+          apiKey,
+          from,
+          to: recipient,
+          subject: rendered.subject,
+          html: rendered.html,
+          text: rendered.text,
+          idempotencyKey: row.idempotency_key,
+          timeoutMs: 10_000,
+        });
+      }
+    } catch {
+      result = { error: 'Unexpected error while sending customer email.', retryable: true };
     }
 
     const completedAt = now();
