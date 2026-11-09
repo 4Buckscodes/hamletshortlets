@@ -128,6 +128,25 @@ describe('admin-notifications-dispatch Edge Function handler', () => {
     expect(claimMock).not.toHaveBeenCalled();
   });
 
+  it('accepts a valid Vault-backed scheduler secret while preserving environment-secret auth', async () => {
+    const verifyVaultDispatchSecret = vi.fn(async (candidate: string) => candidate === VALID_SECRET);
+    const { deps, claimMock } = makeDeps({
+      internalDispatchSecret: undefined,
+      verifyVaultDispatchSecret,
+    });
+    const res = await handleAdminNotificationsDispatch(
+      new Request('https://edge.hamlet.test/functions/v1/admin-notifications-dispatch', {
+        method: 'POST',
+        headers: { 'x-hamlet-internal-secret': VALID_SECRET },
+      }),
+      deps,
+    );
+
+    expect(res.status).toBe(200);
+    expect(verifyVaultDispatchSecret).toHaveBeenCalledWith(VALID_SECRET);
+    expect(claimMock).toHaveBeenCalledOnce();
+  });
+
   it('returns 503 when required Supabase or Resend configuration is incomplete', async () => {
     const { deps } = makeDeps({ resendApiKey: '' });
     const res = await handleAdminNotificationsDispatch(
