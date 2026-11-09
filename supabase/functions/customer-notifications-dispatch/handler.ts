@@ -342,7 +342,7 @@ export async function handleCustomerNotificationsDispatch(
   const from = deps.resendFromEmail?.trim() || '';
   const appUrl = normalizeAppUrl(deps.hamletAppUrl);
   const fromAddress = /<([^<>]+)>/.exec(from)?.[1]?.trim() || from;
-  if (!apiKey || !from || !from.includes(String.fromCharCode(10)) && !from.includes(String.fromCharCode(13)) || !validEmail(fromAddress) || !appUrl) {
+  if (!apiKey || !from || from.includes(String.fromCharCode(10)) || from.includes(String.fromCharCode(13)) || !validEmail(fromAddress) || !appUrl) {
     return jsonResponse({ ok: false, error: 'Customer email dispatch configuration is incomplete.' }, 503);
   }
 
