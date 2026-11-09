@@ -164,6 +164,12 @@ export function getValidGuestNightlyNgn(ownerNightlyRate: unknown): number | nul
   return Number.isFinite(computed) && computed > 0 ? computed : null;
 }
 
+/** Validates an already-computed guest-facing price without applying markup again. */
+export function getValidPublicGuestNightlyNgn(value: unknown): number | null {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+}
+
 export function isStudioProperty(propertyType: string | null | undefined, bedrooms: number | null | undefined): boolean {
   const cleanType = (propertyType || '').trim().toLowerCase();
   const bedCount = bedrooms === null || bedrooms === undefined ? null : Number(bedrooms);
@@ -419,7 +425,7 @@ export function filterAndSortApprovedStays(
       if (cap < filters.guests) return false;
     }
 
-    const nightlyNgn = getValidGuestNightlyNgn(stay.nightly_rate);
+    const nightlyNgn = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
     if (priceCheck.minPrice !== null) {
       if (nightlyNgn === null || nightlyNgn < priceCheck.minPrice) return false;
     }
@@ -440,23 +446,27 @@ export function filterAndSortApprovedStays(
   });
 
   const sorted = [...filtered];
+  if (filters.sort === 'price_asc' || filters.sort === 'price_desc') {
+    const direction = filters.sort === 'price_asc' ? 1 : -1;
+    sorted.sort((a, b) => {
+      const priceA = getValidPublicGuestNightlyNgn(a.guest_nightly_ngn);
+      const priceB = getValidPublicGuestNightlyNgn(b.guest_nightly_ngn);
+
+      // Always group unpriced listings after priced listings in both directions.
+      const unpricedA = priceA === null ? 1 : 0;
+      const unpricedB = priceB === null ? 1 : 0;
+      if (unpricedA !== unpricedB) return unpricedA - unpricedB;
+      if (priceA !== null && priceB !== null && priceA !== priceB) {
+        return (priceA - priceB) * direction;
+      }
+      // Stable tie-break prevents equal/missing prices from depending on input order.
+      return String(a.id).localeCompare(String(b.id));
+    });
+    return sorted;
+  }
+
   sorted.sort((a, b) => {
-    const priceA = getValidGuestNightlyNgn(a.nightly_rate);
-    const priceB = getValidGuestNightlyNgn(b.nightly_rate);
-
-    if (filters.sort === 'price_asc') {
-      if (priceA === null && priceB === null) return 0;
-      if (priceA === null) return 1;
-      if (priceB === null) return -1;
-      return priceA - priceB;
-    }
-
-    if (filters.sort === 'price_desc') {
-      if (priceA === null && priceB === null) return 0;
-      if (priceA === null) return 1;
-      if (priceB === null) return -1;
-      return priceB - priceA;
-    }
+    const priceA = getValidPublicGuestNightlyNgn(a.guest_nightly_ngn);
 
     if (filters.sort === 'newest') {
       return String(b.created_at || '').localeCompare(String(a.created_at || ''));

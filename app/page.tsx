@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getPublicSupabase } from '@/lib/supabase-public';
-import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import { PUBLIC_PROPERTY_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
 import {
   buildHomepageSchema,
   buildPublicPageMetadata,
@@ -44,7 +44,7 @@ export default async function HomePage() {
     if (error) {
       queryError = true;
     } else {
-      approvedStays = (data ?? []) as PublicStayRecord[];
+      approvedStays = (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>));
     }
   }
 

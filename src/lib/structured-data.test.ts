@@ -37,7 +37,7 @@ const SAMPLE_APPROVED_STAY: PublicStayRecord = {
   bathrooms: 2,
   bed_setup: '2 Queen beds',
   capacity: 4,
-  nightly_rate: 200_000,
+  guest_nightly_ngn: 240_000,
   cleaning_fee: 25_000,
   refundable_deposit: 100_000,
   amenities: ['High-speed Wi-Fi', '24/7 Power', 'Air conditioning'],
@@ -192,7 +192,7 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
       bathrooms: null,
       bed_setup: null,
       capacity: null,
-      nightly_rate: 0,
+      guest_nightly_ngn: null,
       amenities: [],
       image_urls: [],
     };
@@ -400,6 +400,29 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
       expect(content).toContain('https://hamlet.rest');
       expect(content).not.toContain('www.hamlet.rest');
       expect(content).not.toContain('/#/');
+    }
+
+    const crawlerPolicy = readFileSync(join(ROOT, 'app', 'robots.ts'), 'utf8');
+    expect(crawlerPolicy).toContain("'/api/og/'");
+    expect(crawlerPolicy).toContain("'/api/'");
+    expect(crawlerPolicy).toContain("'/partners/analytics'");
+    expect(crawlerPolicy).toContain("'/partners/marketing'");
+
+    const publicAiReferences = [
+      readFileSync(join(ROOT, 'public', 'llms.txt'), 'utf8'),
+      readFileSync(join(ROOT, 'public', 'llms-full.txt'), 'utf8'),
+    ].join('\\n');
+    for (const confidentialPattern of [
+      /B\\s*\\*\\s*1\\.20/i,
+      /0\\.20\\s*\\*\\s*B/i,
+      /2\\.5%/i,
+      /10%\\s+of\\s+`?B`?/i,
+      /17\\.5%/i,
+      /7\\.5%/i,
+      /payment.{0,20}reserve/i,
+      /owner-only rates/i,
+    ]) {
+      expect(publicAiReferences).not.toMatch(confidentialPattern);
     }
   });
 });

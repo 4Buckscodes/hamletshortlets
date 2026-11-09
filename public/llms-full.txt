@@ -1,158 +1,91 @@
-# HAMLET — Comprehensive AI & LLM Reference (`llms-full.txt`)
+# HAMLET — Public AI & Search Reference
 
-> HAMLET (https://hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria ("Your stay, sorted."). Operated by HAMLET Marketplace Ltd under parent organization Abundance Abodes, HAMLET helps guests find, book, and enjoy serviced apartments across Lagos Mainland and Lagos Island with manual property verification, automatic location-aware display pricing in NGN (₦), USD ($), and GBP (£), server-verified Paystack NGN checkout, and structured operational support.
+> HAMLET (https://hamlet.rest) is a shortlet marketplace for Lagos, Nigeria, operated under Abundance Abodes. “Your stay, sorted.”
 
-- **Official Brand Name**: HAMLET
-- **Parent Organization**: Abundance Abodes (`HAMLET Marketplace Ltd`)
-- **Canonical Website**: https://hamlet.rest
-- **Support Contact**: hello@hamlet.rest
-- **Concise LLM Index**: https://hamlet.rest/llms.txt
-- **Full LLM Reference**: https://hamlet.rest/llms-full.txt
-- **XML Sitemap**: https://hamlet.rest/sitemap.xml
-- **Launch City & Scope**: Lagos, Nigeria only (Lagos Mainland & environs + Lagos Island & Lekki corridor)
-
----
+For a concise link directory, see https://hamlet.rest/llms.txt. This document describes public product information and does not replace live listing details, booking terms, public legal terms or written partner agreements.
 
 ## 1. What HAMLET Does
 
-Choosing a shortlet in Lagos often involves misleading photos, unclear power backup promises, surprise fees at check-in, double-booked calendars, and risky off-platform bank transfers. HAMLET solves these problems through four operational commitments:
+HAMLET helps guests discover shortlet accommodation and connect with property owners, authorised agents, property managers and shortlet operators. Guests can review public listing information, submit booking requests and follow the booking process through the platform.
 
-1. **Know what you are booking**: Every public listing displays structured bedroom/bed setup details, maximum guest capacity, house rules, amenities, live calendar confirmation status, and recorded verification outcomes.
-2. **Power and Wi-Fi explained upfront**: Listings specify inverter, generator, or 24/7 estate power arrangements alongside internet and workspace details so remote workers, business travellers, and families know what to expect before requesting a stay.
-3. **Availability-first booking without back-and-forth**: Every reservation starts as a booking request. No payment is collected until an authorised property partner or HAMLET operations confirms availability and terms.
-4. **Accountable support & payment safety**: Payments occur exclusively inside the signed-in HAMLET guest account via Paystack NGN checkout and are confirmed server-side via cryptographic webhook verification. Guests can report issues with evidence directly from their booking record.
+HAMLET's current marketplace focus is Lagos, Nigeria. Public inventory and supported locations may change as approved properties are added.
 
----
+## 2. Marketplace & Guest Guides
 
-## 2. Lagos Neighbourhood Coverage
+- Home: https://hamlet.rest/
+- Explore stays: https://hamlet.rest/stays
+- Lagos neighbourhood guide: https://hamlet.rest/lagos
+- How HAMLET works: https://hamlet.rest/how-it-works
+- Guest safety: https://hamlet.rest/safety
+- About HAMLET: https://hamlet.rest/about
+- Guest FAQs: https://hamlet.rest/faqs
+- Legal and privacy terms: https://hamlet.rest/legal
+- Partner application: https://hamlet.rest/partners/apply
 
-HAMLET exclusively serves neighbourhoods in **Lagos, Nigeria**, spanning both **Lagos Mainland** and **Lagos Island**:
+## 3. Four Verification Pillars
 
-### Lagos Mainland & Environs
-- **Yaba & Environs** (`https://hamlet.rest/stays?area=Yaba`): Covers Sabo, Alagomeji, Akoka, Ebute Metta, and Jibowu. Ideal for Lagos technology hubs, university/research visits, medical centres, and quick Third Mainland Bridge access to Lagos Island.
-- **Surulere & Environs** (`https://hamlet.rest/stays?area=Surulere`): Covers Bode Thomas, Adeniran Ogunsanya, Eric Moore, Aguda, Kilo, and Iponri. Suited to residential stays, creative/media studios, shopping, dining, and central Mainland-to-Island connectivity.
-- **Shomolu & Environs** (`https://hamlet.rest/stays?area=Shomolu`): Covers Shomolu (Somolu), Palmgrove, Onipanu, Pedro, Fadeyi, Bariga, plus adjacent **Gbagada** (Medina, Ifako) and **Ilupeju** along the Ikorodu Road and Gbagada Expressway corridors.
-- **Ikeja & Northern Mainland** (`https://hamlet.rest/stays?area=Ikeja+GRA`): Covers **Ikeja GRA**, **Maryland** (Anthony, Mende), Opebi, **Ogudu**, and **Magodo** — ideal for Murtala Muhammed Airport proximity, corporate offices, and quiet gated residential estates.
-- **Umbrella Mainland Filter**: `https://hamlet.rest/stays?area=Lagos+Mainland` surfaces approved homes across all Mainland neighbourhoods above.
+Property submissions are reviewed across four areas:
 
-### Lagos Island & Lekki Corridor
-- **Victoria Island** (`https://hamlet.rest/stays?area=Victoria+Island`): Suited to corporate visits, diplomatic/executive travel, conferences, dining, and proximity to Lagos Island commercial headquarters.
-- **Ikoyi & Banana Island** (`https://hamlet.rest/stays?area=Ikoyi`, `https://hamlet.rest/stays?area=Banana+Island`): Quieter, high-security residential apartments, penthouses, and waterfront homes with controlled building access and gated parking.
-- **Lekki Phase 1, Ikate & Oniru** (`https://hamlet.rest/stays?area=Lekki+Phase+1`, `https://hamlet.rest/stays?area=Ikate`, `https://hamlet.rest/stays?area=Oniru`): Serviced studios, apartments, and duplexes close to restaurants, retail, beaches, and social venues.
-- **Ajah** (`https://hamlet.rest/stays?area=Ajah`): Residential apartments and family homes with extra space along the Lekki–Ajah corridor.
+1. Ownership evidence.
+2. Identity of the owner or authorised representative.
+3. Authority to list or manage the property.
+4. Physical property inspection and listing accuracy.
 
----
+A self-reported declaration should not be described as independently verified. Guests should read the verification status displayed on each property page and assess the evidence and listing details provided.
 
-## 3. Property Verification & Calendar Model
+## 4. Booking Lifecycle
 
-### Four Verification Pillars
-Before a partner-submitted property can transition to `approved` and appear publicly on HAMLET, HAMLET operations reviews documentary and inspection evidence across four independent pillars:
-1. **Ownership**: Title deed, Certificate of Occupancy (C of O), or purchase documentation.
-2. **Identity**: Government-issued identification matching the owner or authorised representative.
-3. **Authority to List**: Direct ownership or signed management mandate / explicit owner consent.
-4. **Physical Inspection**: Property condition, real apartment photography (stock or sample photos are rejected), and amenity verification.
+1. **Booking request:** A guest submits preferred dates, guest count and other required information. Submitting a request does not itself confirm a reservation or charge the guest.
+2. **Availability confirmation:** The authorised host, property partner or HAMLET operations confirms availability and applicable terms.
+3. **Payment:** The guest follows the payment instructions presented in the HAMLET booking flow after confirmation.
+4. **Reservation confirmation:** A reservation is confirmed only when HAMLET records the required payment confirmation.
+5. **Stay support:** Guests should use the relevant booking and support channels for assistance or to report a problem.
 
-Each pillar is recorded honestly (`verified`, `self_reported`, `pending_review`, or `missing`). A partner checkbox during submission is treated strictly as `self_reported` until examined by a HAMLET reviewer.
+Guests should not treat informal messages, screenshots or off-platform transfers as proof that a reservation is confirmed.
 
-### Decoupled Publication & Live Calendar Availability
-- Approved properties remain discoverable even while occupied on a current stay, displaying clear badges such as `Available now` or `Next available from <date>` along with a 21-day upcoming availability strip.
-- Overlapping confirmed stays, active 48-hour payment holds, and partner calendar blocks (`owner_stay`, `maintenance`, `external_booking`, `manual_hold`) automatically prevent double-booking at the database layer.
-- Partners can temporarily `pause` and `resume` an approved listing without losing verification history or calendar blocks.
+## 5. Pricing, Payment and Refundable Deposits
 
----
+The booking flow and current public terms are the source of truth for the guest's payable amount, applicable charges, payment currency, payment instructions and cancellation conditions.
 
-## 4. End-to-End Booking Lifecycle
+Where a refundable caution deposit applies, it is shown separately from accommodation charges and is handled under the applicable inspection and refund terms. Guests should review the amount and conditions before proceeding.
 
-1. **Request (`requested` / `checking`)**: Guest selects check-in/check-out dates, guest count, optional Closing Agent code (`HML-...`), and confirms house rules and caution deposit terms. Stay prices automatically display in `NGN`, `USD`, or `GBP` based on the guest's detected location. No payment is charged at request time.
-2. **Availability Confirmation (`awaiting_payment`)**: The authorised property partner or HAMLET operations confirms availability and sets a **48-hour payment deadline** (or declines with a note if dates are unavailable, with zero charge to the guest).
-3. **Verified Checkout (`confirmed`)**: Within the 48-hour hold window, the guest pays exclusively inside their signed-in HAMLET account via Paystack NGN checkout. Booking status transitions to `confirmed` only after Paystack's signed `charge.success` webhook is verified server-side and final date availability is rechecked. Browser redirects, screenshots, or off-platform transfers never confirm a booking.
-4. **Stay Completion & Private Pilot Feedback (`completed`)**: After check-out, the stay is marked `completed`, post-checkout caution deposit inspection runs, and the guest may submit private feedback reviewed by HAMLET operations (public star ratings are intentionally disabled during the pilot phase).
-5. **Exception States**: Unpaid holds become `expired` automatically after the deadline, releasing dates. Bookings can also transition to `cancelled`, `disputed`, or `no_show` with full audit-log and ledger reconciliation trails.
+HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
 
----
+## 6. Partner Network
 
-## 5. Transparent Pricing, Multi-Currency Quotes & Caution Deposits
+HAMLET's partner ecosystem may include:
 
-### Domestic NGN Pricing & 20% Guest Service Fee
-- **Confirmed Guest Service Fee**: **20%** of the owner's agreed accommodation rate (`B`), added on top of `B` and included in the displayed guest-facing stay price (`B * 1.20`). It is never added a second time at checkout.
-- **Owner Services Policy**: HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
-- **Commercial Allocation of the 20% Pool (`0.20 * B`)**:
-  - **Closing Agent Commission**: `10%` of `B` (when a valid active Closing Agent is attributed under agreed platform rules; otherwise retained in HAMLET's allocation).
-  - **Direct Partner Referral Reward**: `2.5%` of `B` (when the Closing Agent has an active 90-day direct referral window; otherwise retained in HAMLET's allocation).
-  - **HAMLET Platform Allocation**: `5%` of `B` (when both Closing Agent and Direct Referrer apply; `7.5%` without Direct Referrer; `17.5%` when HAMLET closes directly without a Closing Agent).
-  - **Internal Payment & Settlement Cost Reserve**: `2.5%` of `B` (internal reserve; actual Paystack processing fees are recorded separately in the settlement ledger and never silently mixed into the 20% guest service fee).
-- **Worked Domestic Example (`B = ₦200,000`)**:
-  - Owner agreed accommodation rate (`B`): `₦200,000`
-  - HAMLET 20% guest service fee: `₦40,000`
-  - Displayed domestic guest accommodation price: `₦240,000` (plus any disclosed mandatory cleaning fee; refundable caution deposit itemised separately)
+- **Property owners:** People or organisations with authority to list their accommodation.
+- **Authorised agents:** Representatives with documented permission to market or manage a property.
+- **Property managers:** Professionals responsible for property and guest operations.
+- **Shortlet operators and co-hosts:** Accommodation operators supporting the guest experience.
+- **Other approved partners:** Participants accepted under HAMLET's current partner requirements.
 
-### International USD ($) & GBP (£) Stay Quotes (10% Buffer, NGN Settlement)
-- Guests view stay quotes automatically in **NGN (`₦`)**, **USD (`$`)**, or **GBP (`£`)** using HAMLET's active configured treasury reference exchange rates.
-- For `USD` and `GBP` quotes, the domestic guest stay total (accommodation + mandatory charges, excluding caution deposit) is converted at the active rate and a **single 10% international currency buffer** is applied (`convertedBase * 1.10`) to cover cross-border FX and card conversion variance (for example, `$200.00` converted base becomes `$220.00` quoted stay total).
-- **Paystack Settlement**: All online checkouts settle transparently in **NGN** via Paystack at the locked quote equivalent. Expired foreign-currency quotes (`quote_expires_at`) are refreshed before checkout initialization.
-- Partner commissions (`10%` of `B`) and referral rewards (`2.5%` of `B`) are always calculated strictly on the NGN owner listed rate `B` and are never inflated by the 10% FX buffer.
+Partner access, permissions, eligibility and commercial arrangements are governed by HAMLET's current written terms. No particular reward or commercial arrangement should be assumed from this document.
 
-### Refundable Caution Deposit Lifecycle
-- Refundable caution deposits are **itemised and tracked separately** from accommodation revenue.
-- Caution deposits are **never** included in HAMLET's 20% domestic markup and **never** subject to the 10% international currency buffer.
-- Tracked states: `due` → `received` → `inspection_pending` → `refund_approved` / `partially_refunded` / `disputed` → `refund_completed`, with documented inspection notes, evidence, and refund references.
+## 7. Lagos Neighbourhood Coverage
 
----
+HAMLET's Lagos discovery experience includes neighbourhoods and corridors such as:
 
-## 6. Partner Roles & 90-Day Referral Program
+### Lagos Mainland and environs
+Yaba, Shomolu, Surulere, Ikeja, Maryland, Gbagada, Ilupeju, Ebute Metta, Ogudu and Magodo.
 
-Approved partners (`https://hamlet.rest/partners/apply`) can participate in one or more roles:
-- **Property Owner**: Lists homes owned directly under HAMLET's transparent owner services policy.
-- **Agent (authorised)**: Manages listings on behalf of owners with documented mandate.
-- **Property Manager**: Handles full guest operations, check-in, maintenance, and issue resolution.
-- **Shortlet Operator / Co-host**: Operates multiple serviced units or guest-facing hospitality.
-- **Closing Agent**: Shares verified stay links (`https://hamlet.rest/stays?agent=HML-...`) or partner codes with guests and earns **10% of `B`** on confirmed/completed bookings closed with their code (`0` listed properties required).
-- **Referral Partner**: Introduces new partners via partner referral links (`https://hamlet.rest/partners/apply?ref=HML-...`).
-  - Self-referrals (same account, email, or phone) are blocked.
-  - **Activation rule**: The referred partner's **1st completed booking** activates a **90-day recurring reward window** (`₦0` activation reward on booking #1).
-  - **Recurring reward**: During the active 90-day window, the referring partner earns **2.5% of `B`** on subsequent qualifying completed bookings closed by the referred partner, funded entirely from HAMLET's 20% markup.
+### Lagos Island and Lekki corridor
+Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru, Banana Island and Ajah.
 
----
+The live marketplace should be checked for actual approved inventory in each area. Mention of a neighbourhood in this guide is not a claim that a property is currently available there.
 
-## 7. Frequently Asked Questions (Guest Reference)
+## 8. Guest Guidance
 
-1. **Are the pictures on HAMLET real?**
-   Property photos must represent the actual accommodation offered; stock or sample photos are rejected during review. Check the listing's four verification pillars alongside photos, amenities, and house rules. Report any material discrepancy through your HAMLET booking support route with evidence.
-2. **What happens if there is a power outage?**
-   Power arrangements vary by home (inverter, generator, or 24/7 estate power) and are stated on each listing. Review what backup is provided before booking, and report any unfulfilled promised arrangement via booking support.
-3. **How do I know if a shortlet is safe?**
-   Review the listing's four verification pillars (ownership, identity, authority to list, inspection), building access details, and house rules, keep access codes private, and keep all communication and payments on HAMLET.
-4. **Are there hidden fees?**
-   No. Every listing and booking request shows the full breakdown upfront: owner listed rate, 20% domestic markup, disclosed mandatory charges (such as cleaning), any 10% USD/GBP international stay buffer, exact Paystack NGN settlement amount, and separately itemised refundable caution deposit.
-5. **How does check-in work?**
-   Confirmed bookings display arrival windows, host/manager handover or smart-lock instructions, and house rules. Guests can attach arrival notes (such as flight landing times) when requesting a stay.
-6. **Is my booking confirmed as soon as I submit a request?**
-   No. Availability and terms are confirmed first, opening a 48-hour payment window. A reservation is confirmed only after verified server-side Paystack payment confirmation.
-7. **Can I cancel my reservation and get a refund?**
-   Open booking requests (`requested`, `checking`, `awaiting_payment`) can be cancelled directly from the guest account before payment. Post-confirmation cancellations and refunds follow the booking terms and are recorded on HAMLET's auditable ledger.
-8. **What if I arrive and the apartment is not as described?**
-   Document the discrepancy with photos or notes and submit an issue immediately from your HAMLET guest account (`My Bookings` → `Report issue`) so HAMLET operations can investigate and resolve it.
-9. **Are Wi-Fi and air conditioning included?**
-   Check the property's explicit amenities list before booking (`Wifi`, `AC`, `Workspace`, `24/7 Power`, `Inverter`, `Generator`, `Kitchen`, `Parking`, `Pool`, `Gym`, `24/7 Security`, etc.).
-10. **Can I book a shortlet for a family or group?**
-    Yes, up to the listing's stated maximum guest capacity and in compliance with house rules (unauthorised parties and events are prohibited).
-11. **Can I pay the property owner directly?**
-    No. Never transfer funds to personal bank accounts outside HAMLET. Paying exclusively through HAMLET's verified Paystack checkout preserves your reservation record and guest protection.
-12. **What if I need help during my stay?**
-    Sign in at `https://hamlet.rest/account`, open your booking, and file a support issue with your booking reference and supporting evidence. For urgent physical safety emergencies, contact local emergency services first.
+- Review property photos, amenities, house rules, capacity and location details before requesting a stay.
+- Check the property's recorded verification information and distinguish verified evidence from self-reported information.
+- Confirm availability and all applicable charges before payment.
+- Follow the payment instructions in the HAMLET booking flow.
+- Keep booking references and use the platform's support route if an issue arises.
+- For urgent physical safety emergencies, contact local emergency services first.
 
----
+## 9. Accuracy and Updates
 
-## 8. Key Public URLs
+This file is a general public reference, not a live inventory feed or a contract. Property status, availability, pricing, payment instructions, policies and partner terms may change. The current property page, booking flow, public legal terms and written partner agreement take precedence.
 
-- Home: `https://hamlet.rest/`
-- Explore Stays: `https://hamlet.rest/stays`
-- Lagos Mainland Stays: `https://hamlet.rest/stays?area=Lagos+Mainland`
-- Lagos Neighbourhood Guide: `https://hamlet.rest/lagos`
-- How HAMLET Works: `https://hamlet.rest/how-it-works`
-- Guest Safety & Protection: `https://hamlet.rest/safety`
-- About HAMLET: `https://hamlet.rest/about`
-- Frequently Asked Questions: `https://hamlet.rest/faqs`
-- Partner Network & Application: `https://hamlet.rest/partners/apply`
-- Partner Application Form: `https://hamlet.rest/partners/apply/form`
-- Legal, Privacy, Trust & Pricing Policies: `https://hamlet.rest/legal`
+HAMLET must not be represented as having a listing, review, verification outcome, availability status or service capability unless that information is supported by the live product and its records.

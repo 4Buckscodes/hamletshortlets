@@ -1,9 +1,8 @@
-# HAMLET Shortlets — Verified Lagos Shortlets (https://hamlet.rest)
-# AI / LLM Context Index: https://hamlet.rest/llms.txt
-# Full AI / LLM Reference: https://hamlet.rest/llms-full.txt
-
+# HAMLET public crawler policy
+# The App Router robots route is the canonical production source.
 User-agent: *
 Allow: /
+Allow: /api/og/
 Allow: /partners/apply
 Allow: /partners/apply/form
 Allow: /llms.txt
@@ -11,8 +10,10 @@ Allow: /llms-full.txt
 Allow: /sitemap.xml
 Disallow: /account
 Disallow: /admin
+Disallow: /partners/analytics
 Disallow: /partners/bookings
 Disallow: /partners/availability
+Disallow: /partners/marketing
 Disallow: /partners/properties
 Disallow: /partners/earnings
 Disallow: /partners/profile
@@ -24,29 +25,38 @@ Disallow: /legacy
 
 User-agent: GPTBot
 Allow: /
+Allow: /api/og/
 
 User-agent: OAI-SearchBot
 Allow: /
+Allow: /api/og/
 
 User-agent: ChatGPT-User
 Allow: /
+Allow: /api/og/
 
 User-agent: ClaudeBot
 Allow: /
+Allow: /api/og/
 
 User-agent: Claude-Web
 Allow: /
+Allow: /api/og/
 
 User-agent: PerplexityBot
 Allow: /
+Allow: /api/og/
 
 User-agent: Google-Extended
 Allow: /
+Allow: /api/og/
 
 User-agent: Applebot-Extended
 Allow: /
+Allow: /api/og/
 
 User-agent: CCBot
 Allow: /
+Allow: /api/og/
 
 Sitemap: https://hamlet.rest/sitemap.xml

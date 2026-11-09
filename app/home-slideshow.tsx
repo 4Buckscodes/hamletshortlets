@@ -13,7 +13,7 @@ import {
   filterAndSortApprovedStays,
   formatAccommodationLabel,
   getStayTrustStatus,
-  getValidGuestNightlyNgn,
+  getValidPublicGuestNightlyNgn,
   isApprovedBookableStay,
   isStudioProperty,
   type CorridorSideFilter,
@@ -124,7 +124,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   );
   const bedFactLabel = formatCompactBedFact(property.bedrooms, property.property_type);
   const trust = getStayTrustStatus(property);
-  const guestNightlyNgn = getValidGuestNightlyNgn(property.nightly_rate);
+  const guestNightlyNgn = getValidPublicGuestNightlyNgn(property.guest_nightly_ngn);
   const bathrooms = Math.max(1, Math.trunc(Number(property.bathrooms ?? 1)));
   const maxGuests = Math.max(1, Math.trunc(Number(property.capacity ?? 1)));
 

@@ -11,6 +11,7 @@ import {
   isMissingSchemaObjectError,
   PARTNER_PROPERTY_SELECT,
   PUBLIC_PROPERTY_SELECT,
+  toPublicStayRecord,
 } from './next-supabase';
 
 const ROOT = process.cwd();
@@ -56,6 +57,10 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
   });
 
   it('keeps PUBLIC_PROPERTY_SELECT and PARTNER_PROPERTY_SELECT safe against unapplied Wayfinder columns', () => {
+    // Operational calendar contact is partner-only and must never be selected for public listing payloads.
+    expect(PUBLIC_PROPERTY_SELECT.split(',')).not.toContain('calendar_responsible_person');
+    expect(PARTNER_PROPERTY_SELECT.split(',')).toContain('calendar_responsible_person');
+
     for (const unappliedColumn of [
       'city',
       'public_location_summary',
@@ -85,6 +90,16 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
         message: 'duplicate key value violates unique constraint',
       }),
     ).toBe(false);
+  });
+
+  it('projects raw property rates into guest prices without serialising owner rates or calendar contacts', () => {
+    const publicStay = toPublicStayRecord({
+      id: 'stay-safe', title: 'Safe listing', status: 'approved', nightly_rate: 100_000,
+      calendar_responsible_person: 'Private contact', area: 'Lekki',
+    });
+    expect(publicStay.guest_nightly_ngn).toBe(120_000);
+    expect('nightly_rate' in publicStay).toBe(false);
+    expect('calendar_responsible_person' in publicStay).toBe(false);
   });
 
   it('provides all required Next.js App Router public, guest, partner, admin and API routes', () => {

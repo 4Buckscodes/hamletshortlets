@@ -46,7 +46,7 @@ import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
   getStayTrustStatus,
-  getValidGuestNightlyNgn,
+  getValidPublicGuestNightlyNgn,
 } from '@/lib/discovery';
 import {
   getBrowserSupabase,
@@ -1001,14 +1001,14 @@ export function SiteFooter() {
  * (`src/lib/discovery.ts` + `src/lib/pricing.ts`). Never displays a misleading ₦0 price.
  */
 export function StayNightlyPrice({
-  ownerNightlyRateNgn,
+  guestNightlyNgn,
   className = '',
 }: {
-  ownerNightlyRateNgn: number;
+  guestNightlyNgn: number;
   className?: string;
 }) {
   const { formatPrice, currency } = useCurrency();
-  const domesticNightly = getValidGuestNightlyNgn(ownerNightlyRateNgn);
+  const domesticNightly = getValidPublicGuestNightlyNgn(guestNightlyNgn);
 
   if (domesticNightly === null) {
     return (
@@ -1216,7 +1216,7 @@ export function StayListingCard({
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
-          <StayNightlyPrice ownerNightlyRateNgn={Number(stay.nightly_rate ?? 0)} />
+          <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} />
           <span className="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-ink-900 transition group-hover:translate-x-0.5">
             View stay <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
           </span>
