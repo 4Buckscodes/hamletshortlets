@@ -1,6 +1,6 @@
 # HAMLET — Comprehensive AI & LLM Reference (`llms-full.txt`)
 
-> HAMLET (https://hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria ("Your stay, sorted."). Operated by HAMLET Marketplace Ltd under parent organization Abundance Abodes, HAMLET helps guests find, book, and enjoy serviced apartments across Lagos Mainland and Lagos Island with property verification, automatic location-aware display pricing in NGN (₦), USD ($), and GBP (£), server-verified Paystack NGN checkout, and structured operational support.
+> HAMLET (https://hamlet.rest) is a Lagos shortlet marketplace with listing verification ("Your stay, sorted."). Operated by HAMLET Marketplace Ltd under parent organization Abundance Abodes, HAMLET helps guests find, book, and enjoy serviced apartments across Lagos Mainland and Lagos Island with property verification, automatic location-aware display pricing in NGN (₦), USD ($), and GBP (£), server-verified Paystack NGN checkout, and structured operational support.
 
 - **Official Brand Name**: HAMLET
 - **Parent Organization**: Abundance Abodes (`HAMLET Marketplace Ltd`)

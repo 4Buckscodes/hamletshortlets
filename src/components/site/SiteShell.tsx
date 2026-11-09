@@ -882,7 +882,7 @@ export function SiteFooter() {
             </span>
           </Link>
           <p className="mt-2.5 text-[14px] leading-[1.5] text-[#C5CCDA]">
-            Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
+            Your stay, sorted. Approved shortlets across Lagos Mainland and Lagos Island, with listing verification by Abundance Abodes.
           </p>
           <p className="mt-2.5 text-[14px] text-[#C5CCDA]">
             Contact:{' '}
@@ -949,7 +949,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-[#C5CCDA]">
-              Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
+              Your stay, sorted. Approved shortlets across Lagos Mainland and Lagos Island, with listing verification by Abundance Abodes.
             </p>
             <p className="mt-2.5 text-xs text-[#C5CCDA]">
               Contact:{' '}

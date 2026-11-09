@@ -17,7 +17,7 @@ import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
   getStayTrustStatus,
-  getValidGuestNightlyNgn,
+  resolveStayGuestNightlyNgn,
   toPublicStayView,
 } from '@/lib/discovery';
 import { formatNaira } from '@/lib/pricing';
@@ -78,8 +78,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
   const { data } = await db
-    .from('properties')
-    .select('title,area,property_type,bedrooms,capacity,nightly_rate,image_urls,updated_at')
+    .from('public_properties')
+    .select('title,area,property_type,bedrooms,capacity,guest_nightly_ngn,image_urls,updated_at')
     .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle();
@@ -92,7 +92,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const areaLabel = data.area || 'Lagos';
-  const guestNightly = getValidGuestNightlyNgn(data.nightly_rate);
+  const guestNightly = resolveStayGuestNightlyNgn({
+    guest_nightly_ngn: data.guest_nightly_ngn,
+  });
   const accommodationSummary = formatAccommodationLabel(
     data.property_type,
     data.bedrooms,
@@ -145,7 +147,7 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const { data, error } = await db
-    .from('properties')
+    .from('public_properties')
     .select(PUBLIC_PROPERTY_SELECT)
     .eq('id', id)
     .eq('status', 'approved')

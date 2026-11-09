@@ -47,7 +47,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
       await page.goto('/stays');
       await expect(
-        page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+        page.getByRole('heading', { name: /Explore approved shortlet stays across Lagos\./i }),
       ).toBeVisible();
       const staysOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
@@ -135,7 +135,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       page.getByRole('heading', { name: /Explore Lagos neighbourhoods/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { level: 2, name: 'Verified stays', exact: true }),
+      page.getByRole('heading', { level: 2, name: 'Stays across Lagos', exact: true }),
     ).toBeVisible();
 
     const rail = page.getByRole('region', { name: 'Lagos neighbourhoods' });
@@ -170,7 +170,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
     await page.goto('/stays');
     await expect(
-      page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+      page.getByRole('heading', { name: /Explore approved shortlet stays across Lagos\./i }),
     ).toBeVisible();
     await expect(page.getByText(/Illustrative concept/i)).toHaveCount(0);
     await expect(page.getByText(/Lagos showcase concepts/i)).toHaveCount(0);

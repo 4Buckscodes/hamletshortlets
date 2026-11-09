@@ -22,6 +22,8 @@ const PRIVATE_WORKSPACE_DISALLOW: string[] = [
   '/account/',
   '/admin',
   '/admin/',
+  '/partners',
+  '/partners/',
   '/partners/bookings',
   '/partners/availability',
   '/partners/properties',

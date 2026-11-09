@@ -173,21 +173,27 @@ export function getValidGuestNightlyNgn(ownerNightlyRate: unknown): number | nul
 export function resolveStayGuestNightlyNgn(
   stay:
     | {
-        guest_nightly_ngn?: number | null;
+        guest_nightly_ngn?: number | string | null;
         nightly_rate?: unknown;
       }
     | null
     | undefined,
 ): number | null {
   if (!stay) return null;
+  const precomputed = Number(stay.guest_nightly_ngn);
   if (
-    typeof stay.guest_nightly_ngn === 'number' &&
-    Number.isFinite(stay.guest_nightly_ngn) &&
-    stay.guest_nightly_ngn > 0
+    stay.guest_nightly_ngn !== null &&
+    stay.guest_nightly_ngn !== undefined &&
+    Number.isFinite(precomputed) &&
+    precomputed > 0
   ) {
-    return Math.round(stay.guest_nightly_ngn);
+    return Math.round(precomputed);
   }
-  if ('guest_nightly_ngn' in stay && stay.guest_nightly_ngn === null && !('nightly_rate' in stay)) {
+  if (
+    'guest_nightly_ngn' in stay &&
+    stay.guest_nightly_ngn === null &&
+    !('nightly_rate' in stay)
+  ) {
     return null;
   }
   return getValidGuestNightlyNgn(stay.nightly_rate);

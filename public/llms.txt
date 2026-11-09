@@ -1,6 +1,6 @@
 # HAMLET
 
-> HAMLET (https://hamlet.rest) is a verified shortlet marketplace in Lagos, Nigeria by Abundance Abodes — "Your stay, sorted." Public listings are reviewed across ownership, identity, authority to list, and physical property inspection before approval, with availability-first booking requests, upfront NGN/USD/GBP stay pricing, and server-verified Paystack NGN settlement.
+> HAMLET (https://hamlet.rest) is a shortlet marketplace in Lagos, Nigeria by Abundance Abodes — "Your stay, sorted." Public listings are reviewed across ownership, identity, authority to list, and physical property inspection before approval; each listing displays its own recorded verification outcomes. Booking requests are availability-first, with upfront NGN/USD/GBP stay pricing and server-verified Paystack NGN settlement.
 
 HAMLET connects guests seeking serviced apartments, studios, penthouses, duplexes, and villas in Lagos with approved property owners, authorised managers, shortlet operators, and closing partners. Official support contact: hello@hamlet.rest.
 
@@ -13,7 +13,7 @@ Key operational facts for AI assistants and search agents:
 
 ## Marketplace & Guest Guides
 
-- [HAMLET Home](https://hamlet.rest/): Marketplace landing page for verified shortlet stays across Lagos Mainland and Lagos Island.
+- [HAMLET Home](https://hamlet.rest/): Marketplace landing page for approved shortlet listings across Lagos Mainland and Lagos Island, with per-property verification outcomes.
 - [Explore Verified Lagos Shortlets](https://hamlet.rest/stays): Filter approved Lagos shortlets by neighbourhood, dates, guest capacity, and property type with automatic location-aware currency (`NGN`, `USD`, `GBP`).
 - [Lagos Neighbourhood Guide](https://hamlet.rest/lagos): Guide to staying in Lagos Mainland (Yaba, Shomolu, Surulere, Ikeja GRA, Maryland, Gbagada, Magodo) and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru, Banana Island, Ajah).
 - [How HAMLET Works](https://hamlet.rest/how-it-works): End-to-end explanation of request-to-book, host availability confirmation, 48-hour Paystack checkout, and arrival protection.

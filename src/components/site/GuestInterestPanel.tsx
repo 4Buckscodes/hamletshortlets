@@ -88,7 +88,7 @@ export function GuestInterestPanel({
       [
         'Hello HAMLET team,',
         '',
-        'I would like to hear when verified shortlet stays matching my preferences become available in Lagos.',
+        'I would like to hear when approved shortlet stays matching my preferences become available in Lagos.',
         `Email: ${trimmedEmail}`,
         `Preferred neighbourhood: ${effectiveArea}`,
         `Preferred accommodation type: ${effectiveType}`,
@@ -120,7 +120,7 @@ export function GuestInterestPanel({
             id="guest-interest-title"
             className="mt-0.5 font-display text-lg font-bold text-ink-950 sm:text-xl"
           >
-            Get notified when verified stays go live.
+            Get notified when approved stays go live.
           </h3>
         </div>
       </div>
@@ -223,7 +223,7 @@ export function GuestInterestPanel({
               className="mt-0.5 h-4 w-4 shrink-0 accent-[#0E1F3B]"
             />
             <span>
-              I consent to HAMLET contacting me by email when relevant verified stays open in Lagos.
+              I consent to HAMLET contacting me by email when relevant approved stays open in Lagos.
             </span>
           </label>
 

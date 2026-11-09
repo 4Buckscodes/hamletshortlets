@@ -594,13 +594,13 @@ export function HomeMarketplaceExperience({
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
           <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
-              Verified Shortlets · Lagos
+              Lagos Shortlets · Reviewed Listings
             </p>
             <h1 className="mt-2.5 font-display text-[34px] font-bold leading-[1.1] tracking-tight text-[#F8F5EE] min-[375px]:text-[40px] sm:text-5xl lg:text-[52px]">
               Find your next stay.
             </h1>
             <p className="mt-2.5 mb-0 max-w-[310px] text-[15px] leading-[1.5] text-[#C5CCDA] sm:max-w-md lg:max-w-lg lg:text-[17px]">
-              Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.
+              Island or Mainland, pick your side of the lagoon. Check each listing’s recorded review outcomes before you request a stay.
             </p>
             <p className="mt-4 hidden items-center gap-2 text-[13px] text-[#9AA6BD] lg:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-[#C9A45C]" aria-hidden="true" />
@@ -1026,12 +1026,12 @@ export function HomeMarketplaceExperience({
       {/* ── Available Stays Marketplace Board ── */}
       <section
         id="stays"
-        aria-label="Verified stays"
+        aria-label="Available Lagos stays"
         className="mx-auto max-w-6xl px-5 pt-2 pb-8 sm:px-6 lg:pt-4 lg:pb-12"
       >
         <div className="mb-4 flex items-baseline justify-between gap-3 lg:mb-6">
           <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
-            Verified stays
+            Stays across Lagos
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#4A5468]">
             {displayedStays.length} available · {currencyLabel}
@@ -1071,14 +1071,12 @@ export function HomeMarketplaceExperience({
         {displayedStays.length === 0 ? (
           <div className="rounded-[26px] border border-[#E5DFD0] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
             <h3 className="font-display text-[22px] font-bold text-[#121F3C]">
-              {activeRailArea
-                ? `No verified stays in ${activeRailArea} right now`
-                : 'Verified stays are updating'}
+              {activeRailArea ? `No stays in ${activeRailArea} right now` : 'Live stays are updating'}
             </h3>
             <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-[#4A5468]">
               {activeRailArea
-                ? 'Clear filters to see all verified stays across Lagos, or ask Horatio to help source a stay in this neighbourhood.'
-                : 'Every property on HAMLET is physically inspected in Lagos before it goes live. Check back shortly or ask Horatio to help source a verified stay.'}
+                ? 'Clear filters to see all currently listed stays across Lagos, or ask Horatio to help source a stay in this neighbourhood.'
+                : 'HAMLET reviews property listings before approval. Check each stay’s recorded verification status, or ask Horatio to help source a stay in Lagos.'}
             </p>
             {activeRailArea && (
               <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -1151,7 +1149,7 @@ export function HomeMarketplaceExperience({
               Property Owners &amp; Managers
             </p>
             <h2 className="mt-2.5 mb-2 font-display text-[24px] font-bold leading-[1.2] text-[#F8F5EE] lg:text-[30px]">
-              Own or manage a verified shortlet in Lagos?
+              Own or manage a shortlet in Lagos?
             </h2>
             <p className="m-0 text-[14.5px] leading-[1.55] text-[#C5CCDA]">
               List with HAMLET for visibility, booking and property management support.

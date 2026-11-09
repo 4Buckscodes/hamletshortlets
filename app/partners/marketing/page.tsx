@@ -17,7 +17,7 @@ import { formatAccommodationLabel, getValidGuestNightlyNgn } from '@/lib/discove
 import {
   getBrowserSupabase,
   isMissingSchemaObjectError,
-  PUBLIC_PROPERTY_SELECT,
+  PARTNER_PROPERTY_SELECT,
 } from '@/lib/next-supabase';
 import { formatNaira, multiplyNairaBasisPoints } from '@/lib/pricing';
 import {
@@ -155,7 +155,7 @@ function PartnerMarketingContent() {
       // Schema-tolerant fallback if migration is pending on an environment
       const { data: fallbackRows } = await db
         .from('properties')
-        .select(PUBLIC_PROPERTY_SELECT)
+        .select(PARTNER_PROPERTY_SELECT)
         .eq('status', 'approved')
         .order('updated_at', { ascending: false });
 

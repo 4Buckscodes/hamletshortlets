@@ -144,41 +144,44 @@ describe('PR 1 — Commercial Redaction & Confidentiality Guarantees', () => {
   });
 
   it('preserves exact multi-night guest totals in calculatePublicStayQuote without exposing owner rates or margin allocations', () => {
-    const ownerNightly = 195_000;
     const cleaningFee = 25_000;
     const deposit = 100_000;
-    const guestNightly = guestFacingNightlyNgn(ownerNightly);
 
-    for (const nights of [1, 2, 3, 7, 14, 30]) {
-      const serverPricing = calculateGuestPricing({
-        accommodationSubtotal: ownerNightly * nights,
-        mandatoryCharges: [{ label: 'Cleaning & turnover', amount: cleaningFee }],
-        refundableDeposit: deposit,
-      });
+    // Include integer edge cases where rounding a fee per night differs from rounding the
+    // whole-stay subtotal; the public quote must still match the existing checkout calculation.
+    for (const ownerNightly of [1, 2, 3, 7, 11, 999, 1001, 195_000]) {
+      const guestNightly = guestFacingNightlyNgn(ownerNightly);
+      for (const nights of [1, 2, 3, 7, 14, 30]) {
+        const serverPricing = calculateGuestPricing({
+          accommodationSubtotal: ownerNightly * nights,
+          mandatoryCharges: [{ label: 'Cleaning & turnover', amount: cleaningFee }],
+          refundableDeposit: deposit,
+        });
 
-      const publicQuote = calculatePublicStayQuote({
-        guestNightlyNgn: guestNightly,
-        nights,
-        mandatoryCharges: [{ label: 'Cleaning & turnover', amount: cleaningFee }],
-        refundableDeposit: deposit,
-      });
+        const publicQuote = calculatePublicStayQuote({
+          guestNightlyNgn: guestNightly,
+          nights,
+          mandatoryCharges: [{ label: 'Cleaning & turnover', amount: cleaningFee }],
+          refundableDeposit: deposit,
+        });
 
-      expect(publicQuote.domesticGuestAccommodationNgn).toBe(
-        serverPricing.domesticGuestAccommodationNgn,
-      );
-      expect(publicQuote.mandatoryChargesTotal).toBe(serverPricing.mandatoryChargesTotal);
-      expect(publicQuote.guestTotal).toBe(serverPricing.guestTotal);
-      expect(publicQuote.checkoutStayAmountNgn).toBe(serverPricing.checkoutStayAmountNgn);
-      expect(publicQuote.refundableDeposit).toBe(serverPricing.refundableDeposit);
+        expect(publicQuote.domesticGuestAccommodationNgn).toBe(
+          serverPricing.domesticGuestAccommodationNgn,
+        );
+        expect(publicQuote.mandatoryChargesTotal).toBe(serverPricing.mandatoryChargesTotal);
+        expect(publicQuote.guestTotal).toBe(serverPricing.guestTotal);
+        expect(publicQuote.checkoutStayAmountNgn).toBe(serverPricing.checkoutStayAmountNgn);
+        expect(publicQuote.refundableDeposit).toBe(serverPricing.refundableDeposit);
 
-      const serializedQuote = JSON.stringify(publicQuote);
-      expect(serializedQuote).not.toContain(String(ownerNightly));
-      expect(serializedQuote).not.toContain('ownerAccommodationRateNgn');
-      expect(serializedQuote).not.toContain('ownerListedPriceNgn');
-      expect(serializedQuote).not.toContain('closingAgentCommissionNgn');
-      expect(serializedQuote).not.toContain('directReferrerRewardNgn');
-      expect(serializedQuote).not.toContain('hamletAllocationNgn');
-      expect(serializedQuote).not.toContain('paymentReserveNgn');
+        const serializedQuote = JSON.stringify(publicQuote);
+        expect(serializedQuote).not.toContain('nightly_rate');
+        expect(serializedQuote).not.toContain('ownerAccommodationRateNgn');
+        expect(serializedQuote).not.toContain('ownerListedPriceNgn');
+        expect(serializedQuote).not.toContain('closingAgentCommissionNgn');
+        expect(serializedQuote).not.toContain('directReferrerRewardNgn');
+        expect(serializedQuote).not.toContain('hamletAllocationNgn');
+        expect(serializedQuote).not.toContain('paymentReserveNgn');
+      }
     }
 
     // Discovery filtering and sorting operate identically on redacted PublicStayView objects
@@ -201,10 +204,38 @@ describe('PR 1 — Commercial Redaction & Confidentiality Guarantees', () => {
   });
 
   it('prevents private owner rates, operational contacts, and internal commission percentages from crossing public RSC boundaries, JSON-LD, or llms*.txt', () => {
+    expect(PUBLIC_PROPERTY_SELECT.split(',')).toContain('guest_nightly_ngn');
+    expect(PUBLIC_PROPERTY_SELECT.split(',')).not.toContain('nightly_rate');
     expect(PUBLIC_PROPERTY_SELECT.split(',')).not.toContain('calendar_responsible_person');
     expect(PUBLIC_PROPERTY_SELECT.split(',')).not.toContain('review_note');
+    expect(PARTNER_PROPERTY_SELECT.split(',')).toContain('nightly_rate');
     expect(PARTNER_PROPERTY_SELECT.split(',')).toContain('calendar_responsible_person');
     expect(PARTNER_PROPERTY_SELECT.split(',')).toContain('review_note');
+
+    const dbBoundaryMigration = readFileSync(
+      join(ROOT, 'supabase/migrations/20261110000000_public_properties_guest_price_view.sql'),
+      'utf8',
+    );
+    expect(dbBoundaryMigration).toContain('create or replace view public.public_properties');
+    expect(dbBoundaryMigration).toContain('security_barrier = true');
+    expect(dbBoundaryMigration).toMatch(/revoke select on public\.properties from public, anon/i);
+    expect(dbBoundaryMigration).toContain('guest_nightly_ngn');
+
+    const publicApiFiles = [
+      'app/page.tsx',
+      'app/stays/page.tsx',
+      'app/stays/[id]/page.tsx',
+      'app/sitemap.ts',
+      'app/api/og/property/[id]/route.ts',
+      'app/api/share/qr/route.ts',
+      'src/lib/next-supabase.ts',
+    ];
+    for (const rel of publicApiFiles) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      expect(content, `${rel} should query the redacted public_properties view`).toContain(
+        "from('public_properties')",
+      );
+    }
 
     const homePageSrc = readFileSync(join(ROOT, 'app', 'page.tsx'), 'utf8');
     const staysPageSrc = readFileSync(join(ROOT, 'app', 'stays', 'page.tsx'), 'utf8');

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   ...buildPublicPageMetadata({
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Verified shortlet apartments across Lagos Island and Lagos Mainland — clear details, trusted hosts, and straightforward booking requests.',
+      'Approved shortlet apartments across Lagos Island and Lagos Mainland — clear listing details, recorded verification outcomes, and straightforward booking requests.',
     pathname: '/',
   }),
   title: {
@@ -41,7 +41,7 @@ export default async function HomePage() {
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
+      .from('public_properties')
       .select(PUBLIC_PROPERTY_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })

@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
+      .from('public_properties')
       .select('id,updated_at,created_at')
       .eq('status', 'approved')
       .order('updated_at', { ascending: false })
