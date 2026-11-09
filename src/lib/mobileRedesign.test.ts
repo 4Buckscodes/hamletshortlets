@@ -10,19 +10,22 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
-    expect(homeSource).toContain('Lagos feels better here.');
+    expect(homeSource).toContain('Find your place in Lagos.');
     expect(homeSource).not.toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
   });
 
-  it('includes the forest-green hospitality hero with a three-photo interior composition while keeping the cream search pill and Find a stay sheet untouched', () => {
+  it('includes the forest-green hospitality hero with a three-landmark composition while keeping the cream search pill and Find a stay sheet untouched', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
-    // Deep green hero uses three interior photos, without a decorative skyline or image labels.
+    // Deep green hero uses three Lagos landmarks and a more energetic booking-first layout.
     expect(homeSource).toContain('Lagos feels better here.');
     expect(homeSource).toContain('LAGOS_LANDMARKS[0].src');
     expect(homeSource).toContain('LAGOS_LANDMARKS.slice(1)');
-    expect(homeSource).toContain('Lekki–Ikoyi Link Bridge over the Lagos Lagoon');
-    expect(homeSource).toContain('National Theatre, Iganmu, Lagos');
+    expect(homeSource).toContain('Lekki–Ikoyi Link Bridge illuminated at night over the Lagos Lagoon');
+    expect(homeSource).toContain('National Arts Theatre in Iganmu, Lagos');
+    expect(homeSource).toContain('Discover stays that feel like yours.');
+    expect(homeSource).toContain('Explore stays');
+    expect(homeSource).toContain('Discover Lagos');
     expect(homeSource).not.toContain('Illustrated Lagos lagoon skyline');
     expect(homeSource).toContain('window.setInterval(advance, 4800)');
     expect(homeSource).toContain("prefers-reduced-motion: reduce");
