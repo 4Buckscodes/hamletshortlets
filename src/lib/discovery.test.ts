@@ -29,7 +29,9 @@ function makeStay(overrides: Partial<PublicStayRecord> & { preview_only?: boolea
     bathrooms: overrides.bathrooms ?? 2,
     capacity: overrides.capacity ?? 4,
     bed_setup: overrides.bed_setup ?? '2 Queen beds',
-    guest_nightly_ngn: overrides.guest_nightly_ngn ?? 120_000,
+    guest_nightly_ngn: Object.prototype.hasOwnProperty.call(overrides, 'guest_nightly_ngn')
+      ? overrides.guest_nightly_ngn ?? null
+      : 120_000,
     cleaning_fee: overrides.cleaning_fee ?? 15_000,
     refundable_deposit: overrides.refundable_deposit ?? 50_000,
     amenities: overrides.amenities ?? ['24-hour power', 'High-speed Wi-Fi', 'Kitchen'],
