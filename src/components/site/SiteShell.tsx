@@ -212,9 +212,6 @@ function NextHoratioDrawer({
       <div className="relative z-10 flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-paper shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-md sm:rounded-none">
         <div className="flex items-center justify-between gap-3 border-b border-ink-800 bg-ink-950 px-5 py-4 text-paper">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brass-500/20 text-brass-300">
-              <Sparkles className="h-4 w-4 shrink-0" />
-            </span>
             <div>
               <h2 className="font-display text-lg font-bold text-white">Horatio</h2>
               <p className="text-[11px] font-medium text-ink-300">
