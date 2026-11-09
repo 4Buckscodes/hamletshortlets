@@ -64,8 +64,8 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('View stay →');
     expect(homeSource).toContain('See all stays →');
 
-    // 4-pillar verification grid
-    expect(homeSource).toContain('Verified before it’s bookable');
+    // Verification details appear once, in the HAMLET difference panel.
+    expect(homeSource).not.toContain('Verified before it’s bookable');
     expect(homeSource).toContain('Title & lease');
     expect(homeSource).toContain('Host identity');
     expect(homeSource).toContain('Authority');
