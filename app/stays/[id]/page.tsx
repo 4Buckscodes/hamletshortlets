@@ -26,7 +26,6 @@ import {
   PUBLIC_PROPERTY_SELECT,
   probePropertyWayfinderMeta,
   toPublicStayRecord,
-  type PublicStayRecord,
 } from '@/lib/next-supabase';
 import {
   buildNextCanonicalUrl,
