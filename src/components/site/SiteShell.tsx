@@ -522,8 +522,8 @@ export function SiteHeader() {
                   className={`inline-flex min-h-[36px] items-center rounded-full px-3.5 text-[13px] font-semibold transition ${
                     isHome
                       ? active
-                        ? 'bg-white/15 font-bold text-[#F7F4ED]'
-                        : 'text-[#DADFD5] hover:bg-white/10 hover:text-[#F7F4ED]'
+                        ? 'font-bold text-[#173F32] underline decoration-[#B58A52] decoration-2 underline-offset-[9px]'
+                        : 'text-[#596B60] hover:text-[#173F32]'
                       : active
                         ? 'bg-ink-900 font-bold text-white shadow-2xs'
                         : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
