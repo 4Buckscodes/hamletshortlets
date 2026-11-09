@@ -247,7 +247,7 @@ async function handle(request: Request, systemRun: boolean) {
     return NextResponse.json({ ok: false, error: 'Communications dispatch is not configured.' }, { status: 503 });
   }
 
-  const supabase = createClient(url, publishableKey, {
+  let supabase = createClient(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
@@ -257,9 +257,11 @@ async function handle(request: Request, systemRun: boolean) {
     if (!token) return NextResponse.json({ ok: false, error: 'Sign in required.' }, { status: 401 });
     const { data: auth, error: authError } = await supabase.auth.getUser(token);
     if (authError || !auth.user) return NextResponse.json({ ok: false, error: 'Session invalid or expired.' }, { status: 401 });
-    supabase.auth.setSession({ access_token: token, refresh_token: '' }).catch(() => undefined);
-    // Pass the user JWT on PostgREST requests so the RPC can scope rows to the caller.
-    supabase.rest.headers.set('Authorization', `Bearer ${token}`);
+    // Recreate the client with the caller's JWT so the RPC can enforce recipient-level scope.
+    supabase = createClient(url, publishableKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
   }
 
   const { data, error } = await supabase.rpc('claim_communications_outbox', {
