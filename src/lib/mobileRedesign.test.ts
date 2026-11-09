@@ -10,22 +10,20 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
-    expect(homeSource).toContain('Find your next stay.');
-    expect(homeSource).toContain('Verified Shortlets · Lagos');
-    expect(homeSource).toContain(
-      'Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.',
-    );
+    expect(homeSource).toContain('Lagos feels better here.');
+    expect(homeSource).toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
+    expect(homeSource).toContain('Find a stay that fits your Lagos.');
   });
 
-  it('includes the Deep Navy (#0E1F3B) hero with the skyscraper & bridge skyline SVG while keeping the cream search pill and Find a stay sheet untouched', () => {
+  it('includes the forest-green hospitality hero with an illustrated Lagos lagoon skyline while keeping the cream search pill and Find a stay sheet untouched', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
     // Deep Navy hero + Lagos Lagoon skyscraper & cable-stayed bridge illustration (IMG_4462)
-    expect(homeSource).toContain('bg-[#0E1F3B]');
-    expect(homeSource).toContain('viewBox="0 0 390 210"');
-    expect(homeSource).toContain('cx="296" cy="64" r="30" fill="#C9A45C"');
-    expect(homeSource).toContain('M0 150Q195 70 390 150');
-    expect(homeSource).toContain('M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156');
+    expect(homeSource).toContain('Lagos feels better here.');
+    expect(homeSource).toContain('viewBox="0 0 560 430"');
+    expect(homeSource).toContain('Illustrated Lagos lagoon skyline and bridge at sunset');
+    expect(homeSource).toContain('lagoonWater');
+    expect(homeSource).toContain('lagoonSky');
 
     // Curved Warm Ivory cream search sheet & tactile search trigger pill (untouched)
     expect(homeSource).toContain('Anywhere in Lagos');
@@ -80,19 +78,19 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain(
       'List with HAMLET for visibility, booking and property management support.',
     );
-    expect(homeSource).toContain('bg-[#C9A45C]');
+    expect(homeSource).toContain('bg-[#B58A52]');
     expect(homeSource).toContain('Apply as a partner');
   });
 
-  it('implements the Midnight Navy homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
+  it('implements the forest-green homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
     const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
 
     // Midnight Navy homepage header + non-home paper header
-    expect(siteShell).toContain('bg-[#121F3C]');
+    expect(siteShell).toContain('bg-[#173F32]');
     expect(siteShell).toContain('lg:backdrop-blur-xl');
 
     // Full-screen mobile drawer in Warm Ivory (#F8F5EE) with gold-accented Horatio & guest/partner actions
-    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F8F5EE]');
+    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F7F4ED]');
     expect(siteShell).toContain('h-dvh');
     expect(siteShell).toContain('M4 8h16M4 16h16');
     expect(siteShell).toContain('Ask Horatio');
