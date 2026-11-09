@@ -608,38 +608,43 @@ export function HomeMarketplaceExperience({
             </p>
           </div>
 
-          <div className="lg:col-span-6">
-            <svg
-              viewBox="0 0 390 210"
-              aria-hidden="true"
-              className="pointer-events-none -mt-2 -mb-7 block h-auto w-full max-w-2xl mx-auto select-none lg:mt-0 lg:-mb-9 lg:max-w-none"
-            >
-              <circle cx="296" cy="64" r="30" fill="#B58A52" />
-              <g fill="#285744">
-                <rect x="8" y="110" width="26" height="100" />
-                <rect x="40" y="86" width="22" height="124" />
-                <rect x="68" y="120" width="30" height="90" />
-                <rect x="104" y="98" width="20" height="112" />
-              </g>
-              <g fill="#204C3D">
-                <rect x="262" y="104" width="28" height="106" />
-                <rect x="296" y="124" width="24" height="86" />
-                <rect x="326" y="92" width="22" height="118" />
-                <rect x="354" y="116" width="30" height="94" />
-              </g>
-              <path
-                d="M0 150Q195 70 390 150"
-                stroke="#B58A52"
-                strokeWidth="2"
-                fill="none"
-              />
-              <path d="M0 156H390" stroke="#B58A52" strokeWidth="2" />
-              <g stroke="#B58A52" strokeWidth="1" opacity="0.6">
-                <path d="M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156" />
-              </g>
-            </svg>
-          </div>
-        </div>
+          <div className="relative lg:col-span-6 lg:min-h-[330px]">
+            <div className="relative mx-auto mt-5 aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-[30px] border border-white/15 bg-gradient-to-br from-[#D9B98B] via-[#8EA99A] to-[#173F32] shadow-[0_30px_70px_-35px_rgba(0,0,0,0.65)] lg:mt-0">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,235,190,0.85),transparent_24%),linear-gradient(150deg,rgba(255,255,255,0.14),transparent_50%)]" />
+              <svg viewBox="0 0 560 430" role="img" aria-label="Illustrated Lagos lagoon skyline and bridge at sunset" className="absolute inset-0 h-full w-full">
+                <defs>
+                  <linearGradient id="lagoonSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#D9B98B" />
+                    <stop offset="0.56" stopColor="#E9D6B7" />
+                    <stop offset="1" stopColor="#6F9689" />
+                  </linearGradient>
+                  <linearGradient id="lagoonWater" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#648A7D" />
+                    <stop offset="1" stopColor="#173F32" />
+                  </linearGradient>
+                </defs>
+                <path d="M0 0h560v248H0z" fill="url(#lagoonSky)" />
+                <circle cx="416" cy="88" r="42" fill="#F6E4C6" opacity=".8" />
+                <path d="M0 246h560v184H0z" fill="url(#lagoonWater)" />
+                <path d="M0 250c98-22 156-20 247-2 102 20 186 14 313-9v24H0z" fill="#D9C19D" opacity=".55" />
+                <g fill="#274A3D">
+                  <path d="M22 244V160h44v84zm54 0V126h34v118zm45 0V177h52v67zm64 0V142h34v102zm46 0V112h48v132zm62 0V154h37v90zm50 0V130h43v114zm58 0V176h48v68zm59 0V147h39v97zm49 0V180h34v64z" />
+                </g>
+                <g stroke="#E7D2A9" strokeWidth="3" fill="none" opacity=".9">
+                  <path d="M0 262c116-55 255-65 390-12 62 24 116 26 170 9" />
+                  <path d="M82 245l100-102 90 102M182 143v103M280 245l100-102 90 102M380 143v103" />
+                  <path d="M0 276h560" strokeWidth="2" opacity=".65" />
+                </g>
+                <g stroke="#D9C19D" strokeWidth="2" opacity=".55">
+                  <path d="M40 303h135M222 324h105M370 300h142M92 357h205M330 374h150" />
+                </g>
+                <path d="M0 405c98-27 164-20 256 0 111 23 201 5 304-13v38H0z" fill="#102D24" opacity=".62" />
+              </svg>
+              <div className="absolute bottom-4 left-4 rounded-full border border-white/35 bg-[#102D24]/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#F7F4ED] backdrop-blur">
+                Lagos Island · Mainland · Beyond
+              </div>
+            </div>
+          </div>        </div>
 
         {/* Curved Warm Ivory Search Sheet */}
         <div
