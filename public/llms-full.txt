@@ -2,15 +2,15 @@
 
 > HAMLET (https://hamlet.rest) is a shortlet marketplace for Lagos, Nigeria, operated under Abundance Abodes. “Your stay, sorted.”
 
-This document describes public product information for search engines and AI assistants. It intentionally excludes internal commercial allocations, owner-only rates, agent commission formulas, referral reward calculations, payment reserves and operational credentials.
+For a concise link directory, see https://hamlet.rest/llms.txt. This document describes public product information and does not replace live listing details, booking terms, public legal terms or written partner agreements.
 
 ## 1. What HAMLET Does
 
 HAMLET helps guests discover shortlet accommodation and connect with property owners, authorised agents, property managers and shortlet operators. Guests can review public listing information, submit booking requests and follow the booking process through the platform.
 
-HAMLET's public marketplace is focused on Lagos, Nigeria. Public inventory and supported locations may change as the marketplace grows.
+HAMLET's current marketplace focus is Lagos, Nigeria. Public inventory and supported locations may change as approved properties are added.
 
-## 2. Public Marketplace Pages
+## 2. Marketplace & Guest Guides
 
 - Home: https://hamlet.rest/
 - Explore stays: https://hamlet.rest/stays
@@ -22,7 +22,7 @@ HAMLET's public marketplace is focused on Lagos, Nigeria. Public inventory and s
 - Legal and privacy terms: https://hamlet.rest/legal
 - Partner application: https://hamlet.rest/partners/apply
 
-## 3. Property Review and Trust
+## 3. Four Verification Pillars
 
 Property submissions are reviewed across four areas:
 
@@ -36,7 +36,7 @@ A self-reported declaration should not be described as independently verified. G
 ## 4. Booking Lifecycle
 
 1. **Booking request:** A guest submits preferred dates, guest count and other required information. Submitting a request does not itself confirm a reservation or charge the guest.
-2. **Availability confirmation:** The authorised host, property partner or HAMLET operations confirms availability and the applicable terms.
+2. **Availability confirmation:** The authorised host, property partner or HAMLET operations confirms availability and applicable terms.
 3. **Payment:** The guest follows the payment instructions presented in the HAMLET booking flow after confirmation.
 4. **Reservation confirmation:** A reservation is confirmed only when HAMLET records the required payment confirmation.
 5. **Stay support:** Guests should use the relevant booking and support channels for assistance or to report a problem.
@@ -45,11 +45,11 @@ Guests should not treat informal messages, screenshots or off-platform transfers
 
 ## 5. Pricing, Payment and Refundable Deposits
 
-The booking flow and current public terms are the source of truth for the guest's payable amount, applicable charges, currency, payment instructions and cancellation conditions.
+The booking flow and current public terms are the source of truth for the guest's payable amount, applicable charges, payment currency, payment instructions and cancellation conditions.
 
 Where a refundable caution deposit applies, it is shown separately from accommodation charges and is handled under the applicable inspection and refund terms. Guests should review the amount and conditions before proceeding.
 
-This public reference does not publish internal pricing formulas, owner-only rates, commission or referral calculations, commercial allocation percentages, payment reserves or settlement mechanics. Partner commercial arrangements are communicated through current written partner terms and are not inferred from guest-facing prices.
+HAMLET provides property owners with access to listing, visibility, booking and property management services. Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.
 
 ## 6. Partner Network
 
@@ -61,7 +61,7 @@ HAMLET's partner ecosystem may include:
 - **Shortlet operators and co-hosts:** Accommodation operators supporting the guest experience.
 - **Other approved partners:** Participants accepted under HAMLET's current partner requirements.
 
-Partner access, permissions, eligibility, commercial arrangements and any rewards are governed by HAMLET's current written terms. No particular commission, referral percentage or reward should be assumed from this document.
+Partner access, permissions, eligibility and commercial arrangements are governed by HAMLET's current written terms. No particular reward or commercial arrangement should be assumed from this document.
 
 ## 7. Lagos Neighbourhood Coverage
 
