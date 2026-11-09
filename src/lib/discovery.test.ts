@@ -29,7 +29,7 @@ function makeStay(overrides: Partial<PublicStayRecord> & { preview_only?: boolea
     bathrooms: overrides.bathrooms ?? 2,
     capacity: overrides.capacity ?? 4,
     bed_setup: overrides.bed_setup ?? '2 Queen beds',
-    nightly_rate: overrides.nightly_rate ?? 100_000, // ₦120,000 guest-facing NGN
+    guest_nightly_ngn: overrides.guest_nightly_ngn ?? 120_000,
     cleaning_fee: overrides.cleaning_fee ?? 15_000,
     refundable_deposit: overrides.refundable_deposit ?? 50_000,
     amenities: overrides.amenities ?? ['24-hour power', 'High-speed Wi-Fi', 'Kitchen'],
@@ -175,7 +175,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
         property_type: 'Studio apartment',
         bedrooms: 0,
         capacity: 2,
-        nightly_rate: 75_000, // ₦90,000 guest NGN
+        guest_nightly_ngn: 90_000,
         created_at: '2026-10-20T10:00:00Z',
       }),
       makeStay({
@@ -186,7 +186,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
         property_type: 'Serviced apartment',
         bedrooms: 2,
         capacity: 4,
-        nightly_rate: 150_000, // ₦180,000 guest NGN
+        guest_nightly_ngn: 180_000,
         first_available_date: '2026-12-10',
         created_at: '2026-10-25T10:00:00Z',
       }),
@@ -198,7 +198,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
         property_type: 'Terrace',
         bedrooms: 3,
         capacity: 6,
-        nightly_rate: 110_000, // ₦132,000 guest NGN
+        guest_nightly_ngn: 132_000,
         created_at: '2026-10-28T10:00:00Z',
       }),
       makeStay({
@@ -207,7 +207,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
         area: '',
         public_address: '',
         bedrooms: 2,
-        nightly_rate: 100_000,
+        guest_nightly_ngn: 120_000,
       }),
     ];
 
@@ -246,10 +246,10 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
   });
 
   it('sorts approved stays deterministically by price_asc, price_desc, newest, and recommended', () => {
-    const low = makeStay({ id: 'low', nightly_rate: 60_000, created_at: '2026-10-01T00:00:00Z' });
-    const mid = makeStay({ id: 'mid', nightly_rate: 100_000, created_at: '2026-10-15T00:00:00Z' });
-    const high = makeStay({ id: 'high', nightly_rate: 200_000, created_at: '2026-10-10T00:00:00Z' });
-    const unpriced = makeStay({ id: 'unpriced', nightly_rate: 0, created_at: '2026-10-30T00:00:00Z' });
+    const low = makeStay({ id: 'low', guest_nightly_ngn: 72_000, created_at: '2026-10-01T00:00:00Z' });
+    const mid = makeStay({ id: 'mid', guest_nightly_ngn: 120_000, created_at: '2026-10-15T00:00:00Z' });
+    const high = makeStay({ id: 'high', guest_nightly_ngn: 240_000, created_at: '2026-10-10T00:00:00Z' });
+    const unpriced = makeStay({ id: 'unpriced', guest_nightly_ngn: null, created_at: '2026-10-30T00:00:00Z' });
 
     expect(
       filterAndSortApprovedStays([mid, unpriced, high, low], {
