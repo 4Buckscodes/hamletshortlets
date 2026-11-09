@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { buildDefaultExchangeRates } from './pricing';
+import { buildDefaultExchangeRates, guestFacingNightlyNgn } from './pricing';
 import type { ExchangeRateConfig, MandatoryCharge } from './types';
 
 let browserClient: SupabaseClient | null | undefined;
@@ -66,7 +66,7 @@ export interface PublicStayRecord {
   property_type: string | null;
   area: string | null;
   public_address: string | null;
-  nightly_rate: number | string | null;
+  guest_nightly_ngn: number | null;
   cleaning_fee: number | string | null;
   mandatory_charges: MandatoryCharge[] | null;
   refundable_deposit: number | string | null;
@@ -84,6 +84,16 @@ export interface PublicStayRecord {
   availability_confirmation_status: string | null;
   created_at: string;
   updated_at?: string | null;
+}
+
+/** Server-boundary projection: raw owner rates never cross into guest/client props. */
+export function toPublicStayRecord(raw: Record<string, unknown>): PublicStayRecord {
+  const ownerRate = Number(raw.nightly_rate);
+  const guestNightly = Number.isFinite(ownerRate) && ownerRate > 0
+    ? guestFacingNightlyNgn(ownerRate)
+    : null;
+  const { nightly_rate: _privateOwnerRate, calendar_responsible_person: _privateCalendarContact, ...publicFields } = raw;
+  return { ...publicFields, guest_nightly_ngn: guestNightly } as PublicStayRecord;
 }
 
 export interface OptionalWayfinderLocationMeta {
