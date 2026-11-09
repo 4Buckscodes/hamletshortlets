@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.admin-notifications-dispatch]
 verify_jwt = false
+
+[functions.customer-notifications-dispatch]
+verify_jwt = false
