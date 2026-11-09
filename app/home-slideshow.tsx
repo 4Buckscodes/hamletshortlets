@@ -1142,34 +1142,6 @@ export function HomeMarketplaceExperience({
         </div>
       </section>
 
-      {/* ── 4-Pillar Verification Standard ── */}
-      <section className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10">
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#173F32] lg:text-[32px]">
-            Verified before it’s bookable
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
-          {VERIFICATION_PILLARS.map(pillar => (
-            <div
-              key={pillar.num}
-              className="border-t border-[#D9D8CD] py-3 sm:p-0 sm:pt-3"
-            >
-              <span className="font-display text-[14px] font-bold text-[#755638]">
-                {pillar.num}
-              </span>
-              <b className="mt-1.5 mb-1 block text-[15px] font-semibold text-[#173F32]">
-                {pillar.title}
-              </b>
-              <p className="m-0 text-[13px] leading-[1.45] text-[#596B60]">
-                {pillar.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── Partner CTA Card ── */}
       <section className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14">
         <div className="rounded-[28px] bg-[#173F32] px-[22px] py-[26px] text-[#F7F4ED] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
