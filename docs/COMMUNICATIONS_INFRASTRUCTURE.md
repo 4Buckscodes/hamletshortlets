@@ -40,12 +40,13 @@ Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the Edge Fun
 1. Apply the communications migrations to the intended Supabase project after reviewing the target project and migration history.
 2. Deploy `booking-notifications`, `admin-notifications-dispatch` and `customer-notifications-dispatch` Edge Functions.
 3. Configure the secrets above in Supabase; no secret values belong in Git.
-4. Configure trusted scheduled invocations for both `admin-notifications-dispatch` and `customer-notifications-dispatch` using the internal secret. Neither worker self-schedules; without a scheduler or operator invocation, queued events remain pending.
-5. Create and verify the Zoho mailboxes/aliases before setting reply-to or changing MX records.
-6. Add Resend delivery/bounce webhook processing. An API acceptance response is not proof of inbox delivery.
-7. Test submission and status-change events end-to-end in a staging Supabase project first. Confirm idempotency, retry exhaustion, and admin-only access.
-8. WhatsApp Business Platform remains unimplemented. Select an approved provider, sender, credentials and templates; only message opted-in recipients.
-9. Booking lifecycle events continue through the existing `booking_notifications` queue. Restore its Resend configuration before replaying failed booking emails; refund and support communications remain future coverage as those workflows are finalized.
+4. Enable `pg_cron` and `pg_net`, then run `supabase/operations/schedule-email-dispatch-cron.sql` in the production SQL Editor. It schedules customer and operations queue processing every minute and reads the shared dispatch token from Vault at runtime. The script is production-project-specific; update its public project URL/key if those change.
+5. Booking notifications are invoked inline by booking events. Do not enable a batch retry schedule until the five pre-existing failed booking notifications from 5 November 2026 have been reviewed, to avoid unexpectedly replaying stale guest/partner messages.
+6. Create and verify the Zoho mailboxes/aliases before setting reply-to or changing MX records.
+7. Add Resend delivery/bounce webhook processing. An API acceptance response is not proof of inbox delivery.
+8. Test submission and status-change events end-to-end in a staging Supabase project first. Confirm idempotency, retry exhaustion, and admin-only access.
+9. WhatsApp Business Platform remains unimplemented. Select an approved provider, sender, credentials and templates; only message opted-in recipients.
+10. Booking lifecycle events continue through the existing `booking_notifications` queue. Restore its Resend configuration before replaying failed booking emails; refund and support communications remain future coverage as those workflows are finalized.
 
 ## DNS safety
 Do not guess SPF, DKIM or MX values. Copy exact records from Resend and Zoho dashboards. Keep one SPF record, preserve existing mail routing until a deliberate Zoho MX cutover, and verify inbound/outbound delivery after DNS propagation.
