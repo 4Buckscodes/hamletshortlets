@@ -1,10 +1,7 @@
 -- Restrict internal SECURITY DEFINER helpers from direct PostgREST RPC execution.
 -- Trigger execution does not depend on caller EXECUTE privileges; trigger functions remain
 -- attached to their existing triggers and continue to run as their function owner.
--- Authenticated callers retain access to role/property authorization predicates used by RLS.
---
--- Use to_regprocedure so this migration is safe across supported schema histories where
--- optional legacy helpers may not exist. Only existing exact signatures are revoked.
+-- Authenticated callers retain explicit access to role/property predicates used by RLS.
 
 do $migration$
 declare
@@ -39,15 +36,18 @@ begin
     end if;
   end loop;
 
-  -- These predicates are required by authenticated RLS policies, but have no anonymous use.
+  -- Remove anonymous/direct RPC access, but preserve the explicit authenticated grants
+  -- required by RLS policies and their nested predicate calls.
   helper_function := to_regprocedure('public.can_manage_property(text)');
   if helper_function is not null then
     execute format('revoke execute on function %s from public, anon', helper_function);
+    execute format('grant execute on function %s to authenticated', helper_function);
   end if;
 
   helper_function := to_regprocedure('public.has_role(text)');
   if helper_function is not null then
     execute format('revoke execute on function %s from public, anon', helper_function);
+    execute format('grant execute on function %s to authenticated', helper_function);
   end if;
 end;
 $migration$;
