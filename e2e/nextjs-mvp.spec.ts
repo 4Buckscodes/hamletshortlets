@@ -255,10 +255,14 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await findStayDialog.getByRole('button', { name: /Close search/i }).click();
     await expect(findStayDialog).toBeHidden();
 
-    // 4-pillar verification grid on homepage
+    // Verification details remain in the HAMLET difference panel only.
+    await expect(mobilePage.getByText('Title & lease').first()).toBeVisible();
+    await expect(mobilePage.getByText('Host identity').first()).toBeVisible();
+    await expect(mobilePage.getByText('Authority').first()).toBeVisible();
+    await expect(mobilePage.getByText('Inspection').first()).toBeVisible();
     await expect(
       mobilePage.getByRole('heading', { name: /Verified before it’s bookable/i }),
-    ).toBeVisible();
+    ).toHaveCount(0);
 
     // Mobile full-screen navigation drawer
     await mobilePage.getByRole('button', { name: /Open navigation menu/i }).click();
