@@ -395,6 +395,118 @@ export function guestFacingNightlyNgn(ownerNightlyRateNgn: number): number {
   return safeBase + multiplyNairaBasisPoints(safeBase, 2_000);
 }
 
+export interface PublicStayQuoteInput {
+  /** Pre-computed domestic guest-facing nightly rate in NGN (already includes 20% guest service fee). */
+  guestNightlyNgn: number | null;
+  /** Number of nights (clamped to >= 1). */
+  nights: number;
+  /** Disclosed mandatory non-accommodation charges (e.g. cleaning & turnover). */
+  mandatoryCharges?: MandatoryCharge[];
+  /** Separate refundable caution deposit in NGN (never marked up or buffered). */
+  refundableDeposit?: number;
+}
+
+export interface PublicStayQuoteBreakdown {
+  guestNightlyNgn: number | null;
+  nights: number;
+  domesticGuestAccommodationNgn: number;
+  mandatoryCharges: MandatoryCharge[];
+  mandatoryChargesTotal: number;
+  guestTotal: number;
+  checkoutStayAmountNgn: number;
+  refundableDeposit: number;
+  rulesVersion: string;
+}
+
+/**
+ * Finds the unique integer input that maps to a valid public nightly price under HAMLET's
+ * central guestFacingNightlyNgn function. The value exists only in this local calculation;
+ * it is never returned, serialized, or passed into a client component.
+ */
+function findOwnerRateForPublicGuestNightly(guestNightlyNgn: number): number | null {
+  if (!Number.isSafeInteger(guestNightlyNgn) || guestNightlyNgn <= 0) return null;
+  const estimate = Math.round((guestNightlyNgn * 5) / 6);
+  for (let candidate = Math.max(1, estimate - 2); candidate <= estimate + 2; candidate += 1) {
+    if (guestFacingNightlyNgn(candidate) === guestNightlyNgn) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Computes exact guest-facing multi-night totals from the pre-redacted public nightly quote,
+ * while preserving the existing `calculateGuestPricing` whole-stay rounding and charge rules.
+ * The deterministic inverse is held only in local calculation state and is never returned,
+ * serialized, or passed into client props; raw owner rates and margin allocations remain absent
+ * from all public payloads. Booking creation continues to use its existing server-side input.
+ */
+export function calculatePublicStayQuote(
+  input: PublicStayQuoteInput,
+): PublicStayQuoteBreakdown {
+  const safeNights = Math.max(1, Math.trunc(Number(input.nights) || 1));
+  const cleanNightly =
+    typeof input.guestNightlyNgn === 'number' &&
+    Number.isSafeInteger(input.guestNightlyNgn) &&
+    input.guestNightlyNgn > 0
+      ? input.guestNightlyNgn
+      : null;
+  const charges = (input.mandatoryCharges ?? []).map(charge => ({
+    label: String(charge.label || 'Mandatory charge'),
+    amount: Math.max(0, Math.round(Number(charge.amount) || 0)),
+  }));
+  const refundableDeposit = Math.max(0, Math.round(Number(input.refundableDeposit ?? 0)));
+
+  if (cleanNightly === null) {
+    return {
+      guestNightlyNgn: null,
+      nights: safeNights,
+      domesticGuestAccommodationNgn: 0,
+      mandatoryCharges: charges,
+      mandatoryChargesTotal: charges.reduce((sum, charge) => sum + charge.amount, 0),
+      guestTotal: 0,
+      checkoutStayAmountNgn: 0,
+      refundableDeposit,
+      rulesVersion: PRICING_RULES_VERSION,
+    };
+  }
+
+  const inferredOwnerNightly = findOwnerRateForPublicGuestNightly(cleanNightly);
+  if (inferredOwnerNightly === null) {
+    // A guest price not produced by the central HAMLET mapper is treated as unavailable;
+    // never silently use approximate arithmetic or show a mismatched checkout total.
+    return {
+      guestNightlyNgn: null,
+      nights: safeNights,
+      domesticGuestAccommodationNgn: 0,
+      mandatoryCharges: charges,
+      mandatoryChargesTotal: charges.reduce((sum, charge) => sum + charge.amount, 0),
+      guestTotal: 0,
+      checkoutStayAmountNgn: 0,
+      refundableDeposit,
+      rulesVersion: PRICING_RULES_VERSION,
+    };
+  }
+
+  const pricing = calculateGuestPricing({
+    accommodationSubtotal: inferredOwnerNightly * safeNights,
+    mandatoryCharges: charges,
+    refundableDeposit,
+  });
+
+  return {
+    guestNightlyNgn: cleanNightly,
+    nights: safeNights,
+    domesticGuestAccommodationNgn: pricing.domesticGuestAccommodationNgn,
+    mandatoryCharges: pricing.mandatoryCharges,
+    mandatoryChargesTotal: pricing.mandatoryChargesTotal,
+    guestTotal: pricing.guestTotal,
+    checkoutStayAmountNgn: pricing.checkoutStayAmountNgn,
+    refundableDeposit: pricing.refundableDeposit,
+    rulesVersion: pricing.rulesVersion,
+  };
+}
+
 export interface InternationalQuoteInput {
   /** Domestic guest-facing amount in NGN (already includes 20% domestic markup; never re-marked up). */
   domesticGuestAmountNgn: number;

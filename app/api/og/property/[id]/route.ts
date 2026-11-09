@@ -27,9 +27,9 @@ export async function GET(_request: Request, context: Context) {
     }
 
     const { data } = await db
-      .from('properties')
+      .from('public_properties')
       .select(
-        'id,title,area,property_type,bedrooms,bathrooms,capacity,nightly_rate,image_urls,status,verification',
+        'id,title,area,property_type,bedrooms,bathrooms,capacity,guest_nightly_ngn,image_urls,status,verification',
       )
       .eq('id', id.trim())
       .eq('status', 'approved')

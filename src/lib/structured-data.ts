@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { hasReliableLocationData } from './areas';
+import { hasContradictoryLagosStreetAddress, hasReliableLocationData } from './areas';
 import {
   formatAccommodationLabel,
-  getValidGuestNightlyNgn,
   isApprovedBookableStay,
+  resolveStayGuestNightlyNgn,
 } from './discovery';
-import type { PublicStayRecord } from './next-supabase';
+import type { AnyPublicStay } from './next-supabase';
 
 export const HAMLET_CANONICAL_ORIGIN = 'https://hamlet.rest';
 export const HAMLET_BRAND = 'HAMLET';
@@ -308,7 +308,7 @@ export function buildBreadcrumbListNode(
 }
 
 function buildApprovedStaysItemListNode(
-  approvedStays: ReadonlyArray<PublicStayRecord>,
+  approvedStays: ReadonlyArray<AnyPublicStay>,
   listId: string,
 ): Record<string, unknown> | null {
   const eligible = approvedStays.filter(stay => isApprovedBookableStay(stay));
@@ -332,7 +332,7 @@ function buildApprovedStaysItemListNode(
  * Only verified, approved properties are emitted as bookable listings.
  */
 export function buildHomepageSchema(params?: {
-  approvedStays?: ReadonlyArray<PublicStayRecord>;
+  approvedStays?: ReadonlyArray<AnyPublicStay>;
 }): Record<string, unknown> {
   const pageUrl = HAMLET_CANONICAL_ORIGIN;
   const staysList = buildApprovedStaysItemListNode(
@@ -407,7 +407,7 @@ export function buildAboutPageSchema(): Record<string, unknown> {
  * Includes an `ItemList` only when live approved database listings exist.
  */
 export function buildPropertyListingPageSchema(params?: {
-  approvedStays?: ReadonlyArray<PublicStayRecord>;
+  approvedStays?: ReadonlyArray<AnyPublicStay>;
 }): Record<string, unknown> {
   const pageUrl = buildNextCanonicalUrl('/stays');
   const breadcrumb = buildBreadcrumbListNode(
@@ -528,8 +528,8 @@ export function buildLagosNeighbourhoodGuideSchema(
  * structured data. Only approved, non-preview listings with confirmed location data qualify.
  */
 export function isEligibleForVacationRentalSchema(
-  stay: (Partial<PublicStayRecord> & { preview_only?: boolean }) | null | undefined,
-): stay is PublicStayRecord {
+  stay: (Partial<AnyPublicStay> & { preview_only?: boolean }) | null | undefined,
+): stay is AnyPublicStay {
   if (!isApprovedBookableStay(stay)) return false;
   return hasReliableLocationData({
     area: stay.area,
@@ -555,21 +555,97 @@ function mapVacationRentalAdditionalType(propertyType: string | null | undefined
   return null;
 }
 
+export interface VerifiedGeoCoordinatesInput {
+  latitude: number;
+  longitude: number;
+  /** Only coordinates explicitly marked `'verified'`, `'exact'`, or `'rooftop'` are published. */
+  accuracy?: string | null;
+}
+
+export interface AuthenticAggregateRatingInput {
+  ratingValue: number;
+  reviewCount: number;
+  bestRating?: number;
+  worstRating?: number;
+}
+
 export interface PropertyDetailSchemaInput {
-  stay: PublicStayRecord & { preview_only?: boolean };
+  stay: AnyPublicStay & { preview_only?: boolean };
   publicLocationSummary?: string | null;
+  /**
+   * Truth-only policy: genuine verified Lagos coordinates are published when present and
+   * accuracy-verified; omitted otherwise (never fabricated).
+   */
+  verifiedCoordinates?: VerifiedGeoCoordinatesInput | null;
+  /**
+   * Truth-only policy: authentic verified public aggregate ratings are published when
+   * supported by real public review data; omitted while pilot feedback remains private.
+   */
+  verifiedRating?: AuthenticAggregateRatingInput | null;
+}
+
+const VERIFIED_GEO_ACCURACY_VALUES = new Set(['verified', 'exact', 'rooftop']);
+
+function buildVerifiedLagosGeoNode(
+  coords: VerifiedGeoCoordinatesInput | null | undefined,
+): Record<string, unknown> | null {
+  if (!coords) return null;
+  const accuracy = (coords.accuracy || '').trim().toLowerCase();
+  if (!VERIFIED_GEO_ACCURACY_VALUES.has(accuracy)) return null;
+  const { latitude, longitude } = coords;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  // Sanity bounds for Lagos State (approx. 6.35°N–6.75°N, 2.70°E–4.40°E)
+  if (latitude < 6.35 || latitude > 6.75 || longitude < 2.7 || longitude > 4.4) {
+    return null;
+  }
+  return {
+    '@type': 'GeoCoordinates',
+    latitude: Number(latitude.toFixed(6)),
+    longitude: Number(longitude.toFixed(6)),
+  };
+}
+
+function buildAuthenticAggregateRatingNode(
+  rating: AuthenticAggregateRatingInput | null | undefined,
+): Record<string, unknown> | null {
+  if (!rating) return null;
+  const count = Math.trunc(Number(rating.reviewCount));
+  const value = Number(rating.ratingValue);
+  const best = rating.bestRating ?? 5;
+  const worst = rating.worstRating ?? 1;
+  if (
+    !Number.isFinite(count) ||
+    count < 1 ||
+    !Number.isFinite(value) ||
+    !Number.isFinite(best) ||
+    !Number.isFinite(worst) ||
+    best <= worst ||
+    value < worst ||
+    value > best
+  ) {
+    return null;
+  }
+  return {
+    '@type': 'AggregateRating',
+    ratingValue: Number(value.toFixed(2)),
+    reviewCount: count,
+    bestRating: best,
+    worstRating: worst,
+  };
 }
 
 /**
  * Builds structured data for an individual property detail page (`/stays/[id]`):
  * - Always emits `BreadcrumbList` and `WebPage`.
- * - For eligible approved bookable stays, emits `VacationRental` populated strictly from
- *   actual database values — never fabricating prices, images, amenities, reviews, ratings,
- *   coordinates, or availability status.
+ * - Follows a strict truth-only policy: publishes guest-facing prices, photos, amenities,
+ *   verified coordinates, and authentic reviews when genuinely backed by verified data,
+ *   while omitting unverified, contradictory, or private commercial fields.
  */
 export function buildPropertyDetailSchema({
   stay,
   publicLocationSummary,
+  verifiedCoordinates,
+  verifiedRating,
 }: PropertyDetailSchemaInput): Record<string, unknown> {
   const encodedId = encodeURIComponent(stay.id);
   const relativePath = `/stays/${encodedId}`;
@@ -630,7 +706,11 @@ export function buildPropertyDetailSchema({
     addressRegion: 'Lagos',
     addressCountry: 'NG',
   };
-  if (cleanAddress && cleanAddress.toLowerCase() !== cleanArea.toLowerCase()) {
+  if (
+    cleanAddress &&
+    cleanAddress.toLowerCase() !== cleanArea.toLowerCase() &&
+    !hasContradictoryLagosStreetAddress(cleanArea, cleanAddress)
+  ) {
     postalAddress.streetAddress = cleanAddress;
   }
 
@@ -692,7 +772,17 @@ export function buildPropertyDetailSchema({
     }));
   }
 
-  const domesticNightlyNgn = getValidGuestNightlyNgn(stay.nightly_rate);
+  const geoNode = buildVerifiedLagosGeoNode(verifiedCoordinates);
+  if (geoNode) {
+    vacationRental.geo = geoNode;
+  }
+
+  const ratingNode = buildAuthenticAggregateRatingNode(verifiedRating);
+  if (ratingNode) {
+    vacationRental.aggregateRating = ratingNode;
+  }
+
+  const domesticNightlyNgn = resolveStayGuestNightlyNgn(stay);
   if (domesticNightlyNgn !== null) {
     vacationRental.offers = {
       '@type': 'Offer',

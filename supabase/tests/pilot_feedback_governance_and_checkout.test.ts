@@ -229,7 +229,7 @@ describe('HAMLET Release 1 — partner suspension, property corrections, private
       // Approved listing is now suspended and hidden from anonymous public discovery
       const anonVisible = await asAnon(db, async tx => {
         const { rows } = await tx.query<{ id: string }>(
-          `select id from public.properties where id = $1`,
+          `select id from public.public_properties where id = $1`,
           [approvedPropertyId],
         );
         return rows;

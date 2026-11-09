@@ -46,12 +46,12 @@ import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
   getStayTrustStatus,
-  getValidGuestNightlyNgn,
+  resolveStayGuestNightlyNgn,
 } from '@/lib/discovery';
 import {
   getBrowserSupabase,
   loadActiveExchangeRates,
-  type PublicStayRecord,
+  type AnyPublicStay,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
 
@@ -882,7 +882,7 @@ export function SiteFooter() {
             </span>
           </Link>
           <p className="mt-2.5 text-[14px] leading-[1.5] text-[#C5CCDA]">
-            Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
+            Your stay, sorted. Approved shortlets across Lagos Mainland and Lagos Island, with listing verification by Abundance Abodes.
           </p>
           <p className="mt-2.5 text-[14px] text-[#C5CCDA]">
             Contact:{' '}
@@ -949,7 +949,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-[#C5CCDA]">
-              Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
+              Your stay, sorted. Approved shortlets across Lagos Mainland and Lagos Island, with listing verification by Abundance Abodes.
             </p>
             <p className="mt-2.5 text-xs text-[#C5CCDA]">
               Contact:{' '}
@@ -1001,14 +1001,19 @@ export function SiteFooter() {
  * (`src/lib/discovery.ts` + `src/lib/pricing.ts`). Never displays a misleading ₦0 price.
  */
 export function StayNightlyPrice({
+  guestNightlyNgn,
   ownerNightlyRateNgn,
   className = '',
 }: {
-  ownerNightlyRateNgn: number;
+  guestNightlyNgn?: number | null;
+  ownerNightlyRateNgn?: number | null;
   className?: string;
 }) {
   const { formatPrice, currency } = useCurrency();
-  const domesticNightly = getValidGuestNightlyNgn(ownerNightlyRateNgn);
+  const domesticNightly = resolveStayGuestNightlyNgn({
+    guest_nightly_ngn: guestNightlyNgn,
+    ...(ownerNightlyRateNgn !== undefined ? { nightly_rate: ownerNightlyRateNgn } : {}),
+  });
 
   if (domesticNightly === null) {
     return (
@@ -1034,7 +1039,7 @@ export function StayListingCard({
   stay,
   querySuffix = '',
 }: {
-  stay: PublicStayRecord;
+  stay: AnyPublicStay;
   querySuffix?: string;
 }) {
   const validImages = useMemo(
@@ -1216,7 +1221,7 @@ export function StayListingCard({
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
-          <StayNightlyPrice ownerNightlyRateNgn={Number(stay.nightly_rate ?? 0)} />
+          <StayNightlyPrice guestNightlyNgn={resolveStayGuestNightlyNgn(stay)} />
           <span className="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-ink-900 transition group-hover:translate-x-0.5">
             View stay <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
           </span>

@@ -1,7 +1,12 @@
 import type { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { toPublicStayView } from '@/lib/discovery';
 import { getPublicSupabase } from '@/lib/supabase-public';
-import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import {
+  PUBLIC_PROPERTY_SELECT,
+  type PublicStayRecord,
+  type PublicStayView,
+} from '@/lib/next-supabase';
 import {
   buildHomepageSchema,
   buildPublicPageMetadata,
@@ -15,7 +20,7 @@ export const metadata: Metadata = {
   ...buildPublicPageMetadata({
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Verified shortlet apartments across Lagos Island and Lagos Mainland — clear details, trusted hosts, and straightforward booking requests.',
+      'Approved shortlet apartments across Lagos Island and Lagos Mainland — clear listing details, recorded verification outcomes, and straightforward booking requests.',
     pathname: '/',
   }),
   title: {
@@ -31,12 +36,12 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const db = getPublicSupabase();
-  let approvedStays: PublicStayRecord[] = [];
+  let approvedStays: PublicStayView[] = [];
   let queryError = false;
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
+      .from('public_properties')
       .select(PUBLIC_PROPERTY_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
@@ -44,7 +49,9 @@ export default async function HomePage() {
     if (error) {
       queryError = true;
     } else {
-      approvedStays = (data ?? []) as PublicStayRecord[];
+      approvedStays = (data ?? []).map(row =>
+        toPublicStayView(row as PublicStayRecord),
+      );
     }
   }
 

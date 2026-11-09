@@ -48,16 +48,15 @@ export function createServerUserSupabase(accessToken: string): SupabaseClient | 
 }
 
 /**
- * Guaranteed live schema columns on `public.properties` across both the currently
- * deployed production schema (`20261024073312`) and local full migrations.
- * Wayfinder-only extension columns (`city`, `public_location_summary`, `wayfinder_status`)
- * are queried only via optional schema-tolerant probes so public listing pages never fail
- * with PostgreSQL 42703 before the Wayfinder migration is applied.
+ * Select list for the security-barrier `public.public_properties` guest-facing view.
+ * It contains no private owner rate, operational contact, partner, or review-note fields.
  */
 export const PUBLIC_PROPERTY_SELECT =
-  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,calendar_responsible_person,created_at,updated_at';
+  'id,title,property_type,area,public_address,guest_nightly_ngn,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at';
 
-export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},review_note`;
+/** Private property columns for authenticated partner/admin workspace queries only. */
+export const PARTNER_PROPERTY_SELECT =
+  'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,calendar_responsible_person,created_at,updated_at,review_note';
 
 export interface PublicStayRecord {
   id: string;
@@ -65,7 +64,10 @@ export interface PublicStayRecord {
   property_type: string | null;
   area: string | null;
   public_address: string | null;
-  nightly_rate: number | string | null;
+  /** Private raw owner rate — only present on authenticated server/partner records. */
+  nightly_rate?: number | string | null;
+  /** Precomputed guest-facing price returned by the public_properties view. */
+  guest_nightly_ngn?: number | string | null;
   cleaning_fee: number | string | null;
   mandatory_charges: MandatoryCharge[] | null;
   refundable_deposit: number | string | null;
@@ -81,10 +83,54 @@ export interface PublicStayRecord {
   trust_label: string | null;
   first_available_date: string | null;
   availability_confirmation_status: string | null;
-  calendar_responsible_person: string | null;
+  calendar_responsible_person?: string | null;
+  city?: string | null;
+  public_location_summary?: string | null;
+  public_landmarks?: string[] | null;
+  location_accuracy?: string | null;
+  wayfinder_status?: string | null;
   created_at: string;
   updated_at?: string | null;
 }
+
+/**
+ * Commercial-redacted public stay view model safe to serialize across React Server Component
+ * boundaries, HTML, JSON-LD, sitemaps, and public discovery feeds.
+ *
+ * Strictly omits private owner base rate (`nightly_rate` / `B`), internal agent margins,
+ * operational contact fields (`calendar_responsible_person`), and admin `review_note`.
+ */
+export interface PublicStayView {
+  id: string;
+  title: string;
+  property_type: string | null;
+  area: string | null;
+  public_address: string | null;
+  /** Guest-facing domestic NGN nightly stay price computed via HAMLET central pricing logic. */
+  guest_nightly_ngn: number | null;
+  /** Disclosed mandatory cleaning/turnover charge in NGN. */
+  cleaning_fee: number;
+  /** Disclosed mandatory non-accommodation charges (sanitized to label + non-negative integer NGN). */
+  mandatory_charges: MandatoryCharge[];
+  /** Separate refundable caution deposit in NGN (never marked up or buffered). */
+  refundable_deposit: number;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  capacity: number | null;
+  bed_setup: string | null;
+  amenities: string[] | null;
+  image_urls: string[] | null;
+  house_rules: string[] | null;
+  status: string;
+  verification: Record<string, string> | null;
+  trust_label: string | null;
+  first_available_date: string | null;
+  availability_confirmation_status: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export type AnyPublicStay = PublicStayView | PublicStayRecord;
 
 export interface OptionalWayfinderLocationMeta {
   deployed: boolean;
@@ -122,7 +168,7 @@ export async function probePropertyWayfinderMeta(
 ): Promise<OptionalWayfinderLocationMeta> {
   if (!db) return { deployed: false };
   const { data, error } = await db
-    .from('properties')
+    .from('public_properties')
     .select('city,public_location_summary,public_landmarks,location_accuracy,wayfinder_status')
     .eq('id', propertyId)
     .eq('status', 'approved')

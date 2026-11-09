@@ -28,6 +28,26 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Prevent duplicate mirror indexing on *.vercel.app hosts while keeping hamlet.rest canonical.
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: '.*\\.vercel\\.app$',
+          },
+        ],
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -33,7 +33,7 @@ import {
   type DiscoveryFilterState,
   type DiscoverySortKey,
 } from '@/lib/discovery';
-import { getBrowserSupabase, type PublicStayRecord } from '@/lib/next-supabase';
+import { getBrowserSupabase, type AnyPublicStay } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   FIELD_INPUT_CLASS,
@@ -45,7 +45,7 @@ import { StayListingCard } from './SiteShell';
 
 export interface DiscoveryMarketplaceProps {
   mode: 'homepage' | 'stays';
-  approvedStays: PublicStayRecord[];
+  approvedStays: AnyPublicStay[];
   initialFilters?: Partial<DiscoveryFilterState>;
   initialUnavailableIds?: string[] | null;
   availabilitySupported?: boolean;
@@ -761,8 +761,8 @@ export function DiscoveryMarketplace({
               </span>
               <h3 className="mt-3 font-display text-xl font-bold text-ink-950 sm:text-2xl">
                 {filters.area
-                  ? `No verified stays published in ${filters.area} yet.`
-                  : 'Verified Lagos stays are completing onboarding.'}
+                  ? `No approved stays are published in ${filters.area} yet.`
+                  : 'Approved Lagos stays are completing listing review.'}
               </h3>
               {activeBadges.length > 0 && (
                 <div className="mt-4">
@@ -786,7 +786,7 @@ export function DiscoveryMarketplace({
             </div>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs text-ink-600">
-              <span>Own or manage a verified shortlet in Lagos?</span>
+              <span>Own or manage a shortlet in Lagos?</span>
               <Link
                 href="/partners/apply"
                 className="font-extrabold text-ink-950 underline underline-offset-4 hover:text-brass-700"
@@ -799,7 +799,7 @@ export function DiscoveryMarketplace({
           /* 3. Filtered Empty State (approved properties exist, none match active filters) */
           <div className="rounded-3xl border border-ink-200 bg-white p-6 text-center shadow-2xs sm:p-10">
             <h3 className="font-display text-xl font-bold text-ink-950 sm:text-2xl">
-              No verified stays match these filters.
+              No approved stays match these filters.
             </h3>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-ink-600">
               {!priceValidation.valid && priceValidation.error

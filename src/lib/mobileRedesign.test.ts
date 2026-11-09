@@ -11,9 +11,9 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
     expect(homeSource).toContain('Find your next stay.');
-    expect(homeSource).toContain('Verified Shortlets · Lagos');
+    expect(homeSource).toContain('Lagos Shortlets · Reviewed Listings');
     expect(homeSource).toContain(
-      'Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.',
+      'Island or Mainland, pick your side of the lagoon. Check each listing’s recorded review outcomes before you request a stay.',
     );
   });
 
@@ -44,10 +44,10 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('Show stays');
   });
 
-  it('places the former Explore Lagos neighbourhoods photo rail right below the search pill and above Verified stays, followed by 4-step verification and Partner card', () => {
+  it('places the former Explore Lagos neighbourhoods photo rail right below the search pill and above the Lagos stays section, followed by 4-step verification and Partner card', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
-    // Former Explore Lagos neighbourhoods photo rail placed BEFORE Verified stays
+    // Former Explore Lagos neighbourhoods photo rail placed BEFORE the Lagos stays section
     expect(homeSource).toContain('Island &amp; Lagos Mainland corridors');
     expect(homeSource).toContain('Explore Lagos neighbourhoods');
     expect(homeSource).toContain('DISCOVERY_NEIGHBOURHOODS');
@@ -61,8 +61,8 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(railIdx).toBeGreaterThan(-1);
     expect(staysIdx).toBeGreaterThan(railIdx);
 
-    // Verified stays cards with swipeable gallery & monogram fallback
-    expect(homeSource).toContain('Verified stays');
+    // Lagos stay cards with per-listing verification badges, swipeable gallery & monogram fallback
+    expect(homeSource).toContain('Stays across Lagos');
     expect(homeSource).toContain('Photos coming soon');
     expect(homeSource).toContain('View stay →');
     expect(homeSource).toContain('See all stays →');
@@ -76,7 +76,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
 
     // Partner banner with gold CTA
     expect(homeSource).toContain('Property Owners &amp; Managers');
-    expect(homeSource).toContain('Own or manage a verified shortlet in Lagos?');
+    expect(homeSource).toContain('Own or manage a shortlet in Lagos?');
     expect(homeSource).toContain(
       'List with HAMLET for visibility, booking and property management support.',
     );

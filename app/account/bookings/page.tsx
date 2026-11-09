@@ -562,7 +562,7 @@ export default function GuestBookingsPage() {
               </p>
               <p className="m-0 text-xs text-ink-600">
                 {wayfinderState.summary ||
-                  'Arrival details are shared directly by the verified property partner ahead of check-in.'}
+                  'Arrival details are shared directly by the authorised property partner ahead of check-in.'}
               </p>
             </div>
           ) : (

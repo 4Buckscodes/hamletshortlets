@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     locale: 'en_NG',
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Shortlets, with accountability. Verified apartments across Lagos Island and Lagos Mainland.',
+      'Shortlets, with accountability. Listing verification and request-to-book stays across Lagos Island and Lagos Mainland.',
     images: [
       {
         url: '/api/og/default',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'HAMLET.REST — Your stay, sorted.',
-    description: 'Shortlets, with accountability. Verified stays across Lagos.',
+    description: 'Shortlets, with accountability. Listing verification and request-to-book stays across Lagos.',
     images: ['/api/og/default'],
   },
   robots: { index: true, follow: true },

@@ -2,10 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   parseDiscoverySearchParams,
+  toPublicStayView,
   validateStayDates,
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { PUBLIC_PROPERTY_SELECT, type PublicStayRecord } from '@/lib/next-supabase';
+import {
+  PUBLIC_PROPERTY_SELECT,
+  type PublicStayRecord,
+  type PublicStayView,
+} from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   buildPropertyListingPageSchema,
@@ -20,7 +25,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Explore Lagos Shortlet Stays',
   description:
-    'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
+    'Explore approved shortlet listings across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu). Check each stay’s recorded verification outcomes.',
   pathname: '/stays',
 });
 
@@ -38,14 +43,14 @@ export default async function StaysCataloguePage({
   const initialFilters = parseDiscoverySearchParams(flatParams);
   const db = getPublicSupabase();
 
-  let approvedStays: PublicStayRecord[] = [];
+  let approvedStays: PublicStayView[] = [];
   let queryError = false;
   let initialUnavailableIds: string[] | null = null;
   let availabilitySupported = true;
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
+      .from('public_properties')
       .select(PUBLIC_PROPERTY_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
@@ -54,7 +59,9 @@ export default async function StaysCataloguePage({
     if (error) {
       queryError = true;
     } else {
-      approvedStays = (data ?? []) as PublicStayRecord[];
+      approvedStays = (data ?? []).map(row =>
+        toPublicStayView(row as PublicStayRecord),
+      );
     }
 
     const dateCheck = validateStayDates(
@@ -94,7 +101,7 @@ export default async function StaysCataloguePage({
               Lagos Island &amp; Lagos Mainland
             </p>
             <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
-              Explore verified shortlet stays across Lagos.
+              Explore approved shortlet stays across Lagos.
             </h1>
           </div>
 

@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, CalendarDays, ShieldCheck } from 'lucide-react';
 import {
-  calculateGuestPricing,
+  calculatePublicStayQuote,
   lagosIsoDateOffset,
   nightsBetween,
 } from '@/lib/pricing';
-import { getValidGuestNightlyNgn } from '@/lib/discovery';
+import { resolveStayGuestNightlyNgn } from '@/lib/discovery';
 import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -29,7 +29,9 @@ import {
 type Props = {
   propertyId: string;
   propertyTitle: string;
-  nightlyRate: number;
+  guestNightlyNgn?: number | null;
+  /** Optional legacy fallback for isolated component tests only; never passed from public pages. */
+  nightlyRate?: number;
   cleaningFee: number;
   deposit: number;
   capacity: number | null;
@@ -52,6 +54,7 @@ const BOOKING_STEPS = [
 export default function BookingRequestForm({
   propertyId,
   propertyTitle,
+  guestNightlyNgn,
   nightlyRate,
   cleaningFee,
   deposit,
@@ -127,18 +130,26 @@ export default function BookingRequestForm({
     };
   }, [db, propertyId, checkIn, checkOut, nights]);
 
+  const domesticNightly = useMemo(
+    () =>
+      resolveStayGuestNightlyNgn({
+        guest_nightly_ngn: guestNightlyNgn,
+        ...(nightlyRate !== undefined ? { nightly_rate: nightlyRate } : {}),
+      }),
+    [guestNightlyNgn, nightlyRate],
+  );
+
   const pricing = useMemo(
     () =>
-      calculateGuestPricing({
-        accommodationSubtotal: nightlyRate * Math.max(1, nights),
+      calculatePublicStayQuote({
+        guestNightlyNgn: domesticNightly,
+        nights: Math.max(1, nights),
         mandatoryCharges:
           cleaningFee > 0 ? [{ label: 'Cleaning & turnover', amount: cleaningFee }] : [],
         refundableDeposit: deposit,
       }),
-    [nightlyRate, nights, cleaningFee, deposit],
+    [domesticNightly, nights, cleaningFee, deposit],
   );
-
-  const domesticNightly = getValidGuestNightlyNgn(nightlyRate);
 
   function buildIntentReturnUrl(targetStep: number) {
     const qs = new URLSearchParams();
