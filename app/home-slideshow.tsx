@@ -615,13 +615,13 @@ export function HomeMarketplaceExperience({
               className="pointer-events-none -mt-2 -mb-7 block h-auto w-full max-w-2xl mx-auto select-none lg:mt-0 lg:-mb-9 lg:max-w-none"
             >
               <circle cx="296" cy="64" r="30" fill="#B58A52" />
-              <g fill="#16294A">
+              <g fill="#285744">
                 <rect x="8" y="110" width="26" height="100" />
                 <rect x="40" y="86" width="22" height="124" />
                 <rect x="68" y="120" width="30" height="90" />
                 <rect x="104" y="98" width="20" height="112" />
               </g>
-              <g fill="#1B3358">
+              <g fill="#204C3D">
                 <rect x="262" y="104" width="28" height="106" />
                 <rect x="296" y="124" width="24" height="86" />
                 <rect x="326" y="92" width="22" height="118" />
