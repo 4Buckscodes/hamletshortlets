@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { dispatchPendingCommunications } from '@/lib/communications';
 import {
   ChipMultiSelect,
   DraftStatusBar,
@@ -378,6 +379,7 @@ export default function PartnerApplicationForm() {
         );
       }
 
+      await dispatchPendingCommunications(db);
       await load();
     } catch (caught) {
       setError(
