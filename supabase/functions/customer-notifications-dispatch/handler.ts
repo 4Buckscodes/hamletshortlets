@@ -173,7 +173,9 @@ export function renderCustomerEmail(
         ? 'Your application has been approved. Your approved partner workspace and partner tools are now available.'
         : status === 'needs_correction'
           ? 'Our team needs a few corrections before your application can be approved. Review the note below and update your application.'
-          : status === 'rejected'
+          : status === 'pending'
+            ? 'Your updated application has been received and is pending review.'
+            : status === 'rejected'
             ? 'Our team has reviewed your application and recorded a decision not to approve it.'
             : `Your application status has changed to ${statusLabel(status)}.`;
       return {
@@ -181,7 +183,9 @@ export function renderCustomerEmail(
           ? 'Your HAMLET partner application is approved'
           : status === 'needs_correction'
             ? 'Action needed: update your HAMLET partner application'
-            : status === 'rejected'
+            : status === 'pending'
+              ? 'We received your corrected HAMLET partner application'
+              : status === 'rejected'
               ? 'Update on your HAMLET partner application'
               : 'Your HAMLET partner application has been updated',
         heading: 'An update on your partner application',
