@@ -624,7 +624,21 @@ export function HomeMarketplaceExperience({
   return (
     <div className="bg-[#F7F4ED] text-[#173F32]">
       {/* ── Hero: Lagos landmarks + Cream Search Sheet ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#102D24] via-[#173F32] to-[#285744] text-[#F7F4ED]">
+      <section
+        className="relative isolate overflow-hidden text-[#F7F4ED]"
+        style={{
+          backgroundColor: '#102D24',
+          backgroundImage: [
+            'radial-gradient(ellipse at 78% 18%, rgba(190, 151, 96, 0.25) 0%, transparent 34%)',
+            'radial-gradient(ellipse at 12% 82%, rgba(69, 119, 96, 0.42) 0%, transparent 42%)',
+            'radial-gradient(ellipse at 52% 48%, rgba(37, 82, 65, 0.55) 0%, transparent 58%)',
+            'linear-gradient(118deg, #0D2922 0%, #153D31 48%, #1B4939 100%)',
+          ].join(', '),
+        }}
+      >
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-0 opacity-[0.13]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)', backgroundSize: '54px 54px', maskImage: 'linear-gradient(to bottom, black, transparent 88%)' }} />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-28 -top-40 -z-0 h-[520px] w-[520px] rounded-full border border-[#D5B27B]/20 shadow-[0_0_0_42px_rgba(213,178,123,.035),0_0_0_92px_rgba(213,178,123,.025)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-52 left-[28%] -z-0 h-[420px] w-[680px] rounded-full bg-[#B58A52]/[0.07] blur-3xl" />
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-6 lg:px-6 lg:pt-8">
           <div className="relative z-10 px-5 pt-10 pb-7 lg:col-span-5 lg:px-0 lg:pt-12 lg:pb-14">
             <div className="pointer-events-none absolute -left-24 top-4 h-64 w-64 rounded-full bg-[#B58A52]/15 blur-3xl" />
