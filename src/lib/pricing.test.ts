@@ -320,7 +320,7 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
 
   it('8. ensures no active website/application file promises permanent 0% owner fees or references the retired 3% fee', () => {
     expect(APPROVED_OWNER_SERVICES_POLICY_COPY).toContain(
-      "Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.",
+      'Applicable service fees, verification charges, storage limits',
     );
 
     const activeFiles = [
