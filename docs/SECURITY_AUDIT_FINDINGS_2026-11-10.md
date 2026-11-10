@@ -84,6 +84,10 @@ The deployed Edge Function source could not be retrieved for direct version pari
 
 Production migration history does not include `20261024180000_hamlet_wayfinder_arrival_guidance.sql`, and the live Storage bucket inventory contains only the public `property-media` bucket. The Next.js code contains an `arrival-guide-media` upload and signed-URL path, but that private bucket and its RLS policies are not deployed in production. This currently presents a feature/deployment parity gap, not evidence that private arrival photos are exposed. Do not create the bucket manually or make it public; if Wayfinder is brought into scope, apply its complete private-bucket and table/RPC migration only after a staging rehearsal.
 
+## Password and authentication input policy
+
+All new password creation and password recovery/update paths in the current Next.js and legacy store flows now enforce an eight-character minimum at the UI boundary. Existing users can still sign in with existing credentials; the change does not force an immediate password reset. Server-side Supabase Auth password policy must be reconciled in the dashboard so direct API calls cannot bypass the UI minimum.
+
 ## Authentication error disclosure
 
 The sign-in, sign-up, password-reset, and OAuth flows previously passed some raw Supabase/Google provider errors to the browser UI. The hardening branch now normalizes those errors to generic actionable messages, including duplicate-account and invalid-credential cases, to avoid account-existence disclosure and raw provider diagnostics. Regression tests cover duplicate-account non-enumeration and suppression of unrecognized OAuth error descriptions.
