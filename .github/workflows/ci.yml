@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/nextjs-mobile-first-rebuild
+      - security/authentication-hardening
   pull_request:
     branches:
       - main
@@ -20,7 +21,7 @@ jobs:
   validate:
     name: Lint, test and build Next.js MVP
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +34,8 @@ jobs:
         run: npm ci
       - name: Run linter
         run: npm run lint
+      - name: TypeScript validation
+        run: npx tsc --noEmit
       - name: Run unit and PGlite database tests
         run: npm test
       - name: Build Next.js production application
