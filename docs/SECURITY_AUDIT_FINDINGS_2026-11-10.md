@@ -42,6 +42,19 @@ The November 9 migration `20261109142221_restrict_internal_security_definer_rpc.
 - Some tables have table-level SELECT grants to API roles but RLS policies only for authenticated users or restricted rows. A grant alone does not bypass RLS. Keep tests checking both ACLs and policy predicates.
 - The public `property-media` bucket is suitable only for public listing assets. Identity documents, ownership evidence, incident evidence, and other private records must not be placed in this bucket.
 
+## Critical booking-expiry authorization finding
+
+The live `public.expire_overdue_bookings()` RPC was executable by authenticated users and its deployed function body accepted any caller with a valid HAMLET profile. It performs a global update across all overdue `awaiting_payment` bookings, not just the caller's own bookings. The application also invoked it during general client-state hydration, on a guest account-bookings page, and from a periodic client timer.
+
+This is an authorization boundary failure: an ordinary guest or partner could trigger a global booking state transition affecting other customers. The hardening branch now:
+
+- Replaces the RPC body with an active-admin-or-`service_role` check.
+- Removes the guest account page and general store/timer invocations.
+- Preserves the explicit admin dashboard action and trusted server-role use.
+- Adds regression tests requiring guest/partner rejection, admin success, and service-role success.
+
+The migration is branch-only and has not been applied to production. Because booking lifecycle tests previously encoded the weaker behaviour, those tests were updated to assert the intended administrator-only boundary.
+
 ## Edge Function observations
 
 - `booking-notifications` is configured with platform JWT verification disabled, but its handler accepts either a validated internal dispatch secret or a bearer token that is checked with Supabase Auth and then authorized against the booking. Its service-role operations are behind that authorization path.
