@@ -2896,7 +2896,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       const trimmedPhone = phone?.trim() ?? '';
       if (trimmedName.length < 2) return { ok: false, error: 'Enter your full name (at least 2 characters).' };
       if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return { ok: false, error: 'Enter a valid email address.' };
-      if (password.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+      if (password.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' };
 
       if (supabase) {
         const { data, error } = await supabase.auth.signUp({
@@ -2971,8 +2971,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       return { ok: true };
     },
     updatePassword: async (newPassword) => {
-      if (newPassword.length < 6) {
-        return { ok: false, error: 'New password must be at least 6 characters.' };
+      if (newPassword.length < 8) {
+        return { ok: false, error: 'New password must be at least 8 characters.' };
       }
       if (supabase) {
         const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -3015,8 +3015,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
 
         if (!state.session) {
-          if (!input.password || input.password.length < 6) {
-            return { ok: false, error: 'Choose a password of at least 6 characters to create your HAMLET account.' };
+          if (!input.password || input.password.length < 8) {
+            return { ok: false, error: 'Choose a password of at least 8 characters to create your HAMLET account.' };
           }
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: applicantEmail,
