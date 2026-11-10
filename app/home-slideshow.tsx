@@ -241,7 +241,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
             className="grid h-full w-full place-items-center p-6 text-center text-[13px] text-[#DADFD5]"
           >
             <div>
-              <strong className="mb-1 block font-display text-[30px] font-bold text-[#B58A52]">
+              <strong className="mb-1 block font-display text-[30px] font-bold text-[#C9A44A]">
                 H
               </strong>
               <span>Photos coming soon</span>
@@ -272,7 +272,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
       {/* Card Body */}
       <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4 sm:px-5 sm:pt-[18px] sm:pb-5">
         <div className="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.2px] text-[#755638]">
-          <span className="rounded-[12px] bg-[#173F32] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#B58A52]">
+          <span className="rounded-[12px] bg-[#0E1F3B] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#C9A44A]">
             {isMainland ? 'Mainland' : 'Island'}
           </span>
           <span>
@@ -280,7 +280,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           </span>
         </div>
 
-        <h3 className="mt-2 font-display text-[18px] font-bold leading-[1.2] text-[#173F32] sm:mt-2.5 sm:text-[22px]">
+        <h3 className="mt-2 font-display text-[18px] font-bold leading-[1.2] text-[#0E1F3B] sm:mt-2.5 sm:text-[22px]">
           <Link href={detailHref} className="transition hover:text-[#755638]">
             {property.title}
           </Link>
@@ -371,7 +371,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
             <div className="min-w-0">
               {guestNightlyNgn !== null ? (
                 <>
-                  <b className="block text-[24px] font-semibold leading-[1.1] tracking-[-0.3px] text-[#173F32]">
+                  <b className="block text-[24px] font-semibold leading-[1.1] tracking-[-0.3px] text-[#0E1F3B]">
                     {formatPrice(guestNightlyNgn, { roundWhole: true })}
                   </b>
                   <small className="text-[12.5px] text-[#596B60]">
@@ -380,7 +380,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
                 </>
               ) : (
                 <>
-                  <b className="block text-[18px] font-semibold leading-[1.2] text-[#173F32]">
+                  <b className="block text-[18px] font-semibold leading-[1.2] text-[#0E1F3B]">
                     Rate on request
                   </b>
                   <small className="text-[12.5px] text-[#596B60]">contact concierge</small>
@@ -390,7 +390,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
             <Link
               href={detailHref}
-              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#173F32] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F7F4ED] transition hover:bg-[#285744]"
+              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#0E1F3B] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F8F5EE] transition hover:bg-[#1B3560]"
             >
               View stay →
             </Link>
@@ -607,12 +607,12 @@ export function HomeMarketplaceExperience({
   const currencyLabel = `${CURRENCY_SYMBOLS[currency]} ${currency}`;
 
   return (
-    <div className="bg-[#F7F4ED] text-[#173F32]">
+    <div className="bg-[#F8F5EE] text-[#0E1F3B]">
       {/* ── Editorial Lagos hero + integrated booking search ── */}
-      <section className="relative isolate min-h-[660px] overflow-hidden bg-[#172B24] text-[#FBF8F1] sm:min-h-[700px] lg:min-h-[720px]">
+      <section className="relative isolate min-h-[660px] overflow-hidden bg-[#091528] text-[#FBF8F1] sm:min-h-[700px] lg:min-h-[720px]">
         <div aria-hidden="true" className="absolute inset-0 z-0 bg-cover bg-[center_48%]" style={{ backgroundImage: "url('https://images.pexels.com/photos/37405043/pexels-photo-37405043.jpeg?auto=compress&cs=tinysrgb&w=2400')" }} />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-[linear-gradient(90deg,rgba(10,24,19,.84)_0%,rgba(10,24,19,.58)_48%,rgba(10,24,19,.16)_100%),linear-gradient(0deg,rgba(10,24,19,.76)_0%,transparent_58%)]" />
-        <div aria-hidden="true" className="absolute inset-0 z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #B58A52 0, transparent 28%)' }} />
+        <div aria-hidden="true" className="absolute inset-0 z-10 bg-[linear-gradient(90deg,rgba(9,21,40,.84)_0%,rgba(9,21,40,.58)_48%,rgba(9,21,40,.16)_100%),linear-gradient(0deg,rgba(9,21,40,.76)_0%,transparent_58%)]" />
+        <div aria-hidden="true" className="absolute inset-0 z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #C9A44A 0, transparent 28%)' }} />
 
         <div className="relative z-20 mx-auto flex min-h-[660px] max-w-[1320px] flex-col justify-between px-5 pb-8 pt-16 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
           <div className="max-w-[780px] pt-5 sm:pt-10 lg:pt-12">
@@ -627,21 +627,21 @@ export function HomeMarketplaceExperience({
             </Link>
           </div>
 
-          <div role="search" aria-label="Search Lagos shortlets" className="relative z-10 mx-auto mt-12 w-full max-w-[1040px] rounded-[22px] border border-white/55 bg-[#FBF8F1] p-2.5 text-[#173F32] shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-xl sm:rounded-full sm:p-2">
+          <div role="search" aria-label="Search Lagos shortlets" className="relative z-10 mx-auto mt-12 w-full max-w-[1040px] rounded-[22px] border border-white/55 bg-[#FBF8F1] p-2.5 text-[#0E1F3B] shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-xl sm:rounded-full sm:p-2">
             <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-expanded={sheetOpen} aria-label="Find a stay" className="grid min-h-[66px] w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-3 rounded-full px-4 text-left transition hover:bg-[#F1EDE4] sm:grid-cols-[1.2fr_1fr_.8fr_auto] sm:px-5">
               <span className="min-w-0 border-b border-[#DED7C9] pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
                 <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Destination</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{pillWhereLabel}</strong>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#0E1F3B]">{pillWhereLabel}</strong>
               </span>
               <span className="hidden min-w-0 border-r border-[#DED7C9] px-5 sm:block">
                 <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Dates</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{checkIn && checkOut ? `${formatPillDate(checkIn)} – ${formatPillDate(checkOut)}` : 'Add your dates'}</strong>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#0E1F3B]">{checkIn && checkOut ? `${formatPillDate(checkIn)} – ${formatPillDate(checkOut)}` : 'Add your dates'}</strong>
               </span>
               <span className="hidden min-w-0 px-5 sm:block">
                 <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8A7355]">Guests</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#173F32]">{guests} {guests === 1 ? 'guest' : 'guests'}</strong>
+                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#0E1F3B]">{guests} {guests === 1 ? 'guest' : 'guests'}</strong>
               </span>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#173F32] text-[#F7F4ED] shadow-[0_6px_18px_rgba(23,63,50,.24)] transition hover:bg-[#285744]">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0E1F3B] text-[#F8F5EE] shadow-[0_6px_18px_rgba(14,31,59,.24)] transition hover:bg-[#1B3560]">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
               </span>
               <span className="col-span-2 px-1 text-[12px] text-[#766F63] sm:hidden">{pillSubLabel}</span>
@@ -664,7 +664,7 @@ export function HomeMarketplaceExperience({
             role="dialog"
             aria-modal="true"
             aria-label="Find a stay"
-            className="max-h-[92dvh] w-full max-w-[440px] overflow-y-auto overscroll-y-contain rounded-t-[28px] bg-[#F7F4ED] px-5 pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] text-[#173F32] shadow-2xl sm:max-w-[480px] sm:rounded-[28px] sm:pt-5"
+            className="max-h-[92dvh] w-full max-w-[440px] overflow-y-auto overscroll-y-contain rounded-t-[28px] bg-[#F8F5EE] px-5 pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] text-[#0E1F3B] shadow-2xl sm:max-w-[480px] sm:rounded-[28px] sm:pt-5"
           >
             <div
               aria-hidden="true"
@@ -672,14 +672,14 @@ export function HomeMarketplaceExperience({
             />
 
             <div className="mb-1 flex items-center justify-between">
-              <h2 className="m-0 font-display text-[24px] font-bold text-[#173F32]">
+              <h2 className="m-0 font-display text-[24px] font-bold text-[#0E1F3B]">
                 Find a stay
               </h2>
               <button
                 type="button"
                 onClick={() => setSheetOpen(false)}
                 aria-label="Close search"
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D9D8CD] bg-transparent text-[#173F32] transition hover:border-[#173F32]"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D9D8CD] bg-transparent text-[#0E1F3B] transition hover:border-[#0E1F3B]"
               >
                 <svg
                   width="18"
@@ -722,8 +722,8 @@ export function HomeMarketplaceExperience({
                     onClick={() => handleSelectSide(option.value)}
                     className={`min-h-[44px] cursor-pointer rounded-[20px] border-0 text-[14px] font-semibold transition ${
                       active
-                        ? 'bg-[#173F32] text-[#F7F4ED]'
-                        : 'bg-transparent text-[#173F32]'
+                        ? 'bg-[#0E1F3B] text-[#F8F5EE]'
+                        : 'bg-transparent text-[#0E1F3B]'
                     }`}
                   >
                     {option.label}
@@ -743,8 +743,8 @@ export function HomeMarketplaceExperience({
                     onClick={() => handleToggleChip(chip)}
                     className={`min-h-[40px] cursor-pointer rounded-[20px] border px-3.5 text-[13.5px] font-medium transition ${
                       active
-                        ? 'border-[#173F32] bg-[#173F32] text-[#F7F4ED]'
-                        : 'border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#173F32]'
+                        ? 'border-[#0E1F3B] bg-[#0E1F3B] text-[#F8F5EE]'
+                        : 'border-[#D9D8CD] bg-white text-[#0E1F3B] hover:border-[#0E1F3B]'
                     }`}
                   >
                     {chip}
@@ -758,7 +758,7 @@ export function HomeMarketplaceExperience({
               When
             </label>
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#173F32]">
+              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#0E1F3B]">
                 <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#596B60]">
                   Check-in
                 </span>
@@ -768,11 +768,11 @@ export function HomeMarketplaceExperience({
                   min={todayIso}
                   value={checkIn}
                   onChange={event => handleCheckInChange(event.target.value)}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#173F32] focus:outline-none"
+                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#0E1F3B] focus:outline-none"
                 />
               </div>
 
-              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#173F32]">
+              <div className="rounded-[16px] border border-[#D9D8CD] bg-white px-3.5 py-2.5 focus-within:border-[#0E1F3B]">
                 <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#596B60]">
                   Check-out
                 </span>
@@ -782,7 +782,7 @@ export function HomeMarketplaceExperience({
                   min={minCheckOutIso}
                   value={checkOut}
                   onChange={event => setCheckOut(event.target.value)}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#173F32] focus:outline-none"
+                  className="mt-1 w-full border-0 bg-transparent p-0 text-base font-medium text-[#0E1F3B] focus:outline-none"
                 />
               </div>
             </div>
@@ -793,7 +793,7 @@ export function HomeMarketplaceExperience({
             </label>
             <div className="flex items-center justify-between rounded-[16px] border border-[#D9D8CD] bg-white px-4 py-3">
               <div>
-                <b className="block text-[15px] font-semibold text-[#173F32]">Guests</b>
+                <b className="block text-[15px] font-semibold text-[#0E1F3B]">Guests</b>
                 <small className="text-[12.5px] text-[#596B60]">Adults &amp; children</small>
               </div>
               <div className="flex items-center gap-3.5">
@@ -805,13 +805,13 @@ export function HomeMarketplaceExperience({
                     setGuestsTouched(true);
                     setGuests(prev => Math.max(1, prev - 1));
                   }}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#173F32] bg-white text-[20px] leading-none text-[#173F32] transition disabled:cursor-not-allowed disabled:opacity-35"
+                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#0E1F3B] bg-white text-[20px] leading-none text-[#0E1F3B] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   −
                 </button>
                 <output
                   aria-live="polite"
-                  className="min-w-[20px] text-center text-[17px] font-semibold text-[#173F32]"
+                  className="min-w-[20px] text-center text-[17px] font-semibold text-[#0E1F3B]"
                 >
                   {guests}
                 </output>
@@ -823,7 +823,7 @@ export function HomeMarketplaceExperience({
                     setGuestsTouched(true);
                     setGuests(prev => Math.min(10, prev + 1));
                   }}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#173F32] bg-white text-[20px] leading-none text-[#173F32] transition disabled:cursor-not-allowed disabled:opacity-35"
+                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#0E1F3B] bg-white text-[20px] leading-none text-[#0E1F3B] transition disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   +
                 </button>
@@ -835,14 +835,14 @@ export function HomeMarketplaceExperience({
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="min-h-[54px] cursor-pointer rounded-[27px] border border-[#173F32] bg-transparent px-[22px] text-[15px] font-semibold text-[#173F32] transition hover:bg-[#EEEAE0]"
+                className="min-h-[54px] cursor-pointer rounded-[27px] border border-[#0E1F3B] bg-transparent px-[22px] text-[15px] font-semibold text-[#0E1F3B] transition hover:bg-[#EEEAE0]"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={handleShowStays}
-                className="min-h-[54px] flex-1 cursor-pointer rounded-[27px] border-0 bg-[#173F32] px-5 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
+                className="min-h-[54px] flex-1 cursor-pointer rounded-[27px] border-0 bg-[#0E1F3B] px-5 text-[16px] font-semibold text-[#F8F5EE] transition hover:bg-[#1B3560]"
               >
                 Show stays
               </button>
@@ -861,7 +861,7 @@ export function HomeMarketplaceExperience({
             
             <h2
               id="neighbourhood-rail-heading"
-              className="mt-0 font-display text-[27px] font-medium tracking-tight text-[#173F32] sm:text-[34px]"
+              className="mt-0 font-display text-[27px] font-medium tracking-tight text-[#0E1F3B] sm:text-[34px]"
             >
               Explore Lagos neighbourhoods
             </h2>
@@ -978,7 +978,7 @@ export function HomeMarketplaceExperience({
         className="mx-auto max-w-[1320px] px-5 pt-5 pb-12 sm:px-8 lg:pt-8 lg:pb-20"
       >
         <div className="mb-6 flex items-baseline justify-between gap-3 lg:mb-8">
-          <h2 className="m-0 font-display text-[29px] font-medium leading-[1.12] tracking-tight text-[#173F32] lg:text-[38px]">
+          <h2 className="m-0 font-display text-[29px] font-medium leading-[1.12] tracking-tight text-[#0E1F3B] lg:text-[38px]">
             Verified stays
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#596B60]">
@@ -991,7 +991,7 @@ export function HomeMarketplaceExperience({
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#596B60]">
               Active filter:
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#173F32] px-3 py-1 text-xs font-semibold text-[#F7F4ED]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E1F3B] px-3 py-1 text-xs font-semibold text-[#F8F5EE]">
               {activeRailArea}
             </span>
             <button
@@ -1018,7 +1018,7 @@ export function HomeMarketplaceExperience({
 
         {displayedStays.length === 0 ? (
           <div className="rounded-[26px] border border-[#E8E6DD] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
-            <h3 className="font-display text-[22px] font-bold text-[#173F32]">
+            <h3 className="font-display text-[22px] font-bold text-[#0E1F3B]">
               {activeRailArea
                 ? `No verified stays in ${activeRailArea} right now`
                 : 'Verified stays are updating'}
@@ -1033,7 +1033,7 @@ export function HomeMarketplaceExperience({
                 <button
                   type="button"
                   onClick={() => syncRailAreaToUrl('')}
-                  className="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#173F32] px-6 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
+                  className="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-[#0E1F3B] px-6 text-sm font-semibold text-[#F8F5EE] transition hover:bg-[#1B3560]"
                 >
                   <RotateCcw className="h-4 w-4 shrink-0" />
                   <span>Clear filters</span>
@@ -1056,7 +1056,7 @@ export function HomeMarketplaceExperience({
         <div className="mt-[18px] lg:mt-7">
           <Link
             href="/stays"
-            className="flex min-h-[52px] w-full items-center justify-center rounded-[26px] border border-[#173F32] px-7 text-[15px] font-semibold text-[#173F32] transition hover:bg-[#173F32] hover:text-[#F7F4ED] sm:inline-flex sm:w-auto"
+            className="flex min-h-[52px] w-full items-center justify-center rounded-[26px] border border-[#0E1F3B] px-7 text-[15px] font-semibold text-[#0E1F3B] transition hover:bg-[#0E1F3B] hover:text-[#F8F5EE] sm:inline-flex sm:w-auto"
           >
             See all stays →
           </Link>
@@ -1066,27 +1066,27 @@ export function HomeMarketplaceExperience({
       {/* ── HAMLET editorial welcome and ecosystem strip ── */}
       <section className="mx-auto grid max-w-[1320px] gap-6 px-5 pt-10 pb-20 sm:px-8 lg:grid-cols-[1.2fr_.8fr] lg:gap-10 lg:pt-16">
         <div className="hamlet-depth relative overflow-hidden rounded-[18px] border border-[#E7E0D4] bg-[#F0ECE3] p-6 shadow-[0_14px_36px_rgba(43,49,39,.06)] sm:p-9">
-          <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#B58A52]/35" />
-          <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#B58A52]/35" />
-          <h2 className="serif mt-2 max-w-xl text-2xl font-medium leading-tight text-[#173F32] sm:text-3xl">A better stay starts with the details that matter.</h2>
+          <div className="absolute -right-10 -top-12 h-44 w-44 rounded-full border border-[#C9A44A]/35" />
+          <div className="absolute -right-2 -top-4 h-28 w-28 rounded-full border border-[#C9A44A]/35" />
+          <h2 className="serif mt-2 max-w-xl text-2xl font-medium leading-tight text-[#0E1F3B] sm:text-3xl">A better stay starts with the details that matter.</h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#596B60]">From who is authorised to host you to the practical details of each apartment, we make the important information easier to understand before you request.</p>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {VERIFICATION_PILLARS.map(item => (
-              <div key={item.num} className="border-t border-[#B58A52]/60 pt-3">
+              <div key={item.num} className="border-t border-[#C9A44A]/60 pt-3">
                 <span className="block text-[10px] font-bold tracking-widest text-[#987044]">{item.num}</span>
-                <b className="mt-1 block text-sm text-[#173F32]">{item.title}</b>
+                <b className="mt-1 block text-sm text-[#0E1F3B]">{item.title}</b>
                 <span className="mt-1 block text-[11px] leading-snug text-[#6C7D72]">{item.description}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[18px] border border-[#315B49] bg-[#173F32] p-6 text-[#F7F4ED] shadow-[0_18px_44px_rgba(16,45,36,.16)] sm:p-9">
+        <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[18px] border border-[#315B49] bg-[#0E1F3B] p-6 text-[#F8F5EE] shadow-[0_18px_44px_rgba(16,45,36,.16)] sm:p-9">
           <div>
               <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
             <p className="mt-3 text-sm leading-relaxed text-[#DADFD5]">Owners, managers and property professionals can bring quality stays to HAMLET and grow their business through a connected partner ecosystem.</p>
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href="/partners/apply" className="inline-flex min-h-11 items-center rounded-full bg-[#B58A52] px-5 text-sm font-bold text-[#102D24] transition hover:bg-[#D5B879]">Become a partner ↗</Link>
+            <Link href="/partners/apply" className="inline-flex min-h-11 items-center rounded-full bg-[#C9A44A] px-5 text-sm font-bold text-[#102D24] transition hover:bg-[#D5B879]">Become a partner ↗</Link>
             <Link href="/partners" className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-5 text-sm font-semibold text-white transition hover:bg-white/10">Partner workspace</Link>
           </div>
         </div>
