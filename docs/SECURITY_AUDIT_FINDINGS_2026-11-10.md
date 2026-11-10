@@ -55,6 +55,16 @@ This is an authorization boundary failure: an ordinary guest or partner could tr
 
 The migration is branch-only and has not been applied to production. Because booking lifecycle tests previously encoded the weaker behaviour, those tests were updated to assert the intended administrator-only boundary.
 
+## Central role predicate finding
+
+The production `public.has_role(text)` predicate checked the caller's profile role but did not require `account_status = 'active'`. Several SECURITY DEFINER RPCs and RLS policies rely on this shared predicate. The hardening branch updates it to require an active account and adds regression coverage for suspended partner and administrator accounts. The migration preserves authenticated and service-role execution while denying anonymous execution.
+
+## Remaining advisor findings
+
+- Leaked-password protection is disabled in Supabase Auth. This requires an Auth dashboard configuration change; no supported connected action was available to change it safely in this pass.
+- `pg_net` is installed in the `public` schema. Relocating the extension needs a dependency review and separate migration; it has not been moved.
+- The advisor reports `customer_email_notifications` as RLS-enabled with no policies. The live ACL confirms that neither `anon` nor `authenticated` has SELECT or INSERT privileges, so this is the intended server-only outbox boundary rather than an exposed table.
+
 ## Edge Function observations
 
 - `booking-notifications` is configured with platform JWT verification disabled, but its handler accepts either a validated internal dispatch secret or a bearer token that is checked with Supabase Auth and then authorized against the booking. Its service-role operations are behind that authorization path.
