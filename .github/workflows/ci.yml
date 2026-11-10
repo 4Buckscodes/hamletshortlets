@@ -32,6 +32,10 @@ jobs:
           cache: npm
       - name: Install dependencies cleanly from lockfile
         run: npm ci
+      - name: Dependency security audit
+        run: |
+          npm audit --json > npm-audit.json || true
+          node -e 'const report = require("./npm-audit.json"); const vulns = report.vulnerabilities || {}; console.log("Dependency audit summary:", JSON.stringify(report.metadata?.vulnerabilities || {})); for (const [name, item] of Object.entries(vulns)) console.log(JSON.stringify({ name, severity: item.severity, direct: item.isDirect, range: item.range, via: item.via, fixAvailable: item.fixAvailable }));'
       - name: Run linter
         run: npm run lint
       - name: TypeScript validation
