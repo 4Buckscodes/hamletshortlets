@@ -2812,7 +2812,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
       authListener.subscription.unsubscribe();
-    };  }, []);
+    };
+  }, []);
 
   useEffect(() => {
     if (isSupabaseConfigured) return;
