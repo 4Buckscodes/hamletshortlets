@@ -838,9 +838,6 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     suspensionReason: (profile.suspension_reason as string | undefined) ?? undefined,
   };
 
-  const { error: expiryError } = await supabase.rpc('expire_overdue_bookings');
-  if (expiryError) throw new Error(`Could not process expired booking deadlines: ${expiryError.message}`);
-
   const [
     profilesResult,
     propertyResult,
@@ -2812,30 +2809,10 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       window.setTimeout(() => { void load(session?.user ?? null); }, 0);
     });
-    const expiryTimer = window.setInterval(() => {
-      void (async () => {
-        const { data, error: sessionError } = await client.auth.getSession();
-        if (!active) return;
-        if (sessionError) {
-          setBackendError(`Could not check booking deadlines: ${sessionError.message}`);
-          return;
-        }
-        if (!data.session) return;
-        const { data: expiredCount, error } = await client.rpc('expire_overdue_bookings');
-        if (!active) return;
-        if (error) {
-          setBackendError(`Could not process expired booking deadlines: ${error.message}`);
-          return;
-        }
-        if (expiredCount > 0) void load(data.session.user);
-      })();
-    }, 60_000);
     return () => {
       active = false;
-      window.clearInterval(expiryTimer);
       authListener.subscription.unsubscribe();
-    };
-  }, []);
+    };  }, []);
 
   useEffect(() => {
     if (isSupabaseConfigured) return;
