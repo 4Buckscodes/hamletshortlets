@@ -155,12 +155,6 @@ export default function GuestBookingsPage() {
       return;
     }
 
-    // Opportunistically sweep expired 48h holds cleanly
-    await db.rpc('expire_overdue_bookings').then(
-      () => undefined,
-      () => undefined,
-    );
-
     const { data, error: queryError } = await db
       .from('bookings')
       .select(
