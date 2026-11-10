@@ -80,6 +80,10 @@ The Paystack initialization handler requires a bearer token, validates the user 
 
 The deployed Edge Function source could not be retrieved for direct version parity comparison in this pass. Treat the repository review as code evidence only, not proof that deployed functions match it.
 
+## Wayfinder storage / migration parity
+
+Production migration history does not include `20261024180000_hamlet_wayfinder_arrival_guidance.sql`, and the live Storage bucket inventory contains only the public `property-media` bucket. The Next.js code contains an `arrival-guide-media` upload and signed-URL path, but that private bucket and its RLS policies are not deployed in production. This currently presents a feature/deployment parity gap, not evidence that private arrival photos are exposed. Do not create the bucket manually or make it public; if Wayfinder is brought into scope, apply its complete private-bucket and table/RPC migration only after a staging rehearsal.
+
 ## Authentication architecture observations
 
 - The Next.js sign-in page uses the browser Supabase client for email/password and Google OAuth.
