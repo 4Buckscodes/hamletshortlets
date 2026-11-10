@@ -141,7 +141,7 @@ where id = 'booking-lifecycle-c';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select throws_ok(
-  $select public.expire_overdue_bookings()$,
+  'select public.expire_overdue_bookings()',
   'P0001',
   'Only active HAMLET administrators can process booking expiry.',
   'A guest cannot trigger the global booking expiry sweep'
@@ -149,7 +149,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $select public.expire_overdue_bookings()$,
+  'select public.expire_overdue_bookings()',
   'P0001',
   'Only active HAMLET administrators can process booking expiry.',
   'A partner cannot trigger the global booking expiry sweep'
