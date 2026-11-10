@@ -70,6 +70,25 @@ describe('HAMLET security RPC privilege boundaries', () => {
     }
   });
 
+  it('keeps payment confirmation RPC executable only by the trusted service role', async () => {
+    const { rows } = await db.query<{
+      anon_execute: boolean;
+      authenticated_execute: boolean;
+      service_execute: boolean;
+    }>(`
+      select
+        has_function_privilege('anon', 'public.confirm_booking_payment_webhook(text,text,text,integer,integer,text)', 'EXECUTE') as anon_execute,
+        has_function_privilege('authenticated', 'public.confirm_booking_payment_webhook(text,text,text,integer,integer,text)', 'EXECUTE') as authenticated_execute,
+        has_function_privilege('service_role', 'public.confirm_booking_payment_webhook(text,text,text,integer,integer,text)', 'EXECUTE') as service_execute
+    `);
+
+    expect(rows[0]).toEqual({
+      anon_execute: false,
+      authenticated_execute: false,
+      service_execute: true,
+    });
+  });
+
   it('does not treat suspended accounts as active role holders', async () => {
     const activePartnerId = await createTestUser(db, {
       email: 'active-partner.security@hamlet.test',
