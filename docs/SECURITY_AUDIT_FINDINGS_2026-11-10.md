@@ -59,6 +59,10 @@ The migration is branch-only and has not been applied to production. Because boo
 
 The production `public.has_role(text)` predicate checked the caller's profile role but did not require `account_status = 'active'`. Several SECURITY DEFINER RPCs and RLS policies rely on this shared predicate. The hardening branch updates it to require an active account and adds regression coverage for suspended partner and administrator accounts. The migration preserves authenticated and service-role execution while denying anonymous execution.
 
+## Dependency audit
+
+The initial lockfile audit found 2 high and 8 moderate advisories. Compatible PostCSS and Zod overrides were added and the generated lockfile was committed. The subsequent full audit reported **0 high and 7 moderate** advisories. The remaining moderate findings are in the development-only TypeScript ESLint / minimatch toolchain; npm identifies the suggested TypeScript ESLint remediation as a major-version change, so it has not been forced into the product branch. CI now fails if high-severity production dependency advisories reappear.
+
 ## Remaining advisor findings
 
 - Leaked-password protection is disabled in Supabase Auth. This requires an Auth dashboard configuration change; no supported connected action was available to change it safely in this pass.
