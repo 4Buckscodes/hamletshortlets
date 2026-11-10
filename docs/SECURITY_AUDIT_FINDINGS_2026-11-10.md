@@ -84,6 +84,10 @@ The deployed Edge Function source could not be retrieved for direct version pari
 
 Production migration history does not include `20261024180000_hamlet_wayfinder_arrival_guidance.sql`, and the live Storage bucket inventory contains only the public `property-media` bucket. The Next.js code contains an `arrival-guide-media` upload and signed-URL path, but that private bucket and its RLS policies are not deployed in production. This currently presents a feature/deployment parity gap, not evidence that private arrival photos are exposed. Do not create the bucket manually or make it public; if Wayfinder is brought into scope, apply its complete private-bucket and table/RPC migration only after a staging rehearsal.
 
+## Authentication error disclosure
+
+The sign-in, sign-up, password-reset, and OAuth flows previously passed some raw Supabase/Google provider errors to the browser UI. The hardening branch now normalizes those errors to generic actionable messages, including duplicate-account and invalid-credential cases, to avoid account-existence disclosure and raw provider diagnostics. Regression tests cover duplicate-account non-enumeration and suppression of unrecognized OAuth error descriptions.
+
 ## HTTP response headers
 
 The hardening branch adds baseline browser-facing response headers in Next.js configuration: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, strict-origin referrer policy, one-year HSTS, disabled legacy XSS filter, and a Permissions Policy allowing first-party camera/geolocation while denying microphone access. A browser regression test checks the headers. A Content Security Policy is deliberately not imposed yet because the complete third-party script, payment, OAuth, map, and image origin inventory must be verified first.
