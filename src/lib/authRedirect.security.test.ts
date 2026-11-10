@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildOAuthCallbackUrl,
+  formatAuthErrorMessage,
+  formatOAuthErrorMessage,
   resolveNextAppPostSignInRedirect,
   resolveOAuthPostAuthRedirect,
   resolvePostSignUpRedirect,
