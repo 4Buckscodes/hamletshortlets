@@ -30,6 +30,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Resolve compatible dependency security updates
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Upload resolved security lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: hamlet-security-package-lock
+          path: package-lock.json
+          if-no-files-found: error
       - name: Install dependencies cleanly from lockfile
         run: npm ci
       - name: Dependency security audit
