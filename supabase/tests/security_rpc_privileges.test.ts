@@ -13,6 +13,35 @@ describe('HAMLET security RPC privilege boundaries', () => {
     await db?.close();
   });
 
+  it('requires row level security on every public application table', async () => {
+    const { rows } = await db.query<{ table_name: string }>(`
+      select c.relname as table_name
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public'
+        and c.relkind = 'r'
+        and not c.relispartition
+        and not c.relrowsecurity
+      order by c.relname
+    `);
+
+    expect(rows).toEqual([]);
+  });
+
+  it('requires an explicit search_path on every public SECURITY DEFINER function', async () => {
+    const { rows } = await db.query<{ signature: string }>(`
+      select p.oid::regprocedure::text as signature
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public'
+        and p.prosecdef
+        and coalesce(array_to_string(p.proconfig, ','), '') not like '%search_path%'
+      order by 1
+    `);
+
+    expect(rows).toEqual([]);
+  });
+
   it('keeps trigger-only SECURITY DEFINER functions unavailable to API roles', async () => {
     const triggerOnlyFunctions = [
       'public.approve_partner_application()',
