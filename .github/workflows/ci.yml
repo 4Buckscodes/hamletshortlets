@@ -11,7 +11,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: hamlet-ci-${{ github.ref }}
@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,6 +34,20 @@ jobs:
           cache: npm
       - name: Resolve compatible dependency security updates
         run: npm install --package-lock-only --ignore-scripts
+      - name: Commit compatible security lockfile updates
+        if: github.ref_name == 'security/authentication-hardening'
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "No lockfile changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(deps): update patched security lockfile"
+          git push origin "HEAD:${BRANCH_NAME}"
       - name: Upload resolved security lockfile
         uses: actions/upload-artifact@v4
         with:
