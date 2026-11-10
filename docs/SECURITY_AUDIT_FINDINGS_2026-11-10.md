@@ -72,6 +72,14 @@ The production `public.has_role(text)` predicate checked the caller's profile ro
 - `admin-notifications-dispatch` follows the same secret-gated internal dispatch pattern and must remain inaccessible to ordinary browser callers.
 - Paystack webhook and initialization source retrieval through the Supabase function API was unavailable during this pass. The repository contains Paystack handler code and tests; inspect both source files and deployed versions before any payment-function change. A webhook may legitimately have platform JWT verification disabled only when its Paystack signature and payment confirmation checks are enforced in the handler.
 
+### Paystack source review (repository version)
+
+The repository's Paystack webhook handler verifies the `x-paystack-signature` HMAC against the raw request body before parsing it, accepts only `charge.success` with a successful charge status, validates a positive whole-Naira amount and NGN currency, and requires booking metadata. The payment-confirmation RPC is executable only by `service_role` in the inspected production ACL; its body checks booking state, deadline, approved property, date conflicts, expected settlement amount, duplicate provider references, and idempotent already-confirmed callbacks.
+
+The Paystack initialization handler requires a bearer token, validates the user through Supabase Auth, checks booking ownership and active guest status, verifies payment deadline/property state, and derives the amount from the database booking snapshot rather than trusting a client-supplied amount.
+
+The deployed Edge Function source could not be retrieved for direct version parity comparison in this pass. Treat the repository review as code evidence only, not proof that deployed functions match it.
+
 ## Authentication architecture observations
 
 - The Next.js sign-in page uses the browser Supabase client for email/password and Google OAuth.
