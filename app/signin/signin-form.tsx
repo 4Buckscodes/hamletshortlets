@@ -5,6 +5,7 @@ import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import {
   buildOAuthCallbackUrl,
   formatOAuthErrorMessage,
+  formatAuthErrorMessage,
   readRequestedRedirectFromSearch,
   resolveNextAppPostSignInRedirect,
   resolvePostSignUpRedirect,
@@ -205,11 +206,7 @@ export default function SignInForm() {
           'If an account exists for that email, a password reset link has been sent.',
         );
       } catch (caught) {
-        setError(
-          caught instanceof Error
-            ? caught.message
-            : 'Could not request a password reset right now.',
-        );
+        setError(formatAuthErrorMessage(caught));
       } finally {
         setBusy(false);
       }
@@ -253,11 +250,7 @@ export default function SignInForm() {
         }
       }
     } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : 'We could not complete that request. Please try again.',
-      );
+      setError(formatAuthErrorMessage(caught));
     } finally {
       setBusy(false);
     }
