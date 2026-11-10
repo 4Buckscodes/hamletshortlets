@@ -2909,7 +2909,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
             },
           },
         });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         if (!data.session) return { ok: true, needsEmailConfirmation: true };
         try {
           const remote = await loadSupabaseState(data.user);
@@ -2965,7 +2965,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (supabase) {
         const redirectTo = `${window.location.origin}${window.location.pathname}#/signin?mode=reset`;
         const { error } = await supabase.auth.resetPasswordForEmail(normalized, { redirectTo });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         return { ok: true };
       }
       return { ok: true };
@@ -2976,7 +2976,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       if (supabase) {
         const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         setPasswordRecoveryPending(false);
         return { ok: true };
       }
