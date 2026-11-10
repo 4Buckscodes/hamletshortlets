@@ -282,16 +282,23 @@ export function extractOAuthDisplayName(
  * Never return raw provider messages to the browser UI.
  */
 export function formatAuthErrorMessage(error: unknown): string {
+  const errorRecord = typeof error === 'object' && error !== null
+    ? error as { message?: unknown; code?: unknown }
+    : null;
   const raw = error instanceof Error
     ? error.message
     : typeof error === 'string'
       ? error
-      : '';
-  const message = raw.trim().toLowerCase();
+      : typeof errorRecord?.message === 'string'
+        ? errorRecord.message
+        : '';
+  const code = typeof errorRecord?.code === 'string' ? errorRecord.code : '';
+  const message = `${raw} ${code}`.trim().toLowerCase();
 
   if (
     message.includes('invalid login credentials') ||
     message.includes('invalid email or password') ||
+    message.includes('invalid_credentials') ||
     message.includes('email or password is incorrect')
   ) {
     return 'The email or password is incorrect. Check your details or reset your password.';
@@ -299,12 +306,14 @@ export function formatAuthErrorMessage(error: unknown): string {
   if (
     message.includes('user already registered') ||
     message.includes('already been registered') ||
+    message.includes('user_already_exists') ||
+    message.includes('email_exists') ||
     message.includes('user exists') ||
     message.includes('duplicate key')
   ) {
     return 'We could not create that account. Try signing in or resetting your password.';
   }
-  if (message.includes('rate limit') || message.includes('too many requests')) {
+  if (message.includes('rate limit') || message.includes('rate_limit') || message.includes('too many requests')) {
     return 'There have been too many attempts. Wait a moment, then try again.';
   }
   if (message.includes('email not confirmed') || message.includes('email_not_confirmed')) {
