@@ -41,22 +41,22 @@ const VERIFICATION_PILLARS = [
   {
     num: '01',
     title: 'Title & lease',
-    description: 'Ownership or tenancy rights checked.',
+    description: 'Recorded status of ownership or tenancy evidence.',
   },
   {
     num: '02',
     title: 'Host identity',
-    description: 'The person behind the listing is verified.',
+    description: 'Recorded identity-check status for the listing contact.',
   },
   {
     num: '03',
-    title: 'Authority',
-    description: 'Permission to let the property confirmed.',
+    title: 'Listing authority',
+    description: 'Recorded status of permission to list the property.',
   },
   {
     num: '04',
-    title: 'Inspection',
-    description: 'Visited in person in Lagos.',
+    title: 'Property inspection',
+    description: 'Recorded status of an in-person property inspection.',
   },
 ] as const;
 
@@ -1034,7 +1034,8 @@ export function HomeMarketplaceExperience({
             Stays across Lagos
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#4A5468]">
-            {displayedStays.length} available · {currencyLabel}
+            {displayedStays.length} approved{' '}
+            {displayedStays.length === 1 ? 'listing' : 'listings'} · {currencyLabel}
           </span>
         </div>
 
@@ -1117,9 +1118,12 @@ export function HomeMarketplaceExperience({
       <section className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
-            Verified before it’s bookable
+            Listing checks, explained
           </h2>
         </div>
+        <p className="mb-4 max-w-2xl text-[13px] leading-relaxed text-[#4A5468]">
+          Each approved stay shows its recorded outcome for these checks. Some may be pending or not yet provided; open a listing to see its details.
+        </p>
 
         <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
           {VERIFICATION_PILLARS.map(pillar => (

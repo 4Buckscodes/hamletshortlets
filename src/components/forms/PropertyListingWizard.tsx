@@ -56,22 +56,22 @@ export interface PropertyWizardValues {
 
 const DEFAULT_VALUES: PropertyWizardValues = {
   title: '',
-  propertyType: 'Apartment',
-  area: 'Victoria Island',
+  propertyType: '',
+  area: '',
   address: '',
-  bedrooms: 2,
-  bathrooms: 2,
-  capacity: 4,
-  bedSetup: '2 queen beds',
+  bedrooms: 0,
+  bathrooms: 0,
+  capacity: 0,
+  bedSetup: '',
   imageUrls: [],
-  amenities: ['24/7 Estate Power', 'Fibre Wi-Fi', 'Air Conditioning', 'Gated Security'],
-  houseRulesText: 'No smoking indoors\nNo unauthorised parties or events',
-  nightlyRate: 120000,
-  cleaningFee: 25000,
-  deposit: 100000,
+  amenities: [],
+  houseRulesText: '',
+  nightlyRate: 0,
+  cleaningFee: 0,
+  deposit: 0,
   firstAvailableDate: '',
   calendarResponsiblePerson: '',
-  submittedRole: 'Property owner',
+  submittedRole: '',
   authorityBasis: '',
   correctionNote: '',
 };
@@ -279,6 +279,12 @@ export function PropertyListingWizard({
 
   function validateCurrentStep(targetStep: number, forDraft = false): string | null {
     if (targetStep === 0) {
+      if (!values.propertyType) {
+        return 'Choose the property type.';
+      }
+      if (!values.area) {
+        return 'Choose the Lagos neighbourhood.';
+      }
       if (values.title.trim().length < 8) {
         return 'Enter a clear listing title with at least 8 characters.';
       }
@@ -287,8 +293,17 @@ export function PropertyListingWizard({
       }
     }
     if (targetStep === 1) {
-      if (values.capacity < 1 || values.capacity > 50) {
-        return 'Guest capacity must be between 1 and 50.';
+      if (values.bedrooms < 0 || values.bedrooms > 20) {
+        return 'Bedrooms must be between 0 and 20.';
+      }
+      if (values.bedrooms === 0 && values.propertyType !== 'Studio') {
+        return 'Record at least one bedroom, or choose Studio for an open-plan layout.';
+      }
+      if (values.bathrooms < 1 || values.bathrooms > 20) {
+        return 'Bathrooms must be between 1 and 20.';
+      }
+      if (values.capacity < 1 || values.capacity > 30) {
+        return 'Guest capacity must be between 1 and 30.';
       }
     }
     if (targetStep === 2) {
@@ -308,6 +323,9 @@ export function PropertyListingWizard({
       }
     }
     if (targetStep === 6 && !forDraft) {
+      if (!values.submittedRole) {
+        return 'Choose your relationship to this property.';
+      }
       if (values.authorityBasis.trim().length < 9) {
         return 'Briefly explain your ownership or management mandate (at least 9 characters).';
       }
@@ -512,6 +530,7 @@ export function PropertyListingWizard({
                 {fieldProps => (
                   <select
                     {...fieldProps}
+                    required
                     value={values.propertyType}
                     onChange={e =>
                       setValues(prev => ({
@@ -521,6 +540,9 @@ export function PropertyListingWizard({
                     }
                     className={FIELD_INPUT_CLASS}
                   >
+                    <option value="" disabled>
+                      Select a property type
+                    </option>
                     {PROPERTY_TYPES.map(pt => (
                       <option key={pt} value={pt}>
                         {pt}
@@ -534,12 +556,16 @@ export function PropertyListingWizard({
                 {fieldProps => (
                   <select
                     {...fieldProps}
+                    required
                     value={values.area}
                     onChange={e =>
                       setValues(prev => ({ ...prev, area: e.target.value }))
                     }
                     className={FIELD_INPUT_CLASS}
                   >
+                    <option value="" disabled>
+                      Select a Lagos neighbourhood
+                    </option>
                     {LAGOS_AREAS.map(area => (
                       <option key={area} value={area}>
                         {area}
@@ -583,10 +609,11 @@ export function PropertyListingWizard({
           <div className="space-y-3">
             <StepperCounter
               label="Bedrooms"
-              hint="Set 0 for an open-plan studio."
+              hint="Choose Studio and leave at 0 for an open-plan layout."
               value={values.bedrooms}
               min={0}
               max={20}
+              zeroLabel={values.propertyType === 'Studio' ? 'Studio' : 'Select'}
               onChange={n => setValues(prev => ({ ...prev, bedrooms: n }))}
             />
             <StepperCounter
@@ -594,6 +621,7 @@ export function PropertyListingWizard({
               value={values.bathrooms}
               min={1}
               max={20}
+              zeroLabel="Select"
               onChange={n => setValues(prev => ({ ...prev, bathrooms: n }))}
             />
             <StepperCounter
@@ -601,6 +629,7 @@ export function PropertyListingWizard({
               value={values.capacity}
               min={1}
               max={30}
+              zeroLabel="Select"
               onChange={n => setValues(prev => ({ ...prev, capacity: n }))}
             />
 
@@ -743,57 +772,63 @@ export function PropertyListingWizard({
               </FormField>
             </div>
 
-            {/* Live Central Pricing Preview */}
+            {/* Central pricing preview, calculated only from the owner's current inputs. */}
             <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-xs">
               <p className="m-0 font-extrabold uppercase tracking-wider text-brass-700">
-                Live pricing preview (sample 3-night stay)
+                Guest quote preview · 3 nights
               </p>
-              <div className="mt-3 space-y-1.5 text-ink-700">
-                <div className="flex justify-between gap-2">
-                  <span>Owner accommodation rate (3 nights)</span>
-                  <strong className="font-mono text-ink-900">
-                    ₦{samplePricing.ownerAccommodationRateNgn.toLocaleString('en-NG')}
-                  </strong>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span>HAMLET guest service fee (20% of owner rate)</span>
-                  <strong className="font-mono text-ink-900">
-                    ₦{samplePricing.guestServiceFeeNgn.toLocaleString('en-NG')}
-                  </strong>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span>Displayed guest nightly stay rate (includes 20% fee)</span>
-                  <strong className="font-mono text-ink-900">
-                    {formatPrice(guestFacingNightlyNgn(values.nightlyRate || 0))} / night
-                  </strong>
-                </div>
-                {samplePricing.mandatoryChargesTotal > 0 && (
+              {values.nightlyRate >= 1000 ? (
+                <div className="mt-3 space-y-1.5 text-ink-700">
                   <div className="flex justify-between gap-2">
-                    <span>Mandatory cleaning / turnover charges</span>
-                    <span className="font-mono font-semibold text-ink-900">
-                      {formatPrice(samplePricing.mandatoryChargesTotal)}
-                    </span>
+                    <span>Owner accommodation rate (3 nights)</span>
+                    <strong className="font-mono text-ink-900">
+                      ₦{samplePricing.ownerAccommodationRateNgn.toLocaleString('en-NG')}
+                    </strong>
                   </div>
-                )}
-                <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
-                  <span>Guest-facing stay total (3 nights, fee included once)</span>
-                  <span className="font-mono">
-                    {formatPrice(samplePricing.guestFacingTotalNgn)}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-2 pt-1 text-ink-500">
-                  <span>Estimated local Paystack processing cost (provider reference, separate from 20% fee)</span>
-                  <span className="font-mono">{formatPrice(samplePaystackFee.estimatedFeeNgn)}</span>
-                </div>
-                {samplePricing.refundableDeposit > 0 && (
-                  <div className="flex justify-between gap-2 text-ink-500">
-                    <span>Separate refundable caution deposit (excluded from stay price)</span>
+                  <div className="flex justify-between gap-2">
+                    <span>HAMLET guest service fee (20% of owner rate)</span>
+                    <strong className="font-mono text-ink-900">
+                      ₦{samplePricing.guestServiceFeeNgn.toLocaleString('en-NG')}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span>Displayed guest nightly stay rate (includes 20% fee)</span>
+                    <strong className="font-mono text-ink-900">
+                      {formatPrice(guestFacingNightlyNgn(values.nightlyRate))} / night
+                    </strong>
+                  </div>
+                  {samplePricing.mandatoryChargesTotal > 0 && (
+                    <div className="flex justify-between gap-2">
+                      <span>Mandatory cleaning / turnover charges</span>
+                      <span className="font-mono font-semibold text-ink-900">
+                        {formatPrice(samplePricing.mandatoryChargesTotal)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
+                    <span>Guest-facing stay total (3 nights, fee included once)</span>
                     <span className="font-mono">
-                      {formatCautionDeposit(samplePricing.refundableDeposit)}
+                      {formatPrice(samplePricing.guestFacingTotalNgn)}
                     </span>
                   </div>
-                )}
-              </div>
+                  <div className="flex justify-between gap-2 pt-1 text-ink-500">
+                    <span>Estimated local Paystack processing cost (provider reference, separate from 20% fee)</span>
+                    <span className="font-mono">{formatPrice(samplePaystackFee.estimatedFeeNgn)}</span>
+                  </div>
+                  {samplePricing.refundableDeposit > 0 && (
+                    <div className="flex justify-between gap-2 text-ink-500">
+                      <span>Separate refundable caution deposit (excluded from stay price)</span>
+                      <span className="font-mono">
+                        {formatCautionDeposit(samplePricing.refundableDeposit)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="m-0 mt-3 rounded-xl border border-dashed border-ink-200 bg-white/70 p-3 text-[11px] leading-relaxed text-ink-600">
+                  Enter the actual owner-agreed nightly rate to calculate a guest quote from HAMLET&apos;s current pricing rules. This preview uses your inputs only; nothing is published here.
+                </p>
+              )}
               <p className="m-0 mt-3 border-t border-ink-200 pt-3 text-[11px] leading-relaxed text-ink-600">
                 {APPROVED_OWNER_SERVICES_POLICY_COPY}
               </p>

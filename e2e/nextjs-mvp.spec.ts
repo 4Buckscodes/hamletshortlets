@@ -58,6 +58,37 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     }
   });
 
+  test('walks the owner listing wizard with explicitly entered facts at mobile and desktop sizes', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem('hamlet:property-wizard:new:v2');
+    });
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/partners/properties/new');
+      await expect(
+        page.getByRole('heading', { name: /Submit a Lagos stay/i }),
+      ).toBeVisible();
+
+      await expect(page.getByLabel('Property type')).toHaveValue('');
+      await expect(page.getByLabel('Lagos neighbourhood')).toHaveValue('');
+      await page.getByLabel('Listing title').fill('Owner supplied apartment in Yaba');
+      await page.getByLabel('Property type').selectOption('Apartment');
+      await page.getByLabel('Lagos neighbourhood').selectOption('Yaba');
+      await page
+        .getByLabel('Public street, estate or landmark summary')
+        .fill('Near Herbert Macaulay Way, Yaba, Lagos');
+      await page.getByRole('button', { name: 'Save & continue' }).click();
+
+      await page.getByRole('button', { name: 'Increase Bedrooms' }).click();
+      await page.getByRole('button', { name: 'Increase Bathrooms' }).click();
+      await page.getByRole('button', { name: 'Increase Maximum guests' }).click();
+      await page.getByRole('button', { name: 'Save & continue' }).click();
+      await expect(page.getByText(/Property photos & cover order/i)).toBeVisible();
+    }
+  });
+
   test('applies compiled Tailwind CSS responsive breakpoints and HAMLET theme styles', async ({
     page,
   }) => {
@@ -251,7 +282,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
     // 4-pillar verification grid on homepage
     await expect(
-      mobilePage.getByRole('heading', { name: /Verified before it’s bookable/i }),
+      mobilePage.getByRole('heading', { name: /Listing checks, explained/i }),
     ).toBeVisible();
 
     // Mobile full-screen navigation drawer

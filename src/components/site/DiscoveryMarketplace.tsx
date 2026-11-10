@@ -702,9 +702,9 @@ export function DiscoveryMarketplace({
               ? 'Marketplace temporarily unavailable'
               : approvedStays.length === 0
                 ? 'No stays published yet'
-                : `${filteredApproved.length} ${
+                : `${filteredApproved.length} approved ${
                     filteredApproved.length === 1 ? 'stay' : 'stays'
-                  } available`}
+                  } match your filters`}
             {filters.area ? ` in ${filters.area}` : ''}
           </p>
 

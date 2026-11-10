@@ -15,6 +15,8 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain(
       'Island or Mainland, pick your side of the lagoon. Check each listing’s recorded review outcomes before you request a stay.',
     );
+    expect(homeSource).not.toContain('Verified before it’s bookable');
+    expect(homeSource).not.toContain('{displayedStays.length} available');
   });
 
   it('includes the Deep Navy (#0E1F3B) hero with the skyscraper & bridge skyline SVG while keeping the cream search pill and Find a stay sheet untouched', () => {
@@ -67,12 +69,13 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('View stay →');
     expect(homeSource).toContain('See all stays →');
 
-    // 4-pillar verification grid
-    expect(homeSource).toContain('Verified before it’s bookable');
+    // Listing-level verification outcomes stay explicit without implying every check is complete.
+    expect(homeSource).toContain('Listing checks, explained');
+    expect(homeSource).toContain('Each approved stay shows its recorded outcome for these checks.');
     expect(homeSource).toContain('Title & lease');
     expect(homeSource).toContain('Host identity');
-    expect(homeSource).toContain('Authority');
-    expect(homeSource).toContain('Inspection');
+    expect(homeSource).toContain('Listing authority');
+    expect(homeSource).toContain('Property inspection');
 
     // Partner banner with gold CTA
     expect(homeSource).toContain('Property Owners &amp; Managers');
@@ -115,5 +118,38 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(siteShell).toContain(
       'Bookings confirm only after partner acceptance and server-verified payment.',
     );
+  });
+
+  it('uses honest discovery counts and clear booking price/confirmation terms', () => {
+    const discovery = readRepoFile('src/components/site/DiscoveryMarketplace.tsx');
+    const booking = readRepoFile('app/stays/[id]/booking-request-form.tsx');
+
+    expect(discovery).toContain('match your filters');
+    expect(discovery).not.toContain('} available`');
+    expect(booking).toContain('Guest nightly rate');
+    expect(booking).toContain('20% guest service fee');
+    expect(booking).toContain('Stay total excludes the caution deposit.');
+    expect(booking).toContain('Sending a request is free');
+    expect(booking).toContain('48-hour Paystack payment window');
+    expect(booking).not.toContain('All-in stay rate');
+  });
+
+  it('starts owner submissions from blank real-world inputs instead of example listing data', () => {
+    const wizard = readRepoFile('src/components/forms/PropertyListingWizard.tsx');
+
+    expect(wizard).toContain("propertyType: ''");
+    expect(wizard).toContain("area: ''");
+    expect(wizard).toContain('bedrooms: 0');
+    expect(wizard).toContain('bathrooms: 0');
+    expect(wizard).toContain('capacity: 0');
+    expect(wizard).toContain('nightlyRate: 0');
+    expect(wizard).toContain('amenities: []');
+    expect(wizard).not.toContain('nightlyRate: 120000');
+    expect(wizard).not.toContain('cleaningFee: 25000');
+    expect(wizard).not.toContain('deposit: 100000');
+    expect(wizard).toContain('Choose the Lagos neighbourhood.');
+    expect(wizard).toContain('Choose the property type.');
+    expect(wizard).toContain('Record at least one bedroom, or choose Studio');
+    expect(wizard).toContain('Enter the actual owner-agreed nightly rate');
   });
 });

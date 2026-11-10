@@ -437,6 +437,9 @@ export default function BookingRequestForm({
         {/* Authoritative Price Breakdown (`src/lib/pricing.ts`) */}
         {nights > 0 && domesticNightly !== null && (
           <div className="space-y-2 rounded-2xl border border-ink-200 bg-paper/60 p-4 text-xs">
+            <p className="m-0 text-[11px] leading-relaxed text-ink-600">
+              The guest nightly rate includes HAMLET&apos;s 20% guest service fee. Cleaning is itemised separately below.
+            </p>
             <div className="flex justify-between gap-2 text-ink-700">
               <span>
                 Stay ({formatPrice(domesticNightly, { roundWhole: true })} × {nights}{' '}
@@ -458,12 +461,15 @@ export default function BookingRequestForm({
             </div>
             {deposit > 0 && (
               <div className="flex justify-between gap-2 pt-1 text-ink-600">
-                <span>Refundable caution deposit</span>
+                <span>Refundable caution deposit · separate</span>
                 <span className="font-mono font-semibold">
                   {formatCautionDeposit(deposit)}
                 </span>
               </div>
             )}
+            <p className="m-0 border-t border-ink-100 pt-2 text-[11px] leading-relaxed text-ink-500">
+              Stay total excludes the caution deposit. Sending a request is free; a 48-hour Paystack payment window opens only after partner confirmation.
+            </p>
             {currency !== 'NGN' && (
               <p className="m-0 pt-1 text-[11px] leading-relaxed text-ink-500">
                 {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
@@ -499,7 +505,7 @@ export default function BookingRequestForm({
       <div className="rounded-3xl border border-ink-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-4 flex items-baseline justify-between gap-2 border-b border-ink-100 pb-4">
           <div>
-            <p className="m-0 text-xs font-semibold text-ink-500">All-in stay rate</p>
+            <p className="m-0 text-xs font-semibold text-ink-500">Guest nightly rate</p>
             <p className="m-0 mt-0.5 font-mono text-2xl font-extrabold text-ink-900">
               {domesticNightly !== null ? (
                 <>
@@ -517,7 +523,7 @@ export default function BookingRequestForm({
           </div>
           {deposit > 0 && (
             <span className="rounded-full bg-paper px-3 py-1 text-[11px] font-bold text-ink-700">
-              Caution: {formatCautionDeposit(deposit, { roundWhole: true })}
+              Refundable caution: {formatCautionDeposit(deposit, { roundWhole: true })}
             </span>
           )}
         </div>
@@ -546,7 +552,9 @@ export default function BookingRequestForm({
               )}
             </p>
             <p className="m-0 truncate text-[11px] text-ink-500">
-              Partner confirms before payment
+              {deposit > 0
+                ? `Caution ${formatCautionDeposit(deposit)} is separate · partner confirms first`
+                : 'Partner confirms before payment'}
             </p>
           </div>
           <button
