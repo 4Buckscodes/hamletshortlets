@@ -32,6 +32,7 @@ import {
   buildPartnerReferralCode, evaluateReferralOnBookingCompletion, normalizeReferralCode,
 } from './referrals';
 import { extractEdgeFunctionError, isSupabaseConfigured, supabase } from './supabase';
+import { formatAuthErrorMessage } from './authRedirect';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const PARTNER_REF_STORAGE_KEY = 'hamlet_partner_ref_code_v1';
@@ -2871,7 +2872,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     signIn: async (email, password) => {
       if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         try {
           const remote = await loadSupabaseState(data.user);
           dispatch({ type: 'HYDRATE', state: remote });
@@ -3028,7 +3029,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
               },
             },
           });
-          if (signUpError) return { ok: false, error: signUpError.message };
+          if (signUpError) return { ok: false, error: formatAuthErrorMessage(signUpError) };
           if (!signUpData.session || !signUpData.user) {
             return { ok: true, needsEmailConfirmation: true };
           }
