@@ -88,8 +88,12 @@ describe('HAMLET security RPC privilege boundaries', () => {
     });
 
     await db.query(
-      `update public.profiles set account_status = 'suspended' where id = any($1::uuid[])`,
-      [[suspendedPartnerId, suspendedAdminId]],
+      `update public.profiles set account_status = 'suspended' where id = $1::uuid`,
+      [suspendedPartnerId],
+    );
+    await db.query(
+      `update public.profiles set account_status = 'suspended' where id = $1::uuid`,
+      [suspendedAdminId],
     );
 
     const activePartner = await asUser(db, activePartnerId, tx =>
