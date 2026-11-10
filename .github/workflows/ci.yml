@@ -35,7 +35,7 @@ jobs:
       - name: Resolve compatible dependency security updates
         run: npm install --package-lock-only --ignore-scripts
       - name: Commit compatible security lockfile updates
-        if: github.ref_name == 'security/authentication-hardening'
+        if: github.head_ref == 'security/authentication-hardening' || github.ref_name == 'security/authentication-hardening'
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
