@@ -50,6 +50,21 @@ describe('HAMLET authentication redirect security', () => {
     expect(resolveNextAppPostSignInRedirect('admin', '/partners/bookings')).toBe('/admin');
   });
 
+  it('normalizes authentication errors without exposing account existence', () => {
+    const duplicateAccountMessage = formatAuthErrorMessage('User already registered');
+    expect(duplicateAccountMessage).not.toMatch(/registered|exists|already/i);
+    expect(duplicateAccountMessage).toContain('signing in');
+
+    const invalidCredentialsMessage = formatAuthErrorMessage('Invalid login credentials');
+    expect(invalidCredentialsMessage).toContain('email or password is incorrect');
+  });
+
+  it('does not echo unrecognized OAuth provider error descriptions', () => {
+    const message = formatOAuthErrorMessage(null, 'internal provider stack trace: secret-token-123');
+    expect(message).not.toContain('secret-token-123');
+    expect(message).not.toContain('stack trace');
+  });
+
   it('keeps OAuth callback destinations on the supplied HAMLET origin', () => {
     expect(buildOAuthCallbackUrl('https://www.hamlet.rest/', {
       intent: 'signup',
