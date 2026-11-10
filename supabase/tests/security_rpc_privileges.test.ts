@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createMigratedTestDb } from './helpers/testDb';
+import { asUser, createMigratedTestDb, createTestUser } from './helpers/testDb';
 
 describe('HAMLET security RPC privilege boundaries', () => {
   let db: PGlite;
@@ -68,6 +68,43 @@ describe('HAMLET security RPC privilege boundaries', () => {
 
       expect(rows[0]?.anon_execute, signature).toBe(true);
     }
+  });
+
+  it('does not treat suspended accounts as active role holders', async () => {
+    const activePartnerId = await createTestUser(db, {
+      email: 'active-partner.security@hamlet.test',
+      fullName: 'Active Partner',
+      role: 'partner',
+    });
+    const suspendedPartnerId = await createTestUser(db, {
+      email: 'suspended-partner.security@hamlet.test',
+      fullName: 'Suspended Partner',
+      role: 'partner',
+    });
+    const suspendedAdminId = await createTestUser(db, {
+      email: 'suspended-admin.security@hamlet.test',
+      fullName: 'Suspended Admin',
+      role: 'admin',
+    });
+
+    await db.query(
+      `update public.profiles set account_status = 'suspended' where id = any($1::uuid[])`,
+      [[suspendedPartnerId, suspendedAdminId]],
+    );
+
+    const activePartner = await asUser(db, activePartnerId, tx =>
+      tx.query<{ has_role: boolean }>(`select public.has_role('partner')`),
+    );
+    const suspendedPartner = await asUser(db, suspendedPartnerId, tx =>
+      tx.query<{ has_role: boolean }>(`select public.has_role('partner')`),
+    );
+    const suspendedAdmin = await asUser(db, suspendedAdminId, tx =>
+      tx.query<{ has_role: boolean }>(`select public.has_role('admin')`),
+    );
+
+    expect(activePartner.rows[0]?.has_role).toBe(true);
+    expect(suspendedPartner.rows[0]?.has_role).toBe(false);
+    expect(suspendedAdmin.rows[0]?.has_role).toBe(false);
   });
 
   it('keeps the customer email outbox inaccessible to anon and authenticated table clients', async () => {
