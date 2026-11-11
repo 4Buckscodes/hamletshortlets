@@ -9,7 +9,7 @@ One app with role-aware experiences for guests, owners, property managers and ag
 ## Local setup
 
 1. Install Node.js 22.13 or newer.
-2. Copy .env.example to .env and provide the existing HAMLET Supabase project URL and publishable key.
+2. Copy .env.example to .env and provide the existing HAMLET Supabase project URL, publishable key and API origin.
 3. Run npm install.
 4. Run npx expo install --fix to align SDK-managed dependencies.
 5. Run npx expo-doctor.
@@ -36,4 +36,4 @@ One app with role-aware experiences for guests, owners, property managers and ag
 
 ## Current implementation status
 
-Initial project configuration, navigation shell, discovery landing screen, empty states, partner entry point and Supabase client are being scaffolded. Live listings, authentication, booking, payments and partner APIs remain to be integrated and tested.
+Initial project configuration, navigation shell, discovery landing screen, partner entry point, Supabase client and approved public stays API integration are scaffolded. Live authentication, property detail, booking, payments and partner workflows remain to be integrated and tested. The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
