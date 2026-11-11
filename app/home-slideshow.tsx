@@ -426,112 +426,81 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
 
 function ThreeDStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
+  const railRef = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const pointerStart = useRef<number | null>(null);
   const count = stays.length;
 
-  const move = (direction: number) => {
-    if (count < 2) return;
-    setActiveIndex(current => (current + direction + count) % count);
+  const scrollToCard = (direction: number) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const card = rail.querySelector<HTMLElement>('[data-stay-slide]');
+    const step = card ? card.getBoundingClientRect().width + 20 : rail.clientWidth * 0.86;
+    rail.scrollBy({ left: direction * step, behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    if (count < 2 || paused) return;
-    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (motionPreference.matches) return;
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        setActiveIndex(current => (current + 1) % count);
-      }
-    }, 6200);
-    return () => window.clearInterval(timer);
-  }, [count, paused]);
-
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (pointerStart.current === null) return;
-    const distance = event.clientX - pointerStart.current;
-    pointerStart.current = null;
-    if (Math.abs(distance) > 42) move(distance < 0 ? 1 : -1);
+  const updateActive = () => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const card = rail.querySelector<HTMLElement>('[data-stay-slide]');
+    if (!card) return;
+    const step = card.getBoundingClientRect().width + 20;
+    setActiveIndex(Math.min(count - 1, Math.max(0, Math.round(rail.scrollLeft / step))));
   };
 
   if (count === 0) return null;
 
   return (
-    <div
-      className="relative mx-auto w-full max-w-[1180px]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
-    >
+    <section className="mx-auto w-full max-w-[1180px]" aria-label="Featured verified Lagos stays">
       <div
-        className="relative h-[610px] touch-pan-y select-none sm:h-[650px] lg:h-[675px]"
-        style={{ perspective: '1500px' }}
-        onPointerDown={event => { pointerStart.current = event.clientX; }}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={() => { pointerStart.current = null; }}
-        aria-roledescription="carousel"
-        aria-label="Featured verified Lagos stays"
+        ref={railRef}
+        onScroll={updateActive}
+        className="hamlet-stay-rail flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-[7%] pb-3 pt-1 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2]"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
       >
-        {stays.map((stay, index) => {
-          let offset = index - activeIndex;
-          if (offset > count / 2) offset -= count;
-          if (offset < -count / 2) offset += count;
-          const visible = Math.abs(offset) <= 1;
-          return (
-            <div
-              key={stay.id}
-              aria-hidden={!visible}
-              className="absolute left-1/2 top-0 w-[86%] max-w-[430px] origin-center transition-[transform,opacity,filter] duration-700 ease-[cubic-bezier(.2,.75,.25,1)] sm:w-[62%] lg:w-[430px]"
-              style={{
-                transform: 'translate3d(calc(-50% + ' + (offset * 62) + '%), 0, ' + (offset === 0 ? 0 : -135) + 'px) rotateY(' + (offset * -20) + 'deg) scale(' + (offset === 0 ? 1 : 0.86) + ')',
-                opacity: visible ? (offset === 0 ? 1 : 0.72) : 0,
-                filter: offset === 0 ? 'none' : 'saturate(.78) brightness(.88)',
-                zIndex: 10 - Math.abs(offset),
-                pointerEvents: offset === 0 ? 'auto' : visible ? 'auto' : 'none',
-                transformStyle: 'preserve-3d',
-              }}
-            >
-              <HomepageStayCard property={stay} />
-            </div>
-          );
-        })}
+        {stays.map((stay) => (
+          <div
+            key={stay.id}
+            data-stay-slide
+            className="w-[86%] max-w-[430px] shrink-0 snap-center sm:w-[430px] lg:w-[390px]"
+          >
+            <HomepageStayCard property={stay} />
+          </div>
+        ))}
       </div>
 
-      <div className="-mt-1 flex items-center justify-between gap-4 px-1 sm:px-4">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#8B6B36]">The HAMLET edit</p>
-          <p className="mt-1 text-sm font-medium text-[#5D6577]">
-            {String(activeIndex + 1).padStart(2, '0')} <span className="mx-1 text-[#C9A45C]">/</span> {String(count).padStart(2, '0')} stays
+      <div className="mt-5 flex items-center justify-between gap-4 px-1 sm:px-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#8B6B36]">The HAMLET edit</p>
+          <span className="h-px w-8 bg-[#D8CDBB]" />
+          <p className="text-xs tabular-nums text-[#6C756F]">
+            {String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={() => move(-1)}
-            disabled={count < 2}
+            onClick={() => scrollToCard(-1)}
+            disabled={activeIndex === 0}
             aria-label="Previous featured stay"
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D8CDBB] bg-white text-[#1C2437] shadow-sm transition hover:border-[#C9A45C] hover:bg-[#F6F1E7] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D8CDBB] bg-transparent text-[#1C2437] transition-colors hover:border-[#1C2437] disabled:opacity-30"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
-            onClick={() => move(1)}
-            disabled={count < 2}
+            onClick={() => scrollToCard(1)}
+            disabled={activeIndex >= count - 1}
             aria-label="Next featured stay"
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[#1C2437] text-[#F6F1E7] shadow-md transition hover:bg-[#2C3854] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#1C2437] bg-[#1C2437] text-white transition-colors hover:bg-[#34483D] disabled:opacity-30"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <p className="mt-3 text-center text-[11px] text-[#7A7F87] sm:hidden">Swipe to rotate through stays</p>
-    </div>
+      <p className="mt-2 text-center text-[11px] text-[#7A7F87] sm:hidden">Swipe to explore stays</p>
+    </section>
   );
 }
-
 export function HomeMarketplaceExperience({
   approvedStays,
   queryError = null,
