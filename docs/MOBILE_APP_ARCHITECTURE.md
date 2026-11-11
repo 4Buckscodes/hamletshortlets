@@ -11,6 +11,10 @@ The mobile app lives in apps/mobile as a separately built Expo application. The 
 
 Do not create a second database, fork booking logic or duplicate the pricing engine.
 
+## Current pilot geography
+
+The currently deployed marketplace has a Lagos-only geography guard. The mobile app must not present Abuja or Ibadan as bookable markets until the backend policy, property intake validation, search filters and operational support are expanded and tested. The mobile discovery shell therefore treats Lagos as available and other cities as coming later.
+
 ## Product surfaces
 
 1. Guest: explore, search, property details, booking request, checkout, booking status, receipts, support and reviews.
