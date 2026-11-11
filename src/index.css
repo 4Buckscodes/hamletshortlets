@@ -6,42 +6,42 @@
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Inter Variable", monospace;
 
   /* HAMLET signature identity — Midnight Navy and Slate */
-  --color-ink-950: #091528;
-  --color-ink-900: #0E1F3B;
-  --color-ink-850: #13284C;
-  --color-ink-800: #1B3560;
-  --color-ink-700: #2B4875;
-  --color-ink-600: #475569;
-  --color-ink-500: #64748B;
-  --color-ink-400: #8595AB;
-  --color-ink-300: #CBD5E1;
-  --color-ink-200: #DCE2EC;
-  --color-ink-100: #E8E4DA;
-  --color-ink-50: #F4F6F9;
+  --color-ink-950: #161D2D;
+  --color-ink-900: #1C2437;
+  --color-ink-850: #232D45;
+  --color-ink-800: #2C3854;
+  --color-ink-700: #38466A;
+  --color-ink-600: #5D6577;
+  --color-ink-500: #5D6577;
+  --color-ink-400: #9299A6;
+  --color-ink-300: #D9DCE2;
+  --color-ink-200: #E2E3E6;
+  --color-ink-100: #E3D9C7;
+  --color-ink-50: #F6F1E7;
 
   /* Muted brass — reserved for accents and moments of emphasis */
-  --color-brass-200: #F3E7CF;
-  --color-brass-300: #E7D2A9;
-  --color-brass-400: #D5B879;
-  --color-brass-500: #B58A52;
-  --color-brass-600: #987044;
-  --color-brass-700: #755638;
+  --color-brass-200: #F0E4CC;
+  --color-brass-300: #E6D0A1;
+  --color-brass-400: #D9BC84;
+  --color-brass-500: #C9A45C;
+  --color-brass-600: #A9823E;
+  --color-brass-700: #8B6B36;
 
   /* Navy primary-action ramp; green remains semantic only */
-  --color-jade-50: #F0F4FA;
-  --color-jade-100: #E0E8F5;
-  --color-jade-200: #C3D2EA;
-  --color-jade-300: #93B0DB;
-  --color-jade-400: #648EC9;
-  --color-jade-500: #2C528C;
-  --color-jade-600: #1B3B6F;
-  --color-jade-700: #0E1F3B;
-  --color-jade-800: #162D54;
-  --color-jade-900: #091528;
+  --color-jade-50: #F6F1E7;
+  --color-jade-100: #EFE8D9;
+  --color-jade-200: #D9DCE2;
+  --color-jade-300: #AAB8CF;
+  --color-jade-400: #7489A8;
+  --color-jade-500: #38466A;
+  --color-jade-600: #2C3854;
+  --color-jade-700: #1C2437;
+  --color-jade-800: #232D45;
+  --color-jade-900: #161D2D;
 
   /* Warm ivory and natural stone */
-  --color-paper: #F7F4ED;
-  --color-clay: #E8E6DD;
+  --color-paper: #F6F1E7;
+  --color-clay: #EFE8D9;
 
   /* Semantic verification colours remain distinct from brand decoration */
   --color-emerald-50: #ECFDF3;
@@ -100,7 +100,7 @@
   .label-dark {
     @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-ink-300;
   }
-  .card { @apply rounded-2xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(23,63,50,0.05),0_8px_24px_-12px_rgba(23,63,50,0.13)]; }
+  .card { @apply rounded-2xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(28,36,55,0.05),0_8px_24px_-12px_rgba(28,36,55,0.13)]; }
   .btn { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:shrink-0; }
   .btn-jade { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-jade-500 disabled:cursor-not-allowed disabled:opacity-50 bg-jade-700 text-white hover:bg-jade-800 px-5 py-3 [&>svg]:shrink-0; }
   .btn-brass { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brass-400 disabled:cursor-not-allowed disabled:opacity-50 bg-brass-500 text-ink-950 hover:bg-brass-400 px-5 py-3 [&>svg]:shrink-0; }
@@ -118,7 +118,7 @@
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(23,63,50,0.24); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: rgba(28,36,55,0.24); border-radius: 99px; }
 .dark-scroll::-webkit-scrollbar-thumb { background: rgba(248,245,238,0.22); }
 
 @keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
