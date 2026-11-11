@@ -654,11 +654,11 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-[100] isolate overflow-hidden bg-[#F6F1E7] text-[#1C2437] lg:hidden">
+        <div className="fixed inset-0 z-[100] isolate h-dvh w-screen overflow-y-auto bg-[#F6F1E7] text-[#1C2437] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
-            className="mx-auto flex h-dvh max-w-[440px] flex-col overflow-y-auto overscroll-y-contain px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col overscroll-y-contain px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
           >
             <div className="mb-2.5 flex items-center justify-between">
               <Link
