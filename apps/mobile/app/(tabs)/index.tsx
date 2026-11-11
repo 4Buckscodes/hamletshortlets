@@ -7,7 +7,7 @@ const p = {
   ivory: '#F4F0E8', muted: '#A8B2BE', gold: '#C5A46D', line: '#314258',
 };
 
-const destinations = ['Lagos', 'Abuja', 'Ibadan'];
+const destinations = [\n  { city: 'Lagos', available: true },\n  { city: 'Abuja', available: false },\n  { city: 'Ibadan', available: false },\n];
 
 export default function ExploreScreen() {
   return (
@@ -58,12 +58,16 @@ export default function ExploreScreen() {
             <Text style={s.counter}>01 / 03</Text>
           </View>
           <View style={s.cityRow}>
-            {destinations.map(city => (
-              <Link key={city} href={{ pathname: '/stays', params: { city } }} asChild>
+            {destinations.map(({ city, available }) => available ? (
+              <Link key={city} href="/stays" asChild>
                 <TouchableOpacity style={s.cityChip}>
                   <Text style={s.cityText}>{city}</Text>
                 </TouchableOpacity>
               </Link>
+            ) : (
+              <View key={city} style={[s.cityChip, s.cityChipDisabled]}>
+                <Text style={s.cityTextDisabled}>{city} · Soon</Text>
+              </View>
             ))}
           </View>
         </View>
@@ -121,7 +125,7 @@ const s = StyleSheet.create({
   counter: { color: p.muted, fontSize: 10, marginBottom: 5 },
   cityRow: { flexDirection: 'row', gap: 9, marginTop: 22 },
   cityChip: { paddingHorizontal: 17, paddingVertical: 12, borderWidth: 1, borderColor: p.line, borderRadius: 24 },
-  cityText: { color: p.ivory, fontSize: 13 },
+  cityText: { color: p.ivory, fontSize: 13 },\n  cityChipDisabled: { borderStyle: 'dashed', opacity: 0.65 },\n  cityTextDisabled: { color: p.muted, fontSize: 12 },
   collection: { marginTop: 52, backgroundColor: p.surface, padding: 24, borderRadius: 8, borderWidth: 1, borderColor: p.line },
   spark: { width: 38, height: 38, borderRadius: 19, backgroundColor: p.raised, alignItems: 'center', justifyContent: 'center', marginBottom: 22 },
   sparkText: { color: p.gold, fontSize: 20 },
