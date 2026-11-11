@@ -488,7 +488,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#E9E2D5] bg-[#F7F4ED]/95 text-[#173F32] shadow-[0_4px_24px_rgba(35,45,34,.04)] backdrop-blur-xl'
+          ? 'border-b border-[#E9E2D5] bg-[#F6F1E7]/95 text-[#1C2437] shadow-[0_4px_24px_rgba(35,45,34,.04)] backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
@@ -500,8 +500,8 @@ export function SiteHeader() {
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
             {isHome ? (
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#173F32]">
-                HAMLET<span className="text-[#B58A52]">.</span>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#1C2437]">
+                HAMLET<span className="text-[#C9A45C]">.</span>
               </span>
             ) : (
               <HamletWordmark />
@@ -522,8 +522,8 @@ export function SiteHeader() {
                   className={`inline-flex min-h-[36px] items-center rounded-full px-3.5 text-[13px] font-semibold transition ${
                     isHome
                       ? active
-                        ? 'font-bold text-[#173F32] underline decoration-[#B58A52] decoration-2 underline-offset-[9px]'
-                        : 'text-[#596B60] hover:text-[#173F32]'
+                        ? 'font-bold text-[#1C2437] underline decoration-[#C9A45C] decoration-2 underline-offset-[9px]'
+                        : 'text-[#5D6577] hover:text-[#1C2437]'
                       : active
                         ? 'bg-ink-900 font-bold text-white shadow-2xs'
                         : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
@@ -543,7 +543,7 @@ export function SiteHeader() {
             aria-label="Ask Horatio — HAMLET assistant"
             className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
               isHome
-                ? 'border border-[#D8C9B1] bg-white/70 text-[#173F32] hover:border-[#B58A52] hover:bg-white'
+                ? 'border border-[#D8C9B1] bg-white/70 text-[#1C2437] hover:border-[#C9A45C] hover:bg-white'
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
@@ -555,12 +555,12 @@ export function SiteHeader() {
               href="/partners/apply"
               className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
                 isHome
-                  ? 'border border-[#D9D8CD] bg-transparent text-[#173F32] hover:border-[#B58A52]'
+                  ? 'border border-[#E3D9C7] bg-transparent text-[#1C2437] hover:border-[#C9A45C]'
                   : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
               }`}
             >
               <LayoutDashboard
-                className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
+                className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
               />
               <span>Partner with us</span>
             </Link>
@@ -572,21 +572,21 @@ export function SiteHeader() {
                 href={workspaceHref}
                 className={`inline-flex min-h-[38px] items-center gap-2 rounded-full px-3.5 text-xs font-bold transition ${
                   isHome
-                    ? 'border border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#B58A52]'
+                    ? 'border border-[#E3D9C7] bg-white text-[#1C2437] hover:border-[#C9A45C]'
                     : 'border border-ink-200 bg-white text-ink-900 hover:border-ink-900'
                 }`}
               >
                 {session.role === 'admin' ? (
                   <ShieldCheck
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
                   />
                 ) : session.role === 'partner' ? (
                   <Building2
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
                   />
                 ) : (
                   <User
-                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#B58A52]' : 'text-brass-600'}`}
+                    className={`h-3.5 w-3.5 shrink-0 ${isHome ? 'text-[#C9A45C]' : 'text-brass-600'}`}
                   />
                 )}
                 <span>{workspaceLabel}</span>
@@ -598,7 +598,7 @@ export function SiteHeader() {
                 title="Sign out"
                 className={`inline-flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full transition ${
                   isHome
-                    ? 'border border-[#356B54] bg-transparent text-[#DADFD5] hover:border-[#B58A52] hover:text-[#F7F4ED]'
+                    ? 'border border-[#232D45] bg-transparent text-[#EFE8D9] hover:border-[#C9A45C] hover:text-[#F6F1E7]'
                     : 'border border-ink-200 bg-white text-ink-600 hover:border-ink-400 hover:text-ink-900'
                 }`}
               >
@@ -610,7 +610,7 @@ export function SiteHeader() {
               href="/signin"
               className={`inline-flex min-h-[38px] items-center justify-center rounded-full px-4.5 text-[12.5px] font-bold shadow-2xs transition ${
                 isHome
-                  ? 'bg-[#173F32] text-white hover:bg-[#285744]'
+                  ? 'bg-[#1C2437] text-white hover:bg-[#232D45]'
                   : 'bg-ink-900 text-white hover:bg-ink-800'
               }`}
             >
@@ -628,8 +628,8 @@ export function SiteHeader() {
             aria-label={drawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
             className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
               isHome
-                ? 'border border-[#D9D8CD] bg-white text-[#173F32] hover:border-[#B58A52]'
-                : 'border border-[#D9D8CD] bg-white text-[#173F32] shadow-2xs hover:border-[#173F32]'
+                ? 'border border-[#E3D9C7] bg-white text-[#1C2437] hover:border-[#C9A45C]'
+                : 'border border-[#E3D9C7] bg-white text-[#1C2437] shadow-2xs hover:border-[#1C2437]'
             }`}
           >
             {drawerOpen ? (
@@ -654,7 +654,7 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-[#F7F4ED] text-[#173F32] lg:hidden">
+        <div className="fixed inset-0 z-[100] isolate overflow-hidden bg-[#F6F1E7] text-[#1C2437] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
@@ -667,15 +667,15 @@ export function SiteHeader() {
                 aria-label="HAMLET.REST home"
                 className="inline-flex min-h-[44px] items-center"
               >
-                <span className="font-display text-[26px] font-bold tracking-[1px] text-[#173F32]">
-                  HAMLET<span className="text-[#B58A52]">.</span>
+                <span className="font-display text-[26px] font-bold tracking-[1px] text-[#1C2437]">
+                  HAMLET<span className="text-[#C9A45C]">.</span>
                 </span>
               </Link>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close navigation menu"
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D9D8CD] bg-transparent text-[#173F32] transition hover:border-[#173F32]"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#E3D9C7] bg-transparent text-[#1C2437] transition hover:border-[#1C2437]"
               >
                 <X className="h-[18px] w-[18px] shrink-0" />
               </button>
@@ -687,10 +687,10 @@ export function SiteHeader() {
                 setDrawerOpen(false);
                 openHoratio();
               }}
-              className="mt-1 flex min-h-[54px] w-full shrink-0 cursor-pointer items-center justify-between rounded-[18px] border-[1.5px] border-[#B58A52] bg-white px-4 text-[17px] font-semibold text-[#173F32] transition hover:bg-[#F7F4ED]"
+              className="mt-1 flex min-h-[46px] w-full shrink-0 cursor-pointer items-center justify-between rounded-full border border-[#C9A45C]/80 bg-white px-4 text-[14px] font-semibold text-[#1C2437] transition hover:border-[#C9A45C] hover:bg-[#EFE8D9]"
             >
               <span>Ask Horatio</span>
-              <span aria-hidden="true" className="text-[#755638]">
+              <span aria-hidden="true" className="text-[#8B6B36]">
                 →
               </span>
             </button>
@@ -704,12 +704,12 @@ export function SiteHeader() {
                     href={item.href}
                     onClick={() => setDrawerOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`flex min-h-[48px] items-center justify-between border-b border-[#E8E6DD] px-1 text-[15px] font-semibold transition ${
-                      active ? 'text-[#173F32] underline decoration-[#B58A52] decoration-2 underline-offset-8' : 'text-[#596B60] hover:text-[#173F32]'
+                    className={`flex min-h-[48px] items-center justify-between border-b border-[#EFE8D9] px-1 text-[15px] font-semibold transition ${
+                      active ? 'text-[#1C2437] underline decoration-[#C9A45C] decoration-2 underline-offset-8' : 'text-[#5D6577] hover:text-[#1C2437]'
                     }`}
                   >
                     <span>{item.label}</span>
-                    <span aria-hidden="true" className={active ? 'text-[#B58A52]' : 'text-[#755638]'}>→</span>
+                    <span aria-hidden="true" className={active ? 'text-[#C9A45C]' : 'text-[#8B6B36]'}>→</span>
                   </Link>
                 );
               })}
@@ -721,7 +721,7 @@ export function SiteHeader() {
                   <Link
                     href={workspaceHref}
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#173F32] px-6 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#1C2437] px-6 text-[16px] font-semibold text-[#F6F1E7] transition hover:bg-[#232D45]"
                   >
                     {workspaceLabel}
                   </Link>
@@ -729,7 +729,7 @@ export function SiteHeader() {
                     <Link
                       href="/account"
                       onClick={() => setDrawerOpen(false)}
-                      className="flex min-h-[52px] w-full items-center justify-center rounded-[28px] border border-[#173F32] bg-white px-5 text-[15px] font-semibold text-[#173F32]"
+                      className="flex min-h-[52px] w-full items-center justify-center rounded-[28px] border border-[#1C2437] bg-white px-5 text-[15px] font-semibold text-[#1C2437]"
                     >
                       Guest account &amp; bookings
                     </Link>
@@ -737,7 +737,7 @@ export function SiteHeader() {
                   <button
                     type="button"
                     onClick={() => void handleSignOut()}
-                    className="flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-[28px] border border-[#D9D8CD] bg-white px-5 text-sm font-semibold text-[#173F32]"
+                    className="flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-[28px] border border-[#E3D9C7] bg-white px-5 text-sm font-semibold text-[#1C2437]"
                   >
                     Sign out ({session.email})
                   </button>
@@ -747,14 +747,14 @@ export function SiteHeader() {
                   <Link
                     href="/signin"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#173F32] px-6 text-[16px] font-semibold text-[#F7F4ED] transition hover:bg-[#285744]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] bg-[#1C2437] px-6 text-[16px] font-semibold text-[#F6F1E7] transition hover:bg-[#232D45]"
                   >
                     Sign in
                   </Link>
                   <Link
                     href="/signin?mode=signup"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] border border-[#173F32] bg-white px-6 text-[16px] font-semibold text-[#173F32] transition hover:bg-[#EEEAE0]"
+                    className="flex min-h-[56px] w-full items-center justify-center rounded-[28px] border border-[#1C2437] bg-white px-6 text-[16px] font-semibold text-[#1C2437] transition hover:bg-[#EEEAE0]"
                   >
                     Create guest account
                   </Link>
@@ -812,19 +812,19 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="border-t border-[#356B54] bg-[#173F32] text-[#F7F4ED]">
+    <footer className="border-t border-[#232D45] bg-[#1C2437] text-[#F6F1E7]">
       <div className="mx-auto max-w-6xl px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:py-12">
         {/* Mobile editorial brand block + collapsible accordion navigation (< md) */}
         <div className="md:hidden">
           <Link href="/" className="inline-flex items-center">
-            <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
-              HAMLET<span className="text-[#B58A52]">.</span>
+            <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F6F1E7]">
+              HAMLET<span className="text-[#C9A45C]">.</span>
             </span>
           </Link>
-          <p className="mt-2.5 text-[14px] leading-[1.5] text-[#DADFD5]">
+          <p className="mt-2.5 text-[14px] leading-[1.5] text-[#EFE8D9]">
             Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
           </p>
-          <p className="mt-2.5 text-[14px] text-[#DADFD5]">
+          <p className="mt-2.5 text-[14px] text-[#EFE8D9]">
             Contact:{' '}
             <a
               href="mailto:hello@hamlet.rest"
@@ -834,7 +834,7 @@ export function SiteFooter() {
             </a>
           </p>
 
-          <div className="mt-5 divide-y divide-[#356B54] border-t border-[#356B54]">
+          <div className="mt-5 divide-y divide-[#232D45] border-t border-[#232D45]">
             {FOOTER_LINK_GROUPS.map(group => {
               const isOpen = Boolean(openSections[group.id]);
               const panelId = `footer-accordion-${group.id}`;
@@ -847,12 +847,12 @@ export function SiteFooter() {
                     aria-controls={panelId}
                     className="flex min-h-[52px] w-full cursor-pointer items-center justify-between py-3 text-left"
                   >
-                    <span className="text-[12px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
+                    <span className="text-[12px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
                       {group.title}
                     </span>
                     <span
                       aria-hidden="true"
-                      className="text-xl font-normal leading-none text-[#B58A52]"
+                      className="text-xl font-normal leading-none text-[#C9A45C]"
                     >
                       {isOpen ? '−' : '+'}
                     </span>
@@ -860,7 +860,7 @@ export function SiteFooter() {
                   {isOpen && (
                     <ul
                       id={panelId}
-                      className="space-y-1 pb-3 text-[15px] text-[#F7F4ED]"
+                      className="space-y-1 pb-3 text-[15px] text-[#F6F1E7]"
                     >
                       {group.links.map(link => (
                         <li key={link.href}>
@@ -884,14 +884,14 @@ export function SiteFooter() {
         <div className="hidden gap-8 md:grid md:grid-cols-4">
           <div className="md:col-span-1">
             <Link href="/" className="inline-flex items-center">
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F7F4ED]">
-                HAMLET<span className="text-[#B58A52]">.</span>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F6F1E7]">
+                HAMLET<span className="text-[#C9A45C]">.</span>
               </span>
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-[#DADFD5]">
+            <p className="mt-3 text-sm leading-relaxed text-[#EFE8D9]">
               Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.
             </p>
-            <p className="mt-2.5 text-xs text-[#DADFD5]">
+            <p className="mt-2.5 text-xs text-[#EFE8D9]">
               Contact:{' '}
               <a
                 href="mailto:hello@hamlet.rest"
@@ -904,10 +904,10 @@ export function SiteFooter() {
 
           {FOOTER_LINK_GROUPS.map(group => (
             <div key={group.id}>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-[#B58A52]">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
                 {group.title}
               </h2>
-              <ul className="mt-3 space-y-2 text-sm text-[#F7F4ED]">
+              <ul className="mt-3 space-y-2 text-sm text-[#F6F1E7]">
                 {group.links.map(link => (
                   <li key={link.href}>
                     <Link
@@ -923,7 +923,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-5 space-y-1 text-[12px] leading-[1.5] text-[#AAB8AC] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-[#356B54] md:pt-6">
+        <div className="mt-5 space-y-1 text-[12px] leading-[1.5] text-[#AAB8AC] md:mt-10 md:flex md:flex-wrap md:items-center md:justify-between md:gap-4 md:space-y-0 md:border-t md:border-[#232D45] md:pt-6">
           <p className="m-0">
             © {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.
           </p>
