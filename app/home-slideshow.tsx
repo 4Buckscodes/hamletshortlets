@@ -424,6 +424,114 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   );
 }
 
+
+function ThreeDStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const pointerStart = useRef<number | null>(null);
+  const count = stays.length;
+
+  const move = (direction: number) => {
+    if (count < 2) return;
+    setActiveIndex(current => (current + direction + count) % count);
+  };
+
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionPreference.matches) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setActiveIndex(current => (current + 1) % count);
+      }
+    }, 6200);
+    return () => window.clearInterval(timer);
+  }, [count, paused]);
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (pointerStart.current === null) return;
+    const distance = event.clientX - pointerStart.current;
+    pointerStart.current = null;
+    if (Math.abs(distance) > 42) move(distance < 0 ? 1 : -1);
+  };
+
+  if (count === 0) return null;
+
+  return (
+    <div
+      className="relative mx-auto w-full max-w-[1180px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      <div
+        className="relative h-[610px] touch-pan-y select-none sm:h-[650px] lg:h-[675px]"
+        style={{ perspective: '1500px' }}
+        onPointerDown={event => { pointerStart.current = event.clientX; }}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={() => { pointerStart.current = null; }}
+        aria-roledescription="carousel"
+        aria-label="Featured verified Lagos stays"
+      >
+        {stays.map((stay, index) => {
+          let offset = index - activeIndex;
+          if (offset > count / 2) offset -= count;
+          if (offset < -count / 2) offset += count;
+          const visible = Math.abs(offset) <= 1;
+          return (
+            <div
+              key={stay.id}
+              aria-hidden={!visible}
+              className="absolute left-1/2 top-0 w-[86%] max-w-[430px] origin-center transition-[transform,opacity,filter] duration-700 ease-[cubic-bezier(.2,.75,.25,1)] sm:w-[62%] lg:w-[430px]"
+              style={{
+                transform: 'translate3d(calc(-50% + ' + (offset * 62) + '%), 0, ' + (offset === 0 ? 0 : -135) + 'px) rotateY(' + (offset * -20) + 'deg) scale(' + (offset === 0 ? 1 : 0.86) + ')',
+                opacity: visible ? (offset === 0 ? 1 : 0.72) : 0,
+                filter: offset === 0 ? 'none' : 'saturate(.78) brightness(.88)',
+                zIndex: 10 - Math.abs(offset),
+                pointerEvents: offset === 0 ? 'auto' : visible ? 'auto' : 'none',
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              <HomepageStayCard property={stay} />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="-mt-1 flex items-center justify-between gap-4 px-1 sm:px-4">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#8B6B36]">The HAMLET edit</p>
+          <p className="mt-1 text-sm font-medium text-[#5D6577]">
+            {String(activeIndex + 1).padStart(2, '0')} <span className="mx-1 text-[#C9A45C]">/</span> {String(count).padStart(2, '0')} stays
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => move(-1)}
+            disabled={count < 2}
+            aria-label="Previous featured stay"
+            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#D8CDBB] bg-white text-[#1C2437] shadow-sm transition hover:border-[#C9A45C] hover:bg-[#F6F1E7] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => move(1)}
+            disabled={count < 2}
+            aria-label="Next featured stay"
+            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[#1C2437] text-[#F6F1E7] shadow-md transition hover:bg-[#2C3854] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      <p className="mt-3 text-center text-[11px] text-[#7A7F87] sm:hidden">Swipe to rotate through stays</p>
+    </div>
+  );
+}
+
 export function HomeMarketplaceExperience({
   approvedStays,
   queryError = null,
@@ -1042,15 +1150,7 @@ export function HomeMarketplaceExperience({
             )}
           </div>
         ) : (
-          <div
-            className={`grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-7 ${
-              displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
-            }`}
-          >
-            {displayedStays.map((stay: PublicStayRecord) => (
-              <HomepageStayCard key={stay.id} property={stay} />
-            ))}
-          </div>
+          <ThreeDStayCarousel stays={displayedStays} />
         )}
 
         <div className="mt-[18px] lg:mt-7">
