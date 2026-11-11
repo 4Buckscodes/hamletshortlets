@@ -41,10 +41,12 @@ export default function ExploreScreen() {
             <Text style={s.meta}>Dates · Add your dates</Text>
             <Text style={s.meta}>Guests · 2 guests</Text>
           </View>
-          <TouchableOpacity style={s.primary} activeOpacity={0.85}>
-            <Text style={s.primaryText}>Explore stays</Text>
-            <Text style={s.arrow}>→</Text>
-          </TouchableOpacity>
+          <Link href="/stays" asChild>
+            <TouchableOpacity style={s.primary} activeOpacity={0.85}>
+              <Text style={s.primaryText}>Explore stays</Text>
+              <Text style={s.arrow}>→</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
 
         <View style={s.section}>
@@ -57,9 +59,11 @@ export default function ExploreScreen() {
           </View>
           <View style={s.cityRow}>
             {destinations.map(city => (
-              <TouchableOpacity key={city} style={s.cityChip}>
-                <Text style={s.cityText}>{city}</Text>
-              </TouchableOpacity>
+              <Link key={city} href={{ pathname: '/stays', params: { city } }} asChild>
+                <TouchableOpacity style={s.cityChip}>
+                  <Text style={s.cityText}>{city}</Text>
+                </TouchableOpacity>
+              </Link>
             ))}
           </View>
         </View>
