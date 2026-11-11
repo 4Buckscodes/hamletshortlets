@@ -238,7 +238,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           <Link
             href={detailHref}
             aria-label={`View ${property.title} in ${areaName}`}
-            className="grid h-full w-full place-items-center p-6 text-center text-[13px] text-[#DADFD5]"
+            className="grid h-full w-full place-items-center p-6 text-center text-[13px] text-[#EFE8D9]"
           >
             <div>
               <strong className="mb-1 block font-display text-[30px] font-bold text-[#C9A45C]">
@@ -987,7 +987,7 @@ export function HomeMarketplaceExperience({
         </div>
 
         {activeRailArea && (
-          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E6DD] bg-white px-4 py-2.5">
+          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-[#EFE8D9] bg-white px-4 py-2.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#5D6577]">
               Active filter:
             </span>
@@ -1017,7 +1017,7 @@ export function HomeMarketplaceExperience({
         )}
 
         {displayedStays.length === 0 ? (
-          <div className="rounded-[26px] border border-[#E8E6DD] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
+          <div className="rounded-[26px] border border-[#EFE8D9] bg-white p-8 text-center shadow-[0_1px_2px_rgba(18,31,60,0.06)]">
             <h3 className="font-display text-[22px] font-bold text-[#1C2437]">
               {activeRailArea
                 ? `No verified stays in ${activeRailArea} right now`
@@ -1083,10 +1083,10 @@ export function HomeMarketplaceExperience({
         <div className="hamlet-depth flex flex-col justify-between overflow-hidden rounded-[18px] border border-[#315B49] bg-[#1C2437] p-6 text-[#F6F1E7] shadow-[0_18px_44px_rgba(16,45,36,.16)] sm:p-9">
           <div>
               <h2 className="serif mt-2 text-2xl font-medium leading-tight sm:text-3xl">A network for people who make hospitality happen.</h2>
-            <p className="mt-3 text-sm leading-relaxed text-[#DADFD5]">Owners, managers and property professionals can bring quality stays to HAMLET and grow their business through a connected partner ecosystem.</p>
+            <p className="mt-3 text-sm leading-relaxed text-[#EFE8D9]">Owners, managers and property professionals can bring quality stays to HAMLET and grow their business through a connected partner ecosystem.</p>
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href="/partners/apply" className="inline-flex min-h-11 items-center rounded-full bg-[#C9A45C] px-5 text-sm font-bold text-[#102D24] transition hover:bg-[#D5B879]">Become a partner ↗</Link>
+            <Link href="/partners/apply" className="inline-flex min-h-11 items-center rounded-full bg-[#C9A45C] px-5 text-sm font-bold text-[#161D2D] transition hover:bg-[#D9BC84]">Become a partner ↗</Link>
             <Link href="/partners" className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-5 text-sm font-semibold text-white transition hover:bg-white/10">Partner workspace</Link>
           </div>
         </div>
