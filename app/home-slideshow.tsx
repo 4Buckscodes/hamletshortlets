@@ -454,7 +454,7 @@ function ThreeDStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
       <div
         ref={railRef}
         onScroll={updateActive}
-        className="hamlet-stay-rail flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-[7%] pb-3 pt-1 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2]"
+        className="hamlet-stay-rail flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-[7%] pb-3 pt-1 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2)]"
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
       >
         {stays.map((stay) => (
