@@ -390,7 +390,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
             <Link
               href={detailHref}
-              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#1C2437] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F6F1E7] transition hover:bg-[#1B3560]"
+              className="inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-[24px] bg-[#1C2437] px-[22px] text-[15px] font-semibold whitespace-nowrap text-[#F6F1E7] transition hover:bg-[#232D45]"
             >
               View stay →
             </Link>
@@ -619,7 +619,7 @@ export function HomeMarketplaceExperience({
             <h1 className="max-w-[760px] font-display text-[clamp(2.65rem,10.5vw,3.35rem)] font-medium leading-[0.99] tracking-[-0.045em] text-[#F6F1E7] min-[390px]:text-[3.4rem] sm:text-[68px] lg:text-[88px]">
               Find a stay that feels like <span className="italic text-[#D9BC84]">Lagos.</span>
             </h1>
-            <p className="mt-4 max-w-[420px] text-[14px] leading-6 sm:mt-5 sm:max-w-[480px] sm:text-[17px] sm:leading-8 text-white/85 sm:text-[17px] sm:leading-8">
+            <p className="mt-4 max-w-[420px] text-[14px] leading-6 text-white/85 sm:mt-5 sm:max-w-[480px] sm:text-[17px] sm:leading-8">
               Thoughtful spaces. Distinct neighbourhoods. A better way to experience the city.
             </p>
             <Link href="/stays" className="mt-5 inline-flex min-h-11 sm:mt-7 sm:min-h-12 items-center gap-3 border-b border-[#D9BC84] pb-1 text-[14px] font-semibold text-white transition hover:gap-5">
