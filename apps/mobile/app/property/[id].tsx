@@ -62,7 +62,7 @@ export default function PropertyScreen() {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) {
-        router.push({ pathname: '/auth', params: { next: '/property/' + id } });
+        router.push({ pathname: '/sign-in', params: { next: '/property/' + id } });
         return;
       }
       const response = await fetch(HAMLET_API_BASE_URL + '/api/booking-requests', {
