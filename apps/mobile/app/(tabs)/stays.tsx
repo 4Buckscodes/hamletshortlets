@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';\nimport { Link } from 'expo-router';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getPublicStays, type PublicStay } from '@/lib/api';
@@ -51,7 +51,7 @@ export default function StaysScreen() {
           <View style={s.list}>
             <Text style={s.count}>{properties.length} APPROVED {properties.length === 1 ? 'STAY' : 'STAYS'}</Text>
             {properties.map(property => (
-              <View key={property.id} style={s.card}>
+              <Link key={property.id} href={{ pathname: '/property/[id]', params: { id: property.id } }} asChild>\n              <View style={s.card}>
                 {property.image_urls?.[0] ? (
                   <Image source={{ uri: property.image_urls[0] }} style={s.image} resizeMode="cover" />
                 ) : (
