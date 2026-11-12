@@ -73,7 +73,7 @@ export default function PropertyScreen() {
       setError('Enter valid dates in YYYY-MM-DD format. Check-out must be after check-in.');
       return;
     }
-    const guestCount = Number(guests);
+    if (!property || !property.guest_nightly_ngn || property.guest_nightly_ngn <= 0) {\n      setError('The rate for this stay is not available yet. Please contact HAMLET before requesting it.');\n      return;\n    }\n    if (property.first_available_date && checkIn < property.first_available_date) {\n      setError('This stay is available from ' + property.first_available_date + ' onwards.');\n      return;\n    }\n    const guestCount = Number(guests);
     if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > 20) {
       setError('Enter a guest count between 1 and 20.');
       return;
@@ -119,7 +119,7 @@ export default function PropertyScreen() {
         <Text style={s.title}>{property.title}</Text>
         <Text style={s.body}>{[property.bedrooms ? property.bedrooms + ' bedrooms' : null, property.bathrooms ? property.bathrooms + ' bathrooms' : null, property.capacity ? 'Up to ' + property.capacity + ' guests' : null].filter(Boolean).join('  ·  ')}</Text>
         {property.trust_label ? <Text style={s.trust}>{property.trust_label}</Text> : null}
-        {property.guest_nightly_ngn ? <Text style={s.price}>{money(property.guest_nightly_ngn)} <Text style={s.perNight}>/ night</Text></Text> : <Text style={s.body}>Rate available on enquiry</Text>}
+        {property.guest_nightly_ngn ? <Text style={s.price}>{money(property.guest_nightly_ngn)} <Text style={s.perNight}>/ night</Text></Text> : <Text style={s.body}>Rate available on enquiry</Text>}\n        {Number(property.cleaning_fee) > 0 ? <Text style={s.meta}>Cleaning fee: {money(Number(property.cleaning_fee))}</Text> : null}\n        {Number(property.refundable_deposit) > 0 ? <Text style={s.deposit}>Refundable caution deposit: {money(Number(property.refundable_deposit))}</Text> : null}
         {property.amenities?.length ? <View style={s.section}><Text style={s.sectionTitle}>Amenities</Text><Text style={s.body}>{property.amenities.join('  ·  ')}</Text></View> : null}
         {property.house_rules?.length ? <View style={s.section}><Text style={s.sectionTitle}>House rules</Text>{property.house_rules.map((rule,i)=><Text key={i} style={s.body}>• {rule}</Text>)}</View> : null}
 
@@ -176,7 +176,7 @@ const s = StyleSheet.create({
   hero:{width:'100%',height:240,borderRadius:8,backgroundColor:'#203247'},heroFallback:{alignItems:'center',justifyContent:'center'},fallback:{color:'#C5A46D',letterSpacing:3,fontWeight:'700'},
   area:{color:'#C5A46D',fontSize:10,letterSpacing:1.5,fontWeight:'700',marginTop:22,textTransform:'uppercase'},
   title:{color:'#F4F0E8',fontSize:31,lineHeight:37,fontFamily:'serif',marginTop:7},body:{color:'#A8B2BE',fontSize:13,lineHeight:21,marginTop:10},
-  trust:{color:'#91C5A6',fontSize:11,marginTop:12},price:{color:'#F4F0E8',fontSize:21,fontWeight:'700',marginTop:18},perNight:{color:'#A8B2BE',fontSize:12,fontWeight:'400'},
+  trust:{color:'#91C5A6',fontSize:11,marginTop:12},price:{color:'#F4F0E8',fontSize:21,fontWeight:'700',marginTop:18},perNight:{color:'#A8B2BE',fontSize:12,fontWeight:'400'},meta:{color:'#A8B2BE',fontSize:12,marginTop:7},deposit:{color:'#C5A46D',fontSize:12,marginTop:7},
   section:{marginTop:28},sectionTitle:{color:'#F4F0E8',fontSize:22,fontFamily:'serif'},booking:{marginTop:32,padding:18,backgroundColor:'#18283A',borderColor:'#314258',borderWidth:1,borderRadius:8},
   hint:{color:'#A8B2BE',fontSize:11,lineHeight:18,marginTop:9},label:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginTop:18,marginBottom:7},
   input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},
