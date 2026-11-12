@@ -140,7 +140,7 @@ export default function PropertyScreen() {
                 value={dateDraft}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={dateField === 'checkOut' && checkIn ? new Date(checkIn + 'T12:00:00') : new Date()}
+                minimumDate={dateField === 'checkOut' && checkIn ? new Date(checkIn + 'T12:00:00') : dateField === 'checkIn' && property.first_available_date ? new Date(property.first_available_date + 'T12:00:00') : new Date()}
                 onChange={(event, selectedDate) => {
                   if (selectedDate) setDateDraft(selectedDate);
                   if (Platform.OS === 'android') {
