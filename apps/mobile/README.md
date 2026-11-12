@@ -13,7 +13,7 @@ One app with role-aware experiences for guests, owners, property managers and ag
 3. Run `npm install`.
 4. Run `npx expo install --fix` to align SDK-managed dependencies.
 5. Run `npx expo-doctor`.
-6. Run `npx expo start`.
+6. Run `npx expo start` for the Metro development server.\n7. For native module and release-candidate QA, create an EAS development build with `npx eas-cli build --profile development --platform android` or `--platform ios`. Use an Expo Go client only when it matches SDK 58; prefer development builds for ongoing product work.
 
 ## Native authentication callback setup
 
