@@ -53,7 +53,7 @@ export default function StaysScreen() {
             <Text style={s.count}>{properties.length} APPROVED {properties.length === 1 ? 'STAY' : 'STAYS'}</Text>
             {properties.map(property => (
               <Link key={property.id} href={{ pathname: '/property/[id]', params: { id: property.id } }} asChild>
-              <View style={s.card}>
+              <TouchableOpacity style={s.card} activeOpacity={0.9}>
                 {property.image_urls?.[0] ? (
                   <Image source={{ uri: property.image_urls[0] }} style={s.image} resizeMode="cover" />
                 ) : (
@@ -74,7 +74,8 @@ export default function StaysScreen() {
                   )}
                   {property.trust_label ? <Text style={s.trust}>{property.trust_label}</Text> : null}
                 </View>
-              </View>
+              </TouchableOpacity>
+              </Link>
             ))}
           </View>
         )}
