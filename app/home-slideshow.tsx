@@ -454,14 +454,14 @@ function ThreeDStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
       <div
         ref={railRef}
         onScroll={updateActive}
-        className="hamlet-stay-rail flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-[7%] pb-3 pt-1 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2)]"
+        className="hamlet-stay-rail flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-6 pb-3 pt-1 sm:gap-5 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2)]"
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
       >
         {stays.map((stay) => (
           <div
             key={stay.id}
             data-stay-slide
-            className="w-[86%] max-w-[430px] shrink-0 snap-center sm:w-[430px] lg:w-[390px]"
+            className="w-[calc(100vw-64px)] max-w-[430px] shrink-0 snap-center sm:w-[430px] lg:w-[390px]"
           >
             <HomepageStayCard property={stay} />
           </div>
