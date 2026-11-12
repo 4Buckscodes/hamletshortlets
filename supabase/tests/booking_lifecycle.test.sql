@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(19);
+select plan(21);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
@@ -14,10 +14,15 @@ insert into auth.users (
   ('10000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'booking-partner@example.test', '',
     '{"provider":"email","providers":["email"]}', '{"full_name":"Booking Partner"}', now(), now(), now()),
   ('10000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'other-partner@example.test', '',
-    '{"provider":"email","providers":["email"]}', '{"full_name":"Other Partner"}', now(), now(), now());
+    '{"provider":"email","providers":["email"]}', '{"full_name":"Other Partner"}', now(), now(), now()),
+  ('10000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'booking-admin@example.test', '',
+    '{"provider":"email","providers":["email"]}', '{"full_name":"Booking Admin"}', now(), now(), now());
 
 update public.profiles set role = 'partner'
 where id in ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000003');
+
+update public.profiles set role = 'admin'
+where id = '10000000-0000-4000-8000-000000000004';
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 
@@ -135,10 +140,26 @@ where id = 'booking-lifecycle-c';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select throws_ok(
+  'select public.expire_overdue_bookings()',
+  'P0001',
+  'Only active HAMLET administrators can process booking expiry.',
+  'A guest cannot trigger the global booking expiry sweep'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
+select throws_ok(
+  'select public.expire_overdue_bookings()',
+  'P0001',
+  'Only active HAMLET administrators can process booking expiry.',
+  'A partner cannot trigger the global booking expiry sweep'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000004', true);
 select is(
   public.expire_overdue_bookings(),
   1,
-  'The expiry sweep expires overdue payment requests'
+  'An active administrator can expire overdue payment requests'
 );
 select is(
   (select status from public.bookings where id = 'booking-lifecycle-c'),

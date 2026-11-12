@@ -175,7 +175,6 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
       ['admin', adminId, true],
     ] as const) {
       await asUser(db, userId, async tx => {
-        await tx.query(`select public.expire_overdue_bookings()`);
         await tx.query(
           `select id,full_name,role,phone,company,partner_role,account_status,suspension_reason,created_at from public.profiles order by created_at desc`,
         );
@@ -199,6 +198,15 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
         }
       });
     }
+
+    // Only an active administrator can run the global booking-expiry sweep.
+    await expect(
+      asUser(db, guestId, tx => tx.query(`select public.expire_overdue_bookings()`)),
+    ).rejects.toThrow(/Only active HAMLET administrators/i);
+    await expect(
+      asUser(db, partnerId, tx => tx.query(`select public.expire_overdue_bookings()`)),
+    ).rejects.toThrow(/Only active HAMLET administrators/i);
+    await asUser(db, adminId, tx => tx.query(`select public.expire_overdue_bookings()`));
 
     // 3. Server-side service_role access required by Edge Functions
     await asServiceRole(db, async tx => {

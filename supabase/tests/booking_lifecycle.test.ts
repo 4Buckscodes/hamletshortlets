@@ -781,7 +781,7 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
   });
 
   describe('Payment-deadline expiry (expire_overdue_bookings)', () => {
-    it('blocks anonymous and unauthenticated callers from running expire_overdue_bookings or transition_booking', async () => {
+    it('restricts booking expiry to active admins and blocks anonymous or unauthenticated callers', async () => {
       const booking = await insertBookingAsGuest(guestAId);
 
       await expect(
@@ -794,7 +794,15 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
 
       await expect(
         asAuthenticatedWithoutUid(db, tx => tx.query(`select public.expire_overdue_bookings()`)),
-      ).rejects.toThrow(/Sign in to process booking expiry/i);
+      ).rejects.toThrow(/Sign in with an active administrator account/i);
+
+      await expect(
+        asUser(db, guestAId, tx => tx.query(`select public.expire_overdue_bookings()`)),
+      ).rejects.toThrow(/Only active HAMLET administrators/i);
+
+      await expect(
+        asUser(db, partnerId, tx => tx.query(`select public.expire_overdue_bookings()`)),
+      ).rejects.toThrow(/Only active HAMLET administrators/i);
 
       await expect(
         asAuthenticatedWithoutUid(db, tx =>
@@ -828,7 +836,7 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
         [overdueBooking.id],
       );
 
-      const firstSweepCount = await asUser(db, guestBId, async tx => {
+      const firstSweepCount = await asUser(db, adminId, async tx => {
         const { rows } = await tx.query<{ count: number }>(
           `select public.expire_overdue_bookings() as count`,
         );
@@ -857,13 +865,13 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
       );
       expect(expiryAudits).toHaveLength(1);
       expect(expiryAudits[0]).toMatchObject({
-        actor_id: guestBId,
+        actor_id: adminId,
         actor_role: 'system',
         action: 'booking_expired',
       });
 
       // Repeat sweep is idempotent
-      const secondSweepCount = await asUser(db, partnerId, async tx => {
+      const secondSweepCount = await asUser(db, adminId, async tx => {
         const { rows } = await tx.query<{ count: number }>(
           `select public.expire_overdue_bookings() as count`,
         );

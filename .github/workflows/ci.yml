@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - feat/nextjs-mobile-first-rebuild
+      - security/authentication-hardening
   pull_request:
     branches:
       - main
 
+# CI validates code; it must never write back to repository branches.
 permissions:
   contents: read
 
@@ -20,19 +22,29 @@ jobs:
   validate:
     name: Lint, test and build Next.js MVP
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies cleanly from lockfile
+      - name: Install dependencies cleanly from committed lockfile
         run: npm ci
+      - name: Dependency security audit
+        run: |
+          npm audit --json > npm-audit.json || true
+          node -e 'const report = require("./npm-audit.json"); const vulns = report.vulnerabilities || {}; console.log("Dependency audit summary:", JSON.stringify(report.metadata?.vulnerabilities || {})); for (const [name, item] of Object.entries(vulns)) console.log(JSON.stringify({ name, severity: item.severity, direct: item.isDirect, range: item.range, via: item.via, fixAvailable: item.fixAvailable }));'
+      - name: Block high-severity production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
       - name: Run linter
         run: npm run lint
+      - name: TypeScript validation
+        run: npx tsc --noEmit
       - name: Run unit and PGlite database tests
         run: npm test
       - name: Build Next.js production application

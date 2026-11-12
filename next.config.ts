@@ -15,6 +15,21 @@ const SHARE_ARTWORK_TRACED_ASSETS = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+          { key: 'X-XSS-Protection', value: '0' },
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(self)' },
+        ],
+      },
+    ];
+  },
   serverExternalPackages: ['sharp'],
   outputFileTracingIncludes: {
     '/api/og/default': SHARE_ARTWORK_TRACED_ASSETS,

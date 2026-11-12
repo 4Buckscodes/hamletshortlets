@@ -32,6 +32,7 @@ import {
   buildPartnerReferralCode, evaluateReferralOnBookingCompletion, normalizeReferralCode,
 } from './referrals';
 import { extractEdgeFunctionError, isSupabaseConfigured, supabase } from './supabase';
+import { formatAuthErrorMessage } from './authRedirect';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const PARTNER_REF_STORAGE_KEY = 'hamlet_partner_ref_code_v1';
@@ -837,9 +838,6 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
     suspensionReason: (profile.suspension_reason as string | undefined) ?? undefined,
   };
-
-  const { error: expiryError } = await supabase.rpc('expire_overdue_bookings');
-  if (expiryError) throw new Error(`Could not process expired booking deadlines: ${expiryError.message}`);
 
   const [
     profilesResult,
@@ -2812,27 +2810,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       }
       window.setTimeout(() => { void load(session?.user ?? null); }, 0);
     });
-    const expiryTimer = window.setInterval(() => {
-      void (async () => {
-        const { data, error: sessionError } = await client.auth.getSession();
-        if (!active) return;
-        if (sessionError) {
-          setBackendError(`Could not check booking deadlines: ${sessionError.message}`);
-          return;
-        }
-        if (!data.session) return;
-        const { data: expiredCount, error } = await client.rpc('expire_overdue_bookings');
-        if (!active) return;
-        if (error) {
-          setBackendError(`Could not process expired booking deadlines: ${error.message}`);
-          return;
-        }
-        if (expiredCount > 0) void load(data.session.user);
-      })();
-    }, 60_000);
     return () => {
       active = false;
-      window.clearInterval(expiryTimer);
       authListener.subscription.unsubscribe();
     };
   }, []);
@@ -2893,7 +2872,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     signIn: async (email, password) => {
       if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         try {
           const remote = await loadSupabaseState(data.user);
           dispatch({ type: 'HYDRATE', state: remote });
@@ -2917,7 +2896,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       const trimmedPhone = phone?.trim() ?? '';
       if (trimmedName.length < 2) return { ok: false, error: 'Enter your full name (at least 2 characters).' };
       if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return { ok: false, error: 'Enter a valid email address.' };
-      if (password.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+      if (password.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' };
 
       if (supabase) {
         const { data, error } = await supabase.auth.signUp({
@@ -2930,7 +2909,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
             },
           },
         });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         if (!data.session) return { ok: true, needsEmailConfirmation: true };
         try {
           const remote = await loadSupabaseState(data.user);
@@ -2986,18 +2965,18 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (supabase) {
         const redirectTo = `${window.location.origin}${window.location.pathname}#/signin?mode=reset`;
         const { error } = await supabase.auth.resetPasswordForEmail(normalized, { redirectTo });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         return { ok: true };
       }
       return { ok: true };
     },
     updatePassword: async (newPassword) => {
-      if (newPassword.length < 6) {
-        return { ok: false, error: 'New password must be at least 6 characters.' };
+      if (newPassword.length < 8) {
+        return { ok: false, error: 'New password must be at least 8 characters.' };
       }
       if (supabase) {
         const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) return { ok: false, error: error.message };
+        if (error) return { ok: false, error: formatAuthErrorMessage(error) };
         setPasswordRecoveryPending(false);
         return { ok: true };
       }
@@ -3036,8 +3015,8 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
 
         if (!state.session) {
-          if (!input.password || input.password.length < 6) {
-            return { ok: false, error: 'Choose a password of at least 6 characters to create your HAMLET account.' };
+          if (!input.password || input.password.length < 8) {
+            return { ok: false, error: 'Choose a password of at least 8 characters to create your HAMLET account.' };
           }
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: applicantEmail,
@@ -3050,7 +3029,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
               },
             },
           });
-          if (signUpError) return { ok: false, error: signUpError.message };
+          if (signUpError) return { ok: false, error: formatAuthErrorMessage(signUpError) };
           if (!signUpData.session || !signUpData.user) {
             return { ok: true, needsEmailConfirmation: true };
           }

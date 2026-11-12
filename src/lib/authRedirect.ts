@@ -278,6 +278,58 @@ export function extractOAuthDisplayName(
 }
 
 /**
+ * Converts authentication provider errors into non-enumerating, user-safe copy.
+ * Never return raw provider messages to the browser UI.
+ */
+export function formatAuthErrorMessage(error: unknown): string {
+  const errorRecord = typeof error === 'object' && error !== null
+    ? error as { message?: unknown; code?: unknown }
+    : null;
+  const raw = error instanceof Error
+    ? error.message
+    : typeof error === 'string'
+      ? error
+      : typeof errorRecord?.message === 'string'
+        ? errorRecord.message
+        : '';
+  const code = typeof errorRecord?.code === 'string' ? errorRecord.code : '';
+  const message = `${raw} ${code}`.trim().toLowerCase();
+
+  if (
+    message.includes('invalid login credentials') ||
+    message.includes('invalid email or password') ||
+    message.includes('invalid_credentials') ||
+    message.includes('email or password is incorrect')
+  ) {
+    return 'The email or password is incorrect. Check your details or reset your password.';
+  }
+  if (
+    message.includes('user already registered') ||
+    message.includes('already been registered') ||
+    message.includes('user_already_exists') ||
+    message.includes('email_exists') ||
+    message.includes('user exists') ||
+    message.includes('duplicate key')
+  ) {
+    return 'We could not create that account. Try signing in or resetting your password.';
+  }
+  if (message.includes('rate limit') || message.includes('rate_limit') || message.includes('too many requests')) {
+    return 'There have been too many attempts. Wait a moment, then try again.';
+  }
+  if (message.includes('email not confirmed') || message.includes('email_not_confirmed')) {
+    return 'Please confirm your email address before signing in.';
+  }
+  if (message.includes('password') && (message.includes('weak') || message.includes('short') || message.includes('length'))) {
+    return 'Choose a stronger password and try again.';
+  }
+  if (message.includes('network') || message.includes('fetch failed') || message.includes('timeout')) {
+    return 'We could not reach HAMLET securely. Check your connection and try again.';
+  }
+
+  return 'We could not complete that request. Please try again.';
+}
+
+/**
  * Translates raw Supabase GoTrue / Google OAuth error codes and descriptions
  * into calm, actionable user-facing copy.
  */
@@ -302,7 +354,7 @@ export function formatOAuthErrorMessage(
   }
 
   if (desc) {
-    return desc;
+    return formatAuthErrorMessage(desc);
   }
 
   return 'Could not complete Google authentication right now. Please try again or continue with your email address.';
