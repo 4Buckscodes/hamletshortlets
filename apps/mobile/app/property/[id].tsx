@@ -73,9 +73,21 @@ export default function PropertyScreen() {
       setError('Enter valid dates in YYYY-MM-DD format. Check-out must be after check-in.');
       return;
     }
-    if (!property || !property.guest_nightly_ngn || property.guest_nightly_ngn <= 0) {\n      setError('The rate for this stay is not available yet. Please contact HAMLET before requesting it.');\n      return;\n    }\n    if (property.first_available_date && checkIn < property.first_available_date) {\n      setError('This stay is available from ' + property.first_available_date + ' onwards.');\n      return;\n    }\n    const guestCount = Number(guests);
+    if (!property || !property.guest_nightly_ngn || property.guest_nightly_ngn <= 0) {
+      setError('The rate for this stay is not available yet. Please contact HAMLET before requesting it.');
+      return;
+    }
+    if (property.first_available_date && checkIn < property.first_available_date) {
+      setError('This stay is available from ' + property.first_available_date + ' onwards.');
+      return;
+    }
+    const guestCount = Number(guests);
     if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > 20) {
       setError('Enter a guest count between 1 and 20.');
+      return;
+    }
+    if (property.capacity && guestCount > property.capacity) {
+      setError('This stay accommodates up to ' + property.capacity + ' guests.');
       return;
     }
     if (!supabase) { setError('Booking is not configured right now.'); return; }
@@ -119,7 +131,9 @@ export default function PropertyScreen() {
         <Text style={s.title}>{property.title}</Text>
         <Text style={s.body}>{[property.bedrooms ? property.bedrooms + ' bedrooms' : null, property.bathrooms ? property.bathrooms + ' bathrooms' : null, property.capacity ? 'Up to ' + property.capacity + ' guests' : null].filter(Boolean).join('  ·  ')}</Text>
         {property.trust_label ? <Text style={s.trust}>{property.trust_label}</Text> : null}
-        {property.guest_nightly_ngn ? <Text style={s.price}>{money(property.guest_nightly_ngn)} <Text style={s.perNight}>/ night</Text></Text> : <Text style={s.body}>Rate available on enquiry</Text>}\n        {Number(property.cleaning_fee) > 0 ? <Text style={s.meta}>Cleaning fee: {money(Number(property.cleaning_fee))}</Text> : null}\n        {Number(property.refundable_deposit) > 0 ? <Text style={s.deposit}>Refundable caution deposit: {money(Number(property.refundable_deposit))}</Text> : null}
+        {property.guest_nightly_ngn ? <Text style={s.price}>{money(property.guest_nightly_ngn)} <Text style={s.perNight}>/ night</Text></Text> : <Text style={s.body}>Rate available on enquiry</Text>}
+        {Number(property.cleaning_fee) > 0 ? <Text style={s.meta}>Cleaning fee: {money(Number(property.cleaning_fee))}</Text> : null}
+        {Number(property.refundable_deposit) > 0 ? <Text style={s.deposit}>Refundable caution deposit: {money(Number(property.refundable_deposit))}</Text> : null}
         {property.amenities?.length ? <View style={s.section}><Text style={s.sectionTitle}>Amenities</Text><Text style={s.body}>{property.amenities.join('  ·  ')}</Text></View> : null}
         {property.house_rules?.length ? <View style={s.section}><Text style={s.sectionTitle}>House rules</Text>{property.house_rules.map((rule,i)=><Text key={i} style={s.body}>• {rule}</Text>)}</View> : null}
 
