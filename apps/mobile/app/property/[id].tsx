@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';\nimport DateTimePicker from '@react-native-community/datetimepicker';
+import { useEffect, useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -62,7 +63,8 @@ export default function PropertyScreen() {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) {
-        const next = '/property/' + id + '?checkIn=' + encodeURIComponent(checkIn) + '&checkOut=' + encodeURIComponent(checkOut) + '&guests=' + encodeURIComponent(guests);\n        router.push({ pathname: '/sign-in', params: { next } });
+        const next = '/property/' + id + '?checkIn=' + encodeURIComponent(checkIn) + '&checkOut=' + encodeURIComponent(checkOut) + '&guests=' + encodeURIComponent(guests);
+        router.push({ pathname: '/sign-in', params: { next } });
         return;
       }
       const response = await fetch(HAMLET_API_BASE_URL + '/api/booking-requests', {
@@ -158,7 +160,9 @@ const s = StyleSheet.create({
   trust:{color:'#91C5A6',fontSize:11,marginTop:12},price:{color:'#F4F0E8',fontSize:21,fontWeight:'700',marginTop:18},perNight:{color:'#A8B2BE',fontSize:12,fontWeight:'400'},
   section:{marginTop:28},sectionTitle:{color:'#F4F0E8',fontSize:22,fontFamily:'serif'},booking:{marginTop:32,padding:18,backgroundColor:'#18283A',borderColor:'#314258',borderWidth:1,borderRadius:8},
   hint:{color:'#A8B2BE',fontSize:11,lineHeight:18,marginTop:9},label:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginTop:18,marginBottom:7},
-  input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},\n  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},\n  dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
+  input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},
+  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},
+  dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
   multiline:{minHeight:80,textAlignVertical:'top'},error:{color:'#F0A7A0',fontSize:12,marginTop:14},success:{color:'#9BD0AE',fontSize:12,lineHeight:19,marginTop:14},
   submit:{backgroundColor:'#C5A46D',borderRadius:5,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:20},disabled:{opacity:0.6},submitText:{color:'#142235',fontWeight:'700',fontSize:13},
 });
