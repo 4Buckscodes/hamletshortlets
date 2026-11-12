@@ -180,7 +180,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   }, [activeSlide, carouselPaused, images.length]);
 
   return (
-    <article className="editorial-card hamlet-depth flex flex-col overflow-hidden rounded-[18px] border border-[#E8E1D6] bg-white shadow-[0_8px_28px_rgba(43,49,39,.055)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(43,49,39,.12)]">
+    <article className="group flex flex-col overflow-hidden rounded-[18px] border border-[#E8E1D6] bg-white shadow-[0_8px_28px_rgba(28,36,55,.07)] transition-[box-shadow,border-color] duration-300 hover:border-[#D8C49E] hover:shadow-[0_14px_34px_rgba(28,36,55,.12)]">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
       <div className="relative aspect-[16/10] overflow-hidden bg-[#E7E1D5]" onMouseEnter={() => setCarouselPaused(true)} onMouseLeave={() => setCarouselPaused(false)} onFocusCapture={() => setCarouselPaused(true)} onBlurCapture={() => setCarouselPaused(false)}>
         {images.length > 0 ? (
