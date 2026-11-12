@@ -25,7 +25,8 @@ export default function PropertyScreen() {
   const [loading, setLoading] = useState(true);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);\n  const [dateDraft, setDateDraft] = useState(new Date());
+  const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);
+  const [dateDraft, setDateDraft] = useState(new Date());
   const [guests, setGuests] = useState('1');
   const [requests, setRequests] = useState('');
   const [busy, setBusy] = useState(false);
@@ -52,7 +53,21 @@ export default function PropertyScreen() {
     return () => { active = false; };
   }, [id]);
 
-  function applySelectedDate(selectedDate: Date) {\n    const year = selectedDate.getFullYear();\n    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');\n    const day = String(selectedDate.getDate()).padStart(2, '0');\n    const value = year + '-' + month + '-' + day;\n    if (dateField === 'checkIn') {\n      setCheckIn(value);\n      if (checkOut && checkOut <= value) setCheckOut('');\n    } else if (dateField === 'checkOut') {\n      setCheckOut(value);\n    }\n    setDateField(null);\n  }\n\n  async function requestBooking() {
+  function applySelectedDate(selectedDate: Date) {
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const value = year + '-' + month + '-' + day;
+    if (dateField === 'checkIn') {
+      setCheckIn(value);
+      if (checkOut && checkOut <= value) setCheckOut('');
+    } else if (dateField === 'checkOut') {
+      setCheckOut(value);
+    }
+    setDateField(null);
+  }
+
+  async function requestBooking() {
     setError(''); setSuccess('');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) {
       setError('Enter valid dates in YYYY-MM-DD format. Check-out must be after check-in.');
@@ -165,7 +180,8 @@ const s = StyleSheet.create({
   section:{marginTop:28},sectionTitle:{color:'#F4F0E8',fontSize:22,fontFamily:'serif'},booking:{marginTop:32,padding:18,backgroundColor:'#18283A',borderColor:'#314258',borderWidth:1,borderRadius:8},
   hint:{color:'#A8B2BE',fontSize:11,lineHeight:18,marginTop:9},label:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginTop:18,marginBottom:7},
   input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},
-  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},\n  dateConfirm:{backgroundColor:'#C5A46D',padding:12,alignItems:'center'},dateConfirmText:{color:'#142235',fontSize:12,fontWeight:'700'},
+  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},
+  dateConfirm:{backgroundColor:'#C5A46D',padding:12,alignItems:'center'},dateConfirmText:{color:'#142235',fontSize:12,fontWeight:'700'},
   dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
   multiline:{minHeight:80,textAlignVertical:'top'},error:{color:'#F0A7A0',fontSize:12,marginTop:14},success:{color:'#9BD0AE',fontSize:12,lineHeight:19,marginTop:14},
   submit:{backgroundColor:'#C5A46D',borderRadius:5,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:20},disabled:{opacity:0.6},submitText:{color:'#142235',fontWeight:'700',fontSize:13},
