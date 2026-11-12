@@ -25,11 +25,18 @@ export default function PropertyScreen() {
   const [loading, setLoading] = useState(true);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
+  const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);
   const [guests, setGuests] = useState('1');
   const [requests, setRequests] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (typeof initialCheckIn === 'string') setCheckIn(initialCheckIn);
+    if (typeof initialCheckOut === 'string') setCheckOut(initialCheckOut);
+    if (typeof initialGuests === 'string') setGuests(initialGuests);
+  }, [initialCheckIn, initialCheckOut, initialGuests]);
 
   useEffect(() => {
     let active = true;
