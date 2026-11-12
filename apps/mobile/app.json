@@ -6,16 +6,21 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
-    "plugins": ["expo-router"],
-    "experiments": { "typedRoutes": true },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.abundanceabodes.hamlet"
     },
     "android": {
       "package": "com.abundanceabodes.hamlet",
-      "adaptiveIcon": { "backgroundColor": "#101D2D" }
+      "adaptiveIcon": {
+        "backgroundColor": "#101D2D"
+      }
     }
   }
 }
