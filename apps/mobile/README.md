@@ -53,6 +53,7 @@ Implemented in this branch:
 - Property detail view, native Android/iOS date picker, guest count and special requests.
 - Guest booking request submission through the existing server-authoritative `/api/booking-requests` endpoint.
 - Guest booking history and cancellation through the existing `transition_booking` RPC.
+- Guest profile editing for full name and phone using Supabase Auth user metadata.
 
 Booking requests remain requests: the property partner must confirm availability before payment opens. No payment is captured in this milestone.
 
