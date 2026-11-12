@@ -47,6 +47,7 @@ export default function AccountScreen() {
               </View>
             </View>
             <Text style={s.body}>Your account is signed in. Booking requests and account-specific services will use this secure session.</Text>
+            <Link href="/profile" asChild><TouchableOpacity style={s.profileAction}><Text style={s.profileActionText}>Edit your profile  →</Text></TouchableOpacity></Link>
             <TouchableOpacity disabled={busy} onPress={signOut} style={s.secondary}>
               <Text style={s.secondaryText}>{busy ? 'Signing out…' : 'Sign out'}</Text>
             </TouchableOpacity>
@@ -79,6 +80,7 @@ const s = StyleSheet.create({
   name:{color:'#F4F0E8',fontSize:15,fontWeight:'700'},email:{color:'#A8B2BE',fontSize:12,marginTop:4},
   primary:{marginTop:26,padding:16,backgroundColor:'#C5A46D',borderRadius:5,alignItems:'center'},
   primaryText:{color:'#142235',fontSize:13,fontWeight:'700'},
+  profileAction:{marginTop:22,padding:14,borderWidth:1,borderColor:'#314258',borderRadius:5,alignItems:'center'},profileActionText:{color:'#C5A46D',fontSize:13,fontWeight:'700'},
   secondary:{marginTop:24,padding:15,borderWidth:1,borderColor:'#C5A46D',borderRadius:5,alignItems:'center'},
   secondaryText:{color:'#C5A46D',fontSize:13,fontWeight:'700'},
   error:{color:'#F0A7A0',fontSize:12,marginTop:14},
