@@ -50,7 +50,7 @@ Keep separate ledger treatment for:
 
 Owner-defined deal terms must be recorded as versioned, accepted commercial offers. Changes apply prospectively and must not silently rewrite terms attached to an existing booking.
 
-## Delivery sequence
+## Implemented in the current feature branch\n\n- Expo app shell and role-aware tabs.\n- Supabase session persistence using AsyncStorage.\n- Native email/password sign-in, guest sign-up, password reset request and email callback deep link.\n- Public approved stays catalogue and detail endpoints using the existing sanitised guest projection.\n- Native property detail screen and date selection.\n- Guest booking request POST to the existing server-authoritative booking route, including the current central pricing and availability checks.\n- Booking confirmation copy correctly states that partner confirmation is required before payment; no payment is captured in this milestone.\n\n## Delivery sequence
 
 ### M0 — Foundation
 Expo project, app identifiers, navigation, design tokens, environment validation, Supabase session persistence, deep links and CI checks.
