@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "latest",
-    "@react-native-async-storage/async-storage": "latest",
+    "@react-native-async-storage/async-storage": "latest",\n    "@react-native-community/datetimepicker": "latest",
     "@supabase/supabase-js": "^2.118.0",
     "expo": "^58.0.0",
     "expo-linking": "latest",
