@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - feat/hamlet-expo-mobile-app
     paths:
       - "apps/mobile/**"
 
