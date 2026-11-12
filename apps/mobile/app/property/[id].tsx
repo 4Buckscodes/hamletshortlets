@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';\nimport DateTimePicker from '@react-native-community/datetimepicker';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -19,7 +19,7 @@ const money = (amount: number) => new Intl.NumberFormat('en-NG', {
 }).format(amount);
 
 export default function PropertyScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, checkIn: initialCheckIn, checkOut: initialCheckOut, guests: initialGuests } = useLocalSearchParams<{ id: string; checkIn?: string; checkOut?: string; guests?: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkIn, setCheckIn] = useState('');
@@ -62,7 +62,7 @@ export default function PropertyScreen() {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) {
-        router.push({ pathname: '/sign-in', params: { next: '/property/' + id } });
+        const next = '/property/' + id + '?checkIn=' + encodeURIComponent(checkIn) + '&checkOut=' + encodeURIComponent(checkOut) + '&guests=' + encodeURIComponent(guests);\n        router.push({ pathname: '/sign-in', params: { next } });
         return;
       }
       const response = await fetch(HAMLET_API_BASE_URL + '/api/booking-requests', {
@@ -102,10 +102,39 @@ export default function PropertyScreen() {
         <View style={s.booking}>
           <Text style={s.sectionTitle}>Request your stay</Text>
           <Text style={s.hint}>Choose your dates. The property partner confirms availability before payment opens.</Text>
-          <Text style={s.label}>CHECK-IN · YYYY-MM-DD</Text>
-          <TextInput value={checkIn} onChangeText={setCheckIn} placeholder="2026-12-01" placeholderTextColor="#8290A0" style={s.input}/>
-          <Text style={s.label}>CHECK-OUT · YYYY-MM-DD</Text>
-          <TextInput value={checkOut} onChangeText={setCheckOut} placeholder="2026-12-04" placeholderTextColor="#8290A0" style={s.input}/>
+          <Text style={s.label}>CHECK-IN</Text>
+          <TouchableOpacity onPress={() => setDateField('checkIn')} style={s.dateButton}>
+            <Text style={checkIn ? s.dateValue : s.datePlaceholder}>{checkIn || 'Choose check-in date'}</Text>
+          </TouchableOpacity>
+          <Text style={s.label}>CHECK-OUT</Text>
+          <TouchableOpacity onPress={() => setDateField('checkOut')} style={s.dateButton}>
+            <Text style={checkOut ? s.dateValue : s.datePlaceholder}>{checkOut || 'Choose check-out date'}</Text>
+          </TouchableOpacity>
+          {dateField ? (
+            <View style={s.datePicker}>
+              <DateTimePicker
+                value={dateField === 'checkIn' && checkIn ? new Date(checkIn + 'T12:00:00') : dateField === 'checkOut' && checkOut ? new Date(checkOut + 'T12:00:00') : new Date()}
+                mode="date"
+                display="default"
+                minimumDate={dateField === 'checkOut' && checkIn ? new Date(checkIn + 'T12:00:00') : new Date()}
+                onChange={(_event, selectedDate) => {
+                  if (selectedDate) {
+                    const year = selectedDate.getFullYear();
+                    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(selectedDate.getDate()).padStart(2, '0');
+                    const value = year + '-' + month + '-' + day;
+                    if (dateField === 'checkIn') {
+                      setCheckIn(value);
+                      if (checkOut && checkOut <= value) setCheckOut('');
+                    } else {
+                      setCheckOut(value);
+                    }
+                  }
+                  setDateField(null);
+                }}
+              />
+            </View>
+          ) : null}
           <Text style={s.label}>GUESTS</Text>
           <TextInput value={guests} onChangeText={setGuests} keyboardType="number-pad" style={s.input}/>
           <Text style={s.label}>SPECIAL REQUESTS · OPTIONAL</Text>
@@ -129,7 +158,7 @@ const s = StyleSheet.create({
   trust:{color:'#91C5A6',fontSize:11,marginTop:12},price:{color:'#F4F0E8',fontSize:21,fontWeight:'700',marginTop:18},perNight:{color:'#A8B2BE',fontSize:12,fontWeight:'400'},
   section:{marginTop:28},sectionTitle:{color:'#F4F0E8',fontSize:22,fontFamily:'serif'},booking:{marginTop:32,padding:18,backgroundColor:'#18283A',borderColor:'#314258',borderWidth:1,borderRadius:8},
   hint:{color:'#A8B2BE',fontSize:11,lineHeight:18,marginTop:9},label:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginTop:18,marginBottom:7},
-  input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},
+  input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},\n  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},\n  dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
   multiline:{minHeight:80,textAlignVertical:'top'},error:{color:'#F0A7A0',fontSize:12,marginTop:14},success:{color:'#9BD0AE',fontSize:12,lineHeight:19,marginTop:14},
   submit:{backgroundColor:'#C5A46D',borderRadius:5,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:20},disabled:{opacity:0.6},submitText:{color:'#142235',fontWeight:'700',fontSize:13},
 });
