@@ -27,7 +27,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@v4
