@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { HAMLET_API_BASE_URL } from '@/lib/api';
@@ -25,7 +25,7 @@ export default function PropertyScreen() {
   const [loading, setLoading] = useState(true);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);
+  const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);\n  const [dateDraft, setDateDraft] = useState(new Date());
   const [guests, setGuests] = useState('1');
   const [requests, setRequests] = useState('');
   const [busy, setBusy] = useState(false);
@@ -52,7 +52,7 @@ export default function PropertyScreen() {
     return () => { active = false; };
   }, [id]);
 
-  async function requestBooking() {
+  function applySelectedDate(selectedDate: Date) {\n    const year = selectedDate.getFullYear();\n    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');\n    const day = String(selectedDate.getDate()).padStart(2, '0');\n    const value = year + '-' + month + '-' + day;\n    if (dateField === 'checkIn') {\n      setCheckIn(value);\n      if (checkOut && checkOut <= value) setCheckOut('');\n    } else if (dateField === 'checkOut') {\n      setCheckOut(value);\n    }\n    setDateField(null);\n  }\n\n  async function requestBooking() {
     setError(''); setSuccess('');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) {
       setError('Enter valid dates in YYYY-MM-DD format. Check-out must be after check-in.');
@@ -112,36 +112,33 @@ export default function PropertyScreen() {
           <Text style={s.sectionTitle}>Request your stay</Text>
           <Text style={s.hint}>Choose your dates. The property partner confirms availability before payment opens.</Text>
           <Text style={s.label}>CHECK-IN</Text>
-          <TouchableOpacity onPress={() => setDateField('checkIn')} style={s.dateButton}>
+          <TouchableOpacity onPress={() => { setDateDraft(checkIn ? new Date(checkIn + 'T12:00:00') : new Date()); setDateField('checkIn'); }} style={s.dateButton}>
             <Text style={checkIn ? s.dateValue : s.datePlaceholder}>{checkIn || 'Choose check-in date'}</Text>
           </TouchableOpacity>
           <Text style={s.label}>CHECK-OUT</Text>
-          <TouchableOpacity onPress={() => setDateField('checkOut')} style={s.dateButton}>
+          <TouchableOpacity onPress={() => { setDateDraft(checkOut ? new Date(checkOut + 'T12:00:00') : checkIn ? new Date(checkIn + 'T12:00:00') : new Date()); setDateField('checkOut'); }} style={s.dateButton}>
             <Text style={checkOut ? s.dateValue : s.datePlaceholder}>{checkOut || 'Choose check-out date'}</Text>
           </TouchableOpacity>
           {dateField ? (
             <View style={s.datePicker}>
               <DateTimePicker
-                value={dateField === 'checkIn' && checkIn ? new Date(checkIn + 'T12:00:00') : dateField === 'checkOut' && checkOut ? new Date(checkOut + 'T12:00:00') : new Date()}
+                value={dateDraft}
                 mode="date"
-                display="default"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 minimumDate={dateField === 'checkOut' && checkIn ? new Date(checkIn + 'T12:00:00') : new Date()}
-                onChange={(_event, selectedDate) => {
-                  if (selectedDate) {
-                    const year = selectedDate.getFullYear();
-                    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(selectedDate.getDate()).padStart(2, '0');
-                    const value = year + '-' + month + '-' + day;
-                    if (dateField === 'checkIn') {
-                      setCheckIn(value);
-                      if (checkOut && checkOut <= value) setCheckOut('');
-                    } else {
-                      setCheckOut(value);
-                    }
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) setDateDraft(selectedDate);
+                  if (Platform.OS === 'android') {
+                    if (event.type === 'set' && selectedDate) applySelectedDate(selectedDate);
+                    else setDateField(null);
                   }
-                  setDateField(null);
                 }}
               />
+              {Platform.OS === 'ios' ? (
+                <TouchableOpacity onPress={() => applySelectedDate(dateDraft)} style={s.dateConfirm}>
+                  <Text style={s.dateConfirmText}>Confirm date</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           ) : null}
           <Text style={s.label}>GUESTS</Text>
@@ -168,7 +165,7 @@ const s = StyleSheet.create({
   section:{marginTop:28},sectionTitle:{color:'#F4F0E8',fontSize:22,fontFamily:'serif'},booking:{marginTop:32,padding:18,backgroundColor:'#18283A',borderColor:'#314258',borderWidth:1,borderRadius:8},
   hint:{color:'#A8B2BE',fontSize:11,lineHeight:18,marginTop:9},label:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginTop:18,marginBottom:7},
   input:{color:'#F4F0E8',backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:13,fontSize:13},
-  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},
+  dateButton:{backgroundColor:'#101D2D',borderColor:'#314258',borderWidth:1,borderRadius:5,paddingHorizontal:12,paddingVertical:15},\n  dateConfirm:{backgroundColor:'#C5A46D',padding:12,alignItems:'center'},dateConfirmText:{color:'#142235',fontSize:12,fontWeight:'700'},
   dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
   multiline:{minHeight:80,textAlignVertical:'top'},error:{color:'#F0A7A0',fontSize:12,marginTop:14},success:{color:'#9BD0AE',fontSize:12,lineHeight:19,marginTop:14},
   submit:{backgroundColor:'#C5A46D',borderRadius:5,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:20},disabled:{opacity:0.6},submitText:{color:'#142235',fontWeight:'700',fontSize:13},
