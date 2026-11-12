@@ -16,13 +16,13 @@ export default function AuthCallbackScreen() {
       }
       try {
         const parsed = Linking.parse(url);
-        const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
+        const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;\n        const queryType = typeof parsed.queryParams?.type === 'string' ? parsed.queryParams.type : null;
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         } else {
           const hash = url.split('#')[1] || '';
-          const params = new URLSearchParams(hash);
+          const params = new URLSearchParams(hash);\n          if (params.get('type') === 'recovery') {\n            if (active) router.replace('/reset-password');\n            return;\n          }
           const access_token = params.get('access_token');
           const refresh_token = params.get('refresh_token');
           if (access_token && refresh_token) {
@@ -33,7 +33,7 @@ export default function AuthCallbackScreen() {
             if (!data.session) throw new Error('The confirmation link did not contain a valid session.');
           }
         }
-        if (active) router.replace('/(tabs)');
+        if (active) router.replace(queryType === 'recovery' ? '/reset-password' : '/(tabs)');
       } catch (caught) {
         if (active) setMessage(caught instanceof Error ? caught.message : 'Could not confirm this link.');
       }
