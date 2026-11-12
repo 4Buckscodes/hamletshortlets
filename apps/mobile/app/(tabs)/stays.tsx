@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';\nimport { Link } from 'expo-router';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getPublicStays, type PublicStay } from '@/lib/api';
 
