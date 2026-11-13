@@ -457,10 +457,14 @@ function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
 
   return (
     <div className="md:hidden" aria-label="Verified stays mobile carousel">
-      <div className="relative mx-auto h-[390px] w-full max-w-[430px] overflow-hidden [perspective:1100px]">
+      <div className="relative mx-auto h-[410px] w-full max-w-[430px] overflow-hidden [perspective:900px]">
         <div
           className="absolute inset-0"
-          style={{ transformStyle: 'preserve-3d' }}
+          style={{
+            transform: 'rotateY(' + (-activeIndex * (360 / count)) + 'deg)',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 760ms cubic-bezier(.2,.75,.25,1)',
+          }}
           onPointerDown={event => {
             pointerStart.current = { x: event.clientX, y: event.clientY };
           }}
@@ -486,21 +490,22 @@ function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
             const baths = Math.max(1, Math.trunc(Number(stay.bathrooms ?? 1)));
             const guests = Math.max(1, Math.trunc(Number(stay.capacity ?? 1)));
             const price = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
-            const translate = signedOffset * 205;
-            const rotate = signedOffset * -27;
+            const ringAngle = index * (360 / count);
+            const ringRadius = Math.min(330, Math.max(285, count * 48));
             return (
               <article
                 key={stay.id}
-                className="absolute left-1/2 top-[12px] w-[min(78vw,320px)] overflow-hidden rounded-[22px] border border-white/75 bg-[#171B24] text-[#F6F1E7] shadow-[0_26px_64px_rgba(28,36,55,.28)]"
+                className="absolute left-1/2 top-[12px] w-[min(78vw,320px)] overflow-hidden rounded-[22px] border border-white/80 bg-[#050505] text-[#F6F1E7] shadow-[0_28px_72px_rgba(0,0,0,.48)]"
                 style={{
                   height: '350px',
                   marginLeft: 'min(-160px, -39vw)',
-                  transform: 'translate3d(' + translate + 'px,0,' + (isActive ? 0 : -125) + 'px) rotateY(' + rotate + 'deg) scale(' + (isActive ? 1 : .9) + ')',
-                  opacity: Math.abs(signedOffset) > 1 ? 0 : isActive ? 1 : .78,
+                  transform: 'rotateY(' + ringAngle + 'deg) translateZ(' + ringRadius + 'px)',
+                  opacity: Math.abs(signedOffset) > 1 ? 0 : isActive ? 1 : .9,
                   zIndex: 20 - Math.abs(signedOffset),
-                  transition: 'transform 560ms cubic-bezier(.2,.75,.25,1), opacity 420ms ease',
+                  transition: 'opacity 420ms ease',
                   pointerEvents: isActive ? 'auto' : 'none',
                   backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
                 }}
                 aria-hidden={!isActive}
               >
