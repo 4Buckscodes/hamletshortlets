@@ -427,10 +427,10 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 
 function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const pointerStart = useRef<number | null>(null);
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const { currency, formatPrice } = useCurrency();
   const count = stays.length;
-  const step = count > 2 ? 360 / count : 120;
-  const radius = Math.min(190, Math.max(142, count * 24));
+  const activeStay = stays[activeIndex] ?? stays[0];
 
   const move = (direction: number) => {
     if (count < 2) return;
@@ -438,86 +438,145 @@ function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (pointerStart.current === null) return;
-    const delta = event.clientX - pointerStart.current;
+    if (!pointerStart.current) return;
+    const delta = event.clientX - pointerStart.current.x;
     pointerStart.current = null;
-    if (Math.abs(delta) > 36) move(delta < 0 ? 1 : -1);
+    if (Math.abs(delta) > 34) move(delta < 0 ? 1 : -1);
   };
 
   if (!count) return null;
 
+  const activeArea = (activeStay.area || 'Lagos').trim();
+  const activeTrust = getStayTrustStatus(activeStay);
+  const activeNightlyNgn = getValidPublicGuestNightlyNgn(activeStay.guest_nightly_ngn);
+  const activeAmenities = (activeStay.amenities ?? []).map((item: string) => item.trim()).filter(Boolean).slice(0, 5);
+  const activeBeds = formatCompactBedFact(activeStay.bedrooms, activeStay.property_type);
+  const activeBaths = Math.max(1, Math.trunc(Number(activeStay.bathrooms ?? 1)));
+  const activeGuests = Math.max(1, Math.trunc(Number(activeStay.capacity ?? 1)));
+  const activeHref = '/stays/' + encodeURIComponent(activeStay.id);
+
   return (
-    <div className="md:hidden" aria-label="Verified stays 3D carousel">
-      <div
-        className="relative h-[590px] touch-pan-y select-none"
-        style={{ perspective: '1100px' }}
-        onPointerDown={event => { pointerStart.current = event.clientX; }}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => { pointerStart.current = null; }}
-        onKeyDown={event => {
-          if (event.key === 'ArrowRight') move(1);
-          if (event.key === 'ArrowLeft') move(-1);
-        }}
-        tabIndex={0}
-        role="group"
-        aria-roledescription="carousel"
-        aria-label="Rotate through verified stays"
-      >
+    <div className="md:hidden" aria-label="Verified stays mobile carousel">
+      <div className="relative mx-auto h-[390px] w-full max-w-[430px] overflow-hidden [perspective:1100px]">
         <div
-          className="absolute left-1/2 top-0 h-full w-0"
-          style={{
-            transform: 'translateX(-50%) rotateY(' + (-activeIndex * step) + 'deg)',
-            transformStyle: 'preserve-3d',
-            transition: 'transform 650ms cubic-bezier(.2,.75,.25,1)',
+          className="absolute inset-0"
+          style={{ transformStyle: 'preserve-3d' }}
+          onPointerDown={event => {
+            pointerStart.current = { x: event.clientX, y: event.clientY };
           }}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => { pointerStart.current = null; }}
+          onKeyDown={event => {
+            if (event.key === 'ArrowRight') move(1);
+            if (event.key === 'ArrowLeft') move(-1);
+          }}
+          tabIndex={0}
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Swipe or use arrows to explore verified stays"
         >
-          {stays.map((stay, index) => (
-            <div
-              key={stay.id}
-              className="hamlet-mobile-ring-card absolute left-0 top-0 w-[min(82vw,340px)]"
-              style={{
-                marginLeft: 'max(-170px, -41vw)',
-                transform: 'rotateY(' + (index * step) + 'deg) translateZ(' + radius + 'px)',
-                transformStyle: 'preserve-3d',
-              }}
-              aria-hidden={index !== activeIndex}
-            >
-              <HomepageStayCard property={stay} />
-            </div>
-          ))}
+          {stays.map((stay, index) => {
+            const offset = ((index - activeIndex + count) % count);
+            const signedOffset = offset > count / 2 ? offset - count : offset;
+            const isActive = signedOffset === 0;
+            const image = (stay.image_urls ?? []).find((src: string) => src?.trim())?.trim();
+            const area = (stay.area || 'Lagos').trim();
+            const island = !isMainlandArea(area);
+            const beds = formatCompactBedFact(stay.bedrooms, stay.property_type);
+            const baths = Math.max(1, Math.trunc(Number(stay.bathrooms ?? 1)));
+            const guests = Math.max(1, Math.trunc(Number(stay.capacity ?? 1)));
+            const price = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
+            const translate = signedOffset * 235;
+            const rotate = signedOffset * -34;
+            return (
+              <article
+                key={stay.id}
+                className="absolute left-1/2 top-[18px] w-[min(72vw,290px)] overflow-hidden rounded-[22px] border border-white/70 bg-[#171B24] text-[#F6F1E7] shadow-[0_24px_54px_rgba(28,36,55,.22)]"
+                style={{
+                  height: '330px',
+                  marginLeft: 'min(-145px, -36vw)',
+                  transform: 'translate3d(' + translate + 'px,0,' + (isActive ? 0 : -105) + 'px) rotateY(' + rotate + 'deg) scale(' + (isActive ? 1 : .86) + ')',
+                  opacity: Math.abs(signedOffset) > 1 ? 0 : isActive ? 1 : .58,
+                  zIndex: 20 - Math.abs(signedOffset),
+                  transition: 'transform 560ms cubic-bezier(.2,.75,.25,1), opacity 420ms ease',
+                  pointerEvents: isActive ? 'auto' : 'none',
+                  backfaceVisibility: 'hidden',
+                }}
+                aria-hidden={!isActive}
+              >
+                <Link href={'/stays/' + encodeURIComponent(stay.id)} tabIndex={isActive ? 0 : -1} className="block h-full">
+                  <div className="relative h-[174px] overflow-hidden bg-[#3C4650]">
+                    {image ? (
+                      <img src={image} alt={stay.title} loading={isActive ? 'eager' : 'lazy'} decoding="async" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full place-items-center font-display text-5xl text-[#C9A45C]">H.</div>
+                    )}
+                    <span className="absolute left-4 top-4 rounded-[10px] border border-[#A6F4C5]/40 bg-[#0B5534]/80 px-3 py-2 text-[13px] font-semibold text-[#A6F4C5]">✓ Verified</span>
+                    <span className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#171B24]/65 to-transparent" />
+                  </div>
+                  <div className="flex h-[156px] flex-col px-4 pb-4 pt-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-[#D9BC84]">{island ? 'Island' : 'Mainland'} · {area}</p>
+                    <h3 className="mt-2 line-clamp-2 font-display text-[18px] font-semibold leading-[1.22] text-white">{stay.title}</h3>
+                    <p className="mt-3 text-[12px] text-white/65">{beds} · {baths} {baths === 1 ? 'bath' : 'baths'} · {guests} guests</p>
+                    <div className="mt-auto flex items-baseline justify-between gap-2">
+                      <strong className="text-[19px] font-semibold text-white">{price !== null ? formatPrice(price, { roundWhole: true }) : 'Rate on request'}</strong>
+                      <span className="text-[11px] text-white/55">per night</span>
+                    </div>
+                  </div>
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+
+        <button type="button" onClick={() => move(-1)} aria-label="Previous verified stay" className="absolute left-2 top-[46%] z-30 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#111722]/90 text-white shadow-lg backdrop-blur">
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button type="button" onClick={() => move(1)} aria-label="Next verified stay" className="absolute right-2 top-[46%] z-30 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#111722]/90 text-white shadow-lg backdrop-blur">
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="mx-auto -mt-1 w-full max-w-[430px] rounded-[22px] border border-[#E8E1D6] bg-white px-5 py-5 shadow-[0_14px_36px_rgba(28,36,55,.08)]">
+        <span className="inline-flex items-center gap-2 rounded-[10px] bg-[#ECFDF3] px-3 py-2 text-[13px] font-semibold text-[#0B5534]">
+          <span aria-hidden="true">✓</span> {activeTrust.badge}
+        </span>
+        <h3 className="mt-4 font-display text-[25px] font-semibold leading-[1.2] tracking-[-.025em] text-[#1C2437]">{activeStay.title}</h3>
+        <p className="mt-3 flex items-center gap-2 text-[14px] text-[#5D6577]">
+          <span aria-hidden="true">●</span> {isMainlandArea(activeArea) ? 'Mainland' : 'Island'} · {activeArea} · {formatAccommodationLabel(activeStay.property_type, activeStay.bedrooms)}
+        </p>
+        {activeAmenities.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {activeAmenities.map((amenity: string) => (
+              <span key={amenity} className="rounded-[10px] border border-[#E3D9C7] px-3 py-2 text-[13px] text-[#34483D]">{amenity}</span>
+            ))}
+          </div>
+        )}
+        <div className="mt-3 inline-flex rounded-[10px] border border-[#E3D9C7] px-3 py-2 text-[13px] text-[#34483D]">
+          {activeBeds} · {activeBaths} {activeBaths === 1 ? 'bath' : 'baths'} · {activeGuests} {activeGuests === 1 ? 'guest' : 'guests'}
+        </div>
+        <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-[#EEE9DC] pt-5">
+          <div>
+            <strong className="block text-[28px] font-semibold leading-tight tracking-[-.03em] text-[#1C2437]">
+              {activeNightlyNgn !== null ? formatPrice(activeNightlyNgn, { roundWhole: true }) : 'Rate on request'}
+            </strong>
+            <span className="mt-1 block text-[13px] text-[#5D6577]">
+              per night · partner confirms dates
+            </span>
+          </div>
+          <Link href={activeHref} className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-[#1C2437] px-6 text-[14px] font-semibold text-[#F6F1E7] transition hover:bg-[#34483D]">
+            View stay <span className="ml-2" aria-hidden="true">→</span>
+          </Link>
         </div>
       </div>
-      <div className="-mt-1 flex items-center justify-between gap-3 px-2">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-[#8B6B36]">Verified stays</p>
-          <p className="mt-1 text-xs tabular-nums text-[#5D6577]">
-            {String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => move(-1)}
-            aria-label="Previous verified stay"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D8CDBB] bg-white text-[#1C2437] transition-colors hover:border-[#1C2437]"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => move(1)}
-            aria-label="Next verified stay"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1C2437] text-white transition-colors hover:bg-[#34483D]"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+
+      <div className="mx-auto mt-4 flex max-w-[430px] items-center justify-between px-1">
+        <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#8B6B36]">Hand-checked · bookable on request</p>
+        <p className="text-xs tabular-nums text-[#6C756F]">{String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}</p>
       </div>
-      <p className="mt-2 text-center text-[11px] text-[#7A7F87]">Swipe to rotate · Tap a stay to view details</p>
     </div>
   );
 }
-
 function VerifiedStaysShowcase({ stays }: { stays: PublicStayRecord[] }) {
   if (!stays.length) return null;
 
