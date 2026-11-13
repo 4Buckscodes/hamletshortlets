@@ -18,23 +18,23 @@ export default function TabLayout() {
     }}>
       <Tabs.Screen name="index" options={{
         title: 'Explore',
-        tabBarIcon: ({ color, size }) => <Ionicons name="compass-outline" size={size} color={color} />,
+        tabBarIcon: ({ focused, size }) => <Ionicons name="compass-outline" size={size} color={focused ? '#C5A46D' : '#8390A0'} />,
       }} />
       <Tabs.Screen name="stays" options={{
         title: 'Stays',
-        tabBarIcon: ({ color, size }) => <Ionicons name="bed-outline" size={size} color={color} />,
+        tabBarIcon: ({ focused, size }) => <Ionicons name="bed-outline" size={size} color={focused ? '#C5A46D' : '#8390A0'} />,
       }} />
       <Tabs.Screen name="bookings" options={{
         title: 'Bookings',
-        tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
+        tabBarIcon: ({ focused, size }) => <Ionicons name="calendar-outline" size={size} color={focused ? '#C5A46D' : '#8390A0'} />,
       }} />
       <Tabs.Screen name="partner" options={{
         title: 'Partner',
-        tabBarIcon: ({ color, size }) => <Ionicons name="business-outline" size={size} color={color} />,
+        tabBarIcon: ({ focused, size }) => <Ionicons name="business-outline" size={size} color={focused ? '#C5A46D' : '#8390A0'} />,
       }} />
       <Tabs.Screen name="account" options={{
         title: 'Account',
-        tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+        tabBarIcon: ({ focused, size }) => <Ionicons name="person-outline" size={size} color={focused ? '#C5A46D' : '#8390A0'} />,
       }} />
     </Tabs>
   );
