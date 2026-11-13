@@ -777,47 +777,70 @@ export function HomeMarketplaceExperience({
 
   return (
     <div className="bg-[#F6F1E7] text-[#1C2437]">
-      {/* ── Editorial Lagos hero + integrated booking search ── */}
-      <section className="relative isolate min-h-[600px] overflow-hidden bg-[#161D2D] text-[#F6F1E7] sm:min-h-[700px] lg:min-h-[720px]">
-        <div aria-hidden="true" className="absolute inset-0 z-0 bg-cover bg-[center_48%]" style={{ backgroundImage: "url('https://images.pexels.com/photos/37405043/pexels-photo-37405043.jpeg?auto=compress&cs=tinysrgb&w=2400')" }} />
-        <div aria-hidden="true" className="absolute inset-0 z-10 bg-[linear-gradient(90deg,rgba(22,29,45,.84)_0%,rgba(22,29,45,.58)_48%,rgba(22,29,45,.16)_100%),linear-gradient(0deg,rgba(22,29,45,.76)_0%,transparent_58%)]" />
-        <div aria-hidden="true" className="absolute inset-0 z-10 opacity-[0.14] mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #F7E7CA 0, transparent 34%), radial-gradient(circle at 80% 75%, #C9A45C 0, transparent 28%)' }} />
+      {/* ── HAMLET editorial collage hero + integrated booking search ── */}
+      {(() => {
+        const heroPhotos = bookableStays
+          .flatMap(stay => (stay.image_urls ?? []).filter((src: string) => typeof src === 'string' && src.trim()).map((src: string) => ({ src: src.trim(), title: stay.title })))
+          .filter((photo, index, all) => all.findIndex(item => item.src === photo.src) === index)
+          .slice(0, 3);
+        return (
+          <section className="bg-[#F6F1E7] px-5 pb-12 pt-7 text-[#1C2437] sm:px-8 sm:pb-16 sm:pt-10 lg:px-12 lg:pt-14">
+            <div className="mx-auto max-w-[1240px]">
+              <div className="mb-7 flex items-center justify-between gap-4 sm:mb-9">
+                <div className="flex items-center gap-2.5">
+                  <span className="font-display text-[31px] font-bold leading-none tracking-[-.06em] text-[#1C2437] sm:text-[36px]">H<span className="text-[#C9A45C]">.</span></span>
+                  <span className="font-display text-[21px] font-semibold tracking-[.02em] text-[#1C2437] sm:text-[25px]">HAMLET<span className="text-[#C9A45C]">.</span></span>
+                </div>
+                <span className="hidden rounded-full border border-[#D9DCE2] bg-white/80 px-4 py-2 text-[12px] font-semibold tracking-[.04em] text-[#34415B] sm:inline-flex sm:items-center sm:gap-2">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
+                  HAMLET.REST · Verified Lagos shortlets
+                </span>
+              </div>
 
-        <div className="relative z-20 mx-auto flex min-h-[600px] max-w-[1320px] flex-col justify-between px-5 pb-7 pt-10 sm:min-h-[700px] sm:px-8 sm:pb-10 lg:min-h-[720px] lg:px-12 lg:pb-12 lg:pt-24">
-          <div className="max-w-[780px] pt-5 sm:pt-10 lg:pt-12">
-            <h1 className="max-w-[760px] font-display text-[clamp(2.65rem,10.5vw,3.35rem)] font-medium leading-[0.99] tracking-[-0.045em] text-[#F6F1E7] min-[390px]:text-[3.4rem] sm:text-[68px] lg:text-[88px]">
-              Find a stay that feels like <span className="italic text-[#D9BC84]">Lagos.</span>
-            </h1>
-            <p className="mt-4 max-w-[420px] text-[14px] leading-6 text-white/85 sm:mt-5 sm:max-w-[480px] sm:text-[17px] sm:leading-8">
-              Thoughtful spaces. Distinct neighbourhoods. A better way to experience the city.
-            </p>
-            <Link href="/stays" className="mt-5 inline-flex min-h-11 sm:mt-7 sm:min-h-12 items-center gap-3 border-b border-[#D9BC84] pb-1 text-[14px] font-semibold text-white transition hover:gap-5">
-              Explore stays <span aria-hidden="true" className="text-[#D9BC84]">↗</span>
-            </Link>
-          </div>
+              <div className="grid items-center gap-7 lg:grid-cols-[.92fr_1.08fr] lg:gap-12">
+                <div className="max-w-[570px]">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#D9DCE2] bg-white/85 px-3.5 py-2 text-[11px] font-semibold text-[#34415B] shadow-sm sm:hidden">
+                    <span aria-hidden="true">✓</span> HAMLET.REST · Verified Lagos shortlets
+                  </span>
+                  <h1 className="mt-5 font-display text-[clamp(2.8rem,9vw,4.6rem)] font-semibold leading-[.99] tracking-[-.055em] text-[#17233D] lg:mt-0 lg:text-[clamp(3.8rem,5.2vw,5.5rem)]">
+                    Find your stay<span className="text-[#C9A45C]">.</span>
+                  </h1>
+                  <p className="mt-4 max-w-[520px] text-[15px] leading-[1.7] text-[#596579] sm:text-[17px]">
+                    Thoughtfully selected shortlets across Lagos Island and Mainland. Find a place that feels right, then make it yours for a while.
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] font-semibold text-[#43516A] sm:text-[13px]">
+                    <span className="inline-flex items-center gap-2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>Reviewed listings</span>
+                    <span className="inline-flex items-center gap-2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Lagos, made easier</span>
+                  </div>
+                </div>
 
-          <div role="search" aria-label="Search Lagos shortlets" className="relative z-10 mx-auto mt-8 w-full max-w-[1040px] sm:mt-12 rounded-[22px] border border-white/55 bg-[#F6F1E7] p-2.5 text-[#1C2437] shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-xl sm:rounded-full sm:p-2">
-            <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-expanded={sheetOpen} aria-label="Find a stay" className="grid min-h-[66px] w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-3 rounded-full px-4 text-left transition hover:bg-[#EFE8D9] sm:grid-cols-[1.2fr_1fr_.8fr_auto] sm:px-5">
-              <span className="min-w-0 border-b border-[#DED7C9] pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B6B36]">Destination</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#1C2437]">{pillWhereLabel}</strong>
-              </span>
-              <span className="hidden min-w-0 border-r border-[#DED7C9] px-5 sm:block">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B6B36]">Dates</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#1C2437]">{checkIn && checkOut ? `${formatPillDate(checkIn)} – ${formatPillDate(checkOut)}` : 'Add your dates'}</strong>
-              </span>
-              <span className="hidden min-w-0 px-5 sm:block">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B6B36]">Guests</span>
-                <strong className="mt-1 block truncate text-[14px] font-semibold text-[#1C2437]">{guests} {guests === 1 ? 'guest' : 'guests'}</strong>
-              </span>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1C2437] text-[#F6F1E7] shadow-[0_6px_18px_rgba(28,36,55,.24)] transition hover:bg-[#1B3560]">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              </span>
-              <span className="col-span-2 px-1 text-[12px] text-[#5D6577] sm:hidden">{pillSubLabel}</span>
-            </button>
-          </div>
-        </div>
-      </section>
+                <div className="grid h-[300px] grid-cols-[1.12fr_.88fr] grid-rows-2 gap-3 sm:h-[390px] sm:gap-4 lg:h-[430px]">
+                  <div className="relative row-span-2 overflow-hidden rounded-[25px] bg-[#E5DED0] sm:rounded-[32px]">
+                    {heroPhotos[0] ? <img src={heroPhotos[0].src} alt={heroPhotos[0].title} loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center font-display text-6xl text-[#C9A45C]">H.</div>}
+                  </div>
+                  <div className="relative overflow-hidden rounded-[22px] bg-[#E5DED0] sm:rounded-[28px]">
+                    {heroPhotos[1] ? <img src={heroPhotos[1].src} alt={heroPhotos[1].title} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="h-full bg-gradient-to-br from-[#E8E0D2] to-[#C9B99F]" />}
+                  </div>
+                  <div className="relative overflow-hidden rounded-[22px] bg-[#E5DED0] sm:rounded-[28px]">
+                    {heroPhotos[2] ? <img src={heroPhotos[2].src} alt={heroPhotos[2].title} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="h-full bg-gradient-to-br from-[#D9D4C8] to-[#AAB2B0]" />}
+                  </div>
+                </div>
+              </div>
+
+              <div role="search" aria-label="Search Lagos shortlets" className="relative z-10 mx-auto mt-5 flex w-full max-w-[1040px] flex-col gap-3 rounded-[22px] border border-[#E4E0D8] bg-white/95 p-4 shadow-[0_14px_40px_rgba(28,36,55,.07)] sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:rounded-[26px] sm:px-6 sm:py-4">
+                <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-expanded={sheetOpen} aria-label="Edit stay search" className="flex min-w-0 flex-1 flex-col text-left">
+                  <strong className="text-[15px] font-semibold text-[#17233D]">Find your stay</strong>
+                  <span className="mt-1 truncate text-[13px] text-[#697386]">{pillWhereLabel}</span>
+                  <span className="mt-0.5 text-[12px] text-[#8A92A0] sm:hidden">{pillSubLabel}</span>
+                </button>
+                <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-3 rounded-full bg-[#17233D] px-6 text-[13px] font-semibold text-white transition hover:bg-[#263653]">
+                  Edit search <ChevronRight className="h-4 w-4 rotate-90" />
+                </button>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── Interactive "Find a stay" Filter Sheet / Modal ── */}
       {sheetOpen && (
