@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Link, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Session } from '@supabase/supabase-js';
@@ -60,12 +60,9 @@ export default function PartnerScreen() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    void load().finally(() => { if (!active) return; });
-    const subscription = supabase?.auth.onAuthStateChange(() => { if (active) void load(); }).data.subscription;
-    return () => { active = false; subscription?.unsubscribe(); };
-  }, [load]);
+  useFocusEffect(useCallback(() => {
+    void load();
+  }, [load]));
 
   async function submitApplication() {
     setError(''); setNotice('');
