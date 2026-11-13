@@ -25,6 +25,7 @@ export default function PartnerScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [application, setApplication] = useState<Application | null>(null);
   const [profileRole, setProfileRole] = useState('guest');
+  const [partnerRole, setPartnerRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [role, setRole] = useState<string>('Property owner');
@@ -44,11 +45,12 @@ export default function PartnerScreen() {
     setSession(current);
     if (!current?.user) { setLoading(false); return; }
     const [{ data: profile }, { data: apps, error: appError }] = await Promise.all([
-      supabase.from('profiles').select('role,full_name,phone,company').eq('id', current.user.id).maybeSingle(),
+      supabase.from('profiles').select('role,partner_role,full_name,phone,company').eq('id', current.user.id).maybeSingle(),
       supabase.from('partner_applications').select('id,full_name,role,status,review_note,submitted_at').eq('applicant_id', current.user.id).order('submitted_at', { ascending: false }).limit(1),
     ]);
     if (profile) {
       setProfileRole(String(profile.role || 'guest'));
+      setPartnerRole(String(profile.partner_role || ''));
       setFullName(String(profile.full_name || current.user.user_metadata?.full_name || ''));
       setPhone(String(profile.phone || current.user.user_metadata?.phone || ''));
       setCompany(String(profile.company || ''));
@@ -98,6 +100,8 @@ export default function PartnerScreen() {
 
   const approved = profileRole === 'partner' || application?.status === 'approved';
   const pending = application?.status === 'pending';
+  const inventoryRole = (application?.role || partnerRole) !== 'Closing agent';
+  const canSubmitListing = inventoryRole && (approved || pending);
 
   return (
     <SafeAreaView style={s.safe}>
@@ -116,7 +120,8 @@ export default function PartnerScreen() {
             <Text style={s.status}>PARTNER ACCESS ACTIVE</Text>
             <Text style={s.panelTitle}>Welcome to the network.</Text>
             <Text style={s.body}>Your partner role is {application?.role || 'approved partner'}. Partner tools will only expose actions permitted for your account.</Text>
-            <Text style={s.small}>The mobile property workspace and agent deal board are being connected to the existing HAMLET permissions and booking services.</Text>
+            <Text style={s.small}>Your partner access is active. Property actions remain protected by your approved role and the existing HAMLET backend.</Text>
+            {canSubmitListing ? <Link href="/partner/new-property" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Add a property  →</Text></TouchableOpacity></Link> : <Text style={s.small}>Agent deal access will be available in the next partner workspace release.</Text>}
           </View>
         ) : pending ? (
           <View style={s.panel}>
@@ -124,6 +129,7 @@ export default function PartnerScreen() {
             <Text style={s.panelTitle}>We've received your details.</Text>
             <Text style={s.body}>Your application as {application?.role} is awaiting HAMLET review. You can return here to check its status.</Text>
             <Text style={s.small}>Submitted {new Date(application.submitted_at).toLocaleDateString()}</Text>
+            {canSubmitListing ? <Link href="/partner/new-property" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Start a property listing  →</Text></TouchableOpacity></Link> : null}
           </View>
         ) : application?.status === 'rejected' ? (
           <View style={s.panel}>
