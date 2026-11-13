@@ -428,7 +428,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
-  const { currency, formatPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
   const count = stays.length;
   const activeStay = stays[activeIndex] ?? stays[0];
 
