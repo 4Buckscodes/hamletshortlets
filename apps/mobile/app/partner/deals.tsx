@@ -69,6 +69,7 @@ export default function PartnerDealsScreen() {
         <Text style={s.eyebrow}>PARTNER PERFORMANCE · LAST 90 DAYS</Text>
         <Text style={s.title}>Your network.{ '\n' }Your momentum.</Text>
         <Text style={s.body}>Performance and earnings are read from HAMLET’s attributed share events, bookings and payout ledger.</Text>
+        <TouchableOpacity onPress={()=>router.push("/partner/agent-inventory")} style={s.inventoryButton}><Text style={s.inventoryButtonText}>Browse approved inventory & share with guests  →</Text></TouchableOpacity>
         {loading?<View style={s.loading}><ActivityIndicator color="#C5A46D"/></View>:error?<View style={s.panel}><Text style={s.error}>{error}</Text><TouchableOpacity onPress={()=>void load()} style={s.outline}><Text style={s.outlineText}>Try again</Text></TouchableOpacity></View>:<>
           <View style={s.codePanel}>
             <Text style={s.label}>YOUR PARTNER REFERRAL CODE</Text>
@@ -120,6 +121,7 @@ function Finance({label,value}:{label:string;value:string}){return <View style={
 function Mini({label,value}:{label:string;value:string}){return <View style={s.mini}><Text style={s.miniValue}>{value}</Text><Text style={s.hint}>{label}</Text></View>;}
 
 const s=StyleSheet.create({
+ inventoryButton:{marginTop:18,padding:14,borderWidth:1,borderColor:"#C5A46D",borderRadius:5,alignItems:"center"},inventoryButtonText:{color:"#C5A46D",fontSize:11,fontWeight:"700"},
  safe:{flex:1,backgroundColor:'#101D2D'},content:{padding:22,paddingTop:16,paddingBottom:42},
  back:{color:'#A8B2BE',fontSize:12,marginBottom:28},eyebrow:{color:'#C5A46D',fontSize:9,letterSpacing:1.5,fontWeight:'700'},
  title:{color:'#F4F0E8',fontSize:38,lineHeight:42,fontFamily:'serif',marginTop:14},body:{color:'#A8B2BE',fontSize:13,lineHeight:21,marginTop:10},
