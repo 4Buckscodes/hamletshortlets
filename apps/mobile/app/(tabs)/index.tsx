@@ -7,7 +7,11 @@ const p = {
   ivory: '#F4F0E8', muted: '#A8B2BE', gold: '#C5A46D', line: '#314258',
 };
 
-const destinations = [\n  { city: 'Lagos', available: true },\n  { city: 'Abuja', available: false },\n  { city: 'Ibadan', available: false },\n];
+const destinations = [
+  { city: 'Lagos', available: true },
+  { city: 'Abuja', available: false },
+  { city: 'Ibadan', available: false },
+];
 
 export default function ExploreScreen() {
   return (
@@ -125,7 +129,9 @@ const s = StyleSheet.create({
   counter: { color: p.muted, fontSize: 10, marginBottom: 5 },
   cityRow: { flexDirection: 'row', gap: 9, marginTop: 22 },
   cityChip: { paddingHorizontal: 17, paddingVertical: 12, borderWidth: 1, borderColor: p.line, borderRadius: 24 },
-  cityText: { color: p.ivory, fontSize: 13 },\n  cityChipDisabled: { borderStyle: 'dashed', opacity: 0.65 },\n  cityTextDisabled: { color: p.muted, fontSize: 12 },
+  cityText: { color: p.ivory, fontSize: 13 },
+  cityChipDisabled: { borderStyle: 'dashed', opacity: 0.65 },
+  cityTextDisabled: { color: p.muted, fontSize: 12 },
   collection: { marginTop: 52, backgroundColor: p.surface, padding: 24, borderRadius: 8, borderWidth: 1, borderColor: p.line },
   spark: { width: 38, height: 38, borderRadius: 19, backgroundColor: p.raised, alignItems: 'center', justifyContent: 'center', marginBottom: 22 },
   sparkText: { color: p.gold, fontSize: 20 },
