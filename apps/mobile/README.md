@@ -11,8 +11,8 @@ One app with role-aware experiences for guests, owners, property managers and ag
 1. Install Node.js 22.13 or newer.
 2. Copy `.env.example` to `.env` and provide the existing HAMLET Supabase project URL, publishable key and API origin.
 3. Run `npm install`.
-4. Run `npx expo install --fix` to align SDK-managed dependencies.
-5. Run `npx expo-doctor`.
+4. Run `npx expo-doctor` to validate SDK-managed dependencies; avoid automatic dependency rewrites without reviewing the Expo SDK compatibility matrix.
+5. Run `npx tsc --noEmit`.
 6. Run `npx expo start` for the Metro development server.
 7. For native module and release-candidate QA, create an EAS development build with `npx eas-cli build --profile development --platform android` or `--platform ios`. Use an Expo Go client only when it matches SDK 58; prefer development builds for ongoing product work.
 
