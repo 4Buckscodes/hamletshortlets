@@ -425,79 +425,112 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
 }
 
 
-function ThreeDStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
-  const railRef = useRef<HTMLDivElement | null>(null);
+function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const pointerStart = useRef<number | null>(null);
   const count = stays.length;
+  const step = count > 2 ? 360 / count : 120;
+  const radius = Math.min(190, Math.max(142, count * 24));
 
-  const scrollToCard = (direction: number) => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const card = rail.querySelector<HTMLElement>('[data-stay-slide]');
-    const step = card ? card.getBoundingClientRect().width + 20 : rail.clientWidth * 0.86;
-    rail.scrollBy({ left: direction * step, behavior: 'smooth' });
+  const move = (direction: number) => {
+    if (count < 2) return;
+    setActiveIndex(current => (current + direction + count) % count);
   };
 
-  const updateActive = () => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const card = rail.querySelector<HTMLElement>('[data-stay-slide]');
-    if (!card) return;
-    const step = card.getBoundingClientRect().width + 20;
-    setActiveIndex(Math.min(count - 1, Math.max(0, Math.round(rail.scrollLeft / step))));
+  const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (pointerStart.current === null) return;
+    const delta = event.clientX - pointerStart.current;
+    pointerStart.current = null;
+    if (Math.abs(delta) > 36) move(delta < 0 ? 1 : -1);
   };
 
-  if (count === 0) return null;
+  if (!count) return null;
 
   return (
-    <section className="mx-auto w-full max-w-[1180px]" aria-label="Featured verified Lagos stays">
+    <div className="md:hidden" aria-label="Verified stays 3D carousel">
       <div
-        ref={railRef}
-        onScroll={updateActive}
-        className="hamlet-stay-rail flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-6 pb-3 pt-1 sm:gap-5 sm:px-[calc((100%-430px)/2)] lg:px-[calc((100%-390px)/2)]"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        className="relative h-[590px] touch-pan-y select-none"
+        style={{ perspective: '1100px' }}
+        onPointerDown={event => { pointerStart.current = event.clientX; }}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => { pointerStart.current = null; }}
+        onKeyDown={event => {
+          if (event.key === 'ArrowRight') move(1);
+          if (event.key === 'ArrowLeft') move(-1);
+        }}
+        tabIndex={0}
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="Rotate through verified stays"
       >
-        {stays.map((stay) => (
-          <div
-            key={stay.id}
-            data-stay-slide
-            className="w-[calc(100vw-64px)] max-w-[430px] shrink-0 snap-center sm:w-[430px] lg:w-[390px]"
-          >
-            <HomepageStayCard property={stay} />
-          </div>
-        ))}
+        <div
+          className="absolute left-1/2 top-0 h-full w-0"
+          style={{
+            transform: 'translateX(-50%) rotateY(' + (-activeIndex * step) + 'deg)',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 650ms cubic-bezier(.2,.75,.25,1)',
+          }}
+        >
+          {stays.map((stay, index) => (
+            <div
+              key={stay.id}
+              className="hamlet-mobile-ring-card absolute left-0 top-0 w-[min(82vw,340px)]"
+              style={{
+                marginLeft: 'max(-170px, -41vw)',
+                transform: 'rotateY(' + (index * step) + 'deg) translateZ(' + radius + 'px)',
+                transformStyle: 'preserve-3d',
+              }}
+              aria-hidden={index !== activeIndex}
+            >
+              <HomepageStayCard property={stay} />
+            </div>
+          ))}
+        </div>
       </div>
-
-      <div className="mt-5 flex items-center justify-between gap-4 px-1 sm:px-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#8B6B36]">The HAMLET edit</p>
-          <span className="h-px w-8 bg-[#D8CDBB]" />
-          <p className="text-xs tabular-nums text-[#6C756F]">
+      <div className="-mt-1 flex items-center justify-between gap-3 px-2">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-[#8B6B36]">Verified stays</p>
+          <p className="mt-1 text-xs tabular-nums text-[#5D6577]">
             {String(activeIndex + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => scrollToCard(-1)}
-            disabled={activeIndex === 0}
-            aria-label="Previous featured stay"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D8CDBB] bg-transparent text-[#1C2437] transition-colors hover:border-[#1C2437] disabled:opacity-30"
+            onClick={() => move(-1)}
+            aria-label="Previous verified stay"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D8CDBB] bg-white text-[#1C2437] transition-colors hover:border-[#1C2437]"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
-            onClick={() => scrollToCard(1)}
-            disabled={activeIndex >= count - 1}
-            aria-label="Next featured stay"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#1C2437] bg-[#1C2437] text-white transition-colors hover:bg-[#34483D] disabled:opacity-30"
+            onClick={() => move(1)}
+            aria-label="Next verified stay"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#1C2437] text-white transition-colors hover:bg-[#34483D]"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <p className="mt-2 text-center text-[11px] text-[#7A7F87] sm:hidden">Swipe to explore stays</p>
+      <p className="mt-2 text-center text-[11px] text-[#7A7F87]">Swipe to rotate · Tap a stay to view details</p>
+    </div>
+  );
+}
+
+function VerifiedStaysShowcase({ stays }: { stays: PublicStayRecord[] }) {
+  if (!stays.length) return null;
+
+  return (
+    <section className="mx-auto w-full max-w-[1180px]" aria-label="Verified stays">
+      <MobileVerifiedStayCarousel stays={stays} />
+      <div className="hidden grid-cols-2 gap-5 md:grid lg:grid-cols-3 lg:gap-7">
+        {stays.map(stay => (
+          <div key={stay.id} className="hamlet-verified-hover rounded-[18px]">
+            <HomepageStayCard property={stay} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -1119,7 +1152,7 @@ export function HomeMarketplaceExperience({
             )}
           </div>
         ) : (
-          <ThreeDStayCarousel stays={displayedStays} />
+          <VerifiedStaysShowcase stays={displayedStays} />
         )}
 
         <div className="mt-[18px] lg:mt-7">
