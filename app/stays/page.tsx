@@ -88,19 +88,16 @@ export default async function StaysCataloguePage({
       <JsonLd id="hamlet-stays-jsonld" data={staysPageSchema} />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <header className="mb-8 flex flex-col gap-3 border-b border-ink-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <header className="mb-8 flex flex-col gap-3 border-b border-[#DADFD5]/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
-              Lagos Island &amp; Lagos Mainland
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
+            <h1 className="mt-0 font-display text-3xl font-bold leading-tight text-[#102D24] sm:text-4xl">
               Explore verified shortlet stays across Lagos.
             </h1>
           </div>
 
           <Link
             href="/lagos"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-900 shadow-2xs transition hover:border-ink-900 sm:self-auto"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-full border border-[#DADFD5] bg-white px-4 text-xs font-bold text-[#173F32] shadow-2xs transition hover:border-[#173F32] sm:self-auto"
           >
             Lagos guide →
           </Link>

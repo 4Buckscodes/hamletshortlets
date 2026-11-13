@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNextHoratio } from '@/components/site/SiteShell';
 
 export type FaqCategory = 'all' | 'trust' | 'pricing' | 'stay';
@@ -105,7 +105,7 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
             onClick={() => openHoratio()}
             className="btn-outline min-h-11 !rounded-full"
           >
-            <Sparkles className="h-4 w-4 shrink-0 text-brass-600" /> Ask Horatio
+            Ask Horatio
           </button>
           <Link href="/stays" className="btn-jade min-h-11 !rounded-full">
             Explore stays <ArrowRight className="h-4 w-4 shrink-0" />

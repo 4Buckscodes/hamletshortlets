@@ -11,7 +11,6 @@ import {
   MessageCircle,
   QrCode,
   Search,
-  Sparkles,
 } from 'lucide-react';
 import { formatAccommodationLabel, getValidGuestNightlyNgn } from '@/lib/discovery';
 import {
@@ -524,9 +523,6 @@ function PartnerMarketingContent() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 pb-5">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-950 text-brass-400">
-                    <Sparkles className="h-4 w-4 shrink-0" />
-                  </span>
                   <div>
                     <h2 className="serif m-0 text-2xl font-medium text-ink-950">
                       {studioTab === 'card'

@@ -10,22 +10,26 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
     const h1Matches = homeSource.match(/<h1\b/g) ?? [];
     expect(h1Matches.length).toBe(1);
-    expect(homeSource).toContain('Find your next stay.');
-    expect(homeSource).toContain('Verified Shortlets · Lagos');
-    expect(homeSource).toContain(
-      'Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.',
-    );
+    expect(homeSource).toContain('Find a stay that feels like');
+    expect(homeSource).not.toContain('STAYS WITH ACCOUNTABILITY · LAGOS');
   });
 
-  it('includes the Deep Navy (#0E1F3B) hero with the skyscraper & bridge skyline SVG while keeping the cream search pill and Find a stay sheet untouched', () => {
+  it('includes the full-bleed editorial Lagos hero and integrated booking search', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
+    const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
 
-    // Deep Navy hero + Lagos Lagoon skyscraper & cable-stayed bridge illustration (IMG_4462)
-    expect(homeSource).toContain('bg-[#0E1F3B]');
-    expect(homeSource).toContain('viewBox="0 0 390 210"');
-    expect(homeSource).toContain('cx="296" cy="64" r="30" fill="#C9A45C"');
-    expect(homeSource).toContain('M0 150Q195 70 390 150');
-    expect(homeSource).toContain('M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156');
+    // Editorial full-bleed Lagos photography with a clear headline and booking search.
+    expect(homeSource).toContain('Find a stay that feels like');
+    expect(homeSource).toContain('images.pexels.com/photos/37405043/pexels-photo-37405043.jpeg');
+    expect(homeSource).toContain('Thoughtful spaces. Distinct neighbourhoods.');
+    expect(homeSource).toContain('Destination');
+    expect(homeSource).toContain('Dates');
+    expect(homeSource).toContain('Guests');
+    expect(homeSource).not.toContain('LAGOS_LANDMARKS');
+    expect(homeSource).not.toContain('Illustrated Lagos lagoon skyline');
+    expect(homeSource).toContain('window.setInterval(advance, 4800)');
+    expect(homeSource).toContain("prefers-reduced-motion: reduce");
+    expect(siteShell).toContain("}, 4800)");
 
     // Curved Warm Ivory cream search sheet & tactile search trigger pill (untouched)
     expect(homeSource).toContain('Anywhere in Lagos');
@@ -48,7 +52,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     const homeSource = readRepoFile('app/home-slideshow.tsx');
 
     // Former Explore Lagos neighbourhoods photo rail placed BEFORE Verified stays
-    expect(homeSource).toContain('Island &amp; Lagos Mainland corridors');
+    expect(homeSource).not.toContain('Island &amp; Lagos Mainland corridors');
     expect(homeSource).toContain('Explore Lagos neighbourhoods');
     expect(homeSource).toContain('DISCOVERY_NEIGHBOURHOODS');
     expect(homeSource).toContain('Every corridor');
@@ -67,42 +71,36 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('View stay →');
     expect(homeSource).toContain('See all stays →');
 
-    // 4-pillar verification grid
-    expect(homeSource).toContain('Verified before it’s bookable');
+    // Verification details appear once, in the HAMLET difference panel.
+    expect(homeSource).not.toContain('Verified before it’s bookable');
     expect(homeSource).toContain('Title & lease');
     expect(homeSource).toContain('Host identity');
     expect(homeSource).toContain('Authority');
     expect(homeSource).toContain('Inspection');
 
     // Partner banner with gold CTA
-    expect(homeSource).toContain('Property Owners &amp; Managers');
-    expect(homeSource).toContain('Own or manage a verified shortlet in Lagos?');
-    expect(homeSource).toContain(
-      'List with HAMLET for visibility, booking and property management support.',
-    );
-    expect(homeSource).toContain('bg-[#C9A45C]');
-    expect(homeSource).toContain('Apply as a partner');
+    expect(homeSource).toContain('bg-[#B58A52]');
   });
 
-  it('implements the Midnight Navy homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
+  it('implements the warm editorial homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
     const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
 
-    // Midnight Navy homepage header + non-home paper header
-    expect(siteShell).toContain('bg-[#121F3C]');
+    // Warm Ivory editorial homepage header + non-home paper header
+    expect(siteShell).toContain('bg-[#F7F4ED]/95');
     expect(siteShell).toContain('lg:backdrop-blur-xl');
 
     // Full-screen mobile drawer in Warm Ivory (#F8F5EE) with gold-accented Horatio & guest/partner actions
-    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F8F5EE]');
+    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F7F4ED]');
     expect(siteShell).toContain('h-dvh');
     expect(siteShell).toContain('M4 8h16M4 16h16');
     expect(siteShell).toContain('Ask Horatio');
-    expect(siteShell).toContain('For Guests');
+    expect(siteShell).not.toContain('For Guests');
     expect(siteShell).toContain("{ href: '/stays', label: 'Explore stays' }");
     expect(siteShell).toContain("{ href: '/lagos', label: 'Lagos guide' }");
-    expect(siteShell).toContain("{ href: '/how-it-works', label: 'How it works' }");
-    expect(siteShell).toContain("{ href: '/safety', label: 'Safety' }");
-    expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }");
-    expect(siteShell).toContain('For Hosts &amp; About');
+    expect(siteShell).not.toContain("{ href: '/how-it-works', label: 'How it works' }");
+    expect(siteShell).not.toContain("{ href: '/safety', label: 'Safety' }");
+    expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }"); // FAQ remains in the desktop/footer navigation, not the mobile quick links.
+    expect(siteShell).not.toContain('For Hosts &amp; About');
     expect(siteShell).toContain("{ href: '/partners/apply', label: 'Partner with us' }");
     expect(siteShell).toContain("{ href: '/about', label: 'About HAMLET' }");
     expect(siteShell).toContain('Create guest account');

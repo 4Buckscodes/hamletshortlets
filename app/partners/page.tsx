@@ -224,7 +224,7 @@ export default function PartnerDashboardPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
+            <h1 className="serif mt-2 text-3xl font-medium text-[#173F32] sm:text-5xl">
               {partnerName
                 ? `${partnerName.split(' ')[0]}’s partner desk`
                 : 'Manage stays & bookings'}
@@ -233,9 +233,9 @@ export default function PartnerDashboardPage() {
           {(['partner', 'partner_applicant', 'admin'].includes(role)) && (
             <Link
               href="/partners/properties/new"
-              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
+              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-[#173F32] px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-[#285744] sm:w-auto sm:shrink-0"
             >
-              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brass-500 text-ink-950">
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brass-500 text-[#102D24]">
                 <Plus className="h-4 w-4 stroke-[2.75]" />
               </span>
               <span>Add a new listing</span>
@@ -267,15 +267,15 @@ export default function PartnerDashboardPage() {
         )}
 
         {loading ? (
-          <p role="status" className="mt-8 text-sm text-ink-600">
+          <p role="status" className="mt-8 text-sm text-[#596B60]">
             Loading partner workspace…
           </p>
         ) : !['partner', 'partner_applicant', 'admin'].includes(role) ? (
-          <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
-            <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+          <section className="mt-8 max-w-2xl rounded-3xl border border-[#DADFD5] bg-white p-7">
+            <h2 className="serif m-0 text-2xl font-medium text-[#173F32]">
               Partner application required
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+            <p className="mt-2 text-sm leading-relaxed text-[#596B60]">
               Create a partner application to start uploading properties. Once submitted, you can list immediately while HAMLET reviews your profile. Earnings remain unavailable until partner verification is complete.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -291,20 +291,20 @@ export default function PartnerDashboardPage() {
           <>
             {/* Summary Metrics */}
             <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-4 sm:gap-3.5">
-              <div className="rounded-2xl border border-ink-100 bg-white p-4">
-                <p className="m-0 text-xs font-semibold text-ink-500">Total listings</p>
-                <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-ink-900">
+              <div className="rounded-2xl border border-[#E8E6DD] bg-white p-4">
+                <p className="m-0 text-xs font-semibold text-[#6C7D72]">Total listings</p>
+                <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-[#173F32]">
                   {properties.length}
                 </p>
               </div>
-              <div className="rounded-2xl border border-ink-100 bg-white p-4">
-                <p className="m-0 text-xs font-semibold text-ink-500">Live on marketplace</p>
+              <div className="rounded-2xl border border-[#E8E6DD] bg-white p-4">
+                <p className="m-0 text-xs font-semibold text-[#6C7D72]">Live on marketplace</p>
                 <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-emerald-800">
                   {properties.filter(p => p.status === 'approved').length}
                 </p>
               </div>
-              <div className="rounded-2xl border border-ink-100 bg-white p-4">
-                <p className="m-0 text-xs font-semibold text-ink-500">Needs correction / draft</p>
+              <div className="rounded-2xl border border-[#E8E6DD] bg-white p-4">
+                <p className="m-0 text-xs font-semibold text-[#6C7D72]">Needs correction / draft</p>
                 <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-amber-800">
                   {
                     properties.filter(p =>
@@ -315,12 +315,12 @@ export default function PartnerDashboardPage() {
               </div>
               <Link
                 href="/partners/bookings"
-                className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                className="rounded-2xl border border-[#E8E6DD] bg-white p-4 transition hover:border-[#173F32]"
               >
-                <p className="m-0 text-xs font-semibold text-ink-500">
+                <p className="m-0 text-xs font-semibold text-[#6C7D72]">
                   Booking requests awaiting response
                 </p>
-                <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-brass-700">
+                <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-[#755638]">
                   {pendingBookingCount} →
                 </p>
               </Link>
@@ -328,7 +328,7 @@ export default function PartnerDashboardPage() {
 
             {role !== 'partner_applicant' && (
             <>{/* HAMLET Share Engine Banner */}
-            <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-ink-950 p-5 text-white sm:flex-row sm:items-center sm:p-6">
+            <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-[#102D24] p-5 text-white sm:flex-row sm:items-center sm:p-6">
               <div className="max-w-2xl">
                 <p className="m-0 text-[11px] font-extrabold uppercase tracking-widest text-brass-400">
                   HAMLET Share Engine
@@ -343,7 +343,7 @@ export default function PartnerDashboardPage() {
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   href="/partners/marketing"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
+                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-[#102D24] transition hover:bg-brass-400"
                 >
                   <Share2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Open Share & Studio</span>
@@ -361,7 +361,7 @@ export default function PartnerDashboardPage() {
 
             {/* Properties Section */}
             <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
+              <h2 className="serif m-0 text-2xl font-medium text-[#173F32]">
                 Your properties ({properties.length})
               </h2>
               <Link href="/partners/properties/new" className="primary-button">
@@ -375,26 +375,26 @@ export default function PartnerDashboardPage() {
                 {properties.map(p => (
                   <article
                     key={p.id}
-                    className="flex flex-col justify-between rounded-3xl border border-ink-100 bg-white p-5 sm:p-6"
+                    className="flex flex-col justify-between rounded-3xl border border-[#E8E6DD] bg-white p-5 sm:p-6"
                   >
                     <div>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#755638]">
                             {p.area} · Lagos
                           </span>
-                          <h3 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
+                          <h3 className="serif m-0 mt-1 text-2xl font-medium text-[#173F32]">
                             {p.title}
                           </h3>
                         </div>
-                        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
+                        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-[#285744]">
                           {STATUS_BADGE[p.status] || p.status}
                         </span>
                       </div>
 
-                      <p className="m-0 mt-2 text-xs text-ink-500">
+                      <p className="m-0 mt-2 text-xs text-[#6C7D72]">
                         Owner base rate:{' '}
-                        <strong className="font-mono text-ink-900">
+                        <strong className="font-mono text-[#173F32]">
                           ₦{Number(p.nightly_rate || 0).toLocaleString('en-NG')}/night
                         </strong>{' '}
                         · Trust label: {p.trust_label}
@@ -410,7 +410,7 @@ export default function PartnerDashboardPage() {
                       )}
 
                       {p.status === 'approved' && (
-                        <div className="mt-4 rounded-2xl border border-ink-100 bg-paper/70 p-3.5">
+                        <div className="mt-4 rounded-2xl border border-[#E8E6DD] bg-paper/70 p-3.5">
                           <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
                             <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-700">
                               Instant distribution
@@ -420,7 +420,7 @@ export default function PartnerDashboardPage() {
                                 type="button"
                                 disabled={busyId === p.id}
                                 onClick={() => void toggleNetworkSharing(p)}
-                                className="cursor-pointer text-[11px] font-bold text-brass-700 underline underline-offset-2 hover:text-ink-950 disabled:opacity-50"
+                                className="cursor-pointer text-[11px] font-bold text-[#755638] underline underline-offset-2 hover:text-[#102D24] disabled:opacity-50"
                               >
                                 {p.allow_partner_sharing === false
                                   ? 'Network sharing: Off (Enable)'
@@ -443,7 +443,7 @@ export default function PartnerDashboardPage() {
                       )}
                     </div>
 
-                    <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-100 pt-4">
+                    <div className="mt-5 flex flex-wrap gap-2 border-t border-[#E8E6DD] pt-4">
                       <Link
                         href={`/partners/properties/${encodeURIComponent(p.id)}/edit`}
                         className="secondary-button min-h-[42px]"
@@ -495,10 +495,10 @@ export default function PartnerDashboardPage() {
               </div>
             ) : (
               <div className="mt-5 rounded-3xl border border-dashed border-ink-300 bg-white p-8 text-center sm:p-10">
-                <h3 className="serif text-2xl font-medium text-ink-900">
+                <h3 className="serif text-2xl font-medium text-[#173F32]">
                   No direct properties submitted yet
                 </h3>
-                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-ink-600">
+                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-[#596B60]">
                   You can submit a property you own or manage, or browse approved HAMLET stays in Share & Studio to refer guests immediately.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">

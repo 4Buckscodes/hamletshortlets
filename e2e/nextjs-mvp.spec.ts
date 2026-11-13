@@ -39,7 +39,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       await page.setViewportSize({ width, height: 844 });
 
       await page.goto('/');
-      await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Lagos feels better here\./i })).toBeVisible();
       const homeOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
       );
@@ -74,11 +74,17 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       await expect(desktopNav).toBeHidden();
     }
 
-    const heroBg = await page
-      .locator('main section')
+    const heroStyle = await page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { name: /Lagos feels better here\./i }) })
       .first()
-      .evaluate(el => getComputedStyle(el).backgroundColor);
-    expect(heroBg).not.toBe('rgba(0, 0, 0, 0)');
+      .evaluate(el => {
+        const style = getComputedStyle(el);
+        return { backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage };
+      });
+    expect(
+      heroStyle.backgroundImage !== 'none' || heroStyle.backgroundColor !== 'rgba(0, 0, 0, 0)',
+    ).toBe(true);
   });
 
   test('removes manual currency switcher controls and auto-detects NGN, GBP, and USD cleanly', async ({
@@ -130,7 +136,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     page,
   }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Lagos feels better here\./i })).toBeVisible();
     await expect(
       page.getByRole('heading', { name: /Explore Lagos neighbourhoods/i }),
     ).toBeVisible();
@@ -249,10 +255,14 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await findStayDialog.getByRole('button', { name: /Close search/i }).click();
     await expect(findStayDialog).toBeHidden();
 
-    // 4-pillar verification grid on homepage
+    // Verification details remain in the HAMLET difference panel only.
+    await expect(mobilePage.getByText('Title & lease').first()).toBeVisible();
+    await expect(mobilePage.getByText('Host identity').first()).toBeVisible();
+    await expect(mobilePage.getByText('Authority').first()).toBeVisible();
+    await expect(mobilePage.getByText('Inspection').first()).toBeVisible();
     await expect(
       mobilePage.getByRole('heading', { name: /Verified before it’s bookable/i }),
-    ).toBeVisible();
+    ).toHaveCount(0);
 
     // Mobile full-screen navigation drawer
     await mobilePage.getByRole('button', { name: /Open navigation menu/i }).click();

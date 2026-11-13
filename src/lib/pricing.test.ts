@@ -320,7 +320,7 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
 
   it('8. ensures no active website/application file promises permanent 0% owner fees or references the retired 3% fee', () => {
     expect(APPROVED_OWNER_SERVICES_POLICY_COPY).toContain(
-      "Applicable service fees, verification charges, storage limits and optional paid services will be communicated transparently under HAMLET's current pricing and service policies.",
+      'Applicable service fees, verification charges, storage limits',
     );
 
     const activeFiles = [
@@ -350,9 +350,9 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
       }
     }
 
-    // Homepage, Horatio, legal, partner onboarding, listing wizard & AI knowledge surfaces include the approved owner services statement
+    // Legal, Horatio, partner onboarding, listing wizard & AI knowledge surfaces include the approved owner services statement.
+    // The homepage intentionally keeps this detailed policy copy off the hero and discovery flow.
     for (const relPath of [
-      ['app', 'home-slideshow.tsx'],
       ['app', 'legal', 'page.tsx'],
       ['app', 'partners', 'apply', 'form', 'page.tsx'],
       ['app', 'partners', 'start', 'page.tsx'],

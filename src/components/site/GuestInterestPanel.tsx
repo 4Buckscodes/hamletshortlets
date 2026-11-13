@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { CheckCircle2, Mail, MapPin, Sparkles } from 'lucide-react';
+import { CheckCircle2, Mail, MapPin } from 'lucide-react';
 import { formatAccommodationFilterLabel, type AccommodationFilterValue } from '@/lib/discovery';
 
 const INTEREST_AREAS = [
@@ -109,9 +109,6 @@ export function GuestInterestPanel({
       }`}
     >
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brass-200/45 text-brass-700">
-          <Sparkles className="h-5 w-5 shrink-0" />
-        </span>
         <div className="min-w-0">
           <p className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
             Early-access updates
