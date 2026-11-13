@@ -20,7 +20,7 @@ const money = (amount: number) => new Intl.NumberFormat('en-NG', {
 }).format(amount);
 
 export default function PropertyScreen() {
-  const { id, checkIn: initialCheckIn, checkOut: initialCheckOut, guests: initialGuests } = useLocalSearchParams<{ id: string; checkIn?: string; checkOut?: string; guests?: string }>();
+  const { id, checkIn: initialCheckIn, checkOut: initialCheckOut, guests: initialGuests, ref: referralCode } = useLocalSearchParams<{ id: string; checkIn?: string; checkOut?: string; guests?: string; ref?: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkIn, setCheckIn] = useState('');
@@ -32,6 +32,8 @@ export default function PropertyScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [quote, setQuote] = useState<any>(null);
+  const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
     if (typeof initialCheckIn === 'string') setCheckIn(initialCheckIn);
@@ -67,6 +69,17 @@ export default function PropertyScreen() {
     setDateField(null);
   }
 
+  async function previewQuote() {
+    setError(''); setSuccess(''); setQuote(null);
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(checkIn) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(checkOut) || checkOut <= checkIn) { setError('Choose valid dates before requesting a quote.'); return; }
+    const guestCount=Number(guests); if(!Number.isInteger(guestCount)||guestCount<1||guestCount>20){setError('Enter a guest count between 1 and 20.');return;}
+    if(!supabase){setError('Quote service is not configured.');return;} setQuoting(true);
+    try { const {data}=await supabase.auth.getSession(); const token=data.session?.access_token;
+      if(!token){const next='/property/'+id+'?checkIn='+encodeURIComponent(checkIn)+'&checkOut='+encodeURIComponent(checkOut)+'&guests='+encodeURIComponent(guests);router.push({pathname:'/sign-in',params:{next}});return;}
+      const response=await fetch(HAMLET_API_BASE_URL+'/api/booking-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({propertyId:id,checkIn,checkOut,guests:guestCount,quoteCurrency:'NGN'})});
+      const result=await response.json(); if(!response.ok)throw new Error(result.error||'Could not calculate your quote.'); setQuote(result.quote);
+    } catch(e){setError(e instanceof Error?e.message:'Could not calculate your quote.');} finally{setQuoting(false);}
+  }
   async function requestBooking() {
     setError(''); setSuccess('');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) {
@@ -176,6 +189,16 @@ export default function PropertyScreen() {
           <TextInput value={requests} onChangeText={setRequests} multiline maxLength={1000} placeholder="Anything the host should know?" placeholderTextColor="#8290A0" style={[s.input,s.multiline]}/>
           {error ? <Text style={s.error}>{error}</Text> : null}
           {success ? <Text style={s.success}>{success}</Text> : null}
+          <TouchableOpacity disabled={quoting} onPress={previewQuote} style={s.quoteButton}><Text style={s.quoteButtonText}>{quoting?'Calculating…':'Preview full price'}</Text></TouchableOpacity>
+          {quote?<View style={s.quotePanel}>
+            <Text style={s.quoteHeading}>YOUR PRICE BREAKDOWN</Text>
+            <Text style={s.quoteLine}>Accommodation · {quote.nights} nights <Text style={s.quoteAmount}>{money(quote.accommodationSubtotal)}</Text></Text>
+            <Text style={s.quoteLine}>HAMLET guest service fee <Text style={s.quoteAmount}>{money(quote.hamletGuestFee)}</Text></Text>
+            <Text style={s.quoteLine}>Mandatory charges <Text style={s.quoteAmount}>{money(quote.mandatoryTotal)}</Text></Text>
+            <View style={s.quoteDivider}/><Text style={s.quoteTotal}>Stay total <Text style={s.quoteAmount}>{money(quote.guestTotalNgn)}</Text></Text>
+            {quote.refundableDepositNgn>0?<Text style={s.deposit}>Separate refundable caution deposit: {money(quote.refundableDepositNgn)}</Text>:null}
+            <Text style={s.hint}>Indicative server-generated quote in NGN. HAMLET recalculates and validates the price when you submit. No payment is taken yet.</Text>
+          </View>:null}
           <TouchableOpacity disabled={busy} onPress={requestBooking} style={[s.submit,busy&&s.disabled]}><Text style={s.submitText}>{busy ? 'Sending request…' : 'Request this stay  →'}</Text></TouchableOpacity>
           <Text style={s.hint}>No payment is taken when you submit a request.</Text>
         </View>
@@ -198,5 +221,6 @@ const s = StyleSheet.create({
   dateConfirm:{backgroundColor:'#C5A46D',padding:12,alignItems:'center'},dateConfirmText:{color:'#142235',fontSize:12,fontWeight:'700'},
   dateValue:{color:'#F4F0E8',fontSize:13},datePlaceholder:{color:'#8290A0',fontSize:13},datePicker:{marginTop:10,backgroundColor:'#F4F0E8',borderRadius:6,overflow:'hidden'},
   multiline:{minHeight:80,textAlignVertical:'top'},error:{color:'#F0A7A0',fontSize:12,marginTop:14},success:{color:'#9BD0AE',fontSize:12,lineHeight:19,marginTop:14},
+  quoteButton:{marginTop:16,padding:13,borderWidth:1,borderColor:'#C5A46D',borderRadius:5,alignItems:'center'},quoteButtonText:{color:'#C5A46D',fontSize:12,fontWeight:'700'},quotePanel:{marginTop:14,padding:14,backgroundColor:'#101D2D',borderWidth:1,borderColor:'#526176',borderRadius:6},quoteHeading:{color:'#C5A46D',fontSize:9,letterSpacing:1.2,fontWeight:'700',marginBottom:10},quoteLine:{color:'#A8B2BE',fontSize:11,marginTop:8},quoteAmount:{color:'#F4F0E8',fontWeight:'700'},quoteDivider:{height:1,backgroundColor:'#526176',marginTop:13},quoteTotal:{color:'#F4F0E8',fontSize:13,fontWeight:'700',marginTop:12},
   submit:{backgroundColor:'#C5A46D',borderRadius:5,minHeight:50,alignItems:'center',justifyContent:'center',marginTop:20},disabled:{opacity:0.6},submitText:{color:'#142235',fontWeight:'700',fontSize:13},
 });
