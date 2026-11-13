@@ -59,6 +59,6 @@ Implemented in this branch:
 
 Booking requests remain requests: the property partner must confirm availability before payment opens. No payment is captured in this milestone.
 
-Still to implement and test: profile editing, payment handoff, owner/agent workspaces, partner deal board, caution-fee inspection flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen and end-to-end physical-device QA.
+Still to implement and test: richer agent inventory/deal workflows, server-generated quote preview and payment handoff, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA.
 
 The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
