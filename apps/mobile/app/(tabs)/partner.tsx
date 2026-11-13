@@ -194,6 +194,7 @@ export default function PartnerScreen() {
             <Text style={s.panelTitle}>Welcome to the network.</Text>
             <Text style={s.body}>Your partner role is {application?.role || 'approved partner'}. Partner tools will only expose actions permitted for your account.</Text>
             <Text style={s.small}>Your partner access is active. Property actions remain protected by your approved role and the existing HAMLET backend.</Text>
+            <Link href="/partner/portfolio" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Open property portfolio  →</Text></TouchableOpacity></Link>
             <Link href="/partner/deals" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Performance & referrals  →</Text></TouchableOpacity></Link>
             {canSubmitListing ? <Link href="/partner/new-property" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Add a property  →</Text></TouchableOpacity></Link> : <Text style={s.small}>Agent deal access will be available in the next partner workspace release.</Text>}
           </View>
