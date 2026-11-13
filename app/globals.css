@@ -87,6 +87,30 @@
     }
   }
 
+  /* Verified stays: restrained desktop hover, 3D presentation only on mobile */
+  @media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+    .hamlet-verified-hover {
+      transition: transform 240ms cubic-bezier(.2,.75,.25,1), filter 240ms ease;
+      transform-style: preserve-3d;
+    }
+    .hamlet-verified-hover:hover {
+      transform: perspective(1100px) rotateX(1deg) rotateY(-1deg) translateY(-2px);
+      filter: drop-shadow(0 16px 24px rgba(28,36,55,.10));
+    }
+    .hamlet-verified-hover .editorial-card {
+      transition: box-shadow 240ms ease, border-color 240ms ease;
+    }
+    .hamlet-verified-hover:hover .editorial-card {
+      border-color: #D8C49E;
+      box-shadow: 0 14px 34px rgba(28,36,55,.12);
+    }
+  }
+
+  .hamlet-mobile-ring-card {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
   .editorial-link {
     text-underline-offset: 5px;
     transition: color 180ms ease, text-decoration-color 180ms ease;
