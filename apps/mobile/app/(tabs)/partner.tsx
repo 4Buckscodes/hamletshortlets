@@ -116,19 +116,31 @@ export default function PartnerScreen() {
     const count = Math.max(1, Math.min(500, Math.floor(Number(propertiesCount) || 1)));
     setBusy(true);
     try {
-      const { error: insertError } = await supabase.from('partner_applications').insert({
-        applicant_id: session.user.id,
+      const applicationData = {
         full_name: fullName.trim(),
-        email: session.user.email || '',
         phone: phone.trim(),
         company: company.trim(),
         role,
         areas: selectedAreas,
         properties_count: count,
         motivation: motivation.trim() || role + ' operating across ' + selectedAreas.join(', ') + '.',
-      });
-      if (insertError) throw insertError;
-      setNotice('Your application has been submitted. HAMLET will review your details and update your access.');
+      };
+      if (application?.status === 'needs_correction') {
+        const { error: resubmitError } = await supabase.rpc('resubmit_partner_application', {
+          target_application_id: application.id,
+          application_data: { ...applicationData, referred_by_code: null },
+        });
+        if (resubmitError) throw resubmitError;
+        setNotice('Your corrected partner application has been resubmitted for review.');
+      } else {
+        const { error: insertError } = await supabase.from('partner_applications').insert({
+          applicant_id: session.user.id,
+          email: session.user.email || '',
+          ...applicationData,
+        });
+        if (insertError) throw insertError;
+        setNotice('Your application has been submitted. HAMLET will review your details and update your access.');
+      }
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'We could not submit your application.');
