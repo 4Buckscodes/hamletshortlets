@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { calculateGuestPricing, calculateInternationalStayQuote, nightsBetween } from '@/lib/pricing';
 import { loadActiveExchangeRates } from '@/lib/next-supabase';
-import { normalizeShareToken } from '@/lib/share-engine';
 import type { SupportedCurrency } from '@/lib/types';
 
 export const runtime='nodejs';
-type Body={propertyId?:string;checkIn?:string;checkOut?:string;guests?:number;quoteCurrency?:string;shareToken?:string|null};
+type Body={propertyId?:string;checkIn?:string;checkOut?:string;guests?:number;quoteCurrency?:string};
 const datePattern=/^\d{4}-\d{2}-\d{2}$/;
 function validDate(value:string){if(!datePattern.test(value))return false;const d=new Date(value+'T00:00:00.000Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value;}
 function todayLagos(){const p=new Intl.DateTimeFormat('en',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const v=(t:Intl.DateTimeFormatPartTypes)=>p.find(x=>x.type===t)?.value||'';return v('year')+'-'+v('month')+'-'+v('day');}
@@ -45,7 +44,6 @@ export async function POST(request:Request){
   accommodationSubtotal:pricing.accommodationSubtotal,mandatoryCharges:pricing.mandatoryCharges,mandatoryTotal:pricing.mandatoryChargesTotal,
   hamletGuestFee:pricing.hamletGuestServiceFee,guestTotalNgn:pricing.guestTotal,refundableDepositNgn:pricing.refundableDeposit,
   quotedGuestTotal:fx.quotedGuestTotal,settlementTotalNgn:fx.settlementTotalNgn,exchangeRateNgnPerUnit:fx.exchangeRateNgnPerUnit,
-  quoteExpiresAt:fx.quoteExpiresAt,pricingRulesVersion:pricing.pricingRulesVersion||undefined,
-  shareToken:normalizeShareToken(body.shareToken),
+  quoteExpiresAt:fx.quoteExpiresAt,pricingRulesVersion:pricing.rulesVersion,
  }},{headers:{'Cache-Control':'no-store'}});
 }
