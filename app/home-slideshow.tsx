@@ -486,17 +486,17 @@ function MobileVerifiedStayCarousel({ stays }: { stays: PublicStayRecord[] }) {
             const baths = Math.max(1, Math.trunc(Number(stay.bathrooms ?? 1)));
             const guests = Math.max(1, Math.trunc(Number(stay.capacity ?? 1)));
             const price = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn);
-            const translate = signedOffset * 235;
-            const rotate = signedOffset * -34;
+            const translate = signedOffset * 205;
+            const rotate = signedOffset * -27;
             return (
               <article
                 key={stay.id}
-                className="absolute left-1/2 top-[18px] w-[min(72vw,290px)] overflow-hidden rounded-[22px] border border-white/70 bg-[#171B24] text-[#F6F1E7] shadow-[0_24px_54px_rgba(28,36,55,.22)]"
+                className="absolute left-1/2 top-[12px] w-[min(78vw,320px)] overflow-hidden rounded-[22px] border border-white/75 bg-[#171B24] text-[#F6F1E7] shadow-[0_26px_64px_rgba(28,36,55,.28)]"
                 style={{
-                  height: '330px',
-                  marginLeft: 'min(-145px, -36vw)',
-                  transform: 'translate3d(' + translate + 'px,0,' + (isActive ? 0 : -105) + 'px) rotateY(' + rotate + 'deg) scale(' + (isActive ? 1 : .86) + ')',
-                  opacity: Math.abs(signedOffset) > 1 ? 0 : isActive ? 1 : .58,
+                  height: '350px',
+                  marginLeft: 'min(-160px, -39vw)',
+                  transform: 'translate3d(' + translate + 'px,0,' + (isActive ? 0 : -125) + 'px) rotateY(' + rotate + 'deg) scale(' + (isActive ? 1 : .9) + ')',
+                  opacity: Math.abs(signedOffset) > 1 ? 0 : isActive ? 1 : .78,
                   zIndex: 20 - Math.abs(signedOffset),
                   transition: 'transform 560ms cubic-bezier(.2,.75,.25,1), opacity 420ms ease',
                   pointerEvents: isActive ? 'auto' : 'none',
@@ -779,10 +779,28 @@ export function HomeMarketplaceExperience({
     <div className="bg-[#F6F1E7] text-[#1C2437]">
       {/* ── HAMLET editorial collage hero + integrated booking search ── */}
       {(() => {
-        const heroPhotos = bookableStays
-          .flatMap(stay => (stay.image_urls ?? []).filter((src: string) => typeof src === 'string' && src.trim()).map((src: string) => ({ src: src.trim(), title: stay.title })))
-          .filter((photo, index, all) => all.findIndex(item => item.src === photo.src) === index)
-          .slice(0, 3);
+        // Build the collage from different approved stays first, then use
+        // additional images from those stays only when the inventory is limited.
+        const heroPhotoSets = bookableStays.map(stay =>
+          [...new Set((stay.image_urls ?? [])
+            .filter((src: string) => typeof src === 'string' && src.trim())
+            .map((src: string) => src.trim()))]
+            .map((src: string) => ({ src, title: stay.title })),
+        );
+        const heroPhotos: Array<{ src: string; title: string }> = [];
+        const seenHeroSources = new Set<string>();
+        for (let photoRound = 0; heroPhotos.length < 3; photoRound += 1) {
+          let addedThisRound = false;
+          for (const photoSet of heroPhotoSets) {
+            const photo = photoSet[photoRound];
+            if (!photo || seenHeroSources.has(photo.src)) continue;
+            heroPhotos.push(photo);
+            seenHeroSources.add(photo.src);
+            addedThisRound = true;
+            if (heroPhotos.length === 3) break;
+          }
+          if (!addedThisRound) break;
+        }
         return (
           <section className="bg-[#F6F1E7] px-5 pb-12 pt-7 text-[#1C2437] sm:px-8 sm:pb-16 sm:pt-10 lg:px-12 lg:pt-14">
             <div className="mx-auto max-w-[1240px]">
