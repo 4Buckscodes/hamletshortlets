@@ -12,6 +12,8 @@ const ROLES = [
   { value: 'Closing agent', label: 'Closing agent', detail: 'Refer guests and help close bookings.' },
 ] as const;
 
+type Membership = { primary_role: string; company: string; phone: string; status: 'active' | 'suspended'; joined_at: string };
+
 type Application = {
   id: string;
   full_name: string;
@@ -24,6 +26,7 @@ type Application = {
 export default function PartnerScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [application, setApplication] = useState<Application | null>(null);
+  const [membership, setMembership] = useState<Membership | null>(null);
   const [profileRole, setProfileRole] = useState('guest');
   const [partnerRole, setPartnerRole] = useState('');
   const [loading, setLoading] = useState(true);
@@ -44,9 +47,10 @@ export default function PartnerScreen() {
     const current = auth.session;
     setSession(current);
     if (!current?.user) { setLoading(false); return; }
-    const [{ data: profile }, { data: apps, error: appError }] = await Promise.all([
+    const [{ data: profile }, { data: apps, error: appError }, { data: member }] = await Promise.all([
       supabase.from('profiles').select('role,partner_role,full_name,phone,company').eq('id', current.user.id).maybeSingle(),
       supabase.from('partner_applications').select('id,full_name,role,status,review_note,submitted_at').eq('applicant_id', current.user.id).order('submitted_at', { ascending: false }).limit(1),
+      supabase.from('partner_network_memberships').select('primary_role,company,phone,status,joined_at').eq('user_id', current.user.id).maybeSingle(),
     ]);
     if (profile) {
       setProfileRole(String(profile.role || 'guest'));
@@ -57,12 +61,48 @@ export default function PartnerScreen() {
     }
     if (appError) setError('We could not load your partner application. Please try again.');
     setApplication((apps?.[0] as Application | undefined) || null);
+    setMembership((member as Membership | null) || null);
+    if (member?.primary_role) {
+      const roleMap: Record<string,string> = { property_owner: 'Property owner', authorised_manager: 'Authorised manager', multi_property_operator: 'Multi-property operator', closing_agent: 'Closing agent' };
+      setRole(roleMap[String(member.primary_role)] || 'Property owner');
+      setCompany(String(member.company || ''));
+      setPhone(String(member.phone || ''));
+    }
     setLoading(false);
   }, []);
 
   useFocusEffect(useCallback(() => {
     void load();
   }, [load]));
+
+
+  async function joinNetwork() {
+    setError(''); setNotice('');
+    if (!supabase || !session?.user) { setError('Sign in before joining the partner network.'); return; }
+    if (company.trim().length < 2 || phone.trim().replace(/\\D/g, '').length < 7) {
+      setError('Enter a business or display name and a valid phone number.');
+      return;
+    }
+    const roleMap: Record<string,string> = {
+      'Property owner': 'property_owner',
+      'Authorised manager': 'authorised_manager',
+      'Multi-property operator': 'multi_property_operator',
+      'Closing agent': 'closing_agent',
+    };
+    setBusy(true);
+    try {
+      const { data, error: joinError } = await supabase.rpc('join_partner_network', {
+        next_role: roleMap[role],
+        next_company: company.trim(),
+        next_phone: phone.trim(),
+      });
+      if (joinError) throw joinError;
+      setMembership(data as Membership);
+      setNotice('You are now registered in the HAMLET partner network. Complete the authority checks next.');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'We could not register your membership.');
+    } finally { setBusy(false); }
+  }
 
   async function submitApplication() {
     setError(''); setNotice('');
@@ -112,7 +152,31 @@ export default function PartnerScreen() {
             <Text style={s.body}>Sign in or create a guest account before applying to become a HAMLET partner.</Text>
             <Link href="/sign-in?next=/(tabs)/partner" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Sign in to continue  →</Text></TouchableOpacity></Link>
           </View>
-        ) : loading ? <View style={s.loading}><ActivityIndicator color="#C5A46D"/></View> : approved ? (
+        ) : loading ? <View style={s.loading}><ActivityIndicator color="#C5A46D"/></View> : membership?.status === 'suspended' ? (
+          <View style={s.panel}>
+            <Text style={s.status}>MEMBERSHIP SUSPENDED</Text>
+            <Text style={s.panelTitle}>Please contact HAMLET support.</Text>
+            <Text style={s.body}>Your partner-network membership is suspended. You cannot reactivate it from the app.</Text>
+          </View>
+        ) : !membership ? (
+          <View style={s.form}>
+            <Text style={s.formTitle}>Join the partner network</Text>
+            <Text style={s.small}>Register your role first. Membership is separate from listing authority and does not grant privileged property access.</Text>
+            <Text style={s.label}>YOUR PARTNER ROLE</Text>
+            {ROLES.map(option => (
+              <TouchableOpacity key={option.value} onPress={() => setRole(option.value)} style={[s.roleOption, role === option.value && s.roleSelected]}>
+                <View style={s.roleCopy}><Text style={s.roleTitle}>{option.label}</Text><Text style={s.roleDetail}>{option.detail}</Text></View>
+                <View style={[s.radio, role === option.value && s.radioSelected]} />
+              </TouchableOpacity>
+            ))}
+            <Text style={s.label}>BUSINESS / DISPLAY NAME</Text>
+            <TextInput value={company} onChangeText={setCompany} placeholder="Your business or name" placeholderTextColor="#8290A0" style={s.input}/>
+            <Text style={s.label}>PHONE NUMBER</Text>
+            <TextInput value={phone} onChangeText={setPhone} placeholder="+234…" placeholderTextColor="#8290A0" keyboardType="phone-pad" style={s.input}/>
+            {error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}
+            <TouchableOpacity disabled={busy} onPress={() => void joinNetwork()} style={[s.button,busy&&s.disabled]}><Text style={s.buttonText}>{busy ? 'Joining…' : 'Join HAMLET partner network  →'}</Text></TouchableOpacity>
+          </View>
+        ) : approved ? (
           <View style={s.panel}>
             <Text style={s.status}>PARTNER ACCESS ACTIVE</Text>
             <Text style={s.panelTitle}>Welcome to the network.</Text>
@@ -124,6 +188,7 @@ export default function PartnerScreen() {
           <View style={s.panel}>
             <Text style={s.status}>APPLICATION UNDER REVIEW</Text>
             <Text style={s.panelTitle}>We've received your details.</Text>
+            <Text style={s.small}>Partner network membership: active · {membership?.company}</Text>
             <Text style={s.body}>Your application as {application?.role} is awaiting HAMLET review. You can return here to check its status.</Text>
             <Text style={s.small}>Submitted {new Date(application.submitted_at).toLocaleDateString()}</Text>
             {canSubmitListing ? <Link href="/partner/new-property" asChild><TouchableOpacity style={s.button}><Text style={s.buttonText}>Start a property listing  →</Text></TouchableOpacity></Link> : null}
@@ -136,7 +201,7 @@ export default function PartnerScreen() {
           </View>
         ) : (
           <View style={s.form}>
-            <Text style={s.formTitle}>Apply to become a partner</Text>
+            <Text style={s.formTitle}>Complete partner verification</Text>
             <Text style={s.small}>Choose the role that best describes how you work. Your access will be activated after review.</Text>
             <Text style={s.label}>YOUR PARTNER ROLE</Text>
             {ROLES.map(option => (
