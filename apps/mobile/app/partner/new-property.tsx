@@ -33,25 +33,29 @@ export default function NewPropertyScreen() {
       setError('You can add up to 12 property photos.');
       return;
     }
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError('Allow photo-library access to add property images.');
-      return;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setError('Allow photo-library access to add property images.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        selectionLimit: 12 - imageUris.length,
+        quality: 1,
+        exif: false,
+      });
+      if (result.canceled) return;
+      const oversized = result.assets.find((asset) => (asset.fileSize ?? 0) > 30 * 1024 * 1024);
+      if (oversized) {
+        setError('Each original photo must be 30 MB or smaller.');
+        return;
+      }
+      setImageUris((current) => [...current, ...result.assets.map((asset) => asset.uri).filter((uri) => !current.includes(uri))].slice(0, 12));
+    } catch {
+      setError('We could not open your photo library. Check your device permissions and try again.');
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: 12 - imageUris.length,
-      quality: 1,
-      exif: false,
-    });
-    if (result.canceled) return;
-    const oversized = result.assets.find((asset) => (asset.fileSize ?? 0) > 30 * 1024 * 1024);
-    if (oversized) {
-      setError('Each original photo must be 30 MB or smaller.');
-      return;
-    }
-    setImageUris((current) => [...current, ...result.assets.map((asset) => asset.uri).filter((uri) => !current.includes(uri))].slice(0, 12));
   }
 
   async function save(saveAsDraft:boolean) {
@@ -106,7 +110,13 @@ export default function NewPropertyScreen() {
       setNotice(payload.message||'Property saved.');
       if (!saveAsDraft) router.replace('/(tabs)/partner');
     } catch(caught) {
-      if(uploadedStoragePaths.length&&supabase) await supabase.storage.from('property-media').remove(uploadedStoragePaths);
+      if(uploadedStoragePaths.length&&supabase) {
+        try {
+          await supabase.storage.from('property-media').remove(uploadedStoragePaths);
+        } catch {
+          // Preserve the original intake error; orphan cleanup can be retried operationally.
+        }
+      }
       setError(caught instanceof Error?caught.message:'We could not save this property.');
     } finally { setBusy(false); setUploading(false); }
   }
