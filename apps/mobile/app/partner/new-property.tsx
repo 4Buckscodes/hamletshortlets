@@ -51,7 +51,7 @@ export default function NewPropertyScreen() {
       setError('Each original photo must be 30 MB or smaller.');
       return;
     }
-    setImageUris((current) => [...current, ...result.assets.map((asset) => asset.uri)].slice(0, 12));
+    setImageUris((current) => [...current, ...result.assets.map((asset) => asset.uri).filter((uri) => !current.includes(uri))].slice(0, 12));
   }
 
   async function save(saveAsDraft:boolean) {
@@ -62,7 +62,7 @@ export default function NewPropertyScreen() {
       return;
     }
     if (!saveAsDraft && (!authority.trim() || imageUris.length===0)) {
-      setError('For review submission, add your authority to list and at least one HTTPS property photo URL.');
+      setError('For review submission, add your authority to list and at least one property photo.');
       return;
     }
     setBusy(true);
