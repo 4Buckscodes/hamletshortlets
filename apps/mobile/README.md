@@ -76,6 +76,6 @@ EAS development, preview and production profiles map to the corresponding EAS en
 The app no longer silently falls back to `www.hamlet.rest` when the API origin is missing. Missing configuration fails closed. Never run test bookings or payment tests against production. Keep Paystack secrets server-side in the matching Supabase project.
 
 
-## Secure guest payment handoff
+## Release readiness\n\nUse the [mobile release readiness checklist](../../docs/MOBILE_RELEASE_READINESS.md) before staging acceptance or store submission. It separates code-level CI from staging integration, physical-device QA and production release approval.\n\n## Secure guest payment handoff
 
 The native Bookings screen now invokes the existing authenticated Supabase Edge Function `paystack-initialize` only for bookings in `awaiting_payment`. The function derives the charge amount from the trusted booking record and returns the Paystack checkout URL. The app validates the returned HTTPS checkout host before opening it. Payment is not treated as complete on app return; the existing signed Paystack webhook remains the only confirmation authority. If Paystack is not configured, checkout returns a controlled unavailable response and the guest is not directed to an external/manual payment route.
