@@ -14,6 +14,10 @@ type Property = {
   image_urls: string[] | null; house_rules: string[] | null; trust_label: string | null;
   first_available_date: string | null;
 };
+type BookingQuote = {
+  nights: number; accommodationSubtotal: number; hamletGuestFee: number; mandatoryTotal: number;
+  guestTotalNgn: number; refundableDepositNgn: number;
+};
 
 const money = (amount: number) => new Intl.NumberFormat('en-NG', {
   style: 'currency', currency: 'NGN', maximumFractionDigits: 0,
@@ -23,16 +27,16 @@ export default function PropertyScreen() {
   const { id, checkIn: initialCheckIn, checkOut: initialCheckOut, guests: initialGuests, ref: referralCode } = useLocalSearchParams<{ id: string; checkIn?: string; checkOut?: string; guests?: string; ref?: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
+  const [checkIn, setCheckIn] = useState(typeof initialCheckIn === 'string' ? initialCheckIn : '');
+  const [checkOut, setCheckOut] = useState(typeof initialCheckOut === 'string' ? initialCheckOut : '');
   const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);
   const [dateDraft, setDateDraft] = useState(new Date());
-  const [guests, setGuests] = useState('1');
+  const [guests, setGuests] = useState(typeof initialGuests === 'string' ? initialGuests : '1');
   const [requests, setRequests] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [quote, setQuote] = useState<any>(null);
+  const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
@@ -120,6 +124,7 @@ export default function PropertyScreen() {
         body: JSON.stringify({
           propertyId: id, checkIn, checkOut, guests: guestCount,
           specialRequests: requests.trim(), quoteCurrency: 'NGN',
+          ...(typeof referralCode === 'string' && referralCode.trim() ? { shareToken: referralCode.trim() } : {}),
         }),
       });
       const result = await response.json();
