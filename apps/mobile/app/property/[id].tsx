@@ -25,8 +25,9 @@ const money = (amount: number) => new Intl.NumberFormat('en-NG', {
 
 export default function PropertyScreen() {
   const { id, checkIn: initialCheckIn, checkOut: initialCheckOut, guests: initialGuests, ref: referralCode } = useLocalSearchParams<{ id: string; checkIn?: string; checkOut?: string; guests?: string; ref?: string }>();
+  const apiConfigurationError = (() => { try { assertHamletApiConfigured(); return ''; } catch (caught) { return caught instanceof Error ? caught.message : 'HAMLET preview API is not configured.'; } })();
   const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!apiConfigurationError);
   const [checkIn, setCheckIn] = useState(typeof initialCheckIn === 'string' ? initialCheckIn : '');
   const [checkOut, setCheckOut] = useState(typeof initialCheckOut === 'string' ? initialCheckOut : '');
   const [dateField, setDateField] = useState<'checkIn' | 'checkOut' | null>(null);
@@ -34,18 +35,14 @@ export default function PropertyScreen() {
   const [guests, setGuests] = useState(typeof initialGuests === 'string' ? initialGuests : '1');
   const [requests, setRequests] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(apiConfigurationError);
   const [success, setSuccess] = useState('');
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
     let active = true;
-    try { assertHamletApiConfigured(); } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'HAMLET preview API is not configured.');
-      setLoading(false);
-      return () => { active = false; };
-    }
+    if (apiConfigurationError) return () => { active = false; };
     fetch(HAMLET_API_BASE_URL + '/api/mobile/stays/' + encodeURIComponent(id))
       .then(async response => {
         const payload = await response.json();
@@ -56,7 +53,7 @@ export default function PropertyScreen() {
       .catch(caught => { if (active) setError(caught instanceof Error ? caught.message : 'Could not load this stay.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [id]);
+  }, [id, apiConfigurationError]);
 
   function applySelectedDate(selectedDate: Date) {
     const year = selectedDate.getFullYear();
