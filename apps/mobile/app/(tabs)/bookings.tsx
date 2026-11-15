@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, AppState, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 
@@ -73,7 +73,13 @@ export default function BookingsScreen() {
     void Promise.resolve().then(load);
     if (!supabase) return;
     const { data } = supabase.auth.onAuthStateChange(() => { void load(); });
-    return () => data.subscription.unsubscribe();
+    const appState = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') void load();
+    });
+    return () => {
+      data.subscription.unsubscribe();
+      appState.remove();
+    };
   }, [load]);
 
   async function startPayment(booking: Booking) {
