@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { HAMLET_API_BASE_URL } from '@/lib/api';
@@ -45,10 +46,11 @@ export default function NewPropertyScreen() {
       if(imageUris.length){
         setUploading(true);
         for(let index=0;index<imageUris.length;index++){
-          const localResponse=await fetch(imageUris[index]);
+          const optimised=await ImageManipulator.manipulateAsync(imageUris[index],[{resize:{width:1800}}],{compress:0.78,format:ImageManipulator.SaveFormat.JPEG});
+          const localResponse=await fetch(optimised.uri);
           if(!localResponse.ok) throw new Error('Could not read selected property photo '+(index+1)+'.');
           const photoBlob=await localResponse.blob();
-          if(photoBlob.size>5*1024*1024) throw new Error('Each property photo must be 5 MB or smaller. Please choose a smaller image.');
+          if(photoBlob.size>5*1024*1024) throw new Error('The optimised photo is still larger than 5 MB. Please choose a smaller image.');
           const {data:stored,error:uploadError}=await supabase.storage.from('property-media').upload(session.user.id+'/'+Date.now()+'-'+index+'.jpg',photoBlob,{contentType:'image/jpeg',upsert:false});
           if(uploadError) throw new Error('Photo upload failed: '+uploadError.message);
           const {data:publicUrl}=supabase.storage.from('property-media').getPublicUrl(stored.path);
