@@ -62,3 +62,8 @@ Booking requests remain requests: the property partner must confirm availability
 Still to implement and test: richer agent inventory/deal workflows, server-generated quote preview and payment handoff, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA.
 
 The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
+
+
+## Secure guest payment handoff
+
+The native Bookings screen now invokes the existing authenticated Supabase Edge Function `paystack-initialize` only for bookings in `awaiting_payment`. The function derives the charge amount from the trusted booking record and returns the Paystack checkout URL. The app validates the returned HTTPS checkout host before opening it. Payment is not treated as complete on app return; the existing signed Paystack webhook remains the only confirmation authority. If Paystack is not configured, checkout returns a controlled unavailable response and the guest is not directed to an external/manual payment route.
