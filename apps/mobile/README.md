@@ -52,14 +52,18 @@ Implemented in this branch:
 - Supabase session persistence using AsyncStorage.
 - Property detail view, native Android/iOS date picker, guest count and special requests.
 - Guest booking request submission through the existing server-authoritative `/api/booking-requests` endpoint.
-- Guest booking history and cancellation through the existing `transition_booking` RPC.
+- Guest booking history, manual refresh and cancellation through the existing `transition_booking` RPC.
+- Server-generated booking quote preview using the canonical pricing/FX modules; booking requests independently recalculate on the server.
+- Secure Paystack handoff for accepted bookings through the existing `paystack-initialize` Edge Function; browser return is never treated as payment confirmation.
+- Partner portfolio, booking review, availability controls, performance/referral board and approved-property agent inventory desk.
+- Native property photo picker with JPEG re-encoding/resize, 12-photo cap, 5 MB upload cap and authenticated uploads into the partner's own `property-media` folder. Failed intake attempts clean up uploaded objects where storage policy permits.
 - Guest profile editing for full name and phone using Supabase Auth user metadata.
 - Partner onboarding for owners, authorised managers, multi-property operators and closing agents.
 - Partner application status view and native property submission/draft flow through the existing authenticated `/api/partner/properties` endpoint.
 
 Booking requests remain requests: the property partner must confirm availability before payment opens. The native Bookings screen now hands eligible `awaiting_payment` bookings to the existing authenticated `paystack-initialize` Edge Function. The app opens only the returned Paystack HTTPS checkout URL and refreshes booking state when returning to the foreground; only the signed webhook confirms payment.
 
-Still to implement and test: richer agent lead pipeline and commission dispute workflow, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA.
+Still to implement and test: richer agent lead pipeline and commission dispute workflow, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA. Native photo selection and upload code is implemented but still requires device testing against the staging Supabase Storage policies.
 
 The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
 
