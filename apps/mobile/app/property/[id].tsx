@@ -3,7 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { HAMLET_API_BASE_URL } from '@/lib/api';
+import { assertHamletApiConfigured, HAMLET_API_BASE_URL } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 type Property = {
@@ -41,6 +41,11 @@ export default function PropertyScreen() {
 
   useEffect(() => {
     let active = true;
+    try { assertHamletApiConfigured(); } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'HAMLET preview API is not configured.');
+      setLoading(false);
+      return () => { active = false; };
+    }
     fetch(HAMLET_API_BASE_URL + '/api/mobile/stays/' + encodeURIComponent(id))
       .then(async response => {
         const payload = await response.json();
@@ -72,7 +77,7 @@ export default function PropertyScreen() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) { setError('Choose valid dates before requesting a quote.'); return; }
     const guestCount=Number(guests); if(!Number.isInteger(guestCount)||guestCount<1||guestCount>20){setError('Enter a guest count between 1 and 20.');return;}
     if(!supabase){setError('Quote service is not configured.');return;} setQuoting(true);
-    try { const {data}=await supabase.auth.getSession(); const token=data.session?.access_token;
+    try { assertHamletApiConfigured(); const {data}=await supabase.auth.getSession(); const token=data.session?.access_token;
       if(!token){const next='/property/'+id+'?checkIn='+encodeURIComponent(checkIn)+'&checkOut='+encodeURIComponent(checkOut)+'&guests='+encodeURIComponent(guests);router.push({pathname:'/sign-in',params:{next}});return;}
       const response=await fetch(HAMLET_API_BASE_URL+'/api/booking-quote',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({propertyId:id,checkIn,checkOut,guests:guestCount,quoteCurrency:'NGN'})});
       const result=await response.json(); if(!response.ok)throw new Error(result.error||'Could not calculate your quote.'); setQuote(result.quote);
@@ -105,6 +110,7 @@ export default function PropertyScreen() {
 
     setBusy(true);
     try {
+      assertHamletApiConfigured();
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) {
