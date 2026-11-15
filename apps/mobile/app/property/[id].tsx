@@ -69,7 +69,7 @@ export default function PropertyScreen() {
 
   async function previewQuote() {
     setError(''); setSuccess(''); setQuote(null);
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(checkIn) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(checkOut) || checkOut <= checkIn) { setError('Choose valid dates before requesting a quote.'); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut <= checkIn) { setError('Choose valid dates before requesting a quote.'); return; }
     const guestCount=Number(guests); if(!Number.isInteger(guestCount)||guestCount<1||guestCount>20){setError('Enter a guest count between 1 and 20.');return;}
     if(!supabase){setError('Quote service is not configured.');return;} setQuoting(true);
     try { const {data}=await supabase.auth.getSession(); const token=data.session?.access_token;
@@ -166,7 +166,7 @@ export default function PropertyScreen() {
                 value={dateDraft}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={dateField === 'checkOut' && checkIn ? new Date(checkIn + 'T12:00:00') : dateField === 'checkIn' && property.first_available_date ? new Date(property.first_available_date + 'T12:00:00') : new Date()}
+                minimumDate={dateField === 'checkOut' && checkIn ? new Date(new Date(checkIn + 'T12:00:00').setDate(new Date(checkIn + 'T12:00:00').getDate() + 1)) : dateField === 'checkIn' && property.first_available_date ? new Date(property.first_available_date + 'T12:00:00') : new Date()}
                 onChange={(event, selectedDate) => {
                   if (selectedDate) setDateDraft(selectedDate);
                   if (Platform.OS === 'android') {
