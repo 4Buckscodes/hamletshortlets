@@ -49,7 +49,7 @@ export default function PartnerDealsScreen() {
     setLoading(false);
   },[]);
 
-  useEffect(()=>{void load().catch(e=>{setError(e instanceof Error?e.message:'Could not load partner analytics.');setLoading(false);});},[load]);
+  useEffect(()=>{void Promise.resolve().then(load).catch(e=>{setError(e instanceof Error?e.message:'Could not load partner analytics.');setLoading(false);});},[load]);
 
   async function shareLink(path:string,label:string){
     if(!code)return;
