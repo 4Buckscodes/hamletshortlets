@@ -1,91 +1,56 @@
 import Link from 'next/link';
+import { ArrowDownRight, ArrowRight, ArrowUpRight, MapPin, Menu, ShieldCheck, Sparkles } from 'lucide-react';
 
 const areas = ['Lekki', 'Victoria Island', 'Ikoyi', 'Yaba', 'Ikeja GRA', 'Surulere'];
+const destinations = [
+  { name: 'Island living', area: 'Lekki · Ikoyi · Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?area=Lekki' },
+  { name: 'The mainland edit', area: 'Yaba · Ikeja · Surulere', image: '/images/prop/duplex.jpg', href: '/stays?area=Yaba' },
+  { name: 'Room to recharge', area: 'Find your own corner of Lagos', image: '/images/prop/bed-1.jpg', href: '/stays' },
+];
 
 export default function HomePage() {
   return (
     <main>
-      <header style={{ background: '#fff', borderBottom: '1px solid var(--line)' }}>
-        <div className="shell" style={{ minHeight: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <Link href="/" aria-label="HAMLET.REST home" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <span aria-hidden="true" style={{ display: 'grid', placeItems: 'center', width: 38, height: 38, borderRadius: 13, background: 'var(--navy)', color: 'var(--gold)', fontFamily: 'Georgia, serif', fontSize: 23 }}>H</span>
-            <span style={{ fontWeight: 850, letterSpacing: '-.04em', fontSize: 20 }}>HAMLET<span style={{ color: 'var(--gold)' }}>.REST</span></span>
-          </Link>
-          <nav aria-label="Main navigation" style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 14, fontWeight: 650 }}>
-            <Link href="/stays">Explore stays</Link>
-            <Link href="/lagos" className="desktop-link" style={{ display: 'none' }}>Lagos guide</Link>
-            <Link href="/faqs" className="desktop-link" style={{ display: 'none' }}>FAQs</Link>
-            <Link href="/partners/apply">Become a partner</Link>
-            <Link href="/signin" className="secondary-button" style={{ minHeight: 42, paddingInline: 16 }}>Sign in</Link>
-          </nav>
+      <header className="site-header">
+        <div className="shell header-inner">
+          <Link href="/" className="wordmark" aria-label="Hamlet Rest home"><span className="wordmark-mark">h</span><span>HAMLET<span className="wordmark-dot">.</span>REST</span></Link>
+          <nav className="desktop-nav" aria-label="Main navigation"><Link href="/stays">Find a stay</Link><Link href="/lagos">The Lagos guide</Link><Link href="/how-it-works">How it works</Link></nav>
+          <div className="header-actions"><Link className="partner-link" href="/partners/apply">List your property</Link><Link className="sign-in" href="/signin">Sign in <ArrowUpRight size={15} /></Link><Link className="mobile-menu" href="/stays" aria-label="Explore stays"><Menu size={21} /></Link></div>
         </div>
       </header>
 
-      <section style={{ paddingBlock: 'clamp(42px, 8vw, 92px) 44px', background: 'radial-gradient(ellipse at 85% 10%, #e8dfc8 0, transparent 38%), var(--paper)' }}>
+      <section className="hero">
+        <div className="hero-photo" role="img" aria-label="Warm, thoughtfully furnished Lagos apartment with a bright terrace" />
+        <div className="hero-shade" />
+        <div className="shell hero-content">
+          <p className="hero-kicker"><span className="kicker-line" /> A considered way to stay in Lagos</p>
+          <h1>Arrive well.<br /><em>Stay a while.</em></h1>
+          <p className="hero-copy">Good spaces make a good trip. Find a shortlet that feels like yours, wherever Lagos takes you.</p>
+          <a className="hero-discover" href="#find-a-stay">Discover your stay <ArrowDownRight size={17} /></a>
+        </div>
+        <div className="hero-caption"><span>01 / LAGOS, NIGERIA</span><span>Spaces with a sense of place</span></div>
+      </section>
+
+      <section className="search-section" id="find-a-stay" aria-label="Search for a stay">
         <div className="shell">
-          <p style={{ margin: '0 0 14px', color: '#806522', fontSize: 12, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase' }}>A better way to stay in Lagos</p>
-          <h1 className="serif" style={{ maxWidth: 760, margin: 0, fontSize: 'clamp(42px, 8.2vw, 82px)', lineHeight: 1.02, letterSpacing: '-.045em', fontWeight: 500 }}>
-            Find a stay that <span style={{ color: '#9a772c', fontStyle: 'italic' }}>feels right.</span>
-          </h1>
-          <p style={{ maxWidth: 560, margin: '22px 0 30px', color: '#586579', fontSize: 'clamp(16px, 2vw, 19px)', lineHeight: 1.7 }}>
-            Thoughtful shortlets, clearer details and a booking journey that keeps you in control. Your stay, sorted.
-          </p>
-          <form action="/stays" method="get" style={{ background: '#fff', border: '1px solid #e4dfd3', borderRadius: 24, padding: 12, display: 'grid', gap: 10, boxShadow: '0 18px 55px rgba(14,31,59,.08)' }}>
-            <label style={{ display: 'grid', gap: 7, padding: '8px 10px' }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Where in Lagos?</span>
-              <select name="area" defaultValue="" aria-label="Choose a Lagos area" style={{ minHeight: 38, width: '100%', border: 0, background: 'transparent', color: 'var(--navy)', outlineOffset: 2 }}>
-                <option value="">Anywhere in Lagos</option>
-                {areas.map(area => <option key={area} value={area}>{area}</option>)}
-              </select>
-            </label>
-            <div style={{ height: 1, background: 'var(--line)' }} />
-            <label style={{ display: 'grid', gap: 7, padding: '8px 10px' }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Check-in</span>
-              <input name="checkIn" type="date" aria-label="Check-in date" style={{ minHeight: 38, border: 0, background: 'transparent', color: 'var(--navy)', width: '100%' }} />
-            </label>
-            <div style={{ height: 1, background: 'var(--line)' }} />
-            <label style={{ display: 'grid', gap: 7, padding: '8px 10px' }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Check-out</span>
-              <input name="checkOut" type="date" aria-label="Check-out date" style={{ minHeight: 38, border: 0, background: 'transparent', color: 'var(--navy)', width: '100%' }} />
-            </label>
-            <button className="primary-button" type="submit" style={{ width: '100%', gap: 10 }}>Search stays <span aria-hidden="true">→</span></button>
+          <form action="/stays" method="get" className="search-panel">
+            <label className="search-field destination-field"><span className="field-icon"><MapPin size={18} /></span><span className="field-copy"><span className="field-label">Destination</span><select name="area" defaultValue="" aria-label="Choose a Lagos neighbourhood"><option value="">Anywhere in Lagos</option>{areas.map(area => <option key={area} value={area}>{area}</option>)}</select></span></label>
+            <label className="search-field"><span className="field-copy"><span className="field-label">Check in</span><input name="checkIn" type="date" aria-label="Check-in date" /></span></label>
+            <label className="search-field"><span className="field-copy"><span className="field-label">Check out</span><input name="checkOut" type="date" aria-label="Check-out date" /></span></label>
+            <button className="search-button" type="submit"><span>Explore stays</span><ArrowRight size={17} /></button>
           </form>
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBlock: 18, marginInline: -2 }} aria-label="Popular Lagos areas">
-            {areas.map(area => <Link key={area} className="pill" href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}
-          </div>
-          <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: 12 }}>Search dates and areas to explore suitable stays. Availability is confirmed during the booking process.</p>
+          <div className="search-note"><span>Not sure where to start?</span><div className="area-links">{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div></div>
         </div>
       </section>
 
-      <section className="shell" style={{ paddingBlock: '38px 64px' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 22 }}>
-          <div>
-            <p style={{ margin: '0 0 8px', color: '#806522', fontSize: 11, fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase' }}>Start exploring</p>
-            <h2 className="serif" style={{ margin: 0, fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 500, letterSpacing: '-.03em' }}>Lagos, your way.</h2>
-          </div>
-          <Link href="/stays" style={{ fontWeight: 750, fontSize: 14 }}>Explore all stays <span aria-hidden="true">→</span></Link>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 155px), 1fr))', gap: 12 }}>
-          {[
-            ['Island living', 'Lekki, Ikoyi & Victoria Island', '01'],
-            ['Mainland favourites', 'Yaba, Ikeja & Surulere', '02'],
-            ['A quick reset', 'Find a place to slow down', '03'],
-          ].map(([title, description, number]) => (
-            <Link key={number} href="/stays" style={{ minHeight: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 22, border: '1px solid var(--line)', background: '#fff', padding: 20 }}>
-              <span style={{ color: '#9a772c', fontSize: 12, fontWeight: 800 }}>{number}</span>
-              <span><strong style={{ display: 'block', fontSize: 17, marginBottom: 7 }}>{title}</strong><span style={{ display: 'block', color: 'var(--muted)', fontSize: 13, lineHeight: 1.5 }}>{description}</span></span>
-            </Link>
-          ))}
-        </div>
+      <section className="destinations-section shell">
+        <div className="section-heading"><div><p className="eyebrow"><span>01</span> FIND YOUR NEIGHBOURHOOD</p><h2>A city of many moods.</h2></div><Link className="text-link" href="/stays">View all stays <ArrowUpRight size={16} /></Link></div>
+        <div className="destination-grid">{destinations.map((place, index) => <Link className={`destination-card destination-card-${index + 1}`} key={place.name} href={place.href}><img src={place.image} alt="" loading="lazy" /><span className="destination-overlay" /><span className="destination-number">0{index + 1} / LAGOS</span><span className="destination-info"><span><strong>{place.name}</strong><small>{place.area}</small></span><span className="destination-arrow"><ArrowUpRight size={19} /></span></span></Link>)}</div>
       </section>
 
-      <footer style={{ background: 'var(--navy-deep)', color: '#fff', paddingBlock: 28 }}>
-        <div className="shell" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16, fontSize: 13 }}>
-          <span>© {new Date().getFullYear()} HAMLET.REST · Your stay, sorted.</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18 }}><Link href="/lagos">Lagos neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/about">About HAMLET</Link><Link href="/safety">Our approach to trust</Link><Link href="/how-it-works">How it works</Link></div>
-        </div>
-      </footer>
-      <style>{`@media (min-width: 760px) { .desktop-link { display: inline-flex !important; } form[action="/stays"] { grid-template-columns: 1.2fr 1fr 1fr auto !important; align-items: center; border-radius: 999px !important; padding: 8px 10px !important; } form[action="/stays"] > div { width: 1px; height: 42px; } form[action="/stays"] button { width: auto !important; } }`}</style>
+      <section className="promise-section"><div className="shell promise-inner"><div className="promise-heading"><p className="eyebrow"><span>02</span> THE HAMLET DIFFERENCE</p><h2>Less guesswork.<br /><em>More feeling at home.</em></h2></div><div className="promise-copy"><p>Finding a place to stay should feel like the start of the trip, not the hard part. We bring the details forward and keep you in control from first look to arrival.</p><Link className="text-link" href="/how-it-works">A little more about us <ArrowUpRight size={16} /></Link></div><div className="promise-rule" /><div className="promise-points"><div><ShieldCheck size={19} /><span><strong>Clear, considered details</strong><small>Know what to expect before you ask.</small></span></div><div><Sparkles size={19} /><span><strong>A more personal search</strong><small>Explore the neighbourhood that suits you.</small></span></div><div><ArrowRight size={19} /><span><strong>Your booking, your pace</strong><small>Request first. Confirm after availability.</small></span></div></div></div></section>
+
+      <footer className="site-footer"><div className="shell"><div className="footer-main"><Link href="/" className="wordmark footer-wordmark"><span className="wordmark-mark">h</span><span>HAMLET<span className="wordmark-dot">.</span>REST</span></Link><p>Your stay, sorted.<br />Lagos, Nigeria.</p><div className="footer-links"><Link href="/lagos">Neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/safety">Trust & safety</Link><Link href="/about">About Hamlet</Link></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>Made for finding your place.</span></div></div></footer>
     </main>
   );
 }
