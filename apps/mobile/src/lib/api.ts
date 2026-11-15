@@ -14,9 +14,16 @@ export type PublicStay = {
 };
 
 const configuredBase = process.env.EXPO_PUBLIC_HAMLET_API_URL?.trim().replace(/\/$/, '');
-export const HAMLET_API_BASE_URL = configuredBase || 'https://www.hamlet.rest';
+export const HAMLET_API_BASE_URL = configuredBase || '';
+
+export function assertHamletApiConfigured(): void {
+  if (!HAMLET_API_BASE_URL) {
+    throw new Error('HAMLET preview API is not configured. Set EXPO_PUBLIC_HAMLET_API_URL to the matching staging deployment.');
+  }
+}
 
 export async function getPublicStays(): Promise<PublicStay[]> {
+  assertHamletApiConfigured();
   const response = await fetch(HAMLET_API_BASE_URL + '/api/mobile/stays', {
     headers: { Accept: 'application/json' },
   });
