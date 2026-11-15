@@ -40,12 +40,6 @@ export default function PropertyScreen() {
   const [quoting, setQuoting] = useState(false);
 
   useEffect(() => {
-    if (typeof initialCheckIn === 'string') setCheckIn(initialCheckIn);
-    if (typeof initialCheckOut === 'string') setCheckOut(initialCheckOut);
-    if (typeof initialGuests === 'string') setGuests(initialGuests);
-  }, [initialCheckIn, initialCheckOut, initialGuests]);
-
-  useEffect(() => {
     let active = true;
     fetch(HAMLET_API_BASE_URL + '/api/mobile/stays/' + encodeURIComponent(id))
       .then(async response => {
