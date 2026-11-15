@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +26,33 @@ export default function NewPropertyScreen() {
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
+
+  async function pickPhotos() {
+    setError('');
+    if (imageUris.length >= 12) {
+      setError('You can add up to 12 property photos.');
+      return;
+    }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError('Allow photo-library access to add property images.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: 12 - imageUris.length,
+      quality: 1,
+      exif: false,
+    });
+    if (result.canceled) return;
+    const oversized = result.assets.find((asset) => (asset.fileSize ?? 0) > 30 * 1024 * 1024);
+    if (oversized) {
+      setError('Each original photo must be 30 MB or smaller.');
+      return;
+    }
+    setImageUris((current) => [...current, ...result.assets.map((asset) => asset.uri)].slice(0, 12));
+  }
 
   async function save(saveAsDraft:boolean) {
     setError(''); setNotice('');
@@ -119,9 +146,23 @@ export default function NewPropertyScreen() {
             <Text style={s.label}>AMENITIES · SEPARATE WITH COMMAS</Text>
             <TextInput value={amenities} onChangeText={setAmenities} placeholder="Wi-Fi, pool, generator…" placeholderTextColor="#8290A0" style={s.input}/>
             <Text style={s.section}>03 · PHOTOS & AUTHORITY</Text>
-            <Text style={s.label}>FIRST PROPERTY PHOTO · HTTPS URL</Text>
-            <TextInput value={imageUrl} onChangeText={setImageUrl} autoCapitalize="none" keyboardType="url" placeholder="https://…" placeholderTextColor="#8290A0" style={s.input}/>
-            <Text style={s.hint}>For a draft, you can add the photo later. Submission for review requires at least one secure photo URL.</Text>
+            <Text style={s.label}>PROPERTY PHOTOS · UP TO 12</Text>
+            <TouchableOpacity onPress={() => void pickPhotos()} style={s.photoPicker}>
+              <Text style={s.photoPickerText}>＋  Choose photos from your device</Text>
+            </TouchableOpacity>
+            {imageUris.length ? (
+              <View style={s.photoGrid}>
+                {imageUris.map((uri, index) => (
+                  <View key={uri} style={s.photoItem}>
+                    <Image source={{ uri }} style={s.photoPreview} />
+                    <TouchableOpacity onPress={() => setImageUris((current) => current.filter((_, photoIndex) => photoIndex !== index))} style={s.photoRemove}>
+                      <Text style={s.photoRemoveText}>Remove photo {index + 1}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            <Text style={s.hint}>Photos are resized and compressed before secure upload. For review submission, add at least one clear property photo. Drafts can be saved without photos.</Text>
             <Text style={s.label}>YOUR AUTHORITY TO LIST</Text>
             <TextInput value={authority} onChangeText={setAuthority} multiline placeholder="e.g. I am the property owner / I hold written authority from the owner…" placeholderTextColor="#8290A0" style={[s.input,s.multiline]}/>
             {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
