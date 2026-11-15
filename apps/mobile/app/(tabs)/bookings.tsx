@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { ActivityIndicator, AppState, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, AppState, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 
@@ -40,6 +40,7 @@ const money = (amount: number) => new Intl.NumberFormat('en-NG', {
 export default function BookingsScreen() {
   const [items, setItems] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [busyId, setBusyId] = useState('');
   const [error, setError] = useState('');
@@ -80,6 +81,11 @@ export default function BookingsScreen() {
       data.subscription.unsubscribe();
       appState.remove();
     };
+  }, [load]);
+
+  const refreshBookings = useCallback(async () => {
+    setRefreshing(true);
+    try { await load(); } finally { setRefreshing(false); }
   }, [load]);
 
   async function startPayment(booking: Booking) {
@@ -126,7 +132,7 @@ export default function BookingsScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <ScrollView contentContainerStyle={s.content}>
+      <ScrollView contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshBookings()} tintColor="#C5A46D" colors={["#C5A46D"]} />}>
         <Text style={s.eyebrow}>YOUR HAMLET JOURNEY</Text>
         <Text style={s.title}>Bookings.</Text>
         <Text style={s.body}>Follow every request from the first enquiry through partner confirmation and payment.</Text>
@@ -164,7 +170,7 @@ export default function BookingsScreen() {
                 {Number(booking.refundable_deposit) > 0 ? <Text style={s.meta}>Refundable caution deposit: {money(Number(booking.refundable_deposit))}</Text> : null}
                 {booking.status === 'awaiting_payment' ? (
                   <View style={s.paymentPanel}>
-                    <Text style={s.paymentHint}>Your stay has been accepted. Complete payment through HAMLET’s secure Paystack checkout.</Text>
+                    <Text style={s.paymentHint}>Your stay has been accepted. Complete payment through HAMLET’s secure Paystack checkout. After checkout, return here or pull down to refresh. HAMLET confirms payment only after the provider verifies it.</Text>
                     {booking.payment_deadline ? <Text style={s.paymentDeadline}>Payment deadline: {new Date(booking.payment_deadline).toLocaleString('en-NG')}</Text> : null}
                     <TouchableOpacity disabled={busyId===booking.id} onPress={() => void startPayment(booking)} style={s.payButton}>
                       <Text style={s.payButtonText}>{busyId===booking.id?'Opening checkout…':'Continue to secure payment  →'}</Text>
