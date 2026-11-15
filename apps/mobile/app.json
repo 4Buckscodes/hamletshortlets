@@ -7,7 +7,15 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "HAMLET needs access to your photos so you can add images of properties you are authorised to list.",
+          "cameraPermission": "HAMLET needs camera access so you can photograph properties you are authorised to list.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
