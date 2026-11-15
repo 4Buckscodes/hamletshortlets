@@ -29,7 +29,7 @@ export default function StaysScreen() {
   }, []);
 
   useEffect(() => {
-    void loadStays();
+    void Promise.resolve().then(loadStays);
   }, [loadStays]);
 
   return (
