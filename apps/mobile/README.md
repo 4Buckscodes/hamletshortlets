@@ -9,7 +9,7 @@ One app with role-aware experiences for guests, owners, property managers and ag
 ## Local setup
 
 1. Install Node.js 22.13 or newer.
-2. Copy `.env.example` to `.env` and provide the existing HAMLET Supabase project URL, publishable key and API origin.
+2. Copy `.env.example` to `.env` and provide an isolated **staging** Supabase project URL, publishable key and matching HAMLET preview API origin. Do not point development or preview builds at production.
 3. Run `npm install`.
 4. Run `npx expo-doctor` to validate SDK-managed dependencies; avoid automatic dependency rewrites without reviewing the Expo SDK compatibility matrix.
 5. Run `npx tsc --noEmit`.
@@ -57,11 +57,19 @@ Implemented in this branch:
 - Partner onboarding for owners, authorised managers, multi-property operators and closing agents.
 - Partner application status view and native property submission/draft flow through the existing authenticated `/api/partner/properties` endpoint.
 
-Booking requests remain requests: the property partner must confirm availability before payment opens. No payment is captured in this milestone.
+Booking requests remain requests: the property partner must confirm availability before payment opens. The native Bookings screen now hands eligible `awaiting_payment` bookings to the existing authenticated `paystack-initialize` Edge Function. The app opens only the returned Paystack HTTPS checkout URL and refreshes booking state when returning to the foreground; only the signed webhook confirms payment.
 
-Still to implement and test: richer agent inventory/deal workflows, server-generated quote preview and payment handoff, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA.
+Still to implement and test: richer agent lead pipeline and commission dispute workflow, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA.
 
 The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
+
+## Environment isolation
+
+EAS development, preview and production profiles map to the corresponding EAS environments. Configure each environment separately:
+- `development` and `preview`: dedicated staging Supabase project, staging publishable key, and the matching HAMLET preview API deployment.
+- `production`: production Supabase project and approved production API origin, only after release approval.
+
+The app no longer silently falls back to `www.hamlet.rest` when the API origin is missing. Missing configuration fails closed. Never run test bookings or payment tests against production. Keep Paystack secrets server-side in the matching Supabase project.
 
 
 ## Secure guest payment handoff
