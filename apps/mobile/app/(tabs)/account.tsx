@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -13,7 +13,9 @@ export default function AccountScreen() {
   useEffect(() => {
     let active = true;
     if (supabase) {
-      supabase.auth.getSession().then(({ data }) => { if (active) setSession(data.session); });
+      supabase.auth.getSession()
+        .then(({ data }) => { if (active) setSession(data.session); })
+        .catch(() => { if (active) setError('We could not check your account session. Please try again.'); });
       const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
         if (active) setSession(nextSession);
       });
@@ -23,11 +25,18 @@ export default function AccountScreen() {
   }, []);
 
   async function signOut() {
-    if (!supabase) return;
-    setBusy(true); setError('');
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) setError(signOutError.message);
-    setBusy(false);
+    if (!supabase || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+      setSession(null);
+    } catch {
+      setError('We could not sign you out. Check your connection and try again.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   const name = session?.user.user_metadata?.full_name || session?.user.email?.split('@')[0] || 'HAMLET guest';
@@ -36,31 +45,35 @@ export default function AccountScreen() {
     <SafeAreaView style={s.safe}>
       <View style={s.content}>
         <Text style={s.eyebrow}>YOUR ACCOUNT</Text>
-        <Text style={s.title}>{session ? 'Good to have you back.' : 'Welcome to HAMLET.'}</Text>
+        <Text accessibilityRole="header" style={s.title}>{session ? 'Good to have you back.' : 'Welcome to HAMLET.'}</Text>
         {session ? (
           <>
-            <View style={s.profile}>
-              <View style={s.avatar}><Text style={s.avatarText}>{String(name).slice(0,1).toUpperCase()}</Text></View>
+            <View style={s.profile} accessible accessibilityLabel={'Signed in as ' + name + (session.user.email ? ', ' + session.user.email : '')}>
+              <View style={s.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={s.avatarText}>{String(name).slice(0,1).toUpperCase()}</Text></View>
               <View style={s.profileText}>
                 <Text style={s.name}>{name}</Text>
                 <Text style={s.email}>{session.user.email}</Text>
               </View>
             </View>
             <Text style={s.body}>Your account is signed in. Booking requests and account-specific services will use this secure session.</Text>
-            <Link href="/profile" asChild><TouchableOpacity style={s.profileAction}><Text style={s.profileActionText}>Edit your profile  →</Text></TouchableOpacity></Link>
-            <TouchableOpacity disabled={busy} onPress={signOut} style={s.secondary}>
-              <Text style={s.secondaryText}>{busy ? 'Signing out…' : 'Sign out'}</Text>
+            <Link href="/profile" asChild>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Edit your profile" style={s.profileAction}>
+                <Text style={s.profileActionText}>Edit your profile  →</Text>
+              </TouchableOpacity>
+            </Link>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Sign out of HAMLET" accessibilityState={{ disabled: busy, busy }} disabled={busy} onPress={signOut} style={s.secondary}>
+              {busy ? <ActivityIndicator color="#C5A46D" /> : <Text style={s.secondaryText}>Sign out</Text>}
             </TouchableOpacity>
           </>
         ) : (
           <>
             <Text style={s.body}>Sign in or create an account to manage your stays, booking requests and partner access.</Text>
             <Link href="/sign-in" asChild>
-              <TouchableOpacity style={s.primary}><Text style={s.primaryText}>Sign in or create account  →</Text></TouchableOpacity>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Sign in or create a HAMLET account" style={s.primary}><Text style={s.primaryText}>Sign in or create account  →</Text></TouchableOpacity>
             </Link>
           </>
         )}
-        {error ? <Text style={s.error}>{error}</Text> : null}
+        {error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}
         <View style={s.status}>
           <View style={[s.dot, { backgroundColor: isSupabaseConfigured ? '#76B89A' : '#C5A46D' }]} />
           <Text style={s.statusText}>{isSupabaseConfigured ? 'Secure account service configured' : 'Account connection awaiting environment setup'}</Text>
@@ -81,7 +94,7 @@ const s = StyleSheet.create({
   primary:{marginTop:26,padding:16,backgroundColor:'#C5A46D',borderRadius:5,alignItems:'center'},
   primaryText:{color:'#142235',fontSize:13,fontWeight:'700'},
   profileAction:{marginTop:22,padding:14,borderWidth:1,borderColor:'#314258',borderRadius:5,alignItems:'center'},profileActionText:{color:'#C5A46D',fontSize:13,fontWeight:'700'},
-  secondary:{marginTop:24,padding:15,borderWidth:1,borderColor:'#C5A46D',borderRadius:5,alignItems:'center'},
+  secondary:{marginTop:24,minHeight:48,padding:15,borderWidth:1,borderColor:'#C5A46D',borderRadius:5,alignItems:'center',justifyContent:'center'},
   secondaryText:{color:'#C5A46D',fontSize:13,fontWeight:'700'},
   error:{color:'#F0A7A0',fontSize:12,marginTop:14},
   status:{flexDirection:'row',alignItems:'center',marginTop:32,padding:15,borderRadius:6,backgroundColor:'#18283A'},
