@@ -39,6 +39,7 @@ export default function NewPropertyScreen() {
       return;
     }
     setBusy(true);
+    const uploadedStoragePaths:string[]=[];
     try {
       const {data:{session}}=await supabase.auth.getSession();
       if (!session) throw new Error('Sign in with your partner account to continue.');
@@ -54,6 +55,7 @@ export default function NewPropertyScreen() {
           const {data:stored,error:uploadError}=await supabase.storage.from('property-media').upload(session.user.id+'/'+Date.now()+'-'+index+'.jpg',photoBlob,{contentType:'image/jpeg',upsert:false});
           if(uploadError) throw new Error('Photo upload failed: '+uploadError.message);
           const {data:publicUrl}=supabase.storage.from('property-media').getPublicUrl(stored.path);
+          uploadedStoragePaths.push(stored.path);
           uploadedImageUrls.push(publicUrl.publicUrl);
         }
         setUploading(false);
@@ -77,6 +79,7 @@ export default function NewPropertyScreen() {
       setNotice(payload.message||'Property saved.');
       if (!saveAsDraft) router.replace('/(tabs)/partner');
     } catch(caught) {
+      if(uploadedStoragePaths.length&&supabase) await supabase.storage.from('property-media').remove(uploadedStoragePaths);
       setError(caught instanceof Error?caught.message:'We could not save this property.');
     } finally { setBusy(false); setUploading(false); }
   }
