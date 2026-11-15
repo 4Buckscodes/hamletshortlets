@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { HAMLET_API_BASE_URL } from '@/lib/api';
@@ -17,7 +18,8 @@ export default function NewPropertyScreen() {
   const [bathrooms,setBathrooms]=useState('1');
   const [capacity,setCapacity]=useState('2');
   const [amenities,setAmenities]=useState('Air conditioning, Wi-Fi, Kitchen');
-  const [imageUrl,setImageUrl]=useState('');
+  const [imageUris,setImageUris]=useState<string[]>([]);
+  const [uploading,setUploading]=useState(false);
   const [authority,setAuthority]=useState('');
   const [firstAvailableDate,setFirstAvailableDate]=useState('');
   const [busy,setBusy]=useState(false);
@@ -31,7 +33,7 @@ export default function NewPropertyScreen() {
       setError('Enter a clear property title, Lagos neighbourhood, public address and nightly rate.');
       return;
     }
-    if (!saveAsDraft && (!authority.trim() || !imageUrl.trim())) {
+    if (!saveAsDraft && (!authority.trim() || imageUris.length===0)) {
       setError('For review submission, add your authority to list and at least one HTTPS property photo URL.');
       return;
     }
@@ -39,6 +41,21 @@ export default function NewPropertyScreen() {
     try {
       const {data:{session}}=await supabase.auth.getSession();
       if (!session) throw new Error('Sign in with your partner account to continue.');
+      const uploadedImageUrls:string[]=[];
+      if(imageUris.length){
+        setUploading(true);
+        for(let index=0;index<imageUris.length;index++){
+          const localResponse=await fetch(imageUris[index]);
+          if(!localResponse.ok) throw new Error('Could not read selected property photo '+(index+1)+'.');
+          const photoBlob=await localResponse.blob();
+          if(photoBlob.size>5*1024*1024) throw new Error('Each property photo must be 5 MB or smaller. Please choose a smaller image.');
+          const {data:stored,error:uploadError}=await supabase.storage.from('property-media').upload(session.user.id+'/'+Date.now()+'-'+index+'.jpg',photoBlob,{contentType:'image/jpeg',upsert:false});
+          if(uploadError) throw new Error('Photo upload failed: '+uploadError.message);
+          const {data:publicUrl}=supabase.storage.from('property-media').getPublicUrl(stored.path);
+          uploadedImageUrls.push(publicUrl.publicUrl);
+        }
+        setUploading(false);
+      }
       const response=await fetch(HAMLET_API_BASE_URL+'/api/partner/properties',{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,Accept:'application/json'},
@@ -47,7 +64,7 @@ export default function NewPropertyScreen() {
           nightlyRate:Number(nightlyRate),cleaningFee:Number(cleaningFee||0),deposit:Number(deposit||0),
           bedrooms:Number(bedrooms),bathrooms:Number(bathrooms),capacity:Number(capacity),
           amenities:amenities.split(',').map(v=>v.trim()).filter(Boolean),
-          imageUrls:imageUrl.trim()?[imageUrl.trim()]:[],
+          imageUrls:uploadedImageUrls,
           authorityBasis:authority.trim()||(saveAsDraft?'Draft details pending completion':''),
           submittedRole:'Mobile partner',
           firstAvailableDate:firstAvailableDate.trim()||undefined,
@@ -59,7 +76,7 @@ export default function NewPropertyScreen() {
       if (!saveAsDraft) router.replace('/(tabs)/partner');
     } catch(caught) {
       setError(caught instanceof Error?caught.message:'We could not save this property.');
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setUploading(false); }
   }
 
   return (
@@ -104,7 +121,7 @@ export default function NewPropertyScreen() {
             <TextInput value={authority} onChangeText={setAuthority} multiline placeholder="e.g. I am the property owner / I hold written authority from the owner…" placeholderTextColor="#8290A0" style={[s.input,s.multiline]}/>
             {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
             {notice?<Text style={s.notice}>{notice}</Text>:null}
-            <TouchableOpacity disabled={busy} onPress={()=>void save(false)} style={[s.primary,busy&&s.disabled]}><Text style={s.primaryText}>{busy?'Saving…':'Submit listing for review  →'}</Text></TouchableOpacity>
+            <TouchableOpacity disabled={busy} onPress={()=>void save(false)} style={[s.primary,busy&&s.disabled]}><Text style={s.primaryText}>{busy?(uploading?'Uploading photos…':'Saving…'):'Submit listing for review  →'}</Text></TouchableOpacity>
             <TouchableOpacity disabled={busy} onPress={()=>void save(true)} style={s.secondary}><Text style={s.secondaryText}>Save as private draft</Text></TouchableOpacity>
             <Text style={s.footnote}>HAMLET checks listing authority, details and property quality. A submitted listing is not public or bookable until approved. The server controls all fees and booking calculations.</Text>
           </View>
@@ -123,7 +140,8 @@ const s=StyleSheet.create({
  label:{color:'#A8B2BE',fontSize:9,letterSpacing:1,fontWeight:'700',marginTop:16,marginBottom:7},
  input:{backgroundColor:'#101D2D',borderWidth:1,borderColor:'#314258',borderRadius:5,color:'#F4F0E8',paddingHorizontal:12,paddingVertical:13,fontSize:12},
  row:{flexDirection:'row',gap:9},half:{flex:1,minWidth:0},multiline:{minHeight:82,textAlignVertical:'top'},
- hint:{color:'#8290A0',fontSize:10,lineHeight:16,marginTop:7},primary:{marginTop:24,padding:15,backgroundColor:'#C5A46D',borderRadius:5,alignItems:'center'},
+ hint:{color:'#8290A0',fontSize:10,lineHeight:16,marginTop:7},photoPicker:{marginTop:4,padding:15,borderWidth:1,borderColor:'#C5A46D',borderStyle:'dashed',borderRadius:5,alignItems:'center'},photoPickerText:{color:'#C5A46D',fontSize:12,fontWeight:'700'},photoGrid:{flexDirection:'row',flexWrap:'wrap',gap:10,marginTop:14},photoItem:{width:'47%'},photoPreview:{width:'100%',height:110,borderRadius:5,backgroundColor:'#101D2D'},photoRemove:{padding:7,alignItems:'center'},photoRemoveText:{color:'#D9A7A1',fontSize:10},
+ primary:{marginTop:24,padding:15,backgroundColor:'#C5A46D',borderRadius:5,alignItems:'center'},
  primaryText:{color:'#142235',fontWeight:'700',fontSize:12},secondary:{marginTop:10,padding:14,borderWidth:1,borderColor:'#C5A46D',borderRadius:5,alignItems:'center'},
  secondaryText:{color:'#C5A46D',fontSize:12,fontWeight:'700'},disabled:{opacity:0.6},
  error:{color:'#F0A7A0',fontSize:12,lineHeight:18,marginTop:14},notice:{color:'#9BD0AE',fontSize:12,lineHeight:18,marginTop:14},
