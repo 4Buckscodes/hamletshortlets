@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 
@@ -14,6 +14,7 @@ type Booking = {
   guest_total: number;
   refundable_deposit: number;
   status: string;
+  payment_deadline: string | null;
   created_at: string;
   properties?: { title?: string; area?: string } | null;
 };
@@ -61,7 +62,7 @@ export default function BookingsScreen() {
     await supabase.rpc('expire_overdue_bookings');
     const { data, error: queryError } = await supabase
       .from('bookings')
-      .select('id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,created_at,properties(title,area)')
+      .select('id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,created_at,properties(title,area)')
       .order('created_at', { ascending: false });
     if (queryError) setError('We could not load your booking requests. Please try again.');
     else { setItems((data || []) as unknown as Booking[]); setError(''); }
@@ -69,11 +70,34 @@ export default function BookingsScreen() {
   }, []);
 
   useEffect(() => {
-    void load();
+    void Promise.resolve().then(load);
     if (!supabase) return;
     const { data } = supabase.auth.onAuthStateChange(() => { void load(); });
     return () => data.subscription.unsubscribe();
   }, [load]);
+
+  async function startPayment(booking: Booking) {
+    if (!supabase) return;
+    setBusyId(booking.id); setError(''); setNotice('');
+    try {
+      const { data, error: checkoutError } = await supabase.functions.invoke('paystack-initialize', {
+        body: { booking_id: booking.id },
+      });
+      if (checkoutError) throw new Error(checkoutError.message || 'Could not start secure checkout.');
+      const checkoutUrl = typeof data?.authorization_url === 'string' ? data.authorization_url : '';
+      if (!checkoutUrl) throw new Error(data?.error || 'HAMLET could not create a checkout session.');
+      const parsed = new URL(checkoutUrl);
+      if (parsed.protocol !== 'https:' || !['checkout.paystack.com', 'paystack.com'].includes(parsed.hostname)) {
+        throw new Error('The payment provider returned an invalid checkout address.');
+      }
+      await Linking.openURL(checkoutUrl);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not open secure checkout.');
+    } finally {
+      setBusyId('');
+      await load();
+    }
+  }
 
   async function cancelBooking(booking: Booking) {
     if (!supabase) return;
@@ -132,6 +156,15 @@ export default function BookingsScreen() {
                 <Text style={s.meta}>{booking.guest_count} {booking.guest_count === 1 ? 'guest' : 'guests'}</Text>
                 <Text style={s.total}>{money(Number(booking.guest_total))}</Text>
                 {Number(booking.refundable_deposit) > 0 ? <Text style={s.meta}>Refundable caution deposit: {money(Number(booking.refundable_deposit))}</Text> : null}
+                {booking.status === 'awaiting_payment' ? (
+                  <View style={s.paymentPanel}>
+                    <Text style={s.paymentHint}>Your stay has been accepted. Complete payment through HAMLET’s secure Paystack checkout.</Text>
+                    {booking.payment_deadline ? <Text style={s.paymentDeadline}>Payment deadline: {new Date(booking.payment_deadline).toLocaleString('en-NG')}</Text> : null}
+                    <TouchableOpacity disabled={busyId===booking.id} onPress={() => void startPayment(booking)} style={s.payButton}>
+                      <Text style={s.payButtonText}>{busyId===booking.id?'Opening checkout…':'Continue to secure payment  →'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
                 <View style={s.status}><View style={[s.dot,{backgroundColor:booking.status==='confirmed'||booking.status==='completed'?'#76B89A':'#C5A46D'}]}/><Text style={s.statusText}>{labels[booking.status] || booking.status}</Text></View>
                 {['requested','checking','awaiting_payment'].includes(booking.status) ? (
                   <TouchableOpacity disabled={busyId===booking.id} onPress={() => void cancelBooking(booking)} style={s.cancel}>
@@ -166,6 +199,7 @@ const s=StyleSheet.create({
   total:{color:'#F4F0E8',fontSize:19,fontWeight:'700',marginTop:12},
   status:{flexDirection:'row',alignItems:'center',padding:11,backgroundColor:'#101D2D',borderRadius:5,marginTop:15},
   dot:{width:7,height:7,borderRadius:4,marginRight:9},statusText:{color:'#E5E0D6',fontSize:11,fontWeight:'600'},
+  paymentPanel:{marginTop:14,padding:13,backgroundColor:'#101D2D',borderRadius:6},paymentHint:{color:'#A8B2BE',fontSize:11,lineHeight:17},paymentDeadline:{color:'#C5A46D',fontSize:10,marginTop:8},payButton:{marginTop:12,padding:13,backgroundColor:'#C5A46D',borderRadius:5,alignItems:'center'},payButtonText:{color:'#142235',fontSize:11,fontWeight:'700'},
   cancel:{borderWidth:1,borderColor:'#9C7772',padding:12,borderRadius:5,alignItems:'center',marginTop:13},
   cancelText:{color:'#D9A7A1',fontSize:12,fontWeight:'600'},
   error:{color:'#F0A7A0',fontSize:12,marginTop:14},notice:{color:'#9BD0AE',fontSize:12,marginTop:14},
