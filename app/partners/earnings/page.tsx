@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Copy, Check } from 'lucide-react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
