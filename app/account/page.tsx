@@ -57,7 +57,7 @@ export default function GuestAccountOverviewPage() {
       db.from('bookings').select('id,status').eq('guest_id', user.id),
       db.from('booking_issues').select('id,status').eq('reporter_id', user.id),
     ]);
-    setPartnerMembershipActive(membershipRes.data?.status === 'active');
+    setPartnerMembershipActive(membershipRes.data?.status === 'active' && profileRes.data?.account_status !== 'suspended');
 
     if (profileRes.data) {
       const p = profileRes.data as ProfileSummary;
