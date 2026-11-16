@@ -736,12 +736,16 @@ with latest_applications as (
     a.submitted_at
   from public.partner_applications a
   where a.status in ('pending', 'needs_correction', 'approved')
-    and a.role in (
-      'Property owner',
-      'Authorised manager',
-      'Multi-property operator',
-      'Closing agent',
-      'Closing Agent'
+    and lower(btrim(a.role)) in (
+      'property owner',
+      'authorised manager',
+      'agent (authorised)',
+      'property manager',
+      'co-host / hospitality operator',
+      'multi-property operator',
+      'shortlet operator',
+      'closing agent',
+      'referral partner'
     )
     and char_length(btrim(coalesce(a.company, ''))) between 2 and 160
     and char_length(regexp_replace(coalesce(a.phone, ''), '[^0-9]', '', 'g')) between 7 and 15
@@ -752,12 +756,17 @@ insert into public.partner_network_memberships (
 )
 select
   a.applicant_id,
-  case a.role
-    when 'Property owner' then 'property_owner'
-    when 'Authorised manager' then 'authorised_manager'
-    when 'Multi-property operator' then 'multi_property_operator'
-    when 'Closing agent' then 'closing_agent'
-    when 'Closing Agent' then 'closing_agent'
+  case lower(btrim(a.role))
+    when 'property owner' then 'property_owner'
+    when 'authorised manager' then 'authorised_manager'
+    when 'agent (authorised)' then 'authorised_manager'
+    when 'property manager' then 'authorised_manager'
+    when 'co-host / hospitality operator' then 'authorised_manager'
+    when 'multi-property operator' then 'multi_property_operator'
+    when 'shortlet operator' then 'multi_property_operator'
+    when 'closing agent' then 'closing_agent'
+    when 'referral partner' then 'closing_agent'
+    else 'closing_agent'
   end,
   a.company,
   a.phone,
@@ -777,12 +786,16 @@ with latest_applications as (
     a.referred_by_partner_id
   from public.partner_applications a
   where a.status in ('pending', 'needs_correction', 'approved')
-    and a.role in (
-      'Property owner',
-      'Authorised manager',
-      'Multi-property operator',
-      'Closing agent',
-      'Closing Agent'
+    and lower(btrim(a.role)) in (
+      'property owner',
+      'authorised manager',
+      'agent (authorised)',
+      'property manager',
+      'co-host / hospitality operator',
+      'multi-property operator',
+      'shortlet operator',
+      'closing agent',
+      'referral partner'
     )
   order by a.applicant_id, a.submitted_at desc
 )
