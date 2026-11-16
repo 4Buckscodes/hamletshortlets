@@ -3041,7 +3041,6 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     registerPartner: async (input) => {
       const normalizedRefCode = normalizeReferralCode(input.referralCode || getPersistedPartnerRefCode());
       if (supabase) {
-        let applicantUserId = state.session?.userId;
         let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
 
         if (!state.session) {
@@ -3063,7 +3062,6 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           if (!signUpData.session || !signUpData.user) {
             return { ok: true, needsEmailConfirmation: true };
           }
-          applicantUserId = signUpData.user.id;
           applicantEmail = signUpData.user.email ?? applicantEmail;
         } else if (state.session.role !== 'guest') {
           return {
@@ -3093,35 +3091,15 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         });
         if (membershipError) return { ok: false, error: membershipError.message };
 
-        if (state.applications.some(a => a.applicantId === applicantUserId && a.status === 'pending')) {
-          clearPersistedPartnerRefCode();
-          const { data: existingAuthData } = await supabase.auth.getUser();
-          if (existingAuthData.user) {
-            dispatch({ type: 'HYDRATE', state: await loadSupabaseState(existingAuthData.user) });
-          }
-          return { ok: true };
-        }
-
-        const { error } = await supabase.from('partner_applications').insert({
-          applicant_id: applicantUserId!,
-          full_name: input.name.trim(),
-          email: applicantEmail,
-          phone: input.phone.trim(),
-          company: input.company.trim(),
-          role: input.role,
-          areas: input.areas,
-          properties_count: input.propertiesCount,
-          motivation: input.motivation.trim(),
-          referred_by_code: normalizedRefCode || null,
-        });
-        if (error) return { ok: false, error: error.message };
         clearPersistedPartnerRefCode();
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) return { ok: false, error: authError.message };
-        try {
-          dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
-        } catch (loadError) {
-          setBackendError(loadError instanceof Error ? loadError.message : 'Application saved, but the workspace could not refresh.');
+        if (authData.user) {
+          try {
+            dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+          } catch (loadError) {
+            setBackendError(loadError instanceof Error ? loadError.message : 'Partner workspace activated, but the dashboard could not refresh.');
+          }
         }
         return { ok: true };
       }
