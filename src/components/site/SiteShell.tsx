@@ -435,7 +435,7 @@ export function SiteHeader() {
       if (!active) return;
       const role =
         profile?.role === 'admin' ? 'admin' :
-        profile?.role === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
+        (profile?.role === 'partner' || membership?.status === 'active') && profile?.account_status !== 'suspended' ? 'partner' : 'guest';
       setSession({
         userId: user.id,
         email: user.email || '',
