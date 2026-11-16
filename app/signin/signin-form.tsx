@@ -91,13 +91,16 @@ export default function SignInForm() {
       window.location.assign(resolvePostSignUpRedirect(requestedNext));
       return;
     }
-    const { data: profile } = await client
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+    const [{ data: profile }, { data: membership }] = await Promise.all([
+      client.from('profiles').select('role').eq('id', userId).maybeSingle(),
+      client.from('partner_network_memberships').select('status').eq('user_id', userId).maybeSingle(),
+    ]);
+    const effectiveRole =
+      profile?.role === 'admin' ? 'admin' :
+      profile?.role === 'partner' || membership?.status === 'active' ? 'partner' :
+      profile?.role || 'guest';
     const target = resolveNextAppPostSignInRedirect(
-      profile?.role as string | undefined,
+      effectiveRole,
       requestedNext,
     );
     window.location.assign(target);
