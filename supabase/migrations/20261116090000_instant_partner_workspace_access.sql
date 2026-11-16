@@ -734,6 +734,97 @@ $$;
 revoke all on function public.join_partner_network(text, text, text, text) from public, anon;
 grant execute on function public.join_partner_network(text, text, text, text) to authenticated;
 
+-- Existing pending and approved applicants are not kept behind the old signup gate.
+-- Backfill their network membership so they receive the same immediate workspace access.
+with latest_applications as (
+  select distinct on (a.applicant_id)
+    a.applicant_id,
+    a.role,
+    a.company,
+    a.phone,
+    a.referred_by_code,
+    a.referred_by_partner_id,
+    a.status,
+    a.submitted_at
+  from public.partner_applications a
+  where a.status in ('pending', 'needs_correction', 'approved')
+    and a.role in (
+      'Property owner',
+      'Authorised manager',
+      'Multi-property operator',
+      'Closing agent'
+    )
+  order by a.applicant_id, a.submitted_at desc
+)
+insert into public.partner_network_memberships (
+  user_id, primary_role, company, phone, status
+)
+select
+  a.applicant_id,
+  case a.role
+    when 'Property owner' then 'property_owner'
+    when 'Authorised manager' then 'authorised_manager'
+    when 'Multi-property operator' then 'multi_property_operator'
+    when 'Closing agent' then 'closing_agent'
+  end,
+  a.company,
+  a.phone,
+  'active'
+from latest_applications a
+join public.profiles p on p.id = a.applicant_id
+where p.account_status = 'active'
+on conflict (user_id) do nothing;
+
+with latest_applications as (
+  select distinct on (a.applicant_id)
+    a.applicant_id,
+    a.role,
+    a.company,
+    a.phone,
+    a.referred_by_code,
+    a.referred_by_partner_id
+  from public.partner_applications a
+  where a.status in ('pending', 'needs_correction', 'approved')
+    and a.role in (
+      'Property owner',
+      'Authorised manager',
+      'Multi-property operator',
+      'Closing agent'
+    )
+  order by a.applicant_id, a.submitted_at desc
+)
+update public.profiles p
+  set partner_role = coalesce(p.partner_role, a.role),
+      company = coalesce(p.company, a.company),
+      phone = coalesce(p.phone, a.phone),
+      referral_code = coalesce(p.referral_code, public.generate_unique_referral_code(p.full_name)),
+      referred_by_code = coalesce(p.referred_by_code, a.referred_by_code),
+      referred_by_partner_id = coalesce(p.referred_by_partner_id, a.referred_by_partner_id)
+  from latest_applications a
+  where p.id = a.applicant_id
+    and p.account_status = 'active';
+
+insert into public.partner_referrals (
+  referrer_partner_id, referred_partner_id, referral_code, status, registered_at, verified_at
+)
+select
+  a.referred_by_partner_id,
+  a.applicant_id,
+  coalesce(a.referred_by_code, 'DIRECT'),
+  case when a.status = 'approved' then 'verified' else 'registered' end,
+  a.submitted_at,
+  case when a.status = 'approved' then a.submitted_at else null end
+from (
+  select distinct on (applicant_id)
+    applicant_id, referred_by_partner_id, referred_by_code, status, submitted_at
+  from public.partner_applications
+  where status in ('pending', 'needs_correction', 'approved')
+    and referred_by_partner_id is not null
+  order by applicant_id, submitted_at desc
+) a
+where a.referred_by_partner_id <> a.applicant_id
+on conflict (referred_partner_id) do nothing;
+
 -- Admin review of identity/authority is now separate from workspace access.
 -- Approving verification records must not convert the member's guest account into
 -- a partner-only account or remove their ability to book stays.
@@ -970,6 +1061,11 @@ begin
         select 1
         from public.partner_network_memberships m
         where m.user_id = p.id
+      )
+      or exists (
+        select 1
+        from public.partner_applications a
+        where a.applicant_id = p.id
       )
     ) into beneficiary_is_partner
     from public.profiles p
