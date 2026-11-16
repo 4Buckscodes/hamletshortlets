@@ -903,6 +903,32 @@ begin
           referred_by_code = coalesce(referred_by_code, new.referred_by_code)
       where id = new.applicant_id;
 
+    -- Backward compatibility for legacy/admin-created verification records:
+    -- if no membership exists yet, approval activates the network workspace.
+    insert into public.partner_network_memberships (
+      user_id, primary_role, company, phone, status
+    )
+    select
+      new.applicant_id,
+      case lower(btrim(new.role))
+        when 'property owner' then 'property_owner'
+        when 'authorised manager' then 'authorised_manager'
+        when 'agent (authorised)' then 'authorised_manager'
+        when 'property manager' then 'authorised_manager'
+        when 'co-host / hospitality operator' then 'authorised_manager'
+        when 'multi-property operator' then 'multi_property_operator'
+        when 'shortlet operator' then 'multi_property_operator'
+        when 'closing agent' then 'closing_agent'
+        when 'referral partner' then 'closing_agent'
+        else 'closing_agent'
+      end,
+      coalesce(nullif(btrim(new.company), ''), 'Independent partner'),
+      new.phone,
+      case when p.account_status = 'active' then 'active' else 'suspended' end
+    from public.profiles p
+    where p.id = new.applicant_id
+    on conflict (user_id) do nothing;
+
     if new.referred_by_partner_id is not null and new.referred_by_partner_id <> new.applicant_id then
       insert into public.partner_referrals (
         referrer_partner_id,
@@ -1395,6 +1421,119 @@ begin
   execute updated_definition;
 end;
 $;
+
+-- Property publication verifies the listing itself. Uploader identity is a
+-- separate payout-readiness check and may remain pending after listing approval.
+create or replace function public.review_partner_property(
+  target_property_id text,
+  next_status text,
+  reviewer_note text,
+  verification_data jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  current_status text;
+  current_title text;
+  current_area text;
+  current_address text;
+  next_verification jsonb;
+  identity_outcome text;
+begin
+  if (select auth.uid()) is null or not public.has_role('admin') then
+    raise exception 'Only administrators can review properties.';
+  end if;
+
+  if next_status not in ('approved', 'needs_correction', 'rejected', 'suspended') then
+    raise exception 'Unsupported property review status.';
+  end if;
+
+  if length(btrim(coalesce(reviewer_note, ''))) < 10 then
+    raise exception 'A reviewer note of at least 10 characters is required.';
+  end if;
+
+  identity_outcome := coalesce(nullif(verification_data ->> 'identity', ''), 'pending_review');
+
+  if jsonb_typeof(verification_data) is distinct from 'object'
+    or coalesce(verification_data ->> 'ownership', '') not in ('verified', 'pending_review', 'missing', 'self_reported')
+    or identity_outcome not in ('verified', 'pending_review', 'missing', 'self_reported')
+    or coalesce(verification_data ->> 'authority', '') not in ('verified', 'pending_review', 'missing', 'self_reported')
+    or coalesce(verification_data ->> 'inspection', '') not in ('verified', 'pending_review', 'missing', 'self_reported') then
+    raise exception 'Ownership, authority, and inspection outcomes must be supplied; uploader identity may remain pending until payout.';
+  end if;
+
+  select status, title, area, public_address
+    into current_status, current_title, current_area, current_address
+    from public.properties
+    where id = target_property_id
+    for update;
+
+  if not found then
+    raise exception 'Property not found.';
+  end if;
+
+  if current_status in ('submitted', 'needs_correction')
+    and next_status not in ('approved', 'needs_correction', 'rejected') then
+    raise exception 'Invalid decision for a submitted property.';
+  elsif current_status = 'approved' and next_status <> 'suspended' then
+    raise exception 'Approved properties can only be suspended.';
+  elsif current_status = 'suspended' and next_status <> 'approved' then
+    raise exception 'Suspended properties can only be reinstated.';
+  elsif current_status = 'rejected' then
+    raise exception 'Rejected listings cannot be changed; submit a new listing.';
+  end if;
+
+  next_verification := jsonb_build_object(
+    'ownership', verification_data ->> 'ownership',
+    'identity', identity_outcome,
+    'authority', verification_data ->> 'authority',
+    'inspection', verification_data ->> 'inspection'
+  );
+
+  if next_status = 'approved' then
+    if next_verification ->> 'ownership' <> 'verified'
+      or next_verification ->> 'authority' <> 'verified'
+      or next_verification ->> 'inspection' <> 'verified' then
+      raise exception 'Ownership, authority to list, and physical inspection must be verified before property approval. Partner identity is verified separately before payout.';
+    end if;
+
+    if exists (
+      select 1
+      from public.properties existing
+      where existing.id <> target_property_id
+        and existing.status = 'approved'
+        and public.normalize_listing_text(existing.area) = public.normalize_listing_text(current_area)
+        and public.normalize_listing_text(existing.public_address) = public.normalize_listing_text(current_address)
+        and public.normalize_listing_text(existing.title) = public.normalize_listing_text(current_title)
+    ) then
+      raise exception 'Duplicate listing cannot be approved while another approved property uses the same title and address.';
+    end if;
+  end if;
+
+  update public.properties
+    set status = next_status,
+        verification = next_verification,
+        trust_label = case when next_status = 'approved' then 'HAMLET verified' else 'Under review' end,
+        review_note = btrim(reviewer_note),
+        updated_at = now()
+    where id = target_property_id;
+
+  insert into public.admin_audit_log (actor_id, actor_role, action, target, detail)
+    values (
+      (select auth.uid()),
+      'admin',
+      'property_' || next_status,
+      current_title,
+      'Status: ' || current_status || ' → ' || next_status || '. Reviewer note: ' || btrim(reviewer_note)
+    );
+end;
+$;
+
+revoke all on function public.review_partner_property(text, text, text, jsonb) from public, anon;
+grant execute on function public.review_partner_property(text, text, text, jsonb) to authenticated;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
 do $$
