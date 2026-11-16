@@ -61,7 +61,8 @@ export default function SignInForm() {
       if (params.get('mode') === 'signup') {
         setMode('signup');
       }
-      setRequestedNext(readRequestedRedirectFromSearch(window.location.search));
+      const requestedRedirect = readRequestedRedirectFromSearch(window.location.search);
+      setRequestedNext(requestedRedirect?.startsWith('/partners') ? '/partners' : requestedRedirect);
       const referralCode =
         new URLSearchParams(window.location.search).get('ref') ||
         window.localStorage.getItem('hamlet:referral-code');
