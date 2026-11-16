@@ -1285,6 +1285,11 @@ begin
   function_definition := pg_get_functiondef(function_signature);
   updated_definition := replace(
     function_definition,
+    $old$if actor_role = 'guest' then$old$,
+    $new$if actor_role = 'guest' and booking_row.guest_id = actor_id and next_status = 'cancelled' then$new$
+  );
+  updated_definition := replace(
+    updated_definition,
     $old$elsif actor_role in ('partner', 'admin') then$old$,
     $new$elsif actor_role in ('partner', 'admin') or public.has_role('partner') then$new$
   );
