@@ -74,7 +74,7 @@ export default function PartnerDashboardPage() {
     const [{ data: profile }, { data: applications }, { data: membership }] = await Promise.all([
       db
         .from('profiles')
-        .select('role,full_name,partner_role')
+        .select('role,full_name,partner_role,account_status')
         .eq('id', user.id)
         .maybeSingle(),
       db
@@ -98,7 +98,7 @@ export default function PartnerDashboardPage() {
         String(application?.role),
       );
     const profileRole = String(profile?.role || 'guest');
-    const isActiveMember = membership?.status === 'active';
+    const isActiveMember = membership?.status === 'active' && profile?.account_status !== 'suspended';
     const userRole =
       profileRole === 'admin'
         ? 'admin'
