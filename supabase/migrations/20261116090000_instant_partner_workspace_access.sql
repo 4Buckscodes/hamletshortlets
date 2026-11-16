@@ -1352,7 +1352,7 @@ begin
   updated_definition := replace(
     function_definition,
     $old$if actor_role = 'guest' then$old$,
-    $new$if actor_role = 'guest' and booking_row.guest_id = actor_id and next_status = 'cancelled' then$new$
+    $new$if actor_role = 'guest' and (not public.has_role('partner') or (booking_row.guest_id = actor_id and next_status = 'cancelled')) then$new$
   );
   updated_definition := replace(
     updated_definition,
