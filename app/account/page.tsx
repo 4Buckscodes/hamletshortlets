@@ -178,7 +178,7 @@ export default function GuestAccountOverviewPage() {
               </div>
 
               {/* Role Workspace Shortcuts */}
-              {(profile?.role === 'partner' || partnerMembershipActive) && (
+              {((profile?.role === 'partner' && profile.account_status !== 'suspended') || partnerMembershipActive) && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white p-5">
                   <div className="flex items-center gap-3">
                     <Building2 className="h-6 w-6 text-brass-600" />
