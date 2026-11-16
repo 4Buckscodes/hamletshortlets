@@ -203,7 +203,7 @@ begin
     where p.referral_code = clean_code
       and p.account_status = 'active'
       and (
-        p.role in ('partner', 'admin')
+        p.role = 'admin'
         or exists (
           select 1
           from public.partner_network_memberships m
@@ -272,7 +272,7 @@ begin
       where p.referral_code = raw_referral_code
         and p.account_status = 'active'
         and (
-          p.role in ('partner', 'admin')
+        p.role = 'admin'
           or exists (
             select 1
             from public.partner_network_memberships m
@@ -394,7 +394,7 @@ begin
     where p.referral_code = clean_code
       and p.account_status = 'active'
       and (
-        p.role in ('partner', 'admin')
+        p.role = 'admin'
         or exists (
           select 1
           from public.partner_network_memberships m
@@ -472,7 +472,7 @@ begin
       where p.referral_code = clean_code
         and p.account_status = 'active'
         and (
-          p.role in ('partner', 'admin')
+        p.role = 'admin'
           or exists (
             select 1
             from public.partner_network_memberships m
@@ -616,7 +616,7 @@ begin
         where p.referral_code = clean_referral_code
           and p.account_status = 'active'
           and (
-            p.role in ('partner', 'admin')
+        p.role = 'admin'
             or exists (
               select 1 from public.partner_network_memberships m
               where m.user_id = p.id and m.status = 'active'
@@ -1046,7 +1046,7 @@ begin
         and p.account_status = 'active'$old$,
     $new$and p.account_status = 'active'
         and (
-          p.role in ('partner', 'admin')
+        p.role = 'admin'
           or exists (
             select 1
             from public.partner_network_memberships m
@@ -1100,22 +1100,38 @@ begin
   end if;
 
   if next_payout_status in ('approved', 'paid') and entry_row.beneficiary_user_id is not null then
-    select exists (
-      select 1
-      from public.partner_network_memberships m
-      where m.user_id = p.id
-        and m.status = 'active'
+    select (
+      p.role = 'partner'
+      or exists (
+        select 1
+        from public.partner_network_memberships m
+        where m.user_id = p.id
+      )
+      or exists (
+        select 1
+        from public.partner_applications a
+        where a.applicant_id = p.id
+      )
     ) into beneficiary_is_partner
     from public.profiles p
     where p.id = entry_row.beneficiary_user_id;
 
     if coalesce(beneficiary_is_partner, false) then
-      select exists (
-        select 1
-        from public.partner_applications a
-        where a.applicant_id = entry_row.beneficiary_user_id
-          and a.status = 'approved'
-      ) into beneficiary_verified;
+      select
+        exists (
+          select 1
+          from public.partner_network_memberships m
+          join public.profiles p on p.id = m.user_id
+          where m.user_id = entry_row.beneficiary_user_id
+            and m.status = 'active'
+            and p.account_status = 'active'
+        )
+        and exists (
+          select 1
+          from public.partner_applications a
+          where a.applicant_id = entry_row.beneficiary_user_id
+            and a.status = 'approved'
+        ) into beneficiary_verified;
 
       if not beneficiary_verified then
         raise exception 'Complete HAMLET identity verification before this partner payout can be marked paid.';
@@ -1255,6 +1271,110 @@ as $
           and p.account_status = 'active'
       )
     );
+$;
+
+-- Booking operations treat active network members as partner operators while
+-- preserving their guest role for their own reservations. Referral rewards and
+-- payout approvals require active membership and payout identity verification.
+do $
+declare
+  function_signature regprocedure := 'public.transition_booking(text,text,text)'::regprocedure;
+  function_definition text;
+  updated_definition text;
+begin
+  function_definition := pg_get_functiondef(function_signature);
+  updated_definition := replace(
+    function_definition,
+    $old$elsif actor_role in ('partner', 'admin') then$old$,
+    $new$elsif actor_role in ('partner', 'admin') or public.has_role('partner') then$new$
+  );
+  updated_definition := replace(
+    updated_definition,
+    $old$select (account_status = 'active') into agent_active
+        from public.profiles
+        where id = booking_row.closing_agent_id;$old$,
+    $new$select (
+          p.account_status = 'active'
+          and exists (
+            select 1 from public.partner_network_memberships m
+            where m.user_id = p.id and m.status = 'active'
+          )
+        ) into agent_active
+        from public.profiles p
+        where p.id = booking_row.closing_agent_id;$new$
+  );
+  updated_definition := replace(
+    updated_definition,
+    $old$select (account_status = 'active') into referrer_active
+          from public.profiles
+          where id = ref_row.referrer_partner_id;$old$,
+    $new$select (
+            p.account_status = 'active'
+            and exists (
+              select 1 from public.partner_network_memberships m
+              where m.user_id = p.id and m.status = 'active'
+            )
+          ) into referrer_active
+          from public.profiles p
+          where p.id = ref_row.referrer_partner_id;$new$
+  );
+  updated_definition := replace(
+    updated_definition,
+    $old$update public.booking_payment_records
+      set payout_status = 'approved',
+          updated_at = now()
+      where booking_id = booking_row.id
+        and record_type in ('closing_agent_commission', 'accommodation_revenue', 'mandatory_charges')
+        and payout_status = 'pending';$old$,
+    $new$update public.booking_payment_records
+      set payout_status = case
+            when beneficiary_user_id is not null
+              and (
+                exists (
+                  select 1 from public.profiles p
+                  where p.id = booking_payment_records.beneficiary_user_id
+                    and p.role = 'partner'
+                )
+                or exists (
+                  select 1 from public.partner_network_memberships m
+                  where m.user_id = booking_payment_records.beneficiary_user_id
+                )
+                or exists (
+                  select 1 from public.partner_applications a
+                  where a.applicant_id = booking_payment_records.beneficiary_user_id
+                )
+              )
+              and not (
+                exists (
+                  select 1
+                  from public.partner_network_memberships m
+                  join public.profiles p on p.id = m.user_id
+                  where m.user_id = booking_payment_records.beneficiary_user_id
+                    and m.status = 'active'
+                    and p.account_status = 'active'
+                )
+                and exists (
+                  select 1
+                  from public.partner_applications a
+                  where a.applicant_id = booking_payment_records.beneficiary_user_id
+                    and a.status = 'approved'
+                )
+              )
+            then 'pending'
+            else 'approved'
+          end,
+          updated_at = now()
+      where booking_id = booking_row.id
+        and record_type in ('closing_agent_commission', 'accommodation_revenue', 'mandatory_charges')
+        and payout_status = 'pending';$new$
+  );
+
+  if updated_definition = function_definition then
+    raise exception 'Could not update the partner booking transition and payout rules.';
+  end if;
+
+  execute updated_definition;
+end;
 $;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
