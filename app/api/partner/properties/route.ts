@@ -212,16 +212,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const [{ data: profile, error: profileError }, { data: applications, error: applicationError }, { data: membership, error: membershipError }] =
+  const [{ data: profile, error: profileError }, { data: membership, error: membershipError }] =
     await Promise.all([
       db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
-      db
-        .from('partner_applications')
-        .select('id,status,role')
-        .eq('applicant_id', auth.user.id)
-        .in('status', ['pending', 'needs_correction'])
-        .order('submitted_at', { ascending: false })
-        .limit(1),
       db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
     ]);
 
@@ -246,8 +239,7 @@ export async function POST(request: Request) {
     profile?.account_status !== 'suspended' &&
     (profile?.role === 'admin' ||
       legacyPartnerCanList ||
-      activeInventoryMember ||
-      hasPendingInventoryApplication);
+      activeInventoryMember);
 
   if (!maySubmit) {
     return NextResponse.json(
