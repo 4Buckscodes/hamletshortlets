@@ -200,7 +200,7 @@ export default function PartnerApplicationForm() {
 
     const [{ data: profile }, { data: apps }, { data: networkMembership }] =
       await Promise.all([
-        db.from('profiles').select('role,full_name,phone,company').eq('id', user.id).maybeSingle(),
+        db.from('profiles').select('role,full_name,phone,company,referred_by_code').eq('id', user.id).maybeSingle(),
         db
           .from('partner_applications')
           .select(
@@ -234,7 +234,7 @@ export default function PartnerApplicationForm() {
         areas: latest.areas?.length ? latest.areas : prev.areas,
         propertiesCount: latest.properties_count ?? prev.propertiesCount,
         authoritySummary: latest.motivation || prev.authoritySummary,
-        referralCode: latest.referred_by_code || prev.referralCode,
+        referralCode: latest.referred_by_code || String(profile?.referred_by_code || prev.referralCode),
       }));
     } else if (profile || networkMembership) {
       setValues(prev => ({
@@ -250,6 +250,7 @@ export default function PartnerApplicationForm() {
         company:
           prev.company ||
           String(networkMembership?.company || profile?.company || ''),
+        referralCode: prev.referralCode || String(profile?.referred_by_code || ''),
       }));
     }
 
