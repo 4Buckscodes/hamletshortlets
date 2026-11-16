@@ -140,7 +140,7 @@ export async function createTestUser(
     partnerSignup?: {
       role?: string;
       company?: string;
-      phone: string;
+      phone?: string;
     };
   },
 ): Promise<string> {
