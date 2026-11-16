@@ -97,7 +97,7 @@ export default function SignInForm() {
     ]);
     const effectiveRole =
       profile?.role === 'admin' ? 'admin' :
-      profile?.role === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' :
+      (profile?.role === 'partner' || membership?.status === 'active') && profile?.account_status !== 'suspended' ? 'partner' :
       profile?.role || 'guest';
     const target = resolveNextAppPostSignInRedirect(
       effectiveRole,
