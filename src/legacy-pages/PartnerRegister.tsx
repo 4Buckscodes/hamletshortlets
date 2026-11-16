@@ -122,7 +122,7 @@ export default function PartnerRegister() {
     setRefreshing(true);
     try {
       await refreshState();
-      toast('Latest application & role status loaded.');
+      toast('Partner-network membership status loaded.');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not refresh status.', 'error');
     } finally {
@@ -173,7 +173,7 @@ export default function PartnerRegister() {
           motivation: form.motivation.trim(),
           referralCode: referralCode.trim(),
         });
-        toast('Updated partner application resubmitted for HAMLET review.');
+        toast('Identity-verification details resubmitted.');
         setDone(true);
         return;
       }
@@ -186,13 +186,13 @@ export default function PartnerRegister() {
         referralCode: referralCode.trim() || undefined,
       });
       if (!result.ok) {
-        setErrors({ account: result.error ?? 'Could not submit your application.' });
+        setErrors({ account: result.error ?? 'Could not activate your partner workspace.' });
         return;
       }
       if (result.needsEmailConfirmation) {
         setNeedsEmailConfirm(true);
         setDone(true);
-        toast('Account created — confirm your email to complete your partner application.');
+        toast('Account created — confirm your email to activate your partner workspace.');
         return;
       }
       if (!backendConfigured) await signIn(effectiveEmail, password || 'demo1234');
@@ -435,16 +435,16 @@ export default function PartnerRegister() {
               </div>
 
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">
-                {isCorrectionMode ? 'Respond to reviewer feedback' : 'Apply to join'}
+                {isCorrectionMode ? 'Update identity verification' : 'Join partner network'}
               </p>
               <h2 className="mt-1.5 font-display text-3xl font-bold text-white">
                 {isCorrectionMode
-                  ? 'Update & resubmit partner application'
-                  : 'Partner registration & application'}
+                  ? 'Update identity verification'
+                  : 'Partner network registration'}
               </h2>
               <p className="mt-1 text-xs font-medium text-ink-300">
                 {isCorrectionMode
-                  ? 'Address the correction note from HAMLET operations below and resubmit your application for review.'
+                  ? 'Update the verification details requested by HAMLET operations. Your workspace remains active.'
                   : !session && backendConfigured
                     ? 'Create your HAMLET account and activate your partner workspace immediately. Identity verification is only required before payout.'
                     : 'Partner access is automatic. Each property is reviewed before publication, and identity verification is required before payout. This form does not grant admin access.'}
@@ -467,7 +467,7 @@ export default function PartnerRegister() {
 
               {existingApplication?.status === 'rejected' && existingApplication.reviewNote && (
                 <div className="mt-4 rounded-2xl border border-red-500/35 bg-red-950/30 p-3.5 text-[11.5px] font-semibold text-red-200">
-                  Previous application note: {existingApplication.reviewNote}
+                  Previous verification note: {existingApplication.reviewNote}
                 </div>
               )}
 
