@@ -685,8 +685,8 @@ begin
   end if;
 
   update public.profiles
-    set phone = coalesce(nullif(btrim(phone), ''), clean_phone),
-        company = coalesce(nullif(btrim(company), ''), clean_company),
+    set phone = clean_phone,
+        company = clean_company,
         partner_role = case next_role
           when 'property_owner' then 'Property owner'
           when 'authorised_manager' then 'Authorised manager'
@@ -798,12 +798,11 @@ begin
       or exists (
         select 1
         from public.partner_network_memberships m
-        where m.user_id = p.id and m.status = 'active'
+        where m.user_id = p.id
       )
     ) into beneficiary_is_partner
     from public.profiles p
-    where p.id = entry_row.beneficiary_user_id
-      and p.account_status = 'active';
+    where p.id = entry_row.beneficiary_user_id;
 
     if coalesce(beneficiary_is_partner, false) then
       select exists (
