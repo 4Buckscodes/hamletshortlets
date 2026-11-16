@@ -30,15 +30,18 @@ export default function SignInForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') === 'signup') setMode('signup');
-    const requestedRedirect = readRequestedRedirectFromSearch(window.location.search);
-    setRequestedNext(requestedRedirect?.startsWith('/partners') ? '/partners' : requestedRedirect);
-    const referralCode = params.get('ref') || window.localStorage.getItem('hamlet:referral-code');
-    if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
-    const oauthError = params.get('error') || params.get('oauth_error');
-    const oauthErrorDesc = params.get('error_description');
-    if (oauthError || oauthErrorDesc) setError(formatOAuthErrorMessage(oauthError, oauthErrorDesc));
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'signup') setMode('signup');
+      const requestedRedirect = readRequestedRedirectFromSearch(window.location.search);
+      setRequestedNext(requestedRedirect?.startsWith('/partners') ? '/partners' : requestedRedirect);
+      const referralCode = params.get('ref') || window.localStorage.getItem('hamlet:referral-code');
+      if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
+      const oauthError = params.get('error') || params.get('oauth_error');
+      const oauthErrorDesc = params.get('error_description');
+      if (oauthError || oauthErrorDesc) setError(formatOAuthErrorMessage(oauthError, oauthErrorDesc));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const isPartnerSignup = Boolean(requestedNext?.startsWith('/partners'));
