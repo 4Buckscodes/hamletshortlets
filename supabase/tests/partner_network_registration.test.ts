@@ -26,7 +26,6 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
   it('provisions an active partner membership from partner signup metadata before the first dashboard request', async () => {
     const partnerId = await createTestUser(db, {
       email: 'instant-owner@hamlet.test',
-      fullName: 'Instant Owner',
       partnerSignup: {
         role: 'property_owner',
       },
