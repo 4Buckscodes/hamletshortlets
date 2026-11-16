@@ -154,6 +154,28 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     );
     expect(referralAttribution.rows[0]?.referrer_partner_id).toBe(memberA);
 
+    const attributionSummary = await asUser(db, memberA, tx =>
+      tx.query<{ summary: { referred_partners: Array<{ referred_partner_id: string; status: string }> } }>(
+        `select public.get_my_partner_attribution_summary() as summary`,
+      ),
+    );
+    expect(attributionSummary.rows[0]?.summary.referred_partners).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ referred_partner_id: memberB, status: 'registered' }),
+      ]),
+    );
+
+    const publicCodeLookup = await asAnon(db, tx =>
+      tx.query<{ resolved: { valid: boolean; partner_id: string } }>(
+        `select public.resolve_referral_code($1) as resolved`,
+        [memberACode],
+      ),
+    );
+    expect(publicCodeLookup.rows[0]?.resolved).toMatchObject({
+      valid: true,
+      partner_id: memberA,
+    });
+
     // RLS: Member A sees only their own row; anon cannot query or execute RPCs
     const memberASelect = await asUser(db, memberA, tx =>
       tx.query<{ user_id: string }>(
