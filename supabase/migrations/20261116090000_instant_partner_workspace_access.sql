@@ -13,18 +13,19 @@ as $$
     select 1
     from public.profiles p
     where p.id = (select auth.uid())
-      and p.role = required_role
-  )
-  or (
-    required_role = 'partner'
-    and exists (
-      select 1
-      from public.partner_network_memberships m
-      join public.profiles p on p.id = m.user_id
-      where m.user_id = (select auth.uid())
-        and m.status = 'active'
-        and p.account_status = 'active'
-    )
+      and p.account_status = 'active'
+      and (
+        (required_role <> 'partner' and p.role = required_role)
+        or (
+          required_role = 'partner'
+          and exists (
+            select 1
+            from public.partner_network_memberships m
+            where m.user_id = p.id
+              and m.status = 'active'
+          )
+        )
+      )
   );
 $$;
 
@@ -100,7 +101,7 @@ begin
       and m.status = 'active'
   ) into has_network_membership;
 
-  if account_role not in ('partner', 'admin') and not has_network_membership then
+  if account_role <> 'admin' and not has_network_membership then
     return false;
   end if;
 
@@ -957,7 +958,7 @@ begin
     where m.user_id = actor_id and m.status = 'active'
   ) into has_membership;
 
-  if actor_role is null or (actor_role not in ('partner', 'admin') and not has_membership) then
+  if actor_role is null or (actor_role <> 'admin' and not has_membership) then
     return jsonb_build_object(
       'referred_partners', '[]'::jsonb,
       'referred_rewards', '[]'::jsonb,
@@ -1099,18 +1100,11 @@ begin
   end if;
 
   if next_payout_status in ('approved', 'paid') and entry_row.beneficiary_user_id is not null then
-    select (
-      p.role in ('partner', 'admin')
-      or exists (
-        select 1
-        from public.partner_network_memberships m
-        where m.user_id = p.id
-      )
-      or exists (
-        select 1
-        from public.partner_applications a
-        where a.applicant_id = p.id
-      )
+    select exists (
+      select 1
+      from public.partner_network_memberships m
+      where m.user_id = p.id
+        and m.status = 'active'
     ) into beneficiary_is_partner
     from public.profiles p
     where p.id = entry_row.beneficiary_user_id;
@@ -1233,6 +1227,35 @@ begin
   execute updated_definition;
 end;
 $$;
+
+-- A suspended network membership must also revoke property-management access,
+-- while non-network guest property owners retain their existing property_access path.
+create or replace function public.can_manage_property(target_property_id text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select public.has_role('admin')
+    or (
+      not exists (
+        select 1
+        from public.partner_network_memberships m
+        where m.user_id = (select auth.uid())
+          and m.status <> 'active'
+      )
+      and exists (
+        select 1
+        from public.property_access pa
+        join public.profiles p on p.id = pa.user_id
+        where pa.property_id = target_property_id
+          and pa.user_id = (select auth.uid())
+          and pa.status = 'active'
+          and p.account_status = 'active'
+      )
+    );
+$;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
 do $$
