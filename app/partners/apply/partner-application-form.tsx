@@ -541,7 +541,7 @@ export default function PartnerApplicationForm() {
             </div>
             {membershipRoleLocked ? (
               <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
-                Your primary partner role is <strong>{values.role}</strong>. It is fixed after registration to protect listing authority. Contact HAMLET support if it needs to change.
+                Your primary partner role is <strong>{values.role}</strong>. It is fixed after registration for consistent partner records. Contact HAMLET support if it needs to change.
               </div>
             ) : (
               <OptionCardGroup
