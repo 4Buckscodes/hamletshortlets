@@ -23,7 +23,7 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     await db.close();
   });
 
-  it('registers an active guest in partner_network_memberships, backfills blank profile company/phone without elevating role, and supports idempotent updates', async () => {
+  it('registers an active guest without elevating the account role, supports same-role updates, and prevents self-service role escalation', async () => {
     const guestId = await createTestUser(db, {
       email: 'babsa11@yahoo.com',
       fullName: 'Adams Babatunde',
@@ -81,17 +81,31 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     });
     expect(access.rows[0]?.referral_code).toMatch(/^HML-/);
 
-    // Updating an existing active membership succeeds and updates partner_network_memberships
+    // Updating an existing active membership with the same role is idempotent.
     const updated = await asUser(db, guestId, tx =>
       tx.query<{ primary_role: string; company: string }>(
         `select primary_role, company from public.join_partner_network($1, $2, $3)`,
-        ['authorised_manager', 'Abundance Abodes Lagos', '+2348155377898'],
+        ['property_owner', 'Abundance Abodes Lagos', '+2348155377898'],
       ),
     );
     expect(updated.rows[0]).toEqual({
-      primary_role: 'authorised_manager',
+      primary_role: 'property_owner',
       company: 'Abundance Abodes Lagos',
     });
+
+    let roleChangeError = '';
+    try {
+      await asUser(db, guestId, tx =>
+        tx.query(`select * from public.join_partner_network($1, $2, $3)`, [
+          'authorised_manager',
+          'Abundance Abodes Lagos',
+          '+2348155377898',
+        ]),
+      );
+    } catch (error) {
+      roleChangeError = String(error);
+    }
+    expect(roleChangeError).toContain('primary partner role is already set');
   });
 
   it('returns varchar(255) auth.users.email cleanly in list_partner_network_members() and enforces RLS + suspension rules', async () => {
