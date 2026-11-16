@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     inventoryRoles.includes(String(membership?.primary_role));
   const legacyPartnerRole = String(profile?.partner_role || '').toLowerCase();
   const legacyPartner = profile?.role === 'partner' &&
-    (!legacyPartnerRole || ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'].includes(legacyPartnerRole));
+    ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'].includes(legacyPartnerRole);
   if (profileError || profile?.account_status === 'suspended' ||
       (profile?.role !== 'admin' && !legacyPartner && !activeInventoryMember)) {
     return NextResponse.json({ error: 'Join as a property owner, authorised manager or multi-property operator to use Horatio.' }, { status: 403 });
