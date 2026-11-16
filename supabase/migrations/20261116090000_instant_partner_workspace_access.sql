@@ -29,8 +29,8 @@ as $$
   );
 $$;
 
--- Inventory permissions are role-specific. Closing agents can use sharing,
--- referrals and earnings, but cannot submit an owner's property without authority.
+-- Every active partner role can submit property details immediately. Property-level
+-- review and listing-authority checks remain separate from partner registration.
 create or replace function public.can_submit_partner_property()
 returns boolean
 language sql
