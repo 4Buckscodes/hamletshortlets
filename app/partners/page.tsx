@@ -290,14 +290,14 @@ export default function PartnerDashboardPage() {
         ) : !['partner', 'partner_applicant', 'admin'].includes(role) ? (
           <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              Partner application required
+              Partner workspace access
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Create a partner application to start uploading properties. Once submitted, you can list immediately while HAMLET reviews your profile. Earnings remain unavailable until partner verification is complete.
+              Join the HAMLET partner network to open your workspace immediately. Property owners, authorised managers and operators can upload listings; closing agents can share stays and track their earnings.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/partners/apply" className="primary-button">
-                Open partner application →
+                Join partner network →
               </Link>
               <Link href="/account" className="secondary-button">
                 Back to guest account
