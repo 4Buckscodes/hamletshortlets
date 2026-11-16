@@ -73,9 +73,17 @@ const NETWORK_ROLE_TO_APPLICATION_ROLE: Record<string, string> = {
 
 const APPLICATION_ROLE_TO_NETWORK_ROLE: Record<string, string> = {
   'Property owner': 'property_owner',
+  'Property Owner': 'property_owner',
   'Authorised manager': 'authorised_manager',
+  'Authorised Manager': 'authorised_manager',
+  'Agent (authorised)': 'authorised_manager',
+  'Property Manager': 'authorised_manager',
+  'Co-host / Hospitality Operator': 'authorised_manager',
   'Multi-property operator': 'multi_property_operator',
+  'Shortlet Operator': 'multi_property_operator',
   'Closing agent': 'closing_agent',
+  'Closing Agent': 'closing_agent',
+  'Referral Partner': 'closing_agent',
 };
 
 const ROLE_OPTIONS = [
