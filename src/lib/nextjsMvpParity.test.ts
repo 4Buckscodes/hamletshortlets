@@ -153,7 +153,9 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     const signInForm = readRepoFile('app/signin/signin-form.tsx');
     expect(signInForm).not.toContain("window.location.assign('/legacy')");
     expect(signInForm).toContain('resolveNextAppPostSignInRedirect');
-    expect(signInForm).toContain('StepProgressHeader');
+    expect(signInForm).toContain('FormField');
+    expect(signInForm).toContain('Email address');
+    expect(signInForm).toContain('Password');
 
     const homePage =
       readRepoFile('app/page.tsx') + '\n' + readRepoFile('app/home-slideshow.tsx');
