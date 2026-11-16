@@ -237,9 +237,10 @@ export async function POST(request: Request) {
     !membershipError &&
     membership?.status === 'active' &&
     inventoryNetworkRoles.includes(String(membership?.primary_role));
+  const legacyPartnerRole = String(profile?.partner_role || '').toLowerCase();
   const legacyPartnerCanList =
     profile?.role === 'partner' &&
-    (!profile?.partner_role || !String(profile.partner_role).toLowerCase().includes('closing agent'));
+    (!legacyPartnerRole || ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'].includes(legacyPartnerRole));
   const maySubmit =
     !profileError &&
     profile?.account_status !== 'suspended' &&
