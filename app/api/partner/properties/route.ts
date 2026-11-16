@@ -218,13 +218,6 @@ export async function POST(request: Request) {
       db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
     ]);
 
-  const application = applications?.[0];
-  const hasPendingInventoryApplication =
-    !applicationError &&
-    Boolean(application) &&
-    ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-      String(application?.role),
-    );
   const inventoryNetworkRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
   const activeInventoryMember =
     !membershipError &&
