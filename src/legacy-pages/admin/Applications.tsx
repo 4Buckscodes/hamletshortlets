@@ -20,7 +20,8 @@ export default function AdminApplications() {
   const [govSaving, setGovSaving] = useState(false);
 
   const list = state.applications.filter(a => tab === 'all' || a.status === tab);
-  const partnerAccounts = state.accounts.filter(a => a.role === 'partner');
+  const verifiedApplicantIds = new Set(state.applications.filter(a => a.status === 'approved').map(a => a.applicantId));
+  const partnerAccounts = state.accounts.filter(a => a.role === 'partner' || verifiedApplicantIds.has(a.id));
 
   const review = async () => {
     if (!noteFor) return;
