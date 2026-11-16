@@ -3254,6 +3254,17 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           return { ok: false, error: 'Sign in with your property-partner account before submitting a listing.' };
         }
         const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
+        const { data: membership, error: membershipError } = await supabase
+          .from('partner_network_memberships')
+          .select('primary_role,status')
+          .eq('user_id', s.userId)
+          .maybeSingle();
+        if (membershipError) {
+          return { ok: false, error: 'We could not verify your partner-network access. Please refresh and try again.' };
+        }
+        const activeInventoryMember =
+          membership?.status === 'active' &&
+          inventoryRoles.includes(String(membership?.primary_role));
         const maySubmit = s.role === 'admin' || activeInventoryMember;
         if (!maySubmit) {
           return {
