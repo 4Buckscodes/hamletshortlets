@@ -102,7 +102,8 @@ export default function PartnerDashboardPage() {
     const userRole =
       profileRole === 'admin'
         ? 'admin'
-        : profileRole === 'partner' || isActiveMember || hasPendingInventoryApplication
+        : profile?.account_status !== 'suspended' &&
+          (profileRole === 'partner' || isActiveMember || hasPendingInventoryApplication)
           ? 'partner'
           : 'guest';
     const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
