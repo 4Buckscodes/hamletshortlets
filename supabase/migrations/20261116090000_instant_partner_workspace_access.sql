@@ -666,11 +666,11 @@ begin
   insert into public.partner_network_memberships (user_id, primary_role, company, phone)
   values (actor, next_role, clean_company, clean_phone)
   on conflict (user_id) do update
-    set primary_role = excluded.primary_role,
-        company = excluded.company,
+    set company = excluded.company,
         phone = excluded.phone,
         updated_at = now()
   where public.partner_network_memberships.status = 'active'
+    and public.partner_network_memberships.primary_role = excluded.primary_role
   returning * into result;
 
   if result.user_id is null then
