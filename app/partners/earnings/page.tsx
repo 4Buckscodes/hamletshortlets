@@ -54,9 +54,9 @@ export default function PartnerEarningsPage() {
     const [{ data: profile }, { data: membership }, { data: verificationRows }] = await Promise.all([
       db.from('profiles').select('role,referral_code,account_status').eq('id', user.id).maybeSingle(),
       db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
-      db.from('partner_applications').select('status').eq('applicant_id', user.id).order('submitted_at', { ascending: false }).limit(1),
+      db.from('partner_applications').select('status').eq('applicant_id', user.id).order('submitted_at', { ascending: false }).limit(10),
     ]);
-    setVerificationStatus(String(verificationRows?.[0]?.status || 'not_submitted'));
+    setVerificationStatus(verificationRows?.some(row => row.status === 'approved') ? 'approved' : String(verificationRows?.[0]?.status || 'not_submitted'));
 
     const profileRole = String(profile?.role || 'guest');
     const userRole = profileRole === 'admin' ? 'admin' :
