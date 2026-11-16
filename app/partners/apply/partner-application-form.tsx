@@ -454,7 +454,7 @@ export default function PartnerApplicationForm() {
       <section className="rounded-3xl border border-emerald-200 bg-white p-6 sm:p-8">
         <div className="flex items-center gap-2 text-emerald-800">
           <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <strong className="text-sm">Approved {roleState} account</strong>
+          <strong className="text-sm">Partner workspace active</strong>
         </div>
         <h2 className="serif mt-2 text-2xl font-medium text-ink-900">
           Your workspace is ready.
@@ -483,7 +483,7 @@ export default function PartnerApplicationForm() {
     return (
       <section className="rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
         <span className="inline-flex rounded-full bg-paper px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brass-700">
-          Application status: {existing.status}
+          Verification status: {existing.status}
         </span>
         <h2 className="serif mt-3 text-2xl font-medium text-ink-900">
           {existing.company} · {existing.role}
@@ -764,7 +764,7 @@ export default function PartnerApplicationForm() {
                   className="mt-0.5 h-4 w-4 accent-ink-900"
                 />
                 <span>
-                  I confirm that the identity and contact information provided in this application are accurate.
+                  I confirm that the identity and contact information provided for payout verification are accurate.
                 </span>
               </label>
 
