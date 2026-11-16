@@ -71,19 +71,12 @@ export default function PartnerDashboardPage() {
       return;
     }
 
-    const [{ data: profile }, { data: applications }, { data: membership }] = await Promise.all([
+    const [{ data: profile }, { data: membership }] = await Promise.all([
       db
         .from('profiles')
         .select('role,full_name,partner_role,account_status')
         .eq('id', user.id)
         .maybeSingle(),
-      db
-        .from('partner_applications')
-        .select('role,status')
-        .eq('applicant_id', user.id)
-        .in('status', ['pending', 'needs_correction'])
-        .order('submitted_at', { ascending: false })
-        .limit(1),
       db
         .from('partner_network_memberships')
         .select('primary_role,status')
@@ -91,19 +84,13 @@ export default function PartnerDashboardPage() {
         .maybeSingle(),
     ]);
 
-    const application = applications?.[0];
-    const hasPendingInventoryApplication =
-      Boolean(application) &&
-      ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-        String(application?.role),
-      );
     const profileRole = String(profile?.role || 'guest');
     const isActiveMember = membership?.status === 'active' && profile?.account_status !== 'suspended';
     const userRole =
       profileRole === 'admin'
         ? 'admin'
         : profile?.account_status !== 'suspended' &&
-          (profileRole === 'partner' || isActiveMember || hasPendingInventoryApplication)
+          (profileRole === 'partner' || isActiveMember)
           ? 'partner'
           : 'guest';
     const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
@@ -113,7 +100,6 @@ export default function PartnerDashboardPage() {
       userRole === 'admin' ||
       (isActiveMember && inventoryRoles.includes(String(membership?.primary_role))) ||
       (profileRole === 'partner' && (!legacyPartnerRole || legacyInventoryRoles.includes(legacyPartnerRole))) ||
-      hasPendingInventoryApplication
     );
     setRole(userRole);
     setPartnerName(String(profile?.full_name || ''));
