@@ -1,4 +1,7 @@
 -- Instant partner workspace access with progressive trust and payout verification.
+
+-- Minimal email/password registration does not require a phone number.
+alter table public.partner_network_memberships alter column phone drop not null;
 -- Partner-network membership grants the workspace without changing the guest account role.
 -- Property publication and partner identity verification remain separate controls.
 
