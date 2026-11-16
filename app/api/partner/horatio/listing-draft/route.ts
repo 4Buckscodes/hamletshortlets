@@ -35,11 +35,9 @@ export async function POST(request: Request) {
     db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
     db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
   ]);
-  const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
-  const activeInventoryMember = !membershipError && membership?.status === 'active' &&
-    inventoryRoles.includes(String(membership?.primary_role));
+  const activePartnerMember = !membershipError && membership?.status === 'active';
   if (profileError || profile?.account_status === 'suspended' ||
-      (profile?.role !== 'admin' && !activeInventoryMember)) {
+      (profile?.role !== 'admin' && !activePartnerMember)) {
     return NextResponse.json({ error: 'Join the HAMLET partner network to use Horatio.' }, { status: 403 });
   }
 
