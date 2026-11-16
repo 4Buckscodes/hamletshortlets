@@ -202,7 +202,7 @@ export default function SignIn() {
         toast('Your password has been updated.');
         setPassword('');
         setConfirmPassword('');
-        const target = resolvePostSignInRedirect(state.session?.role, redirectParam);
+        const target = resolvePostSignInRedirect(state.session?.isPartnerMember ? 'partner' : state.session?.role, redirectParam);
         navigate(target, { replace: true });
       } finally {
         setLoading(false);
