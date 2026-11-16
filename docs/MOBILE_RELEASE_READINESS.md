@@ -5,8 +5,9 @@ This checklist is the release gate for the Expo Android/iOS application. It is i
 ## Current release posture
 
 - Mobile implementation is on `feat/hamlet-expo-mobile-app` and is proposed through draft PR #94.
-- The latest recorded code-level validation passed on commit `96f4765fd62315c47644f63578aeadf5c91357cb`.
-- Supabase Preview did not run because no Supabase Branch is associated with the PR.
+- Current branch HEAD `b1139f97c43bad105d8cfc8656a343c6340dd00f` has passing Mobile Checks, HAMLET CI, and Referral Release Validation workflows (16 November 2026).
+- Mobile Checks passed Expo dependency validation and TypeScript. HAMLET CI passed lint, unit/PGlite database tests, production build and Playwright mobile/desktop journeys. Referral Release Validation passed isolated Supabase migrations/database tests, lint, regression tests, production build and browser journeys.
+- These are code-level CI results only. They do not constitute physical Android/iOS acceptance or staging-provider integration.
 - No production database migration, production deployment, or production booking/payment test is authorised by this checklist.
 - Physical Android and iOS device testing remains outstanding.
 
