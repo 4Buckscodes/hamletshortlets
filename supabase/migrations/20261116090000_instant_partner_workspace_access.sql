@@ -689,7 +689,7 @@ begin
   returning * into result;
 
   if result.user_id is null then
-    raise exception 'Membership could not be activated.';
+    raise exception 'Your primary partner role is already set. Contact HAMLET support to request a role change.';
   end if;
 
   update public.profiles
@@ -847,6 +847,43 @@ where a.referred_by_partner_id <> a.applicant_id
     where m.user_id = a.applicant_id and m.status = 'active'
   )
 on conflict (referred_partner_id) do nothing;
+
+-- Existing legacy partner-role accounts were already approved under the old model.
+-- Convert them to immutable network memberships while preserving their approved role.
+insert into public.partner_network_memberships (
+  user_id, primary_role, company, phone, status
+)
+select
+  p.id,
+  case lower(btrim(coalesce(p.partner_role, '')))
+    when 'closing agent' then 'closing_agent'
+    when 'multi-property operator' then 'multi_property_operator'
+    when 'shortlet operator' then 'multi_property_operator'
+    when 'authorised manager' then 'authorised_manager'
+    when 'authorised property manager' then 'authorised_manager'
+    when 'property owner' then 'property_owner'
+    else 'closing_agent'
+  end,
+  p.company,
+  p.phone,
+  case when p.account_status = 'active' then 'active' else 'suspended' end
+from public.profiles p
+where p.role = 'partner'
+  and char_length(btrim(coalesce(p.company, ''))) between 2 and 160
+  and char_length(regexp_replace(coalesce(p.phone, ''), '[^0-9]', '', 'g')) between 7 and 15
+on conflict (user_id) do nothing;
+
+update public.profiles p
+  set referral_code = coalesce(
+    nullif(btrim(p.referral_code), ''),
+    public.generate_unique_referral_code(coalesce(p.full_name, 'HAMLET Partner'))
+  )
+where p.role = 'partner'
+  and exists (
+    select 1
+    from public.partner_network_memberships m
+    where m.user_id = p.id
+  );
 
 -- Admin review of identity/authority is now separate from workspace access.
 -- Approving verification records must not convert the member's guest account into
