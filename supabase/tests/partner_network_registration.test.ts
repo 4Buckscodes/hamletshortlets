@@ -159,7 +159,7 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     expect(closingAgentAccess.rows[0]).toEqual({
       guest_access: true,
       partner_access: true,
-      can_submit: false,
+      can_submit: true,
     });
 
     const referralAttribution = await db.query<{ referrer_partner_id: string }>(
