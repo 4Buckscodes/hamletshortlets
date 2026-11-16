@@ -217,6 +217,7 @@ export default function PartnerApplicationForm() {
       ]);
 
     setRoleState(String(profile?.role || 'guest'));
+    setMembershipRoleLocked(networkMembership?.status === 'active');
     const savedReferralCode = String(profile?.referred_by_code || '').trim().toUpperCase();
     if (savedReferralCode) {
       setLockedReferralCode(savedReferralCode);
@@ -538,15 +539,23 @@ export default function PartnerApplicationForm() {
                 Active partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
-            <OptionCardGroup
-              ariaLabel="Your main partner role"
-              options={ROLE_OPTIONS}
-              value={values.role}
-              onChange={role => setValues(prev => ({ ...prev, role }))}
-            />
-            <p className="m-0 text-xs leading-relaxed text-ink-600">
-              Your selection describes your main work and does not lock your account to that role.
-            </p>
+            {membershipRoleLocked ? (
+              <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
+                Your primary partner role is <strong>{values.role}</strong>. It is fixed after registration to protect listing authority. Contact HAMLET support if it needs to change.
+              </div>
+            ) : (
+              <OptionCardGroup
+                ariaLabel="Your main partner role"
+                options={ROLE_OPTIONS}
+                value={values.role}
+                onChange={role => setValues(prev => ({ ...prev, role }))}
+              />
+            )}
+            {!membershipRoleLocked && (
+              <p className="m-0 text-xs leading-relaxed text-ink-600">
+                Choose the role that best matches your current authority and responsibilities. Role changes are handled by HAMLET support.
+              </p>
+            )}
           </div>
         )}
 
