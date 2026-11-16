@@ -1050,11 +1050,12 @@ begin
         )$new$
   );
 
-  if updated_definition = function_definition then
-    raise exception 'Could not find the expected closing-agent role checks in %.', function_signature;
+  -- Some deployed databases have a richer booking-integrity function with
+  -- closing-agent/referral checks; the repository baseline only validates
+  -- guest booking data. Patch the richer variant when those clauses exist.
+  if updated_definition <> function_definition then
+    execute updated_definition;
   end if;
-
-  execute updated_definition;
 end;
 $$;
 
