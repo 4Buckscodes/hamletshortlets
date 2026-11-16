@@ -826,7 +826,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   generated_code text;
 begin
@@ -869,7 +869,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 -- Partner attribution summaries must include active network members, not only
 -- legacy profiles whose primary account role is 'partner'.
@@ -879,7 +879,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor_id uuid := (select auth.uid());
   actor_role text;
@@ -974,14 +974,14 @@ begin
     'closed_bookings', closed_arr
   );
 end;
-$;
+$$;
 
 revoke all on function public.get_my_partner_attribution_summary() from public, anon;
 grant execute on function public.get_my_partner_attribution_summary() to authenticated;
 
 -- Booking attribution accepts active network members as closing agents. The member
 -- retains guest access; this only validates the partner attribution identity.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.enforce_booking_request_integrity()'::regprocedure;
   function_definition text;
@@ -1009,7 +1009,7 @@ begin
 
   execute updated_definition;
 end;
-$;
+$$;
 
 -- Only identity-verified partners can be marked paid. They can still register,
 -- list, share and view earnings while their identity check is pending.
@@ -1114,7 +1114,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   event_name text;
   event_title text;
@@ -1151,10 +1151,10 @@ begin
   );
   return new;
 end;
-$;
+$$;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.resubmit_partner_property(text)'::regprocedure;
   function_definition text;
@@ -1173,7 +1173,7 @@ begin
 
   execute updated_definition;
 end;
-$;
+$$;
 
 -- A partner's registration generates one welcome email from the auth confirmation
 -- lifecycle. Do not enqueue separate "application received" or "application approved"
