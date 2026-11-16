@@ -135,7 +135,7 @@ export async function createTestUser(
   input: {
     id?: string;
     email: string;
-    fullName: string;
+    fullName?: string;
     role?: AccountRole;
     partnerSignup?: {
       role?: string;
@@ -149,7 +149,7 @@ export async function createTestUser(
      values (
        coalesce($1::uuid, gen_random_uuid()),
        $2,
-       jsonb_build_object('full_name', $3::text) || coalesce($4::jsonb, '{}'::jsonb)
+       jsonb_build_object('full_name', coalesce($3::text, '')) || coalesce($4::jsonb, '{}'::jsonb)
      )
      returning id`,
     [
