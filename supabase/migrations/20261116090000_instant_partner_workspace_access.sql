@@ -797,7 +797,12 @@ update public.profiles p
       referred_by_partner_id = coalesce(p.referred_by_partner_id, a.referred_by_partner_id)
   from latest_applications a
   where p.id = a.applicant_id
-    and p.account_status = 'active';
+    and p.account_status = 'active'
+    and exists (
+      select 1
+      from public.partner_network_memberships m
+      where m.user_id = p.id and m.status = 'active'
+    );
 
 insert into public.partner_referrals (
   referrer_partner_id, referred_partner_id, referral_code, status, registered_at, verified_at
@@ -818,6 +823,11 @@ from (
   order by applicant_id, submitted_at desc
 ) a
 where a.referred_by_partner_id <> a.applicant_id
+  and exists (
+    select 1
+    from public.partner_network_memberships m
+    where m.user_id = a.applicant_id and m.status = 'active'
+  )
 on conflict (referred_partner_id) do nothing;
 
 -- Admin review of identity/authority is now separate from workspace access.
@@ -1157,7 +1167,7 @@ $$;
 
 -- Account suspension controls also cover guest-role profiles that hold an active
 -- partner-network membership; the profile role remains guest by design.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.set_partner_account_status(uuid,text,text,boolean)'::regprocedure;
   function_definition text;
@@ -1183,7 +1193,7 @@ begin
 
   execute updated_definition;
 end;
-$;
+$$;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
 do $$
