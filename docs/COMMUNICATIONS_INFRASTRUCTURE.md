@@ -21,8 +21,8 @@
 - Elsinore admin page at `/admin/communications` with unread count and mark-as-read.
 - Durable email dispatch queue with attempts, next-attempt time, delivery status and last error.
 - Separate private `customer_email_notifications` queue for customer-facing transactional mail, with idempotency keys, bounded retries and provider message IDs.
-- Customer lifecycle events: one verified-account welcome email, plus property submission / approval / correction / rejection updates. Partner-network registration does not enqueue a separate application receipt or approval email. Draft property saves do not send email.
-- Property lifecycle events also create an operations alert in `admin_notifications`; partner-application operations alerts remain on the existing queue.
+- Customer lifecycle events: Supabase Auth account confirmation remains enabled for security; after confirmation, one verified-account HAMLET welcome email is sent, plus property submission / approval / correction / rejection updates. Partner-network registration does not enqueue a separate application receipt or approval email. Draft property saves do not send email.
+- Property lifecycle events also create an operations alert in `admin_notifications`; identity-verification submissions and decisions create operations alerts on the existing queue.
 - `admin-notifications-dispatch` Supabase Edge Function sends queued operations alerts using Resend idempotency keys. Initial partner-network registration itself does not generate an operations email.
 - Claiming uses a database function with row locks and `SKIP LOCKED` to avoid concurrent workers claiming the same row.
 
