@@ -212,9 +212,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const [{ data: profile, error: profileError }, { data: applications, error: applicationError }] =
+  const [{ data: profile, error: profileError }, { data: applications, error: applicationError }, { data: membership, error: membershipError }] =
     await Promise.all([
-      db.from('profiles').select('role').eq('id', auth.user.id).maybeSingle(),
+      db.from('profiles').select('role,partner_role').eq('id', auth.user.id).maybeSingle(),
       db
         .from('partner_applications')
         .select('id,status,role')
@@ -222,6 +222,7 @@ export async function POST(request: Request) {
         .in('status', ['pending', 'needs_correction'])
         .order('submitted_at', { ascending: false })
         .limit(1),
+      db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
     ]);
 
   const application = applications?.[0];
@@ -231,17 +232,26 @@ export async function POST(request: Request) {
     ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
       String(application?.role),
     );
+  const inventoryNetworkRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
+  const activeInventoryMember =
+    !membershipError &&
+    membership?.status === 'active' &&
+    inventoryNetworkRoles.includes(String(membership?.primary_role));
+  const legacyPartnerCanList =
+    profile?.role === 'partner' &&
+    (!profile?.partner_role || !String(profile.partner_role).toLowerCase().includes('closing agent'));
   const maySubmit =
     !profileError &&
-    (profile?.role === 'partner' ||
-      profile?.role === 'admin' ||
+    (profile?.role === 'admin' ||
+      legacyPartnerCanList ||
+      activeInventoryMember ||
       hasPendingInventoryApplication);
 
   if (!maySubmit) {
     return NextResponse.json(
       {
         error:
-          'Submit a property-owner, authorised-manager or multi-property-operator application before uploading a listing. You can upload while HAMLET reviews your partner application.',
+          'Join as a property owner, authorised manager or multi-property operator before uploading. Closing agents can share stays and earn commissions, but property submissions require listing authority.',
       },
       { status: 403 },
     );
