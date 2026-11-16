@@ -5,7 +5,12 @@ This checklist is the release gate for the Expo Android/iOS application. It is i
 ## Current release posture
 
 - Mobile implementation is on `feat/hamlet-expo-mobile-app` and is proposed through draft PR #94.
-- The latest recorded code-level validation passed on commit `96f4765fd62315c47644f63578aeadf5c91357cb`.
+- Latest branch HEAD: `f4c370517294506a1436f2c625dafbc2ff6827b0`.
+- Code-level CI passed on that exact HEAD:
+  - Mobile Checks run #154: Expo dependency validation and TypeScript.
+  - HAMLET CI run #627: lint, unit/PGlite database tests, production build and mobile/desktop Playwright tests.
+  - Referral Release Validation run #435: lint, regression tests, production build, browser journeys and isolated Supabase migration/database tests.
+- The mobile workflow currently runs `npm install`; `apps/mobile/package-lock.json` is not committed. Dependency resolution is therefore not yet independently reproducible with `npm ci`.
 - Supabase Preview did not run because no Supabase Branch is associated with the PR.
 - No production database migration, production deployment, or production booking/payment test is authorised by this checklist.
 - Physical Android and iOS device testing remains outstanding.
@@ -30,8 +35,8 @@ Re-check the branch HEAD and its CI checks before relying on the validation stat
 ## 2. Reproducible build and app identity
 
 - [ ] Replace any floating `latest` dependency ranges with Expo-SDK-58-compatible pinned versions after checking the SDK compatibility matrix.
-- [ ] Generate and commit the mobile package lockfile using the chosen package manager.
-- [ ] Verify `npm ci`, TypeScript, Expo Doctor and the mobile CI workflow on the resulting commit.
+- [ ] Generate and commit `apps/mobile/package-lock.json` using npm from the actual mobile manifest; do not handcraft the lockfile.
+- [ ] Update the mobile CI install step to use `npm ci` once the lockfile is committed, then verify Expo Doctor and TypeScript on that exact commit.
 - [ ] Confirm the proposed identifiers `com.abundanceabodes.hamlet` are available and owned by the intended Apple and Google developer accounts before creating store records.
 - [ ] Add approved app icon, Android adaptive foreground icon, splash artwork and store screenshots.
 - [ ] Confirm display name, version/build numbering, privacy policy URL, support contact and store metadata.
