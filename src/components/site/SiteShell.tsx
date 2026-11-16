@@ -429,13 +429,13 @@ export function SiteHeader() {
         return;
       }
       const [{ data: profile }, { data: membership }] = await Promise.all([
-        db.from('profiles').select('full_name,role').eq('id', user.id).maybeSingle(),
+        db.from('profiles').select('full_name,role,account_status').eq('id', user.id).maybeSingle(),
         db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
       ]);
       if (!active) return;
       const role =
         profile?.role === 'admin' ? 'admin' :
-        profile?.role === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
+        profile?.role === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
       setSession({
         userId: user.id,
         email: user.email || '',
