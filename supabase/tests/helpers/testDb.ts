@@ -137,13 +137,34 @@ export async function createTestUser(
     email: string;
     fullName: string;
     role?: AccountRole;
+    partnerSignup?: {
+      role?: string;
+      company?: string;
+      phone: string;
+    };
   },
 ): Promise<string> {
   const { rows } = await db.query<{ id: string }>(
     `insert into auth.users (id, email, raw_user_meta_data)
-     values (coalesce($1::uuid, gen_random_uuid()), $2, jsonb_build_object('full_name', $3::text))
+     values (
+       coalesce($1::uuid, gen_random_uuid()),
+       $2,
+       jsonb_build_object('full_name', $3::text) || coalesce($4::jsonb, '{}'::jsonb)
+     )
      returning id`,
-    [input.id ?? null, input.email, input.fullName],
+    [
+      input.id ?? null,
+      input.email,
+      input.fullName,
+      input.partnerSignup
+        ? {
+            hamlet_partner_signup: true,
+            hamlet_partner_role: input.partnerSignup.role ?? 'property_owner',
+            hamlet_partner_company: input.partnerSignup.company ?? input.fullName,
+            phone: input.partnerSignup.phone,
+          }
+        : null,
+    ],
   );
   const userId = rows[0].id;
 
