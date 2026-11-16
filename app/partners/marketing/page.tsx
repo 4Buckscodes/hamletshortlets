@@ -127,13 +127,14 @@ function PartnerMarketingContent() {
 
     setAccessToken(session.access_token);
 
-    const { data: profile } = await db
-      .from('profiles')
-      .select('role,account_status')
-      .eq('id', session.user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: membership }] = await Promise.all([
+      db.from('profiles').select('role,account_status').eq('id', session.user.id).maybeSingle(),
+      db.from('partner_network_memberships').select('status').eq('user_id', session.user.id).maybeSingle(),
+    ]);
 
-    const userRole = String(profile?.role || 'guest');
+    const profileRole = String(profile?.role || 'guest');
+    const userRole = profileRole === 'admin' ? 'admin' :
+      profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
     setRole(userRole);
     if (userRole !== 'partner' && userRole !== 'admin') {
       setLoading(false);
@@ -494,14 +495,14 @@ function PartnerMarketingContent() {
         ) : role !== 'partner' && role !== 'admin' ? (
           <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              Partner approval required
+              Partner workspace access
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Activate your HAMLET partner account to access tracked WhatsApp links, marketing cards, and referral commissions.
+              Join the HAMLET partner network to access your workspace, tracked WhatsApp links, marketing cards and earnings.
             </p>
             <div className="mt-5">
               <Link href="/partners/apply" className="primary-button">
-                Join Partner Network →
+                Join partner network →
               </Link>
             </div>
           </section>
