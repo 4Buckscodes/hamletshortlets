@@ -9,7 +9,6 @@ import {
   ChipMultiSelect,
   DraftStatusBar,
   FormField,
-  OptionCardGroup,
   StepFooterActions,
   StepProgressHeader,
   StepperCounter,
@@ -85,31 +84,6 @@ const APPLICATION_ROLE_TO_NETWORK_ROLE: Record<string, string> = {
   'Closing Agent': 'closing_agent',
   'Referral Partner': 'closing_agent',
 };
-
-const ROLE_OPTIONS = [
-  {
-    value: 'Property owner',
-    label: 'Property owner',
-    badge: 'Owner & host access',
-    description: 'List your own shortlet apartments or homes.',
-  },
-  {
-    value: 'Authorised manager',
-    label: 'Authorised property manager',
-    description: 'Manage properties under an owner mandate.',
-  },
-  {
-    value: 'Multi-property operator',
-    label: 'Multi-property operator',
-    description: 'Operate a portfolio of serviced apartments.',
-  },
-  {
-    value: 'Closing agent',
-    label: 'Closing agent',
-    badge: '10% booking commission',
-    description: 'Help guests book verified stays across HAMLET.',
-  },
-] as const;
 
 const APPLY_STEPS = [
   {
