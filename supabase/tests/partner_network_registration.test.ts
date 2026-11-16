@@ -23,6 +23,54 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     await db.close();
   });
 
+  it('provisions an active partner membership from partner signup metadata before the first dashboard request', async () => {
+    const partnerId = await createTestUser(db, {
+      email: 'instant-owner@hamlet.test',
+      fullName: 'Instant Owner',
+      partnerSignup: {
+        role: 'property_owner',
+        company: 'Instant Stays',
+        phone: '+2348012345678',
+      },
+    });
+
+    const result = await db.query<{
+      profile_role: string;
+      membership_role: string;
+      company: string;
+      phone: string;
+      status: string;
+    }>(
+      `select p.role as profile_role, m.primary_role as membership_role,
+              m.company, m.phone, m.status
+       from public.profiles p
+       join public.partner_network_memberships m on m.user_id = p.id
+       where p.id = $1`,
+      [partnerId],
+    );
+
+    expect(result.rows[0]).toEqual({
+      profile_role: 'guest',
+      membership_role: 'property_owner',
+      company: 'Instant Stays',
+      phone: '+2348012345678',
+      status: 'active',
+    });
+
+    const access = await asUser(db, partnerId, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean }>(
+        `select public.has_role('guest') as guest_access,
+                public.has_role('partner') as partner_access,
+                public.can_submit_partner_property() as can_submit`,
+      ),
+    );
+    expect(access.rows[0]).toEqual({
+      guest_access: true,
+      partner_access: true,
+      can_submit: true,
+    });
+  });
+
   it('registers an active guest without elevating the account role, supports same-role updates, and prevents self-service role escalation', async () => {
     const guestId = await createTestUser(db, {
       email: 'babsa11@yahoo.com',
