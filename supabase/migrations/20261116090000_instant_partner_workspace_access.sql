@@ -963,7 +963,7 @@ begin
     raise exception 'Ledger entry not found.';
   end if;
 
-  if next_payout_status = 'paid' and entry_row.beneficiary_user_id is not null then
+  if next_payout_status in ('approved', 'paid') and entry_row.beneficiary_user_id is not null then
     select (
       p.role in ('partner', 'admin')
       or exists (
