@@ -872,10 +872,10 @@ begin
       )
       on conflict (referred_partner_id) do update
         set status = case
-              when public.partner_referrals.status = 'registered' then 'verified'
-              else public.partner_referrals.status
+              when partner_referrals.status = 'registered' then 'verified'
+              else partner_referrals.status
             end,
-            verified_at = coalesce(public.partner_referrals.verified_at, now()),
+            verified_at = coalesce(partner_referrals.verified_at, now()),
             updated_at = now();
     end if;
   end if;
