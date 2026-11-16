@@ -157,12 +157,12 @@ export async function createTestUser(
       input.email,
       input.fullName,
       input.partnerSignup
-        ? {
+        ? JSON.stringify({
             hamlet_partner_signup: true,
             hamlet_partner_role: input.partnerSignup.role ?? 'property_owner',
             hamlet_partner_company: input.partnerSignup.company ?? input.fullName,
             phone: input.partnerSignup.phone,
-          }
+          })
         : null,
     ],
   );
