@@ -64,11 +64,11 @@ const INITIAL_DRAFT: PartnerApplyDraft = {
   confirmReviewConsent: false,
 };
 
-const NETWORK_ROLE_TO_APPLICATION_ROLE: Record<string, string> = {
-  property_owner: 'Property owner',
-  authorised_manager: 'Authorised manager',
-  multi_property_operator: 'Multi-property operator',
-  closing_agent: 'Closing agent',
+const APPLICATION_ROLE_TO_NETWORK_ROLE: Record<string, string> = {
+  'Property owner': 'property_owner',
+  'Authorised manager': 'authorised_manager',
+  'Multi-property operator': 'multi_property_operator',
+  'Closing agent': 'closing_agent',
 };
 
 const ROLE_OPTIONS = [
@@ -324,6 +324,16 @@ export default function PartnerApplicationForm() {
     setBusy(true);
 
     try {
+      const networkRole = APPLICATION_ROLE_TO_NETWORK_ROLE[values.role];
+      if (!networkRole) throw new Error('Choose a valid HAMLET partner role.');
+      const { error: membershipError } = await db.rpc('join_partner_network', {
+        next_role: networkRole,
+        next_company: values.company.trim(),
+        next_phone: values.phone.trim(),
+        referral_code_input: values.referralCode.trim().toUpperCase() || null,
+      });
+      if (membershipError) throw new Error(membershipError.message);
+
       const fallbackSummary = `${values.role} operating across ${values.areas.join(', ')}${
         isInventoryRole
           ? ` (${Math.max(1, values.propertiesCount)} ${values.propertiesCount === 1 ? 'property' : 'properties'})`
