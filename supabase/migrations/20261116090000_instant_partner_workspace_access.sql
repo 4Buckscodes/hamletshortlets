@@ -1098,7 +1098,7 @@ grant execute on function public.get_my_partner_attribution_summary() to authent
 
 -- Booking attribution accepts active network members as closing agents. The member
 -- retains guest access; this only validates the partner attribution identity.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.enforce_booking_request_integrity()'::regprocedure;
   function_definition text;
@@ -1282,7 +1282,7 @@ $$;
 
 -- Account suspension controls also cover guest-role profiles that hold an active
 -- partner-network membership; the profile role remains guest by design.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.set_partner_account_status(uuid,text,text,boolean)'::regprocedure;
   function_definition text;
@@ -1567,7 +1567,7 @@ revoke all on function public.review_partner_property(text, text, text, jsonb) f
 grant execute on function public.review_partner_property(text, text, text, jsonb) to authenticated;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
-do $
+do $$
 declare
   function_signature regprocedure := 'public.resubmit_partner_property(text)'::regprocedure;
   function_definition text;
