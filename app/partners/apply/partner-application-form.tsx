@@ -546,23 +546,9 @@ export default function PartnerApplicationForm() {
                 Active partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
-            {membershipRoleLocked ? (
-              <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
-                Your primary partner role is <strong>{values.role}</strong>. It is fixed after registration for consistent partner records. Contact HAMLET support if it needs to change.
-              </div>
-            ) : (
-              <OptionCardGroup
-                ariaLabel="Your main partner role"
-                options={ROLE_OPTIONS}
-                value={values.role}
-                onChange={role => setValues(prev => ({ ...prev, role }))}
-              />
-            )}
-            {!membershipRoleLocked && (
-              <p className="m-0 text-xs leading-relaxed text-ink-600">
-                Choose the role that best matches your current authority and responsibilities. Role changes are handled by HAMLET support.
-              </p>
-            )}
+            <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
+              Your partner workspace is active. You can complete or update your partner role and profile details from inside the workspace whenever they are needed.
+            </div>
           </div>
         )}
 
