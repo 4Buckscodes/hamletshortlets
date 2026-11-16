@@ -274,7 +274,7 @@ export default function PartnerDashboardPage() {
               Partner workspace access
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Join the HAMLET partner network to open your workspace immediately. Property owners, authorised managers and operators can upload listings; closing agents can share stays and track their earnings.
+              Join the HAMLET partner network to open your workspace immediately. Every active partner role can submit property listings; each listing is reviewed separately before publication.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/partners/apply" className="primary-button">
