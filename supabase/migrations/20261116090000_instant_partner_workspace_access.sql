@@ -249,6 +249,9 @@ declare
     nullif(btrim(coalesce(new.raw_user_meta_data ->> 'family_name', '')), '')
   ));
   resolved_full_name text;
+  is_partner_signup boolean := coalesce(new.raw_user_meta_data ->> 'hamlet_partner_signup', '') = 'true';
+  partner_signup_role text := coalesce(new.raw_user_meta_data ->> 'hamlet_partner_role', 'property_owner');
+  partner_signup_company text;
 begin
   if normalized_email <> '' then
     select exists (
@@ -319,6 +322,34 @@ begin
     nullif(resolved_referral_code, ''),
     resolved_referrer_id
   );
+
+  if is_partner_signup then
+    partner_signup_company := left(coalesce(
+      nullif(btrim(coalesce(new.raw_user_meta_data ->> 'hamlet_partner_company', '')), ''),
+      nullif(resolved_full_name, ''),
+      'HAMLET Partner'
+    ), 160);
+
+    if partner_signup_role not in (
+      'property_owner', 'authorised_manager', 'multi_property_operator', 'closing_agent'
+    ) then
+      raise exception 'Choose a valid HAMLET partner role.';
+    end if;
+
+    if char_length(partner_signup_company) < 2
+      or char_length(submitted_phone) not between 7 and 15 then
+      raise exception 'A valid partner display name and phone number are required.';
+    end if;
+
+    insert into public.partner_network_memberships (
+      user_id, primary_role, company, phone, status
+    )
+    values (
+      new.id, partner_signup_role, partner_signup_company,
+      btrim(coalesce(new.raw_user_meta_data ->> 'phone', '')), 'active'
+    )
+    on conflict (user_id) do nothing;
+  end if;
 
   if is_preauthorized_admin then
     insert into public.admin_audit_log (actor_id, actor_role, action, target, detail)
