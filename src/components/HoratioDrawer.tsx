@@ -107,7 +107,7 @@ function HoratioDrawer({
 
   const partnerProps = useMemo(
     () => (isPartner ? myPartnerProperties(state, session?.userId) : []),
-    [role, state, session?.userId],
+    [isPartner, state, session?.userId],
   );
 
   const partnerPropIds = useMemo(
