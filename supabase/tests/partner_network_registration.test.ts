@@ -64,6 +64,23 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
       phone: '+2348155377898',
     });
 
+    const access = await asUser(db, guestId, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean; referral_code: string }>(
+        `select
+           public.has_role('guest') as guest_access,
+           public.has_role('partner') as partner_access,
+           public.can_submit_partner_property() as can_submit,
+           (select referral_code from public.profiles where id = $1) as referral_code`,
+        [guestId],
+      ),
+    );
+    expect(access.rows[0]).toMatchObject({
+      guest_access: true,
+      partner_access: true,
+      can_submit: true,
+    });
+    expect(access.rows[0]?.referral_code).toMatch(/^HML-/);
+
     // Updating an existing active membership succeeds and updates partner_network_memberships
     const updated = await asUser(db, guestId, tx =>
       tx.query<{ primary_role: string; company: string }>(
@@ -101,13 +118,41 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
         '+2348011112222',
       ]),
     );
+    const memberAReferral = await db.query<{ referral_code: string }>(
+      `select referral_code from public.profiles where id = $1`,
+      [memberA],
+    );
+    const memberACode = memberAReferral.rows[0]?.referral_code;
+    expect(memberACode).toMatch(/^HML-/);
+
     await asUser(db, memberB, tx =>
-      tx.query(`select * from public.join_partner_network($1, $2, $3)`, [
+      tx.query(`select * from public.join_partner_network($1, $2, $3, $4)`, [
         'closing_agent',
         'Mainland Stays Advisory',
         '+2348033334444',
+        memberACode,
       ]),
     );
+
+    const closingAgentAccess = await asUser(db, memberB, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean }>(
+        `select
+           public.has_role('guest') as guest_access,
+           public.has_role('partner') as partner_access,
+           public.can_submit_partner_property() as can_submit`,
+      ),
+    );
+    expect(closingAgentAccess.rows[0]).toEqual({
+      guest_access: true,
+      partner_access: true,
+      can_submit: false,
+    });
+
+    const referralAttribution = await db.query<{ referrer_partner_id: string }>(
+      `select referrer_partner_id from public.partner_referrals where referred_partner_id = $1`,
+      [memberB],
+    );
+    expect(referralAttribution.rows[0]?.referrer_partner_id).toBe(memberA);
 
     // RLS: Member A sees only their own row; anon cannot query or execute RPCs
     const memberASelect = await asUser(db, memberA, tx =>
