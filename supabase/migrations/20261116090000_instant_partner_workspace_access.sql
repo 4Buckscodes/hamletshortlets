@@ -1295,8 +1295,8 @@ begin
   );
   updated_definition := replace(
     updated_definition,
-    $old$operator_label := case when actor_role = 'admin' then 'Admin' when actor_role = 'partner' then 'Partner' else 'Guest' end;$old$,
-    $new$operator_label := case when actor_role = 'admin' then 'Admin' when public.has_role('partner') then 'Partner' else 'Guest' end;$new$
+    $old$operator_label := coalesce(nullif(actor_name, ''), 'HAMLET user') || ' (' || actor_role || ')';$old$,
+    $new$operator_label := coalesce(nullif(actor_name, ''), 'HAMLET user') || ' (' || case when actor_role = 'admin' then 'admin' when public.has_role('partner') then 'partner' else 'guest' end || ')';$new$
   );
   updated_definition := replace(
     updated_definition,
