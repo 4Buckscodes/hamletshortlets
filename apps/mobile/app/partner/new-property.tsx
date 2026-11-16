@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { HAMLET_API_BASE_URL } from '@/lib/api';
+import { assertHamletApiConfigured, HAMLET_API_BASE_URL } from '@/lib/api';
 
 export default function NewPropertyScreen() {
   const [title,setTitle]=useState('');
@@ -72,6 +72,7 @@ export default function NewPropertyScreen() {
     setBusy(true);
     const uploadedStoragePaths:string[]=[];
     try {
+      assertHamletApiConfigured();
       const {data:{session}}=await supabase.auth.getSession();
       if (!session) throw new Error('Sign in with your partner account to continue.');
       const uploadedImageUrls:string[]=[];
