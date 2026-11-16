@@ -276,7 +276,7 @@ export default function PartnerRegister() {
           </div>
 
           <p className="text-[10.5px] font-semibold text-ink-400">
-            {HAMLET_PARENT_COMPANY} · Applications reviewed manually · No admin access is ever granted publicly
+            {HAMLET_PARENT_COMPANY} · Instant partner workspace · Property and payout verification remain separate
           </p>
         </div>
       </div>
@@ -284,7 +284,7 @@ export default function PartnerRegister() {
       {/* Form / Status Panel */}
       <div className="flex items-center justify-center overflow-y-auto p-4 py-10 sm:p-8 lg:col-span-7">
         <AnimatePresence mode="wait">
-          {session && (session.role === 'partner' || session.role === 'admin') ? (
+          {session && (session.role === 'partner' || session.role === 'admin' || session.isPartnerMember) ? (
             <motion.div
               key="already-partner"
               initial={{ opacity: 0, scale: 0.96 }}
@@ -293,7 +293,7 @@ export default function PartnerRegister() {
             >
               <CheckCircle2 size={52} className="mx-auto text-emerald-400" />
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
-                {session.role === 'admin' ? 'Administrator active' : 'Approved partner active'}
+                {session.role === 'admin' ? 'Administrator active' : 'Partner workspace active'}
               </p>
               <h2 className="mt-1.5 font-display text-2xl font-bold text-paper">
                 {session.role === 'admin' ? 'Your Admin Console is ready' : 'Your Partner Workspace is active'}
