@@ -904,7 +904,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     safeQuery<RemoteWayfinderGuideRow>(supabase.from('property_wayfinder_guides').select('*').order('updated_at', { ascending: false })),
     safeQuery<RemoteWayfinderWaypointRow>(supabase.from('property_wayfinder_waypoints').select('*').order('sort_order', { ascending: true })),
     safeQuery<RemoteWayfinderStepRow>(supabase.from('property_wayfinder_steps').select('*').order('step_order', { ascending: true })),
-    session.role === 'admin' || session.role === 'partner'
+    session.role === 'admin' || session.role === 'partner' || session.isPartnerMember
       ? safeQuery<RemoteWayfinderSecretRow>(supabase.from('property_wayfinder_secrets').select('*'))
       : Promise.resolve([] as RemoteWayfinderSecretRow[]),
     safeQuery<RemoteWayfinderEventRow>(supabase.from('wayfinder_events').select('*').order('created_at', { ascending: false }).limit(250)),
@@ -3457,7 +3457,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (supabase) {
         const property = state.properties.find(item => item.id === id);
         if (!property) throw new Error('Property not found. Refresh the review queue and try again.');
-        if (state.session.role === 'partner' && status === 'submitted') {
+        if ((state.session.role === 'partner' || state.session.isPartnerMember) && status === 'submitted') {
           const { error } = await supabase.rpc('resubmit_partner_property', { target_property_id: id });
           if (error) throw new Error(`Could not resubmit property: ${error.message}`);
         } else {
@@ -4699,7 +4699,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         subject: `Wayfinder · ${ARRIVAL_ISSUE_TYPE_LABELS[input.arrivalCategory]}`,
         description: desc,
         reporter: state.session.name,
-        reporterType: state.session.role === 'partner' ? 'partner' : state.session.role === 'admin' ? 'internal' : 'guest',
+        reporterType: state.session.role === 'partner' || state.session.isPartnerMember ? 'partner' : state.session.role === 'admin' ? 'internal' : 'guest',
         status: 'open',
         createdAt: now,
         updatedAt: now,
@@ -4818,5 +4818,5 @@ export function useHamlet() {
 
 export function useRequireRole(role: AccountRole): Session | null {
   const { state } = useHamlet();
-  return state.session?.role === role ? state.session : null;
+  return state.session?.role === role || (role === 'partner' && state.session?.isPartnerMember) ? state.session : null;
 }
