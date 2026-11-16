@@ -1117,6 +1117,52 @@ $$;
 revoke all on function public.update_payout_status(uuid, text, text) from public, anon;
 grant execute on function public.update_payout_status(uuid, text, text) to authenticated;
 
+-- Admin notifications are retained for identity-verification submissions, not for
+-- initial partner registration (which does not create a partner_applications row).
+create or replace function public.enqueue_partner_application_admin_notification()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  event_name text;
+  event_title text;
+  event_message text;
+begin
+  if tg_op = 'INSERT' then
+    event_name := 'partner_application_submitted';
+    event_title := 'Partner identity verification requested';
+    event_message := coalesce(nullif(btrim(new.full_name), ''), 'A partner')
+      || ' submitted identity details for payout verification ('
+      || coalesce(nullif(btrim(new.company), ''), 'independent partner') || ').';
+  elsif tg_op = 'UPDATE' and old.status is distinct from new.status then
+    event_name := 'partner_application_status_changed';
+    event_title := 'Partner identity verification updated';
+    event_message := coalesce(nullif(btrim(new.full_name), ''), 'Partner')
+      || '''s identity-verification status changed to ' || new.status || '.';
+  else
+    return new;
+  end if;
+
+  insert into public.admin_notifications (
+    event_type, title, message, target_type, target_id, recipient_email, payload
+  ) values (
+    event_name, event_title, event_message, 'partner_application', new.id::text,
+    new.email,
+    jsonb_build_object(
+      'application_id', new.id,
+      'applicant_name', new.full_name,
+      'applicant_email', new.email,
+      'company', new.company,
+      'role', new.role,
+      'status', new.status
+    )
+  );
+  return new;
+end;
+$;
+
 -- A partner's registration generates one welcome email from the auth confirmation
 -- lifecycle. Do not enqueue separate "application received" or "application approved"
 -- emails; property lifecycle notifications remain unchanged.
