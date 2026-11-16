@@ -44,21 +44,6 @@ as $$
       public.has_role('admin')
       or exists (
         select 1
-        from public.profiles p
-        where p.id = (select auth.uid())
-          and p.role = 'partner'
-          and (
-            p.partner_role is null
-            or lower(p.partner_role) in (
-              'property owner',
-              'authorised manager',
-              'authorised property manager',
-              'multi-property operator'
-            )
-          )
-      )
-      or exists (
-        select 1
         from public.partner_network_memberships m
         where m.user_id = (select auth.uid())
           and m.status = 'active'
@@ -68,7 +53,6 @@ as $$
             'multi_property_operator'
           )
       )
-
     );
 $$;
 
