@@ -48,6 +48,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function PartnerDashboardPage() {
   const db = useMemo(() => getBrowserSupabase(), []);
   const [role, setRole] = useState('');
+  const [canUploadProperties, setCanUploadProperties] = useState(false);
   const [partnerName, setPartnerName] = useState('');
   const [properties, setProperties] = useState<PartnerProperty[]>([]);
   const [shareFlagsDeployed, setShareFlagsDeployed] = useState(false);
@@ -70,10 +71,10 @@ export default function PartnerDashboardPage() {
       return;
     }
 
-    const [{ data: profile }, { data: applications }] = await Promise.all([
+    const [{ data: profile }, { data: applications }, { data: membership }] = await Promise.all([
       db
         .from('profiles')
-        .select('role,full_name')
+        .select('role,full_name,partner_role')
         .eq('id', user.id)
         .maybeSingle(),
       db
@@ -83,6 +84,11 @@ export default function PartnerDashboardPage() {
         .in('status', ['pending', 'needs_correction'])
         .order('submitted_at', { ascending: false })
         .limit(1),
+      db
+        .from('partner_network_memberships')
+        .select('primary_role,status')
+        .eq('user_id', user.id)
+        .maybeSingle(),
     ]);
 
     const application = applications?.[0];
@@ -92,14 +98,25 @@ export default function PartnerDashboardPage() {
         String(application?.role),
       );
     const profileRole = String(profile?.role || 'guest');
+    const isActiveMember = membership?.status === 'active';
     const userRole =
-      profileRole === 'guest' && hasPendingInventoryApplication
-        ? 'partner_applicant'
-        : profileRole;
+      profileRole === 'admin'
+        ? 'admin'
+        : profileRole === 'partner' || isActiveMember || hasPendingInventoryApplication
+          ? 'partner'
+          : 'guest';
+    const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
+    const legacyPartnerRole = String(profile?.partner_role || '').toLowerCase();
+    setCanUploadProperties(
+      userRole === 'admin' ||
+      (isActiveMember && inventoryRoles.includes(String(membership?.primary_role))) ||
+      (profileRole === 'partner' && (!legacyPartnerRole || !legacyPartnerRole.includes('closing agent'))) ||
+      hasPendingInventoryApplication
+    );
     setRole(userRole);
     setPartnerName(String(profile?.full_name || ''));
 
-    if (!['partner', 'partner_applicant', 'admin'].includes(userRole)) {
+    if (!['partner', 'admin'].includes(userRole)) {
       setLoading(false);
       return;
     }
@@ -230,7 +247,7 @@ export default function PartnerDashboardPage() {
                 : 'Manage stays & bookings'}
             </h1>
           </div>
-          {(['partner', 'partner_applicant', 'admin'].includes(role)) && (
+          {canUploadProperties && (
             <Link
               href="/partners/properties/new"
               className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
@@ -243,7 +260,7 @@ export default function PartnerDashboardPage() {
           )}
         </div>
 
-        {(['partner', 'partner_applicant', 'admin'].includes(role)) && (
+        {(['partner', 'admin'].includes(role)) && (
           <div className="mt-5">
             <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
           </div>
