@@ -173,6 +173,20 @@ export async function createTestUser(
       `update public.profiles set role = $2 where id = $1::uuid`,
       [userId, input.role],
     );
+
+    // Legacy partner fixtures represent an already-onboarded partner account.
+    // Keep test fixtures aligned with the membership entitlement introduced by
+    // the partner-network model instead of relying on profiles.role alone.
+    if (input.role === 'partner') {
+      await db.query(
+        `insert into public.partner_network_memberships (
+           user_id, primary_role, company, phone, status
+         )
+         values ($1::uuid, 'property_owner', $2, '+2348000000000', 'active')
+         on conflict (user_id) do nothing`,
+        [userId, input.fullName.trim().length >= 2 ? input.fullName.trim() : 'Test Partner'],
+      );
+    }
   }
 
   return userId;
