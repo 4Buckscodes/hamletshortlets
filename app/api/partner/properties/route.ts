@@ -212,7 +212,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const [{ data: profile, error: profileError }, { data: membership, error: membershipError }] =
+  const [{ data: profile }, { data: membership, error: membershipError }] =
     await Promise.all([
       db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
       db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
