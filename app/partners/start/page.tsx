@@ -83,7 +83,7 @@ export default function PartnerStartDashboard() {
       const [{ data: p }, { data: m }] = await Promise.all([
         db
           .from('profiles')
-          .select('full_name,phone,company,referred_by_code,referral_code')
+          .select('full_name,phone,company,referred_by_code,referral_code,account_status')
           .eq('id', user.id)
           .maybeSingle(),
         db
@@ -94,6 +94,11 @@ export default function PartnerStartDashboard() {
       ]);
 
       if (!live) return;
+      if (p?.account_status === 'suspended' || m?.status === 'suspended') {
+        setError('Your HAMLET partner account is currently suspended. Please contact support for assistance.');
+        setLoading(false);
+        return;
+      }
       setName(
         p?.full_name ||
           String(
@@ -104,7 +109,7 @@ export default function PartnerStartDashboard() {
       );
       setPhone(m?.phone || p?.phone || String(user.user_metadata?.phone || ''));
       setCompany(m?.company || p?.company || '');
-      setReferralCode(refCode?.toUpperCase() || p?.referred_by_code || '');
+      setReferralCode(String(p?.referred_by_code || refCode?.toUpperCase() || ''));
       if (m) {
         setMembership(m as Membership);
         setRole(m.primary_role);
