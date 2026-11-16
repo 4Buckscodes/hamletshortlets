@@ -29,8 +29,6 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
       fullName: 'Instant Owner',
       partnerSignup: {
         role: 'property_owner',
-        company: 'Instant Stays',
-        phone: '+2348012345678',
       },
     });
 
@@ -38,7 +36,7 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
       profile_role: string;
       membership_role: string;
       company: string;
-      phone: string;
+      phone: string | null;
       status: string;
     }>(
       `select p.role as profile_role, m.primary_role as membership_role,
@@ -52,8 +50,8 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     expect(result.rows[0]).toEqual({
       profile_role: 'guest',
       membership_role: 'property_owner',
-      company: 'Instant Stays',
-      phone: '+2348012345678',
+      company: 'HAMLET Partner',
+      phone: null,
       status: 'active',
     });
 
