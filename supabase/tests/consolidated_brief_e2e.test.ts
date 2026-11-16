@@ -578,7 +578,19 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
     expect(provLedger?.amount).toBe(6_200);
     expect(provLedger?.note).toContain('1200 NGN excess absorbed by HAMLET allocation');
 
-    // Admin updates payout status on referral_reward ledger line
+    // The referrer has completed identity verification before payout settlement.
+    await db.query(
+      `insert into public.partner_applications (
+         applicant_id, full_name, email, phone, company, role, areas, properties_count, motivation, status
+       ) values (
+         $1::uuid, 'Kemi Referrer', 'referrer@hamlet.test', '+2348012345678',
+         'Kemi Homes', 'Property Owner', array['Lekki'], 1,
+         'Identity and payout details verified for this test.', 'approved'
+       )`,
+      [referrerPartnerId],
+    );
+
+    // Admin updates payout status on the identity-verified referral_reward ledger line
     await asUser(db, adminId, tx =>
       tx.query(`select public.update_payout_status($1::uuid, 'paid', 'Settled via bank transfer')`, [refLedger!.id]),
     );
