@@ -3258,33 +3258,28 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         if (!s) {
           return { ok: false, error: 'Sign in with your property-partner account before submitting a listing.' };
         }
-        const isApprovedPartner = s.role === 'partner' || s.role === 'admin';
-        let hasPendingInventoryApplication = false;
-        if (!isApprovedPartner) {
-          const { data: applications, error: applicationError } = await supabase
-            .from('partner_applications')
-            .select('id,role,status')
-            .eq('applicant_id', s.userId)
-            .in('status', ['pending', 'needs_correction'])
-            .order('submitted_at', { ascending: false })
-            .limit(1);
-          if (applicationError) {
-            return {
-              ok: false,
-              error: 'We could not verify your partner application. Please refresh and try again.',
-            };
-          }
-          const application = applications?.[0];
-          hasPendingInventoryApplication =
-            Boolean(application) &&
-            ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-              String(application?.role),
-            );
+        const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
+        const legacyInventoryRoles = ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'];
+        const { data: membership, error: membershipError } = await supabase
+          .from('partner_network_memberships')
+          .select('primary_role,status')
+          .eq('user_id', s.userId)
+          .maybeSingle();
+        if (membershipError) {
+          return { ok: false, error: 'We could not verify your partner-network access. Please refresh and try again.' };
         }
-        if (!isApprovedPartner && !hasPendingInventoryApplication) {
+        const activeInventoryMember =
+          membership?.status === 'active' &&
+          inventoryRoles.includes(String(membership?.primary_role));
+        const legacyPartnerCanList =
+          s.role === 'partner' &&
+          (!s.partnerRole || legacyInventoryRoles.includes(String(s.partnerRole).toLowerCase()));
+        const maySubmit =
+          s.role === 'admin' || activeInventoryMember || legacyPartnerCanList;
+        if (!maySubmit) {
           return {
             ok: false,
-            error: 'Submit a property-owner, authorised-manager or multi-property-operator application before uploading a listing.',
+            error: 'Join HAMLET as a property owner, authorised manager or multi-property operator before uploading a listing. Closing agents can share approved stays and track earnings.',
           };
         }
         const { data: propertyId, error } = await supabase.rpc('submit_partner_property', {
