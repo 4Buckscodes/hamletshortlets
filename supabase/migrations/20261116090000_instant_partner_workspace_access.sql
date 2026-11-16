@@ -1295,6 +1295,11 @@ begin
   );
   updated_definition := replace(
     updated_definition,
+    $old$operator_label := case when actor_role = 'admin' then 'Admin' when actor_role = 'partner' then 'Partner' else 'Guest' end;$old$,
+    $new$operator_label := case when actor_role = 'admin' then 'Admin' when public.has_role('partner') then 'Partner' else 'Guest' end;$new$
+  );
+  updated_definition := replace(
+    updated_definition,
     $old$select (account_status = 'active') into agent_active
         from public.profiles
         where id = booking_row.closing_agent_id;$old$,
