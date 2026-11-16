@@ -33,6 +33,7 @@ export default function PartnerStartDashboard() {
   const [role, setRole] = useState('property_owner');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +51,7 @@ export default function PartnerStartDashboard() {
       const params = new URLSearchParams(window.location.search);
       const refCode = params.get('ref')?.trim();
       if (refCode) {
+        setReferralCode(refCode.toUpperCase());
         try {
           window.localStorage.setItem('hamlet:referral-code', refCode.toUpperCase());
         } catch {
@@ -82,7 +84,7 @@ export default function PartnerStartDashboard() {
       const [{ data: p }, { data: m }] = await Promise.all([
         db
           .from('profiles')
-          .select('full_name,phone,company')
+          .select('full_name,phone,company,referred_by_code,referral_code')
           .eq('id', user.id)
           .maybeSingle(),
         db
@@ -103,6 +105,7 @@ export default function PartnerStartDashboard() {
       );
       setPhone(m?.phone || p?.phone || String(user.user_metadata?.phone || ''));
       setCompany(m?.company || p?.company || '');
+      setReferralCode(refCode?.toUpperCase() || p?.referred_by_code || '');
       if (m) {
         setMembership(m as Membership);
         setRole(m.primary_role);
@@ -130,6 +133,7 @@ export default function PartnerStartDashboard() {
       next_role: role,
       next_company: company.trim(),
       next_phone: phone.trim(),
+      referral_code_input: referralCode.trim().toUpperCase() || null,
     });
 
     if (e2) {
@@ -143,6 +147,9 @@ export default function PartnerStartDashboard() {
       }
     } else {
       setMembership(data as Membership);
+      window.localStorage.removeItem('hamlet:referral-code');
+      window.location.assign('/partners');
+      return;
     }
     setSaving(false);
   }
@@ -202,7 +209,7 @@ export default function PartnerStartDashboard() {
                 <ShieldCheck className="h-5 w-5 text-brass-700" />
                 <h2 className="mt-3 font-bold text-ink-900">Verification</h2>
                 <p className="mt-1 text-sm text-ink-600">
-                  Property management and payouts unlock after authority checks.
+                  Your workspace opens immediately. Property submissions are reviewed before publication; identity checks are only required before a payout.
                 </p>
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
@@ -299,6 +306,17 @@ export default function PartnerStartDashboard() {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="+234…"
+                    className={INPUT_CLASS}
+                  />
+                </label>
+
+                <label className="mt-4 block text-xs font-bold text-ink-700">
+                  Referral code <span className="font-normal text-ink-400">· optional</span>
+                  <input
+                    value={referralCode}
+                    onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                    placeholder="HML-XXXXX"
+                    maxLength={24}
                     className={INPUT_CLASS}
                   />
                 </label>
