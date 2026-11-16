@@ -134,7 +134,7 @@ function PartnerMarketingContent() {
 
     const profileRole = String(profile?.role || 'guest');
     const userRole = profileRole === 'admin' ? 'admin' :
-      profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
+      profileRole === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
     setRole(userRole);
     if (userRole !== 'partner' && userRole !== 'admin') {
       setLoading(false);
