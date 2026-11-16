@@ -74,13 +74,13 @@ export default function PartnerMarketingAnalyticsPage() {
       }
 
       const [{ data: profile }, { data: membership }] = await Promise.all([
-        db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        db.from('profiles').select('role,account_status').eq('id', user.id).maybeSingle(),
         db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
       ]);
 
       const profileRole = String(profile?.role || 'guest');
       const userRole = profileRole === 'admin' ? 'admin' :
-        profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
+        profileRole === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
       setRole(userRole);
       if (userRole !== 'partner' && userRole !== 'admin') {
         setLoading(false);
