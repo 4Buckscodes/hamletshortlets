@@ -20,6 +20,9 @@ const REFERRAL_STORAGE_KEY = 'hamlet:referral-code';
 interface StoredOAuthContext {
   intent?: 'signin' | 'signup';
   next?: string | null;
+  partnerRole?: string;
+  partnerCompany?: string;
+  partnerPhone?: string;
 }
 
 interface CallbackProfileRow {
@@ -142,6 +145,28 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
+        const isPartnerSignup = intentParam === 'signup' && Boolean(requestedNext?.startsWith('/partners'));
+        if (isPartnerSignup && stored.partnerRole && stored.partnerPhone) {
+          const googleName = extractOAuthDisplayName(
+            user.user_metadata as Record<string, unknown> | undefined,
+            user.email,
+          );
+          const { error: profileUpdateError } = await client.rpc('update_own_profile', {
+            next_full_name: googleName,
+            next_phone: stored.partnerPhone,
+            next_company: stored.partnerCompany || googleName,
+          });
+          if (profileUpdateError) throw profileUpdateError;
+
+          const { error: membershipError } = await client.rpc('join_partner_network', {
+            next_role: stored.partnerRole,
+            next_company: stored.partnerCompany || googleName,
+            next_phone: stored.partnerPhone,
+            referral_code_input: window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null,
+          });
+          if (membershipError) throw membershipError;
+        }
+
         const [{ data: profileData }, { data: membershipData }] = await Promise.all([
           client
             .from('profiles')
