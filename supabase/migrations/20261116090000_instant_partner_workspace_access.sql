@@ -68,17 +68,7 @@ as $$
             'multi_property_operator'
           )
       )
-      or exists (
-        select 1
-        from public.partner_applications application
-        where application.applicant_id = (select auth.uid())
-          and application.status in ('pending', 'needs_correction')
-          and application.role in (
-            'Property owner',
-            'Authorised manager',
-            'Multi-property operator'
-          )
-      )
+
     );
 $$;
 
@@ -1160,6 +1150,28 @@ begin
     )
   );
   return new;
+end;
+$;
+
+-- Resubmission uses the same inventory-authority rule as first submission.
+do $
+declare
+  function_signature regprocedure := 'public.resubmit_partner_property(text)'::regprocedure;
+  function_definition text;
+  updated_definition text;
+begin
+  function_definition := pg_get_functiondef(function_signature);
+  updated_definition := replace(
+    function_definition,
+    $old$if actor_id is null or not public.has_role('partner') then$old$,
+    $new$if actor_id is null or not public.can_submit_partner_property() then$new$
+  );
+
+  if updated_definition = function_definition then
+    raise exception 'Could not find the expected partner gate in %.', function_signature;
+  end if;
+
+  execute updated_definition;
 end;
 $;
 
