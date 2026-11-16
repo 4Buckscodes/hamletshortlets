@@ -214,7 +214,7 @@ export async function POST(request: Request) {
 
   const [{ data: profile, error: profileError }, { data: applications, error: applicationError }, { data: membership, error: membershipError }] =
     await Promise.all([
-      db.from('profiles').select('role,partner_role').eq('id', auth.user.id).maybeSingle(),
+      db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
       db
         .from('partner_applications')
         .select('id,status,role')
@@ -242,6 +242,7 @@ export async function POST(request: Request) {
     (!profile?.partner_role || !String(profile.partner_role).toLowerCase().includes('closing agent'));
   const maySubmit =
     !profileError &&
+    profile?.account_status !== 'suspended' &&
     (profile?.role === 'admin' ||
       legacyPartnerCanList ||
       activeInventoryMember ||
