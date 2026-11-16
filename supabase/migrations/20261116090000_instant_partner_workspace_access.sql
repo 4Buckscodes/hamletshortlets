@@ -742,19 +742,190 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $
+declare
+  generated_code text;
 begin
   if new.status = 'approved' and old.status is distinct from 'approved' then
+    generated_code := public.generate_unique_referral_code(new.full_name);
+
     update public.profiles
       set full_name = new.full_name,
           phone = new.phone,
           company = new.company,
-          partner_role = new.role
+          partner_role = new.role,
+          referral_code = coalesce(referral_code, generated_code),
+          referred_by_partner_id = coalesce(referred_by_partner_id, new.referred_by_partner_id),
+          referred_by_code = coalesce(referred_by_code, new.referred_by_code)
       where id = new.applicant_id;
+
+    if new.referred_by_partner_id is not null and new.referred_by_partner_id <> new.applicant_id then
+      insert into public.partner_referrals (
+        referrer_partner_id,
+        referred_partner_id,
+        referral_code,
+        status,
+        verified_at
+      )
+      values (
+        new.referred_by_partner_id,
+        new.applicant_id,
+        coalesce(new.referred_by_code, 'DIRECT'),
+        'verified',
+        now()
+      )
+      on conflict (referred_partner_id) do update
+        set status = case
+              when public.partner_referrals.status = 'registered' then 'verified'
+              else public.partner_referrals.status
+            end,
+            verified_at = coalesce(public.partner_referrals.verified_at, now()),
+            updated_at = now();
+    end if;
   end if;
   return new;
 end;
-$$;
+$;
+
+-- Partner attribution summaries must include active network members, not only
+-- legacy profiles whose primary account role is 'partner'.
+create or replace function public.get_my_partner_attribution_summary()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $
+declare
+  actor_id uuid := (select auth.uid());
+  actor_role text;
+  has_membership boolean := false;
+  referred_arr jsonb := '[]'::jsonb;
+  rewards_arr jsonb := '[]'::jsonb;
+  closed_arr jsonb := '[]'::jsonb;
+begin
+  if actor_id is null then
+    return jsonb_build_object(
+      'referred_partners', '[]'::jsonb,
+      'referred_rewards', '[]'::jsonb,
+      'closed_bookings', '[]'::jsonb
+    );
+  end if;
+
+  select p.role into actor_role
+    from public.profiles p
+    where p.id = actor_id
+      and p.account_status = 'active';
+
+  select exists (
+    select 1 from public.partner_network_memberships m
+    where m.user_id = actor_id and m.status = 'active'
+  ) into has_membership;
+
+  if actor_role is null or (actor_role not in ('partner', 'admin') and not has_membership) then
+    return jsonb_build_object(
+      'referred_partners', '[]'::jsonb,
+      'referred_rewards', '[]'::jsonb,
+      'closed_bookings', '[]'::jsonb
+    );
+  end if;
+
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+      'referral_id', pr.id,
+      'referred_partner_id', pr.referred_partner_id,
+      'referred_name', coalesce(nullif(btrim(prof.full_name), ''), 'Referred partner'),
+      'referred_company', nullif(btrim(coalesce(prof.company, '')), ''),
+      'status', pr.status,
+      'registered_at', pr.registered_at,
+      'activated_at', pr.activated_at
+    ) order by pr.registered_at desc),
+    '[]'::jsonb
+  )
+  into referred_arr
+  from public.partner_referrals pr
+  left join public.profiles prof on prof.id = pr.referred_partner_id
+  where pr.referrer_partner_id = actor_id;
+
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+      'reward_id', rw.id,
+      'referred_agent_name', coalesce(nullif(btrim(prof.full_name), ''), 'Closing agent')
+    )),
+    '[]'::jsonb
+  )
+  into rewards_arr
+  from public.partner_referral_rewards rw
+  left join public.profiles prof on prof.id = rw.referred_closing_agent_id
+  where rw.referrer_partner_id = actor_id;
+
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'booking_id', b.id,
+        'booking_reference', b.reference,
+        'property_id', b.property_id,
+        'property_title', coalesce(prop.title, 'Stay'),
+        'area', coalesce(prop.area, ''),
+        'check_in', b.check_in::text,
+        'check_out', b.check_out::text,
+        'nights', greatest(1, b.check_out - b.check_in),
+        'status', b.status,
+        'owner_listed_price_ngn', coalesce(b.owner_listed_price_ngn, b.accommodation_subtotal),
+        'closing_agent_commission_ngn', coalesce(b.closing_agent_commission_ngn, 0),
+        'created_at', b.created_at
+      )
+      order by b.created_at desc
+    ),
+    '[]'::jsonb
+  )
+  into closed_arr
+  from public.bookings b
+  left join public.properties prop on prop.id = b.property_id
+  where b.closing_agent_id = actor_id;
+
+  return jsonb_build_object(
+    'referred_partners', referred_arr,
+    'referred_rewards', rewards_arr,
+    'closed_bookings', closed_arr
+  );
+end;
+$;
+
+revoke all on function public.get_my_partner_attribution_summary() from public, anon;
+grant execute on function public.get_my_partner_attribution_summary() to authenticated;
+
+-- Booking attribution accepts active network members as closing agents. The member
+-- retains guest access; this only validates the partner attribution identity.
+do $
+declare
+  function_signature regprocedure := 'public.enforce_booking_request_integrity()'::regprocedure;
+  function_definition text;
+  updated_definition text;
+begin
+  function_definition := pg_get_functiondef(function_signature);
+  updated_definition := replace(
+    function_definition,
+    $old$and p.role in ('partner', 'admin')
+        and p.account_status = 'active'$old$,
+    $new$and p.account_status = 'active'
+        and (
+          p.role in ('partner', 'admin')
+          or exists (
+            select 1
+            from public.partner_network_memberships m
+            where m.user_id = p.id and m.status = 'active'
+          )
+        )$new$
+  );
+
+  if updated_definition = function_definition then
+    raise exception 'Could not find the expected closing-agent role checks in %.', function_signature;
+  end if;
+
+  execute updated_definition;
+end;
+$;
 
 -- Only identity-verified partners can be marked paid. They can still register,
 -- list, share and view earnings while their identity check is pending.
