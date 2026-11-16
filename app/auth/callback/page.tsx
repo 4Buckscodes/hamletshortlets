@@ -28,6 +28,7 @@ interface CallbackProfileRow {
   phone: string | null;
   company: string | null;
   role: string | null;
+  account_status?: string | null;
   referred_by_code?: string | null;
 }
 
@@ -141,13 +142,27 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
-        const { data: profileData } = await client
-          .from('profiles')
-          .select('id,full_name,phone,company,role')
-          .eq('id', user.id)
-          .maybeSingle();
+        const [{ data: profileData }, { data: membershipData }] = await Promise.all([
+          client
+            .from('profiles')
+            .select('id,full_name,phone,company,role,account_status')
+            .eq('id', user.id)
+            .maybeSingle(),
+          client
+            .from('partner_network_memberships')
+            .select('status')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
 
         const profile = (profileData as CallbackProfileRow | null) ?? null;
+        const effectiveRole =
+          profile?.role === 'admin'
+            ? 'admin'
+            : (profile?.role === 'partner' || membershipData?.status === 'active') &&
+                profile?.account_status !== 'suspended'
+              ? 'partner'
+              : profile?.role || 'guest';
 
         // Backfill display name from Google metadata when the profile row has an empty name
         const existingName = (profile?.full_name || '').trim();
@@ -176,7 +191,7 @@ export default function AuthCallbackPage() {
           Number.isFinite(createdAtMs) && Date.now() - createdAtMs < 2 * 60 * 1000;
 
         const destination = resolveOAuthPostAuthRedirect({
-          role: profile?.role,
+          role: effectiveRole,
           intent: intentParam,
           next: requestedNext,
           isNewlyCreatedAccount,
