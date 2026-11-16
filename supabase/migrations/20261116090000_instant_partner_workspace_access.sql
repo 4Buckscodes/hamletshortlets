@@ -172,6 +172,7 @@ as $$
 declare
   actor_id uuid := (select auth.uid());
   prof public.profiles%rowtype;
+  profile_exists boolean := false;
   has_membership boolean := false;
   new_code text;
 begin
@@ -183,13 +184,14 @@ begin
     from public.profiles
     where id = actor_id
     for update;
+  profile_exists := found;
 
   select exists (
     select 1 from public.partner_network_memberships
     where user_id = actor_id and status = 'active'
   ) into has_membership;
 
-  if not found or (prof.role not in ('partner', 'admin') and not has_membership) then
+  if not profile_exists or (prof.role not in ('partner', 'admin') and not has_membership) then
     raise exception 'Join the active HAMLET partner network to access a referral code.';
   end if;
 
