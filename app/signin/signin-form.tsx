@@ -93,7 +93,9 @@ export default function SignInForm() {
   async function resolveRoleAndNavigate(userId: string, isSignup: boolean) {
     if (!client) return;
     if (isSignup) {
-      window.location.assign(resolvePostSignUpRedirect(requestedNext));
+      window.location.assign(
+        isPartnerSignup ? '/partners' : resolvePostSignUpRedirect(requestedNext),
+      );
       return;
     }
     const [{ data: profile }, { data: membership }] = await Promise.all([
