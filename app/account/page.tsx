@@ -265,7 +265,7 @@ export default function GuestAccountOverviewPage() {
                   )}
                 </FormField>
 
-                {profile?.role === 'partner' && (
+                {(profile?.role === 'partner' || partnerMembershipActive) && (
                   <FormField label="Business / trading name" optional>
                     {fieldProps => (
                       <input
