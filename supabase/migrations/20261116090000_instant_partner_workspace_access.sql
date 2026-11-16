@@ -752,7 +752,8 @@ with latest_applications as (
       'Property owner',
       'Authorised manager',
       'Multi-property operator',
-      'Closing agent'
+      'Closing agent',
+      'Closing Agent'
     )
   order by a.applicant_id, a.submitted_at desc
 )
@@ -766,6 +767,7 @@ select
     when 'Authorised manager' then 'authorised_manager'
     when 'Multi-property operator' then 'multi_property_operator'
     when 'Closing agent' then 'closing_agent'
+    when 'Closing Agent' then 'closing_agent'
   end,
   a.company,
   a.phone,
@@ -789,7 +791,8 @@ with latest_applications as (
       'Property owner',
       'Authorised manager',
       'Multi-property operator',
-      'Closing agent'
+      'Closing agent',
+      'Closing Agent'
     )
   order by a.applicant_id, a.submitted_at desc
 )
