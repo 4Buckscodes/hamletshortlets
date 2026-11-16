@@ -3253,7 +3253,6 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         if (!s) {
           return { ok: false, error: 'Sign in with your property-partner account before submitting a listing.' };
         }
-        const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
         const { data: membership, error: membershipError } = await supabase
           .from('partner_network_memberships')
           .select('primary_role,status')
@@ -3262,14 +3261,12 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         if (membershipError) {
           return { ok: false, error: 'We could not verify your partner-network access. Please refresh and try again.' };
         }
-        const activeInventoryMember =
-          membership?.status === 'active' &&
-          inventoryRoles.includes(String(membership?.primary_role));
-        const maySubmit = s.role === 'admin' || activeInventoryMember;
+        const activePartnerMember = membership?.status === 'active';
+        const maySubmit = s.role === 'admin' || activePartnerMember;
         if (!maySubmit) {
           return {
             ok: false,
-            error: 'Join HAMLET as a property owner, authorised manager or multi-property operator before uploading a listing. Closing agents can share approved stays and track earnings.',
+            error: 'Join the HAMLET partner network before uploading a listing. Every submitted property is reviewed separately before publication.',
           };
         }
         const { data: propertyId, error } = await supabase.rpc('submit_partner_property', {
