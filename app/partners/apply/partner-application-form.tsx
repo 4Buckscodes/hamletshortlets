@@ -217,6 +217,11 @@ export default function PartnerApplicationForm() {
       ]);
 
     setRoleState(String(profile?.role || 'guest'));
+    const savedReferralCode = String(profile?.referred_by_code || '').trim().toUpperCase();
+    if (savedReferralCode) {
+      setLockedReferralCode(savedReferralCode);
+      setValues(prev => ({ ...prev, referralCode: savedReferralCode }));
+    }
     const latest = (apps?.[0] as ExistingApp | undefined) || null;
     setExisting(latest);
 
