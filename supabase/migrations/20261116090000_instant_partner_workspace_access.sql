@@ -474,18 +474,27 @@ begin
     return new;
   end if;
 
-  select * into referrer_row
+  -- Keep an already-recorded referral even if the referrer is later suspended.
+  select p.* into referrer_row
     from public.profiles p
-    where p.referral_code = clean_code
-      and p.account_status = 'active'
-      and (
-        p.role in ('partner', 'admin')
-        or exists (
-          select 1
-          from public.partner_network_memberships m
-          where m.user_id = p.id and m.status = 'active'
-        )
-      );
+    join public.profiles referred on referred.referred_by_partner_id = p.id
+    where referred.id = new.applicant_id
+      and upper(coalesce(referred.referred_by_code, '')) = clean_code;
+
+  if not found then
+    select * into referrer_row
+      from public.profiles p
+      where p.referral_code = clean_code
+        and p.account_status = 'active'
+        and (
+          p.role in ('partner', 'admin')
+          or exists (
+            select 1
+            from public.partner_network_memberships m
+            where m.user_id = p.id and m.status = 'active'
+          )
+        );
+  end if;
 
   if not found then
     raise exception 'Referral code % is not a valid active HAMLET partner code.', clean_code;
@@ -609,18 +618,27 @@ begin
   end if;
 
   if clean_referral_code <> '' then
-    select p.* into referrer_row
-      from public.profiles p
-      where p.referral_code = clean_referral_code
-        and p.account_status = 'active'
-        and (
-          p.role in ('partner', 'admin')
-          or exists (
-            select 1 from public.partner_network_memberships m
-            where m.user_id = p.id and m.status = 'active'
+    -- Signup may already have validated and stored this attribution. Preserve it
+    -- even if the referrer is suspended after the referred user created an account.
+    if actor_profile.referred_by_partner_id is not null
+      and upper(coalesce(actor_profile.referred_by_code, '')) = clean_referral_code then
+      select * into referrer_row
+        from public.profiles p
+        where p.id = actor_profile.referred_by_partner_id;
+    else
+      select p.* into referrer_row
+        from public.profiles p
+        where p.referral_code = clean_referral_code
+          and p.account_status = 'active'
+          and (
+            p.role in ('partner', 'admin')
+            or exists (
+              select 1 from public.partner_network_memberships m
+              where m.user_id = p.id and m.status = 'active'
+            )
           )
-        )
-      limit 1;
+        limit 1;
+    end if;
 
     if not found then
       raise exception 'This partner referral code is invalid or no longer active.';
