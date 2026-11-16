@@ -3157,6 +3157,23 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (!state.session) throw new Error('Sign in before updating your partner application.');
       const normalizedRef = input.referralCode !== undefined ? (normalizeReferralCode(input.referralCode) || null) : undefined;
       if (supabase) {
+        const networkRoleByApplicationRole: Record<string, string> = {
+          'Property owner': 'property_owner',
+          'Authorised manager': 'authorised_manager',
+          'Multi-property operator': 'multi_property_operator',
+          'Closing agent': 'closing_agent',
+          'Closing Agent': 'closing_agent',
+        };
+        const networkRole = networkRoleByApplicationRole[input.role];
+        if (!networkRole) throw new Error('Choose a valid HAMLET partner role.');
+        const { error: membershipError } = await supabase.rpc('join_partner_network', {
+          next_role: networkRole,
+          next_company: input.company.trim(),
+          next_phone: input.phone.trim(),
+          referral_code_input: normalizedRef || null,
+        });
+        if (membershipError) throw new Error(`Could not activate partner workspace: ${membershipError.message}`);
+
         const payload: Record<string, unknown> = {
           full_name: input.name.trim(),
           phone: input.phone.trim(),
