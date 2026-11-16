@@ -55,12 +55,13 @@ export default function PartnerAvailabilityPage() {
       window.location.assign('/signin?next=/partners/availability');
       return;
     }
-    const { data: profile } = await db
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-    const userRole = String(profile?.role || 'guest');
+    const [{ data: profile }, { data: membership }] = await Promise.all([
+      db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+      db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
+    ]);
+    const profileRole = String(profile?.role || 'guest');
+    const userRole = profileRole === 'admin' ? 'admin' :
+      profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
     setRole(userRole);
     if (userRole !== 'partner' && userRole !== 'admin') {
       setLoading(false);
