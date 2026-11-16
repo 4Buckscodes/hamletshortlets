@@ -112,7 +112,7 @@ function HoratioDrawer({
 
   const partnerPropIds = useMemo(
     () => (isPartner ? new Set(propertyIdsOf(state, session?.userId)) : new Set<string>()),
-    [role, state, session?.userId],
+    [isPartner, state, session?.userId],
   );
 
   const buildAnswer = useCallback(
@@ -296,6 +296,7 @@ function HoratioDrawer({
     },
     [
       role,
+      isPartner,
       session,
       state.properties,
       state.bookings,
