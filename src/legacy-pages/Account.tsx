@@ -144,7 +144,7 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
         exit={{ y: 60, opacity: 0 }}
         className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-y-contain rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
       >
-        <div className="bg-[#0BA4DB] px-5 py-4 sm:px-6">
+        <div className="bg-[#2e50e8] px-5 py-4 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 font-display text-sm font-bold text-white">
@@ -218,8 +218,8 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
                 )}
               </dl>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className="rounded-xl border-2 border-[#0BA4DB] bg-sky-50 p-3 text-center">
-                  <CreditCard size={18} className="mx-auto shrink-0 text-[#0BA4DB]" />
+                <div className="rounded-xl border-2 border-[#2e50e8] bg-sky-50 p-3 text-center">
+                  <CreditCard size={18} className="mx-auto shrink-0 text-[#2e50e8]" />
                   <p className="mt-1 text-[11px] font-bold text-ink-800">Card</p>
                   <p className="text-[9px] font-semibold text-ink-400">4084 •••• 4081</p>
                 </div>
@@ -231,7 +231,7 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
               </div>
               <button
                 onClick={pay}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#0BA4DB] py-4 font-display text-[15px] font-bold text-white transition hover:bg-[#0993c3] [&>svg]:shrink-0"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#2e50e8] py-4 font-display text-[15px] font-bold text-white transition hover:bg-[#1938c0] [&>svg]:shrink-0"
               >
                 <Lock size={15} /> Pay {formatNaira(booking.settlementTotalNgn ?? booking.guestTotal)}
               </button>
@@ -242,7 +242,7 @@ function PaymentModal({ booking, onClose }: { booking: Booking; onClose: () => v
           )}
           {stage !== 'idle' && (
             <div className="flex flex-col items-center py-8 text-center">
-              <Loader2 size={44} className="animate-spin text-[#0BA4DB]" />
+              <Loader2 size={44} className="animate-spin text-[#2e50e8]" />
               <p className="mt-4 font-display text-lg font-bold text-ink-900">
                 {stage === 'processing' ? 'Contacting your bank…' : 'Verifying webhook signature…'}
               </p>
