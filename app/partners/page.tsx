@@ -99,7 +99,7 @@ export default function PartnerDashboardPage() {
     setCanUploadProperties(
       userRole === 'admin' ||
       (isActiveMember && inventoryRoles.includes(String(membership?.primary_role))) ||
-      (profileRole === 'partner' && (!legacyPartnerRole || legacyInventoryRoles.includes(legacyPartnerRole))) ||
+      (profileRole === 'partner' && (!legacyPartnerRole || legacyInventoryRoles.includes(legacyPartnerRole)))
     );
     setRole(userRole);
     setPartnerName(String(profile?.full_name || ''));
