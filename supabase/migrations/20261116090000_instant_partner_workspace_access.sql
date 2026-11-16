@@ -255,7 +255,7 @@ declare
   is_preauthorized_admin boolean := false;
   assigned_role text := 'guest';
   raw_referral_code text := upper(regexp_replace(
-    btrim(coalesce(new.raw_user_meta_data ->> 'referred_by_code', '')),
+    btrim(coalesce(new.raw_user_meta_data ->> 'referred_by_code', new.raw_user_meta_data ->> 'referral_code', '')),
     '[^A-Za-z0-9-]', '', 'g'
   ));
   resolved_referrer_id uuid;
