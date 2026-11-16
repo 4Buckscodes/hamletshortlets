@@ -94,12 +94,9 @@ export default function PartnerDashboardPage() {
           ? 'partner'
           : 'guest';
     const inventoryRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
-    const legacyPartnerRole = String(profile?.partner_role || '').toLowerCase();
-    const legacyInventoryRoles = ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'];
     setCanUploadProperties(
       userRole === 'admin' ||
-      (isActiveMember && inventoryRoles.includes(String(membership?.primary_role))) ||
-      (profileRole === 'partner' && legacyInventoryRoles.includes(legacyPartnerRole))
+      (isActiveMember && inventoryRoles.includes(String(membership?.primary_role)))
     );
     setRole(userRole);
     setPartnerName(String(profile?.full_name || ''));
