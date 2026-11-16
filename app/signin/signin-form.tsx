@@ -46,6 +46,8 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [partnerRole, setPartnerRole] = useState('property_owner');
+  const [partnerCompany, setPartnerCompany] = useState('');
   const [lockedReferralCode, setLockedReferralCode] = useState('');
 
   const [busy, setBusy] = useState(false);
@@ -74,13 +76,15 @@ export default function SignInForm() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  const isPartnerSignup = Boolean(requestedNext?.startsWith('/partners'));
+
   const contextHint = useMemo(() => {
     if (!requestedNext) return null;
     if (requestedNext.startsWith('/stays/')) {
       return 'Your selected stay and dates are saved — you will return right after signing in.';
     }
-    if (requestedNext.startsWith('/partners/apply')) {
-      return 'Sign in or create an account to continue directly to the Partner Application.';
+    if (requestedNext.startsWith('/partners')) {
+      return 'Create your account and enter the partner workspace immediately. No partner application approval is required.';
     }
     return `You will continue to ${requestedNext.split('?')[0]} after signing in.`;
   }, [requestedNext]);
@@ -118,12 +122,23 @@ export default function SignInForm() {
     }
 
     const intent = mode === 'signup' ? 'signup' : 'signin';
+    if (mode === 'signup' && isPartnerSignup && (name.trim().length < 2 || phone.replace(/\D/g, '').length < 7)) {
+      setError('Enter your full name and a valid phone number to create your partner account.');
+      setSignupStep(1);
+      return;
+    }
     setOauthBusy(true);
     try {
       try {
         window.sessionStorage.setItem(
           OAUTH_CONTEXT_STORAGE_KEY,
-          JSON.stringify({ intent, next: requestedNext }),
+          JSON.stringify({
+            intent,
+            next: requestedNext,
+            partnerRole,
+            partnerCompany: partnerCompany.trim() || name.trim(),
+            partnerPhone: phone.trim(),
+          }),
         );
         if (lockedReferralCode) {
           window.localStorage.setItem('hamlet:referral-code', lockedReferralCode);
@@ -180,6 +195,11 @@ export default function SignInForm() {
       return;
     }
 
+    if (mode === 'signup' && isPartnerSignup && phone.replace(/\D/g, '').length < 7) {
+      setError('Enter a valid phone number for your partner account.');
+      return;
+    }
+
     if (mode === 'signup' && name.trim().length < 2) {
       setError('Enter your full name (at least 2 characters).');
       return;
@@ -230,6 +250,9 @@ export default function SignInForm() {
               full_name: name.trim(),
               phone: phone.trim() || null,
               referred_by_code: lockedReferralCode || null,
+              hamlet_partner_signup: isPartnerSignup,
+              hamlet_partner_role: isPartnerSignup ? partnerRole : null,
+              hamlet_partner_company: isPartnerSignup ? (partnerCompany.trim() || name.trim()) : null,
             },
           },
         });
@@ -329,12 +352,14 @@ export default function SignInForm() {
 
       {(mode === 'signin' || (mode === 'signup' && signupStep === 0)) && (
         <div className="mb-5 space-y-4">
-          <GoogleContinueButton
-            mode={mode === 'signup' ? 'signup' : 'signin'}
-            busy={oauthBusy}
-            disabled={busy}
-            onClick={() => void handleGoogleAuth()}
-          />
+          {!(mode === 'signup' && isPartnerSignup) && (
+            <GoogleContinueButton
+              mode={mode === 'signup' ? 'signup' : 'signin'}
+              busy={oauthBusy}
+              disabled={busy}
+              onClick={() => void handleGoogleAuth()}
+            />
+          )}
 
           {mode === 'signup' && lockedReferralCode && (
             <p className="m-0 rounded-2xl border border-ink-100 bg-paper/75 px-3.5 py-2 text-[11px] font-medium text-ink-600">
@@ -424,6 +449,17 @@ export default function SignInForm() {
 
         {mode === 'signup' && signupStep === 1 && (
           <>
+            {isPartnerSignup && (
+              <div className="mb-4">
+                <GoogleContinueButton
+                  mode="signup"
+                  busy={oauthBusy}
+                  disabled={busy || name.trim().length < 2 || phone.replace(/\D/g, '').length < 7}
+                  onClick={() => void handleGoogleAuth()}
+                />
+                <p className="mt-2 text-center text-[11px] text-ink-500">Google signup will use the partner details entered below.</p>
+              </div>
+            )}
             <FormField label="Full name">
               {fieldProps => (
                 <input
@@ -440,6 +476,26 @@ export default function SignInForm() {
               )}
             </FormField>
 
+            {isPartnerSignup && (
+              <>
+                <FormField label="Partner role">
+                  {fieldProps => (
+                    <select {...fieldProps} value={partnerRole} onChange={e => setPartnerRole(e.target.value)} className={FIELD_INPUT_CLASS}>
+                      <option value="property_owner">Property owner</option>
+                      <option value="authorised_manager">Authorised manager</option>
+                      <option value="multi_property_operator">Multi-property operator</option>
+                      <option value="closing_agent">Closing agent</option>
+                    </select>
+                  )}
+                </FormField>
+                <FormField label="Business / display name" optional>
+                  {fieldProps => (
+                    <input {...fieldProps} value={partnerCompany} onChange={e => setPartnerCompany(e.target.value)} maxLength={160} placeholder="Your business or name" className={FIELD_INPUT_CLASS} />
+                  )}
+                </FormField>
+              </>
+            )}
+
             {lockedReferralCode && (
               <FormField label="Referral code" hint="Applied from invite link.">
                 {fieldProps => (
@@ -454,7 +510,7 @@ export default function SignInForm() {
               </FormField>
             )}
 
-            <FormField label="Phone number" optional>
+            <FormField label="Phone number" optional={!isPartnerSignup}>
               {fieldProps => (
                 <input
                   {...fieldProps}
@@ -462,6 +518,7 @@ export default function SignInForm() {
                   inputMode="tel"
                   autoComplete="tel"
                   maxLength={32}
+                  required={isPartnerSignup}
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="+234 800 000 0000"
