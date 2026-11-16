@@ -3075,8 +3075,31 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           };
         }
 
+        const networkRoleByApplicationRole: Record<string, string> = {
+          'Property owner': 'property_owner',
+          'Authorised manager': 'authorised_manager',
+          'Multi-property operator': 'multi_property_operator',
+          'Closing agent': 'closing_agent',
+          'Closing Agent': 'closing_agent',
+        };
+        const networkRole = networkRoleByApplicationRole[input.role];
+        if (!networkRole) return { ok: false, error: 'Choose a valid HAMLET partner role.' };
+
+        const { error: membershipError } = await supabase.rpc('join_partner_network', {
+          next_role: networkRole,
+          next_company: input.company.trim(),
+          next_phone: input.phone.trim(),
+          referral_code_input: normalizedRefCode || null,
+        });
+        if (membershipError) return { ok: false, error: membershipError.message };
+
         if (state.applications.some(a => a.applicantId === applicantUserId && a.status === 'pending')) {
-          return { ok: false, error: 'You already have a pending partner application under review.' };
+          clearPersistedPartnerRefCode();
+          const { data: existingAuthData } = await supabase.auth.getUser();
+          if (existingAuthData.user) {
+            dispatch({ type: 'HYDRATE', state: await loadSupabaseState(existingAuthData.user) });
+          }
+          return { ok: true };
         }
 
         const { error } = await supabase.from('partner_applications').insert({
