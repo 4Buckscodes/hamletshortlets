@@ -226,7 +226,7 @@ export async function POST(request: Request) {
   const legacyPartnerRole = String(profile?.partner_role || '').toLowerCase();
   const legacyPartnerCanList =
     profile?.role === 'partner' &&
-    (!legacyPartnerRole || ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'].includes(legacyPartnerRole));
+    ['property owner', 'authorised manager', 'authorised property manager', 'multi-property operator'].includes(legacyPartnerRole);
   const maySubmit =
     !profileError &&
     profile?.account_status !== 'suspended' &&
