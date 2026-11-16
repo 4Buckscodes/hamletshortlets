@@ -3075,10 +3075,17 @@ export function HamletProvider({ children }: { children: ReactNode }) {
 
         const networkRoleByApplicationRole: Record<string, string> = {
           'Property owner': 'property_owner',
+          'Property Owner': 'property_owner',
           'Authorised manager': 'authorised_manager',
+          'Authorised Manager': 'authorised_manager',
+          'Agent (authorised)': 'authorised_manager',
+          'Property Manager': 'authorised_manager',
+          'Co-host / Hospitality Operator': 'authorised_manager',
           'Multi-property operator': 'multi_property_operator',
+          'Shortlet Operator': 'multi_property_operator',
           'Closing agent': 'closing_agent',
           'Closing Agent': 'closing_agent',
+          'Referral Partner': 'closing_agent',
         };
         const networkRole = networkRoleByApplicationRole[input.role];
         if (!networkRole) return { ok: false, error: 'Choose a valid HAMLET partner role.' };
@@ -3159,10 +3166,17 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (supabase) {
         const networkRoleByApplicationRole: Record<string, string> = {
           'Property owner': 'property_owner',
+          'Property Owner': 'property_owner',
           'Authorised manager': 'authorised_manager',
+          'Authorised Manager': 'authorised_manager',
+          'Agent (authorised)': 'authorised_manager',
+          'Property Manager': 'authorised_manager',
+          'Co-host / Hospitality Operator': 'authorised_manager',
           'Multi-property operator': 'multi_property_operator',
+          'Shortlet Operator': 'multi_property_operator',
           'Closing agent': 'closing_agent',
           'Closing Agent': 'closing_agent',
+          'Referral Partner': 'closing_agent',
         };
         const networkRole = networkRoleByApplicationRole[input.role];
         if (!networkRole) throw new Error('Choose a valid HAMLET partner role.');
