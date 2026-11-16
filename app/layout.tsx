@@ -6,26 +6,26 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
   title: {
-    default: 'HAMLET.REST — Your stay, sorted.',
+    default: 'HAMLET.REST — Lagos, on your terms.',
     template: '%s | HAMLET.REST',
   },
   description:
-    'Find your next shortlet in Lagos. Explore stays, compare the details and request your booking with confidence.',
+    'Find a shortlet in Lagos with a little more soul. The right neighbourhood, the right kind of space, all yours.',
   applicationName: 'HAMLET.REST',
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     siteName: 'HAMLET.REST',
     locale: 'en_NG',
-    title: 'HAMLET.REST — Your stay, sorted.',
-    description: 'Find your next shortlet in Lagos.',
+    title: 'HAMLET.REST — Lagos, on your terms.',
+    description: 'Find a shortlet in Lagos with a little more soul.',
     url: 'https://www.hamlet.rest/',
   },
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0E1F3B',
+  themeColor: '#172119',
   width: 'device-width',
   initialScale: 1,
 };

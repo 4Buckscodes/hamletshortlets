@@ -1,56 +1,61 @@
 import Link from 'next/link';
-import { ArrowDownRight, ArrowRight, ArrowUpRight, MapPin, Menu, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, Menu, ShieldCheck, Sparkles } from 'lucide-react';
 
 const areas = ['Lekki', 'Victoria Island', 'Ikoyi', 'Yaba', 'Ikeja GRA', 'Surulere'];
 const destinations = [
-  { name: 'Island living', area: 'Lekki · Ikoyi · Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?area=Lekki' },
-  { name: 'The mainland edit', area: 'Yaba · Ikeja · Surulere', image: '/images/prop/duplex.jpg', href: '/stays?area=Yaba' },
-  { name: 'Room to recharge', area: 'Find your own corner of Lagos', image: '/images/prop/bed-1.jpg', href: '/stays' },
+  { name: 'Island energy', area: 'Lekki · Ikoyi · Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?area=Lekki', number: '01' },
+  { name: 'Mainland rhythm', area: 'Yaba · Ikeja · Surulere', image: '/images/prop/duplex.jpg', href: '/stays?area=Yaba', number: '02' },
+  { name: 'A little hideaway', area: 'Your own corner of Lagos', image: '/images/prop/bed-1.jpg', href: '/stays', number: '03' },
 ];
 
 export default function HomePage() {
   return (
-    <main>
-      <header className="site-header">
-        <div className="shell header-inner">
-          <Link href="/" className="wordmark" aria-label="Hamlet Rest home"><span className="wordmark-mark">h</span><span>HAMLET<span className="wordmark-dot">.</span>REST</span></Link>
-          <nav className="desktop-nav" aria-label="Main navigation"><Link href="/stays">Find a stay</Link><Link href="/lagos">The Lagos guide</Link><Link href="/how-it-works">How it works</Link></nav>
-          <div className="header-actions"><Link className="partner-link" href="/partners/apply">List your property</Link><Link className="sign-in" href="/signin">Sign in <ArrowUpRight size={15} /></Link><Link className="mobile-menu" href="/stays" aria-label="Explore stays"><Menu size={21} /></Link></div>
+    <main className="home-page">
+      <header className="home-header">
+        <div className="home-shell home-header-inner">
+          <Link href="/" className="home-wordmark" aria-label="Hamlet Rest home"><span className="home-mark">H</span><span>HAMLET<span className="home-period">.</span>REST</span></Link>
+          <nav className="home-nav" aria-label="Main navigation"><Link href="/stays">Find a stay</Link><Link href="/lagos">Lagos, locally</Link><Link href="/how-it-works">How it works</Link></nav>
+          <div className="home-actions"><Link className="home-host-link" href="/partners/apply">Host with us <ArrowUpRight size={14} /></Link><Link className="home-sign-in" href="/signin">Sign in</Link><Link className="home-menu" href="/stays" aria-label="Explore stays"><Menu size={19} /></Link></div>
         </div>
       </header>
 
-      <section className="hero">
-        <div className="hero-photo" role="img" aria-label="Warm, thoughtfully furnished Lagos apartment with a bright terrace" />
-        <div className="hero-shade" />
-        <div className="shell hero-content">
-          <p className="hero-kicker"><span className="kicker-line" /> A considered way to stay in Lagos</p>
-          <h1>Arrive well.<br /><em>Stay a while.</em></h1>
-          <p className="hero-copy">Good spaces make a good trip. Find a shortlet that feels like yours, wherever Lagos takes you.</p>
-          <a className="hero-discover" href="#find-a-stay">Discover your stay <ArrowDownRight size={17} /></a>
+      <section className="home-hero" aria-labelledby="home-title">
+        <div className="home-shell home-hero-grid">
+          <div className="home-hero-copy">
+            <p className="home-kicker"><span className="home-kicker-dot" /> NOT JUST A PLACE TO SLEEP. A WAY IN.</p>
+            <h1 id="home-title">Lagos,<br /><span>on your</span><br /><em>terms.</em></h1>
+            <div className="home-intro-row"><p>Find a shortlet with a little more soul. The right side of town, the right kind of space, all yours.</p><a href="#find-your-stay" className="home-scroll" aria-label="Scroll to find your stay"><ArrowDown size={18} /></a></div>
+            <div className="home-coordinate">06° 27&apos; N <span>·</span> 03° 24&apos; E</div>
+          </div>
+          <div className="home-hero-art">
+            <div className="home-photo-frame"><img src="/images/hamlet-lagos-hero.png" alt="Sunlit Lagos apartment with tactile green and terracotta details" /><span className="home-image-index">A GOOD PLACE TO LAND <b>— LAGOS, NG</b></span></div>
+            <div className="home-stamp" aria-label="Lagos, Nigeria"><span>YOUR CITY</span><strong>YOUR<br />STAY</strong><span>HAMLET · 2026</span></div>
+            <span className="home-side-note">IN GOOD COMPANY, ALWAYS</span>
+          </div>
         </div>
-        <div className="hero-caption"><span>01 / LAGOS, NIGERIA</span><span>Spaces with a sense of place</span></div>
+        <div className="home-hero-bottom home-shell"><span>MADE FOR THE WAY LAGOS MOVES</span><span>SCROLL TO FIND YOUR PLACE <ArrowDown size={13} /></span></div>
       </section>
 
-      <section className="search-section" id="find-a-stay" aria-label="Search for a stay">
-        <div className="shell">
-          <form action="/stays" method="get" className="search-panel">
-            <label className="search-field destination-field"><span className="field-icon"><MapPin size={18} /></span><span className="field-copy"><span className="field-label">Destination</span><select name="area" defaultValue="" aria-label="Choose a Lagos neighbourhood"><option value="">Anywhere in Lagos</option>{areas.map(area => <option key={area} value={area}>{area}</option>)}</select></span></label>
-            <label className="search-field"><span className="field-copy"><span className="field-label">Check in</span><input name="checkIn" type="date" aria-label="Check-in date" /></span></label>
-            <label className="search-field"><span className="field-copy"><span className="field-label">Check out</span><input name="checkOut" type="date" aria-label="Check-out date" /></span></label>
-            <button className="search-button" type="submit"><span>Explore stays</span><ArrowRight size={17} /></button>
-          </form>
-          <div className="search-note"><span>Not sure where to start?</span><div className="area-links">{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div></div>
-        </div>
+      <section className="home-search" id="find-your-stay" aria-label="Search for a stay"><div className="home-shell">
+        <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
+        <form action="/stays" method="get" className="home-search-form">
+          <label className="home-search-field home-destination"><span><MapPin size={17} /> THE NEIGHBOURHOOD</span><select name="area" defaultValue="" aria-label="Choose a Lagos neighbourhood"><option value="">Anywhere in Lagos</option>{areas.map(area => <option key={area} value={area}>{area}</option>)}</select></label>
+          <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
+          <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>
+          <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
+        </form>
+        <div className="home-area-quick"><span>START WITH A VIBE</span>{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
+      </div></section>
+
+      <section className="home-neighbourhoods home-shell">
+        <div className="home-section-top"><div><p className="home-section-label">02 / PICK YOUR PACE</p><h2>Every Lagos<br /><em>has a Lagos.</em></h2></div><p className="home-section-aside">One city. A hundred different ways to feel at home. Start wherever your kind of Lagos begins.</p></div>
+        <div className="home-destination-grid">{destinations.map((place, index) => <Link className={`home-destination home-destination-${index + 1}`} key={place.number} href={place.href}><img src={place.image} alt="" loading="lazy" /><span className="home-destination-tint" /><span className="home-destination-meta">LAGOS / {place.number}</span><span className="home-destination-caption"><span><strong>{place.name}</strong><small>{place.area}</small></span><span className="home-destination-arrow"><ArrowUpRight size={19} /></span></span></Link>)}</div>
+        <Link className="home-all-stays" href="/stays">See every stay in Lagos <ArrowRight size={16} /></Link>
       </section>
 
-      <section className="destinations-section shell">
-        <div className="section-heading"><div><p className="eyebrow"><span>01</span> FIND YOUR NEIGHBOURHOOD</p><h2>A city of many moods.</h2></div><Link className="text-link" href="/stays">View all stays <ArrowUpRight size={16} /></Link></div>
-        <div className="destination-grid">{destinations.map((place, index) => <Link className={`destination-card destination-card-${index + 1}`} key={place.name} href={place.href}><img src={place.image} alt="" loading="lazy" /><span className="destination-overlay" /><span className="destination-number">0{index + 1} / LAGOS</span><span className="destination-info"><span><strong>{place.name}</strong><small>{place.area}</small></span><span className="destination-arrow"><ArrowUpRight size={19} /></span></span></Link>)}</div>
-      </section>
+      <section className="home-belief"><div className="home-shell home-belief-grid"><div><p className="home-section-label">03 / THE HAMLET FEELING</p><h2>Good stays.<br /><em>Zero guesswork.</em></h2></div><div className="home-belief-copy"><p>We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p><Link href="/how-it-works">Here&apos;s how we make it easier <ArrowUpRight size={16} /></Link></div><div className="home-belief-points"><div><ShieldCheck size={19} /><span><strong>Know before you go</strong><small>Clear details. No surprises at the door.</small></span></div><div><Sparkles size={19} /><span><strong>Find your kind of Lagos</strong><small>Neighbourhoods with personality.</small></span></div><div><ArrowRight size={19} /><span><strong>Stay in control</strong><small>Request first. Confirm when you&apos;re ready.</small></span></div></div></div></section>
 
-      <section className="promise-section"><div className="shell promise-inner"><div className="promise-heading"><p className="eyebrow"><span>02</span> THE HAMLET DIFFERENCE</p><h2>Less guesswork.<br /><em>More feeling at home.</em></h2></div><div className="promise-copy"><p>Finding a place to stay should feel like the start of the trip, not the hard part. We bring the details forward and keep you in control from first look to arrival.</p><Link className="text-link" href="/how-it-works">A little more about us <ArrowUpRight size={16} /></Link></div><div className="promise-rule" /><div className="promise-points"><div><ShieldCheck size={19} /><span><strong>Clear, considered details</strong><small>Know what to expect before you ask.</small></span></div><div><Sparkles size={19} /><span><strong>A more personal search</strong><small>Explore the neighbourhood that suits you.</small></span></div><div><ArrowRight size={19} /><span><strong>Your booking, your pace</strong><small>Request first. Confirm after availability.</small></span></div></div></div></section>
-
-      <footer className="site-footer"><div className="shell"><div className="footer-main"><Link href="/" className="wordmark footer-wordmark"><span className="wordmark-mark">h</span><span>HAMLET<span className="wordmark-dot">.</span>REST</span></Link><p>Your stay, sorted.<br />Lagos, Nigeria.</p><div className="footer-links"><Link href="/lagos">Neighbourhood guide</Link><Link href="/faqs">FAQs</Link><Link href="/safety">Trust & safety</Link><Link href="/about">About Hamlet</Link></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>Made for finding your place.</span></div></div></footer>
+      <footer className="home-footer"><div className="home-shell"><div className="home-footer-main"><div><Link href="/" className="home-wordmark home-footer-mark"><span className="home-mark">H</span><span>HAMLET<span className="home-period">.</span>REST</span></Link><p>Make yourself at home.<br />Lagos, Nigeria.</p></div><nav aria-label="Footer navigation"><Link href="/lagos">The Lagos guide</Link><Link href="/faqs">FAQs</Link><Link href="/safety">Trust & safety</Link><Link href="/about">About Hamlet</Link></nav><span className="home-footer-big">HOME,<br /><em>but elsewhere.</em></span></div><div className="home-footer-bottom"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>06° 27&apos; N · 03° 24&apos; E</span></div></div></footer>
     </main>
   );
 }
