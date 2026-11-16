@@ -45,7 +45,7 @@ export default function PartnerProfilePage() {
     const [profileRes, membershipRes, assignRes] = await Promise.all([
       db
         .from('profiles')
-        .select('role,partner_role,referral_code,full_name,phone,company')
+        .select('role,partner_role,referral_code,full_name,phone,company,account_status')
         .eq('id', user.id)
         .maybeSingle(),
       db.from('partner_network_memberships').select('status,primary_role').eq('user_id', user.id).maybeSingle(),
@@ -58,7 +58,7 @@ export default function PartnerProfilePage() {
 
     if (profileRes.data) {
       const profileRole = String(profileRes.data.role || 'guest');
-      setRole(profileRole === 'admin' ? 'admin' : profileRole === 'partner' || membershipRes.data?.status === 'active' ? 'partner' : 'guest');
+      setRole(profileRole === 'admin' ? 'admin' : profileRole === 'partner' || (membershipRes.data?.status === 'active' && profileRes.data.account_status !== 'suspended') ? 'partner' : 'guest');
       setPartnerRole(String(profileRes.data.partner_role || 'Property partner'));
       setReferralCode(String(profileRes.data.referral_code || ''));
       setFullName(String(profileRes.data.full_name || ''));
