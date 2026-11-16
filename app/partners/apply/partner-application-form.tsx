@@ -119,13 +119,13 @@ const APPLY_STEPS = [
   },
   {
     id: 'payout',
-    title: 'Payout details',
-    shortLabel: '5. Payout',
+    title: 'Payout setup (optional)',
+    shortLabel: '5. Payout setup',
   },
   {
     id: 'declarations',
-    title: 'Review & submit',
-    shortLabel: '6. Submit',
+    title: 'Identity verification',
+    shortLabel: '6. Verify identity',
   },
 ] as const;
 
@@ -357,7 +357,7 @@ export default function PartnerApplicationForm() {
         });
         if (rpcError) throw new Error(rpcError.message);
         clearDraft();
-        setMessage('Your updated partner application has been resubmitted for review.');
+        setMessage('Your updated identity-verification details have been resubmitted. Your partner workspace remains active.');
       } else {
         const { error: insertError } = await db.from('partner_applications').insert({
           applicant_id: userId,
@@ -374,7 +374,7 @@ export default function PartnerApplicationForm() {
         if (insertError) throw new Error(insertError.message);
         clearDraft();
         setMessage(
-          'Your partner application has been submitted. You can start uploading properties immediately while HAMLET reviews your partner profile. Your listings will remain under review until approved, and earnings are withheld until partner verification is complete.',
+          'Your identity-verification details have been submitted. Your partner workspace remains active while HAMLET completes the checks required before a payout. Property listings are reviewed separately before they appear publicly.',
         );
       }
 
@@ -405,7 +405,7 @@ export default function PartnerApplicationForm() {
           Step 0 — Sign in or create your HAMLET account first
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Partner applications link directly to your authenticated HAMLET account so we can notify you and unlock your partner workspace as soon as you are approved.
+          This step is for identity and payout verification only. Your partner workspace is available immediately after network registration; you do not need to wait for this review to upload properties, share stays or view earnings.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
