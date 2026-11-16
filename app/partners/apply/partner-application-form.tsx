@@ -64,6 +64,13 @@ const INITIAL_DRAFT: PartnerApplyDraft = {
   confirmReviewConsent: false,
 };
 
+const NETWORK_ROLE_TO_APPLICATION_ROLE: Record<string, string> = {
+  property_owner: 'Property owner',
+  authorised_manager: 'Authorised manager',
+  multi_property_operator: 'Multi-property operator',
+  closing_agent: 'Closing agent',
+};
+
 const APPLICATION_ROLE_TO_NETWORK_ROLE: Record<string, string> = {
   'Property owner': 'property_owner',
   'Authorised manager': 'authorised_manager',
@@ -522,7 +529,7 @@ export default function PartnerApplicationForm() {
             <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
               <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
               <p className="m-0 mt-1 text-xs text-ink-600">
-                Approved partners can close bookings across HAMLET and introduce new partners from one account.
+                Active partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
             <OptionCardGroup
