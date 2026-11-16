@@ -340,10 +340,10 @@ describe('Endpoint Bugfixes, Draft Lifecycle, Attribution Summary & FX Email Par
            reference, property_id, guest_id, check_in, check_out, guest_count,
            special_requests, quote_currency, guest_referral_source
          ) values (
-           'HML-FX-PARITY-01', $1, $2::uuid, '2026-11-10'::date, '2026-11-12'::date, 2,
+           'HML-FX-PARITY-01', $1, $2::uuid, $3::date, $4::date, 2,
            'Arriving on evening flight', 'USD', $3
          ) returning id`,
-        [propId, guestId, agentCode],
+        [propId, guestId, addDaysIso((await db.query<{ today: string }>(`select current_date::text as today`)).rows[0].today, 10), addDaysIso((await db.query<{ today: string }>(`select current_date::text as today`)).rows[0].today, 12), agentCode],
       );
       return rows[0].id;
     });
