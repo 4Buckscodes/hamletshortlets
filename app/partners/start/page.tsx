@@ -37,7 +37,6 @@ export default function PartnerStartDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [schemaUnavailable, setSchemaUnavailable] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -127,7 +126,6 @@ export default function PartnerStartDashboard() {
     if (!db) return;
     setSaving(true);
     setError('');
-    setSchemaUnavailable(false);
 
     const { data, error: e2 } = await db.rpc('join_partner_network', {
       next_role: role,
@@ -138,7 +136,6 @@ export default function PartnerStartDashboard() {
 
     if (e2) {
       if (e2.code === 'PGRST202' || /schema cache/i.test(e2.message)) {
-        setSchemaUnavailable(true);
         setError(
           'Partner registration is temporarily unavailable. Please refresh and try again; your workspace will open as soon as registration completes.',
         );
@@ -179,11 +176,7 @@ export default function PartnerStartDashboard() {
             role="alert"
             className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
           >
-            <p className="m-0">{error}</p>
-            {schemaUnavailable && (
-              
-            )}
-          </div>
+            <p className="m-0">{error}</p></div>
         )}
 
         {loading ? (
