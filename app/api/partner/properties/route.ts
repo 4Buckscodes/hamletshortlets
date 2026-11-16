@@ -218,20 +218,14 @@ export async function POST(request: Request) {
       db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
     ]);
 
-  const inventoryNetworkRoles = ['property_owner', 'authorised_manager', 'multi_property_operator'];
-  const activeInventoryMember =
-    !membershipError &&
-    membership?.status === 'active' &&
-    inventoryNetworkRoles.includes(String(membership?.primary_role));
-  const maySubmit =
-    profile?.role === 'admin' ||
-    activeInventoryMember;
+  const activePartnerMember = !membershipError && membership?.status === 'active';
+  const maySubmit = profile?.role === 'admin' || activePartnerMember;
 
   if (!maySubmit) {
     return NextResponse.json(
       {
         error:
-          'Join as a property owner, authorised manager or multi-property operator before uploading. Closing agents can share stays and earn commissions, but property submissions require listing authority.',
+          'Join the HAMLET partner network before uploading a property. Each submitted listing is reviewed separately before it is published.',
       },
       { status: 403 },
     );
