@@ -57,7 +57,7 @@ export default function PartnerEarningsPage() {
 
     const profileRole = String(profile?.role || 'guest');
     const userRole = profileRole === 'admin' ? 'admin' :
-      profileRole === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
+      (profileRole === 'partner' || membership?.status === 'active') && profile?.account_status !== 'suspended' ? 'partner' : 'guest';
     setRole(userRole);
     // Ensure referral code exists for active partners
     let activeCode = String(profile?.referral_code || '');
