@@ -393,7 +393,7 @@ export default function PartnerApplicationForm() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'Could not submit your partner application.',
+          : 'Could not submit your identity-verification details.',
       );
     } finally {
       setBusy(false);
@@ -475,7 +475,7 @@ export default function PartnerApplicationForm() {
           {existing.company} · {existing.role}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Submitted {new Date(existing.submitted_at).toLocaleDateString('en-NG')}. HAMLET operations reviews every application manually before enabling partner permissions.
+          Submitted {new Date(existing.submitted_at).toLocaleDateString('en-NG')}. This verification review is only required before a payout. Your partner workspace and listing submissions remain available.
         </p>
         {existing.review_note && (
           <div className="mt-4 rounded-2xl border border-ink-100 bg-paper p-4 text-xs text-ink-700">
@@ -492,11 +492,11 @@ export default function PartnerApplicationForm() {
         <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950">
           <div className="flex items-center gap-2 font-bold">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700" />
-            <span>Correction requested on your partner application</span>
+            <span>Correction requested on your identity verification</span>
           </div>
           <p className="m-0 mt-1">
             {existing.review_note ||
-              'Please review and update your application details below, then resubmit.'}
+              'Please update the verification details below, then resubmit. Your workspace remains active.'}
           </p>
         </div>
       )}
@@ -600,7 +600,7 @@ export default function PartnerApplicationForm() {
             <FormField
               label="Partner referral code"
               optional
-              hint={referralResolved || 'Enter a code if an approved HAMLET partner invited you.'}
+              hint={referralResolved || 'Enter a code if an active HAMLET partner invited you.'}
             >
               {fieldProps => (
                 <input
@@ -776,7 +776,7 @@ export default function PartnerApplicationForm() {
                   className="mt-0.5 h-4 w-4 accent-ink-900"
                 />
                 <span>
-                  I understand HAMLET reviews all partner accounts and listings manually before publication.
+                  I understand partner workspace access is immediate, each property is reviewed before public listing, and identity verification is required before payout.
                 </span>
               </label>
             </div>
@@ -814,8 +814,8 @@ export default function PartnerApplicationForm() {
           nextLabel="Continue"
           submitLabel={
             existing?.status === 'needs_correction'
-              ? 'Resubmit application'
-              : 'Submit partner application'
+              ? 'Resubmit verification'
+              : 'Submit identity verification'
           }
           busy={busy}
           busyLabel="Submitting…"
