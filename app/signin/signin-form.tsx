@@ -92,12 +92,12 @@ export default function SignInForm() {
       return;
     }
     const [{ data: profile }, { data: membership }] = await Promise.all([
-      client.from('profiles').select('role').eq('id', userId).maybeSingle(),
+      client.from('profiles').select('role,account_status').eq('id', userId).maybeSingle(),
       client.from('partner_network_memberships').select('status').eq('user_id', userId).maybeSingle(),
     ]);
     const effectiveRole =
       profile?.role === 'admin' ? 'admin' :
-      profile?.role === 'partner' || membership?.status === 'active' ? 'partner' :
+      profile?.role === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' :
       profile?.role || 'guest';
     const target = resolveNextAppPostSignInRedirect(
       effectiveRole,
