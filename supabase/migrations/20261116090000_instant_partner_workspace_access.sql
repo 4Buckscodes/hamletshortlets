@@ -48,11 +48,6 @@ as $$
         from public.partner_network_memberships m
         where m.user_id = (select auth.uid())
           and m.status = 'active'
-          and m.primary_role in (
-            'property_owner',
-            'authorised_manager',
-            'multi_property_operator'
-          )
       )
     );
 $$;
