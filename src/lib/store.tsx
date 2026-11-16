@@ -3268,7 +3268,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           inventoryRoles.includes(String(membership?.primary_role));
         const legacyPartnerCanList =
           s.role === 'partner' &&
-          (!s.partnerRole || legacyInventoryRoles.includes(String(s.partnerRole).toLowerCase()));
+          legacyInventoryRoles.includes(String(s.partnerRole || '').toLowerCase());
         const maySubmit =
           s.role === 'admin' || activeInventoryMember || legacyPartnerCanList;
         if (!maySubmit) {
