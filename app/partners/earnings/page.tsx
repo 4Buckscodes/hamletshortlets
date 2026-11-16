@@ -51,13 +51,13 @@ export default function PartnerEarningsPage() {
     }
 
     const [{ data: profile }, { data: membership }] = await Promise.all([
-      db.from('profiles').select('role,referral_code').eq('id', user.id).maybeSingle(),
+      db.from('profiles').select('role,referral_code,account_status').eq('id', user.id).maybeSingle(),
       db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
     ]);
 
     const profileRole = String(profile?.role || 'guest');
     const userRole = profileRole === 'admin' ? 'admin' :
-      profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
+      profileRole === 'partner' || (membership?.status === 'active' && profile?.account_status !== 'suspended') ? 'partner' : 'guest';
     setRole(userRole);
     // Ensure referral code exists for active partners
     let activeCode = String(profile?.referral_code || '');
