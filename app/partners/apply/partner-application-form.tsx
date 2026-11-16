@@ -225,7 +225,6 @@ export default function PartnerApplicationForm() {
       ]);
 
     setRoleState(String(profile?.role || 'guest'));
-    setMembershipRoleLocked(networkMembership?.status === 'active');
     const savedReferralCode = String(profile?.referred_by_code || '').trim().toUpperCase();
     if (savedReferralCode) {
       setLockedReferralCode(savedReferralCode);
