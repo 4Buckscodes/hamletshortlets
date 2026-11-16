@@ -185,7 +185,7 @@ begin
     raise exception 'Join the active HAMLET partner network to access a referral code.';
   end if;
 
-  if prof.referral_code is not null then
+  if nullif(btrim(coalesce(prof.referral_code, '')), '') is not null then
     return prof.referral_code;
   end if;
 
@@ -575,7 +575,7 @@ begin
     raise exception 'Your account is not active.';
   end if;
 
-  if next_role not in (
+  if next_role is null or next_role not in (
     'property_owner',
     'authorised_manager',
     'multi_property_operator',
@@ -683,7 +683,7 @@ begin
           when 'multi_property_operator' then 'Multi-property operator'
           when 'closing_agent' then 'Closing agent'
         end,
-        referral_code = coalesce(referral_code, public.generate_unique_referral_code(full_name)),
+        referral_code = coalesce(nullif(btrim(referral_code), ''), public.generate_unique_referral_code(coalesce(full_name, 'HAMLET Partner'))),
         referred_by_code = coalesce(referred_by_code, resolved_referral_code),
         referred_by_partner_id = coalesce(referred_by_partner_id, referrer_row.id)
     where id = actor;
@@ -745,6 +745,8 @@ with latest_applications as (
       'Closing agent',
       'Closing Agent'
     )
+    and char_length(btrim(coalesce(a.company, ''))) between 2 and 160
+    and char_length(regexp_replace(coalesce(a.phone, ''), '[^0-9]', '', 'g')) between 7 and 15
   order by a.applicant_id, a.submitted_at desc
 )
 insert into public.partner_network_memberships (
@@ -1152,6 +1154,36 @@ begin
   return new;
 end;
 $$;
+
+-- Account suspension controls also cover guest-role profiles that hold an active
+-- partner-network membership; the profile role remains guest by design.
+do $
+declare
+  function_signature regprocedure := 'public.set_partner_account_status(uuid,text,text,boolean)'::regprocedure;
+  function_definition text;
+  updated_definition text;
+begin
+  function_definition := pg_get_functiondef(function_signature);
+  updated_definition := replace(
+    function_definition,
+    $old$if not found or partner_record.role <> 'partner' then$old$,
+    $new$if not found or (
+    partner_record.role <> 'partner'
+    and not exists (
+      select 1
+      from public.partner_network_memberships m
+      where m.user_id = target_partner_id
+    )
+  ) then$new$
+  );
+
+  if updated_definition = function_definition then
+    raise exception 'Could not find the expected partner-account target check in %.', function_signature;
+  end if;
+
+  execute updated_definition;
+end;
+$;
 
 -- Resubmission uses the same inventory-authority rule as first submission.
 do $$
