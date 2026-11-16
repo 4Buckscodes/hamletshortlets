@@ -140,7 +140,7 @@ export default function PartnerStartDashboard() {
       if (e2.code === 'PGRST202' || /schema cache/i.test(e2.message)) {
         setSchemaUnavailable(true);
         setError(
-          'Instant partner-network registration is temporarily refreshing. Please try again in a moment, or continue directly to the full partner application.',
+          'Partner registration is temporarily unavailable. Please refresh and try again; your workspace will open as soon as registration completes.',
         );
       } else {
         setError(e2.message);
@@ -168,7 +168,7 @@ export default function PartnerStartDashboard() {
           {loading ? 'Preparing your workspace' : `Welcome, ${first}.`}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Join immediately and use the same account to close eligible bookings and introduce partners.
+          Create your partner profile and enter your workspace immediately. Upload properties, share approved stays, track earnings and invite other partners without waiting for manual account approval.
         </p>
         <p className="mt-2.5 max-w-2xl text-xs leading-relaxed text-ink-500">
           {APPROVED_OWNER_SERVICES_POLICY_COPY}
@@ -181,14 +181,7 @@ export default function PartnerStartDashboard() {
           >
             <p className="m-0">{error}</p>
             {schemaUnavailable && (
-              <div className="mt-3">
-                <Link
-                  href="/partners/apply/form"
-                  className="secondary-button min-h-[42px] text-xs"
-                >
-                  Continue to full partner application <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+              
             )}
           </div>
         )}
@@ -245,8 +238,8 @@ export default function PartnerStartDashboard() {
                   Registered as {roleLabel} · {membership.company}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <Link href="/partners/apply/form" className="primary-button">
-                    Continue property / authority checks{' '}
+                  <Link href="/partners" className="primary-button">
+                    Open your partner workspace{' '}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link href="/stays" className="secondary-button">
