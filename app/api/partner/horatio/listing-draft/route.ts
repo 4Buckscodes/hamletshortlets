@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     inventoryRoles.includes(String(membership?.primary_role));
   if (profileError || profile?.account_status === 'suspended' ||
       (profile?.role !== 'admin' && !activeInventoryMember)) {
-    return NextResponse.json({ error: 'Join as a property owner, authorised manager or multi-property operator to use Horatio.' }, { status: 403 });
+    return NextResponse.json({ error: 'Join the HAMLET partner network to use Horatio.' }, { status: 403 });
   }
 
   let body: { description?: unknown };
