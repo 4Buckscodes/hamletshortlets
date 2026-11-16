@@ -8,7 +8,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -37,7 +37,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select
     (select auth.uid()) is not null
     and public.is_account_active()
@@ -66,7 +66,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 declare
   prop_status text;
   prop_allow_sharing boolean;
@@ -138,7 +138,7 @@ returns text
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor_id uuid := (select auth.uid());
   prof public.profiles%rowtype;
@@ -184,7 +184,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 declare
   clean_code text := upper(regexp_replace(btrim(coalesce(code_input, '')), '[^A-Za-z0-9-]', '', 'g'));
   partner_row public.profiles%rowtype;
@@ -229,7 +229,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   normalized_email text := lower(btrim(coalesce(new.email, '')));
   is_preauthorized_admin boolean := false;
@@ -340,7 +340,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor_id uuid := (select auth.uid());
   clean_code text := upper(regexp_replace(btrim(coalesce(code_input, '')), '[^A-Za-z0-9-]', '', 'g'));
@@ -441,7 +441,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   clean_code text := upper(regexp_replace(btrim(coalesce(new.referred_by_code, '')), '[^A-Za-z0-9-]', '', 'g'));
   referrer_row public.profiles%rowtype;
@@ -541,7 +541,7 @@ returns public.partner_network_memberships
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor uuid := (select auth.uid());
   actor_profile public.profiles%rowtype;
@@ -886,7 +886,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   generated_code text;
 begin
@@ -965,7 +965,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor_id uuid := (select auth.uid());
   actor_role text;
@@ -1109,7 +1109,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   actor_id uuid := (select auth.uid());
   entry_row public.booking_payment_records%rowtype;
@@ -1210,7 +1210,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   event_name text;
   event_title text;
