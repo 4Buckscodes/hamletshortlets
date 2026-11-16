@@ -73,13 +73,14 @@ export default function PartnerMarketingAnalyticsPage() {
         return;
       }
 
-      const { data: profile } = await db
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
+      const [{ data: profile }, { data: membership }] = await Promise.all([
+        db.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
+      ]);
 
-      const userRole = String(profile?.role || 'guest');
+      const profileRole = String(profile?.role || 'guest');
+      const userRole = profileRole === 'admin' ? 'admin' :
+        profileRole === 'partner' || membership?.status === 'active' ? 'partner' : 'guest';
       setRole(userRole);
       if (userRole !== 'partner' && userRole !== 'admin') {
         setLoading(false);
@@ -166,11 +167,11 @@ export default function PartnerMarketingAnalyticsPage() {
         {role !== 'partner' && role !== 'admin' && !loading ? (
           <section className="mt-8 max-w-2xl rounded-3xl border border-ink-200 bg-white p-7">
             <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-              Partner approval required
+              Partner workspace access
             </h2>
             <div className="mt-4">
               <Link href="/partners/apply" className="primary-button">
-                Join Partner Network →
+                Join partner network →
               </Link>
             </div>
           </section>
