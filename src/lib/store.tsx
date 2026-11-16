@@ -824,6 +824,14 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     .eq('id', user.id)
     .single();
   if (profileError) throw new Error(`Could not load your profile: ${profileError.message}`);
+  const { data: partnerMembership } = await supabase
+    .from('partner_network_memberships')
+    .select('primary_role,status')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  const isPartnerMember =
+    partnerMembership?.status === 'active' &&
+    (profile.account_status as string | undefined) !== 'suspended';
 
   const session: Session = {
     userId: user.id,
@@ -832,6 +840,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     email: user.email ?? '',
     phone: (profile.phone as string | undefined) || (user.user_metadata.phone as string | undefined) || undefined,
     partnerRole: profile.partner_role ?? undefined,
+    isPartnerMember,
     company: profile.company ?? undefined,
     referralCode: (profile.referral_code as string | undefined) ?? undefined,
     accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
@@ -994,7 +1003,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       created_at: string;
     }>;
   } = {};
-  if (session.role === 'partner') {
+  if (session.role === 'partner' || session.isPartnerMember) {
     try {
       const { data: summaryData } = await supabase.rpc('get_my_partner_attribution_summary');
       if (summaryData && typeof summaryData === 'object') {
