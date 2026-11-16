@@ -336,17 +336,15 @@ begin
       raise exception 'Choose a valid HAMLET partner role.';
     end if;
 
-    if char_length(partner_signup_company) < 2
-      or char_length(submitted_phone) not between 7 and 15 then
-      raise exception 'A valid partner display name and phone number are required.';
-    end if;
-
+    -- Keep account creation frictionless: role defaults to property_owner,
+    -- display name defaults to HAMLET Partner, and contact details are collected
+    -- later in the workspace when the partner is ready to submit a listing.
     insert into public.partner_network_memberships (
       user_id, primary_role, company, phone, status
     )
     values (
       new.id, partner_signup_role, partner_signup_company,
-      btrim(coalesce(new.raw_user_meta_data ->> 'phone', '')), 'active'
+      nullif(btrim(coalesce(new.raw_user_meta_data ->> 'phone', '')), ''), 'active'
     )
     on conflict (user_id) do nothing;
   end if;
