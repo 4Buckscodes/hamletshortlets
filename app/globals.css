@@ -558,24 +558,44 @@ main :where(p,li) { text-wrap: pretty; }
 }
 
 
-/* Brand harmonisation: no competing accent colours; all routes use the
-   original navy / champagne / ivory identity while retaining the V0 layout. */
+/* HAMLET brand expression — recognisable anchors, expressive supporting colours.
+   Navy + champagne remain the signature; complementary hues add warmth and energy. */
 :root {
-  --home-ink: var(--navy);
-  --home-paper: var(--paper);
-  --home-lime: var(--gold);
-  --home-coral: var(--gold);
-  --home-blue: var(--navy);
+  --hamlet-navy:#0b1f33; --hamlet-gold:#c9a45f; --hamlet-ivory:#f7f4ec;
+  --hamlet-jade:#28745e; --hamlet-cobalt:#3659c9; --hamlet-terracotta:#c96d4d;
+  --hamlet-blush:#f0ddd5; --hamlet-lavender:#e6e2f2;
+  --home-ink:var(--hamlet-navy); --home-paper:var(--hamlet-ivory);
+  --home-lime:var(--hamlet-gold); --home-coral:var(--hamlet-terracotta);
+  --home-blue:var(--hamlet-cobalt);
 }
-.home-header,.home-hero { background: var(--navy); }
-.home-search { background: #e8dfce; }
-.home-search-button { background: var(--navy); }
-.home-search-button:hover { background: var(--navy-deep); }
-.home-mark { border-color: var(--gold); color: var(--gold); }
-.home-period,.home-hero h1 em { color: var(--gold); }
-.home-kicker-dot { background: var(--gold); box-shadow: 0 0 0 5px rgba(201,164,95,.16); }
-.home-scroll { border-color: rgba(201,164,95,.72); color: var(--gold); }
-.home-stamp { background: var(--gold); color: var(--navy); }
-.home-search-field>span svg { color: var(--gold); }
-.home-image-index b,.home-hero-bottom span:last-child { color: var(--gold); }
-:where(button,a):focus-visible { outline-color: var(--gold); }
+.home-header,.home-hero { background:var(--hamlet-navy); }
+.home-search { background:#dce9df; }
+.home-search-button { background:var(--hamlet-cobalt); }
+.home-search-button:hover { background:#2847aa; }
+.home-mark { border-color:var(--hamlet-gold); color:var(--hamlet-gold); }
+.home-period { color:var(--hamlet-terracotta); }
+.home-hero h1 em { color:var(--hamlet-gold); }
+.home-kicker-dot { background:var(--hamlet-terracotta); box-shadow:0 0 0 5px rgba(201,109,77,.17); }
+.home-scroll { border-color:rgba(201,164,95,.75); color:var(--hamlet-gold); }
+.home-stamp { background:var(--hamlet-gold); color:var(--hamlet-navy); }
+.home-search-field>span svg { color:var(--hamlet-jade); }
+.home-image-index b,.home-hero-bottom span:last-child { color:var(--hamlet-gold); }
+
+/* Expressive section accents: varied, but never all competing at once. */
+.home-destinations,.home-destinations-section { background:var(--hamlet-ivory); }
+.home-feature-section,.home-trust-section { background:#e7eee7; }
+.home-partner-section,.home-host-section { background:var(--hamlet-blush); }
+.home-newsletter,.home-cta-section { background:var(--hamlet-navy); color:var(--hamlet-ivory); }
+.home-testimonial-section { background:var(--hamlet-lavender); }
+.home-section-label { color:var(--hamlet-jade); }
+.home-section-label .accent,.home-accent { color:var(--hamlet-terracotta); }
+.home-feature-card:nth-child(3n + 1) .home-feature-icon { color:var(--hamlet-jade); }
+.home-feature-card:nth-child(3n + 2) .home-feature-icon { color:var(--hamlet-cobalt); }
+.home-feature-card:nth-child(3n) .home-feature-icon { color:var(--hamlet-terracotta); }
+
+/* Shared UI: brand-forward actions, with supporting colours for interaction. */
+.primary-button { background:var(--hamlet-navy); }
+.primary-button:hover { background:#173a58; }
+.secondary-button { border-color:rgba(11,31,51,.2); }
+:where(button,a):focus-visible { outline-color:var(--hamlet-cobalt); }
+:where(input,select,textarea):focus-visible { border-color:var(--hamlet-cobalt) !important; box-shadow:0 0 0 3px rgba(54,89,201,.13); }
