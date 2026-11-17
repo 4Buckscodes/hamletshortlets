@@ -5,12 +5,13 @@ This checklist is the release gate for the Expo Android/iOS application. It is i
 ## Current release posture
 
 - Mobile implementation is on `feat/hamlet-expo-mobile-app` and is proposed through draft PR #94.
-- Latest branch HEAD: `f4c370517294506a1436f2c625dafbc2ff6827b0`.
-- Code-level CI passed on that exact HEAD:
-  - Mobile Checks run #154: Expo dependency validation and TypeScript.
-  - HAMLET CI run #627: lint, unit/PGlite database tests, production build and mobile/desktop Playwright tests.
-  - Referral Release Validation run #435: lint, regression tests, production build, browser journeys and isolated Supabase migration/database tests.
-- The mobile workflow currently runs `npm install`; `apps/mobile/package-lock.json` is not committed. Dependency resolution is therefore not yet independently reproducible with `npm ci`.
+- Latest application/workflow validation commit: `5753647892c80acaff670f57fec6ebac93c8482f`; the current branch may contain later documentation-only commits.
+- All three required code-level workflows passed on that exact validation commit:
+  - HAMLET Mobile Checks run #43981710704: clean `npm ci`, Expo Doctor and TypeScript.
+  - HAMLET CI run #43981710609: lint, unit/PGlite database tests, production build and mobile/desktop Playwright tests.
+  - Referral Release Validation run #43981710630: isolated Supabase migrations/database tests, lint, regression tests, production build and browser journeys.
+- `apps/mobile/package-lock.json` is committed (npm lockfile v3, generated from the actual mobile manifest using Node 22). The mobile workflow uses `npm ci --no-audit --no-fund`.
+- The validation runs are code/CI evidence only; they do not constitute physical-device, staging provider, or store acceptance.
 - Supabase Preview did not run because no Supabase Branch is associated with the PR.
 - No production database migration, production deployment, or production booking/payment test is authorised by this checklist.
 - Physical Android and iOS device testing remains outstanding.
