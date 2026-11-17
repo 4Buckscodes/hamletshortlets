@@ -40,18 +40,19 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
     requestedCheckOut: reqCheckOut,
   });
 
-  const hasVerifiedPillar =
-    p.verification.ownership === 'verified' ||
-    p.verification.identity === 'verified' ||
-    p.verification.authority === 'verified' ||
-    p.verification.inspection === 'verified';
+  const verifiedPillarCount = [
+    p.verification.ownership,
+    p.verification.identity,
+    p.verification.authority,
+    p.verification.inspection,
+  ].filter(status => status === 'verified').length;
 
   const verificationLabel =
-    p.verification.inspection === 'verified'
-      ? 'Verified'
-      : hasVerifiedPillar
-        ? 'Docs reviewed'
-        : null;
+    verifiedPillarCount === 4
+      ? 'Verified by HAMLET'
+      : verifiedPillarCount > 0
+        ? 'Checks recorded'
+        : 'Approved listing';
 
   const corridorLabel = isMainlandProperty(p) ? 'Mainland' : 'Island';
   const hasPowerBackup = p.amenities.includes('24/7 Power') || p.amenities.includes('Generator');
@@ -113,16 +114,12 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
 
         {/* Bottom overlay: Verification + Corridor */}
         <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-1.5">
-          {verificationLabel ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/45 bg-ink-950/80 py-1 pl-2 pr-2.5 text-[10.5px] font-bold text-brass-300 backdrop-blur-md">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/45 bg-ink-950/80 py-1 pl-2 pr-2.5 text-[10.5px] font-bold text-brass-300 backdrop-blur-md">
+            {verifiedPillarCount === 4 && (
               <ShieldCheck size={12} className="shrink-0 text-brass-400" />
-              <span className="truncate">{verificationLabel}</span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/75 px-2.5 py-1 text-[10px] font-semibold text-ink-200 backdrop-blur-md">
-              {p.trustLabel}
-            </span>
-          )}
+            )}
+            <span className="truncate">{verificationLabel}</span>
+          </span>
           <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-900 backdrop-blur-md">
             {p.type}
           </span>
