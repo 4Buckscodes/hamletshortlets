@@ -10,7 +10,7 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {id}=await params;
  const db=getPublicSupabase();
  if(!db)return {title:'Stay details | HAMLET.REST',robots:{index:false,follow:false}};
- const {data}=await db.from('properties').select('title,area,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
+ const {data}=await db.from('properties').select('title,area,city,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
  if(!data)return {title:'Stay unavailable | HAMLET.REST',robots:{index:false,follow:false}};
  const title=`${data.title} in ${data.area||data.city||'Nigeria'} | HAMLET.REST`;
  const description=`Explore ${data.title} in ${data.area||data.city||'Nigeria'} on HAMLET.REST. View stay details, guest capacity and booking request steps before you commit.`;
