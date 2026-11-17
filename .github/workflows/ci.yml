@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - feat/nextjs-mobile-first-rebuild
+      - feat/hamlet-sitewide-quality-and-design
   pull_request:
     branches:
       - main
+      - feat/lagos-hospitality-brand-refresh
 
 permissions:
   contents: read

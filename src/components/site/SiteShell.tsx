@@ -45,6 +45,7 @@ import {
   formatAccommodationLabel,
   formatBedroomCountLabel,
   getStayTrustStatus,
+  getCurrentOrFutureAvailabilityDate,
   getValidPublicGuestNightlyNgn,
 } from '@/lib/discovery';
 import {
@@ -53,6 +54,7 @@ import {
   type PublicStayRecord,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
+import { lagosIsoDateOffset } from '@/lib/pricing';
 
 interface SessionSummary {
   userId: string;
@@ -1160,7 +1162,7 @@ export function StayListingCard({
           <p className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-ink-500">
             <Calendar className="h-3 w-3 shrink-0 text-brass-600" />
             <span>
-              {stay.first_available_date
+              {getCurrentOrFutureAvailabilityDate(stay.first_available_date, lagosIsoDateOffset(0))
                 ? `From ${stay.first_available_date} · Partner confirms dates`
                 : 'Request to book · Partner confirms dates'}
             </span>
