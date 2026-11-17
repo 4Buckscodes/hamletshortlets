@@ -1178,3 +1178,11 @@ main > header nav[aria-label="Admin workspace"] a{min-height:40px!important;bord
  main > header:has(nav[aria-label="Admin workspace"])>div{width:calc(100% - 28px);overflow-x:auto}
  main > header nav[aria-label="Admin workspace"]{flex-wrap:nowrap!important;width:max-content}
 }
+
+.hamlet-global-header{position:sticky;top:0;backdrop-filter:saturate(140%) blur(12px)}
+.hamlet-global-links a,.hamlet-global-actions a,.hamlet-mobile-menu a{min-height:44px;display:inline-flex;align-items:center}
+.hamlet-global-toggle{min-width:44px;min-height:44px;border:1px solid rgba(244,240,230,.24);border-radius:50%;background:transparent;color:#f4f0e6;place-items:center;cursor:pointer}
+.hamlet-global-toggle:hover{border-color:#d9f24b;color:#d9f24b}
+.site-footer-links a{min-height:36px;display:inline-flex;align-items:center}
+.home-search-button{min-height:54px}
+@media(max-width:700px){.hamlet-global-header{position:sticky}.hamlet-mobile-menu a{width:100%}}
