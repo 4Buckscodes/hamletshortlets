@@ -5,18 +5,19 @@ This checklist is the release gate for the Expo Android/iOS application. It is i
 ## Current release posture
 
 - Mobile implementation is on `feat/hamlet-expo-mobile-app` and is proposed through draft PR #94.
-- Latest application/workflow validation commit: `5753647892c80acaff670f57fec6ebac93c8482f`; the current branch may contain later documentation-only commits.
-- All three required code-level workflows passed on that exact validation commit:
-  - HAMLET Mobile Checks run #43981710704: clean `npm ci`, Expo Doctor and TypeScript.
-  - HAMLET CI run #43981710609: lint, unit/PGlite database tests, production build and mobile/desktop Playwright tests.
-  - Referral Release Validation run #43981710630: isolated Supabase migrations/database tests, lint, regression tests, production build and browser journeys.
+- Current validated branch HEAD: `147c5bcfca804d168d47de92c9cdfd9f6e906cf8` on `feat/hamlet-expo-mobile-app`; PR #94 remains open and draft.
+- All three required code-level workflows passed on this exact commit:
+  - HAMLET Mobile Checks run #43998678831: clean lockfile install, Expo dependency validation and TypeScript.
+  - HAMLET CI run #43998678872: clean lockfile install, lint, unit/PGlite database tests, production build and mobile/desktop Playwright journeys.
+  - Referral Release Validation run #43998679024: lint, regression tests, production build, browser journeys and isolated Supabase migrations/database tests.
 - `apps/mobile/package-lock.json` is committed (npm lockfile v3, generated from the actual mobile manifest using Node 22). The mobile workflow uses `npm ci --no-audit --no-fund`.
-- The validation runs are code/CI evidence only; they do not constitute physical-device, staging provider, or store acceptance.
+- Referral Release Validation pins Supabase CLI `3.2.0`; cleanup is guarded so it runs only when CLI setup succeeded.
+- These are code/CI results only. They do not constitute physical-device, staging provider, or store acceptance.
 - Supabase Preview did not run because no Supabase Branch is associated with the PR.
 - No production database migration, production deployment, or production booking/payment test is authorised by this checklist.
 - Physical Android and iOS device testing remains outstanding.
 
-Re-check the branch HEAD and its CI checks before relying on the validation statement above. A later commit requires fresh checks.
+Re-check the branch HEAD and its CI checks before relying on the validation statement above. Any later commit requires fresh checks.
 
 ## 1. Staging environment
 
