@@ -35,15 +35,17 @@ export default function SiteNav() {
   const contextLinks = isAdmin ? adminLinks : isPartner ? partnerLinks : isAccount ? guestLinks : [];
   const links = isAdmin || isPartner || isAccount ? contextLinks : publicLinks;
 
-  // Admin routes render their own complete workspace header and navigation.
-  if (isAdmin) return null;
-
   useEffect(() => {
     if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [open]);
+
+  // Admin routes render their own complete workspace header and navigation.
+  if (isAdmin) return null;
 
   return (
     <header className="hamlet-global-header">
