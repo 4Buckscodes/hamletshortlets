@@ -63,3 +63,10 @@ This appears intentionally service-role-only. The advisor's RLS-without-policy f
 
 ## Release decision
 **Not a security sign-off.** This is a scoped read-only assessment. No database grants, policies, functions, extensions, migrations or production records were changed. Production release should remain gated on the full privileged-function review and end-to-end authorization tests.
+
+### 5. Payment function and commercial integrity
+The payment-confirmation function `confirm_booking_payment_webhook` is restricted to `service_role` (plus database owner), not `anon` or `authenticated`. This is appropriate for a trusted webhook/server-side operation.
+
+Its current implementation records a **20% domestic accommodation markup**, with additional allocations for partner commission, a 2.5% internal payment reserve, referral rewards and other settlement components. This is existing production database logic. It must not be silently changed as part of a security cleanup.
+
+Before checkout is enabled, reconcile this implementation against the final HAMLET commercial decision and the central pricing function. In particular, verify the guest-facing fee, fee payer, provider charge treatment, owner proceeds, agent/referral allocations, caution deposit separation, refunds and ledger totals. A mismatch between the UI quote and webhook settlement calculation would create a material financial integrity risk.
