@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --navy: #172119;
-  --navy-deep: #111a13;
-  --gold: #d9f24b;
-  --paper: #f4f0e6;
-  --muted: #697067;
-  --line: #d8d8cc;
-  --brand-blue: #2e50e8;
-  --brand-blue-strong: #1938c0;
-  --brand-coral: #ff6948;
-  --surface: #fffdf6;
+  /* Original HAMLET identity: midnight navy, warm champagne gold and ivory. */
+  --navy: #0b1f33;
+  --navy-deep: #061525;
+  --gold: #c9a45f;
+  --paper: #f7f4ec;
+  --muted: #6d7278;
+  --line: #e1d9ca;
+  --brand-blue: #0b1f33;
+  --brand-blue-strong: #061525;
+  --brand-coral: #c9a45f;
+  --surface: #fffdf8;
 }
 
 * { box-sizing: border-box; }
@@ -555,3 +556,26 @@ main :where(p,li) { text-wrap: pretty; }
   .home-hero-art { animation: hamlet-rise .85s .08s var(--hamlet-ease) both; }
   @keyframes hamlet-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 }
+
+
+/* Brand harmonisation: no competing accent colours; all routes use the
+   original navy / champagne / ivory identity while retaining the V0 layout. */
+:root {
+  --home-ink: var(--navy);
+  --home-paper: var(--paper);
+  --home-lime: var(--gold);
+  --home-coral: var(--gold);
+  --home-blue: var(--navy);
+}
+.home-header,.home-hero { background: var(--navy); }
+.home-search { background: #e8dfce; }
+.home-search-button { background: var(--navy); }
+.home-search-button:hover { background: var(--navy-deep); }
+.home-mark { border-color: var(--gold); color: var(--gold); }
+.home-period,.home-hero h1 em { color: var(--gold); }
+.home-kicker-dot { background: var(--gold); box-shadow: 0 0 0 5px rgba(201,164,95,.16); }
+.home-scroll { border-color: rgba(201,164,95,.72); color: var(--gold); }
+.home-stamp { background: var(--gold); color: var(--navy); }
+.home-search-field>span svg { color: var(--gold); }
+.home-image-index b,.home-hero-bottom span:last-child { color: var(--gold); }
+:where(button,a):focus-visible { outline-color: var(--gold); }
