@@ -13,6 +13,7 @@ import {
   filterAndSortApprovedStays,
   formatAccommodationLabel,
   getStayTrustStatus,
+  getCurrentOrFutureAvailabilityDate,
   getValidPublicGuestNightlyNgn,
   isApprovedBookableStay,
   isStudioProperty,
@@ -69,7 +70,7 @@ function addDaysIso(isoDate: string, days: number): string {
 
 function formatPillDate(isoDate: string): string {
   if (!isoDate) return '';
-  const parsed = new Date(`${isoDate}T12:00:00Z`);
+  const parsed = new Date(`${currentOrFutureDate}T12:00:00Z`);
   if (!Number.isFinite(parsed.getTime())) return isoDate;
   return parsed.toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -79,7 +80,8 @@ function formatPillDate(isoDate: string): string {
 }
 
 function formatAvailableFromDate(isoDate: string | null | undefined, todayIso: string): string | null {
-  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate) || isoDate < todayIso) return null;
+  const currentOrFutureDate = getCurrentOrFutureAvailabilityDate(isoDate, todayIso);
+  if (!currentOrFutureDate) return null;
   const parsed = new Date(`${isoDate}T12:00:00Z`);
   if (!Number.isFinite(parsed.getTime())) return null;
   return parsed.toLocaleDateString('en-GB', {
