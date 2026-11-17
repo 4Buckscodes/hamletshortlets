@@ -11,6 +11,7 @@ export type PartnerTab =
   | 'availability'
   | 'earnings'
   | 'profile'
+  | 'payout-verification'
   | 'new-property';
 
 const ITEMS: Array<{ id: PartnerTab; label: string; href: string }> = [
@@ -20,7 +21,8 @@ const ITEMS: Array<{ id: PartnerTab; label: string; href: string }> = [
   { id: 'bookings', label: 'Booking requests', href: '/partners/bookings' },
   { id: 'availability', label: 'Calendar', href: '/partners/availability' },
   { id: 'earnings', label: 'Earnings & referrals', href: '/partners/earnings' },
-  { id: 'profile', label: 'Profile & payout', href: '/partners/profile' },
+  { id: 'profile', label: 'Profile', href: '/partners/profile' },
+  { id: 'payout-verification', label: 'Payout verification', href: '/partners/payout-verification' },
 ];
 
 export function PartnerNav({
