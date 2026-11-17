@@ -78,7 +78,7 @@ function formatPillDate(isoDate: string): string {
   });
 }
 
-function formatAvailableFromDate(isoDate: string | null | undefined): string | null {
+function formatAvailableFromDate(isoDate: string | null | undefined, todayIso: string): string | null {
   if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
   const parsed = new Date(`${isoDate}T12:00:00Z`);
   if (!Number.isFinite(parsed.getTime())) return null;
@@ -102,7 +102,7 @@ function formatCompactBedFact(
   return count === 1 ? '1 bed' : `${count} beds`;
 }
 
-function HomepageStayCard({ property }: { property: PublicStayRecord }) {
+function HomepageStayCard({ property, todayIso }: { property: PublicStayRecord; todayIso: string }) {
   const { currency, formatPrice } = useCurrency();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -142,7 +142,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
     cleanAmenities.length - visibleAmenities.length,
   );
 
-  const availableFromLabel = formatAvailableFromDate(property.first_available_date);
+  const availableFromLabel = formatAvailableFromDate(property.first_available_date, todayIso);
   const detailHref = `/stays/${encodeURIComponent(property.id)}`;
 
   const handleTrackScroll = () => {
