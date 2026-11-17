@@ -2,7 +2,6 @@ export const metadata = { title: 'Trust and safety', description: 'How HAMLET ap
 
 export default function SafetyPage() {
   return <main className="shell" style={{ paddingBlock: 28, minHeight: '100svh' }}>
-    <a href="/" style={{ fontWeight: 850, fontSize: 20 }}>HAMLET<span style={{ color: 'var(--gold)' }}>.REST</span></a>
     <section style={{ maxWidth: 760, paddingBlock: 'clamp(38px, 8vw, 84px)' }}>
       <p style={{ color: '#806522', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 800, fontSize: 11 }}>Trust matters</p>
       <h1 className="serif" style={{ fontSize: 'clamp(38px, 7vw, 64px)', lineHeight: 1.05, fontWeight: 500, margin: '12px 0 20px' }}>Clear details. Accountable stays.</h1>
