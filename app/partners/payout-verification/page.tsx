@@ -91,7 +91,7 @@ export default function PartnerPayoutVerificationPage() {
   return <div className="flex min-h-dvh flex-col bg-paper"><SiteHeader/><main className="shell flex-1 py-8 sm:py-12">
     <p className="eyebrow">Partner workspace · payout readiness</p><h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">Payout verification</h1>
     <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">Submit identity evidence, bank beneficiary details and your signed HAMLET partner agreement. These checks do not delay partner registration, guest bookings or property submissions. Payouts remain on hold until all checks pass.</p>
-    <div className="mt-5"><PartnerNav current="overview" hideNewListingAction/></div>
+    <div className="mt-5"><PartnerNav current="payout-verification" hideNewListingAction/></div>
     {statuses && <div className="mt-5 grid gap-3 sm:grid-cols-3">{[['Identity',statuses.identity_status],['Bank beneficiary',statuses.bank_status],['Agreement',statuses.agreement_status]].map(([label,status])=><div key={label} className="rounded-2xl border border-ink-100 bg-white p-4"><p className="text-xs text-ink-500">{label}</p><p className="mt-1 text-sm font-bold capitalize text-ink-900">{status}</p></div>)}</div>}
     {error && <p role="alert" className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
     {notice && <p role="status" className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</p>}
