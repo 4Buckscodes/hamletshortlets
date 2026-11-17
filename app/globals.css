@@ -1124,3 +1124,57 @@ main.auth-page{min-height:calc(100svh - 76px);padding:clamp(28px,6vw,76px) 24px;
  .home-search-field.home-guests{grid-column:1 / -1;height:58px!important;border-top:1px solid rgba(23,33,25,.12);border-right:0!important}
  .home-search-field.home-guests select{max-width:100%}
 }
+
+
+/* HAMLET shared experience layer: one palette and interaction language across routes. */
+:root{
+ --navy:#172119;--navy-deep:#101a14;--gold:#d9f24b;--paper:#f5f0e6;--muted:#687168;
+ --line:#ded8cb;--brand-blue:#3859e8;--brand-blue-strong:#2948d0;--brand-coral:#ff6948;
+ --surface:#fffdf7;--hamlet-forest:#172119;--hamlet-citrus:#d9f24b;--hamlet-coral:#ff6948;--hamlet-blue:#3859e8;
+}
+body{background:var(--paper);color:var(--navy)}
+main:not(.home-page){color:var(--navy)}
+main:not(.home-page) section{scroll-margin-top:92px}
+main:not(.home-page) h1,main:not(.home-page) h2{color:var(--navy);letter-spacing:-.035em}
+main:not(.home-page) p{max-width:78ch}
+main:not(.home-page) input,main:not(.home-page) select,main:not(.home-page) textarea{
+ color:var(--navy);background:#fffdf7;border:1px solid var(--line);border-radius:12px;
+ min-height:46px;padding:10px 13px;transition:border-color .18s,box-shadow .18s;
+}
+main:not(.home-page) input:focus,main:not(.home-page) select:focus,main:not(.home-page) textarea:focus{
+ outline:0;border-color:var(--hamlet-blue);box-shadow:0 0 0 3px rgba(56,89,232,.13)
+}
+main:not(.home-page) button,main:not(.home-page) a{transition:color .18s,background-color .18s,border-color .18s,transform .18s,box-shadow .18s}
+main:not(.home-page) button:active,main:not(.home-page) a.primary-button:active{transform:translateY(1px) scale(.99)}
+.primary-button{background:var(--hamlet-blue);border-radius:999px;color:#fff;box-shadow:0 5px 16px rgba(56,89,232,.14)}
+.primary-button:hover{background:#2948d0;box-shadow:0 8px 22px rgba(56,89,232,.2);transform:translateY(-1px)}
+.secondary-button,.pill{background:var(--surface);border-color:var(--line);color:var(--navy);border-radius:999px}
+.secondary-button:hover,.pill:hover{border-color:var(--hamlet-blue);background:#f0f2ff}
+main:not(.home-page) article,main:not(.home-page) .panel,main:not(.home-page) .dashboard-panel,main:not(.home-page) .stat-card{
+ border-color:var(--line)
+}
+main > header:has(nav[aria-label="Admin workspace"]){
+ background:#172119!important;border:0!important;color:#f4f0e6
+}
+main > header:has(nav[aria-label="Admin workspace"])>div{width:min(1200px,calc(100% - 40px));margin-inline:auto;padding-block:10px}
+main > header:has(nav[aria-label="Admin workspace"])>div>a:first-child{display:none}
+main > header nav[aria-label="Admin workspace"] a{min-height:40px!important;border-radius:999px!important;font-size:12px}
+.hamlet-global-links a[aria-current="page"],.hamlet-mobile-menu a[aria-current="page"]{color:var(--hamlet-citrus);font-weight:800}
+.site-footer-global{background:#172119;color:#f5f0e6}
+.site-footer-legal{color:rgba(245,240,230,.66)}
+.home-search-field select,.home-search-field input{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+.home-search-field select:focus,.home-search-field input:focus{outline:2px solid var(--hamlet-blue);outline-offset:3px}
+.hamlet-reveal{opacity:1;transform:none}
+@media(prefers-reduced-motion:no-preference){
+ .hamlet-motion-ready .hamlet-reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.2,1);transition-delay:var(--reveal-delay,0ms)}
+ .hamlet-motion-ready .hamlet-reveal.is-revealed{opacity:1;transform:translateY(0)}
+}
+@media(max-width:700px){
+ .shell{width:min(100% - 30px,1200px)}
+ main:not(.home-page) section{padding-top:24px}
+ main:not(.home-page) h1{font-size:clamp(32px,9vw,46px)!important;line-height:1.05!important}
+ main:not(.home-page) form{border-radius:18px!important}
+ main:not(.home-page) button,main:not(.home-page) .primary-button,main:not(.home-page) .secondary-button{min-height:46px}
+ main > header:has(nav[aria-label="Admin workspace"])>div{width:calc(100% - 28px);overflow-x:auto}
+ main > header nav[aria-label="Admin workspace"]{flex-wrap:nowrap!important;width:max-content}
+}
