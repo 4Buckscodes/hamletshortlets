@@ -11,13 +11,6 @@ const destinations = [
 export default function HomePage() {
   return (
     <main className="home-page">
-      <header className="home-header">
-        <div className="home-shell home-header-inner">
-          <Link href="/" className="home-wordmark" aria-label="Hamlet Rest home"><span className="home-mark">H</span><span>HAMLET<span className="home-period">.</span>REST</span></Link>
-          <nav className="home-nav" aria-label="Main navigation"><Link href="/stays">Find a stay</Link><Link href="/lagos">Lagos, locally</Link><Link href="/how-it-works">How it works</Link></nav>
-          <div className="home-actions"><Link className="home-host-link" href="/partners/apply">Host with us <ArrowUpRight size={14} /></Link><Link className="home-sign-in" href="/signin">Sign in</Link><Link className="home-menu" href="/stays" aria-label="Explore stays"><Menu size={19} /></Link></div>
-        </div>
-      </header>
 
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-shell home-hero-grid">
