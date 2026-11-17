@@ -9,19 +9,19 @@ import SiteNav from './site-nav';
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
   title: {
-    default: 'HAMLET.REST — Lagos, on your terms.',
+    default: 'HAMLET.REST — Find your place to belong.',
     template: '%s | HAMLET.REST',
   },
   description:
-    'Find a shortlet in Lagos with a little more soul. The right neighbourhood, the right kind of space, all yours.',
+    'Discover shortlet stays across Nigeria, starting in Lagos. Find a space that fits the way you travel.',
   applicationName: 'HAMLET.REST',
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     siteName: 'HAMLET.REST',
     locale: 'en_NG',
-    title: 'HAMLET.REST — Lagos, on your terms.',
-    description: 'Find a shortlet in Lagos with a little more soul.',
+    title: 'HAMLET.REST — Find your place to belong.',
+    description: 'Find a stay that feels right, wherever you are going.',
     url: 'https://www.hamlet.rest/',
   },
   robots: { index: true, follow: true },
