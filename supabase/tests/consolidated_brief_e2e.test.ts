@@ -606,18 +606,27 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
     );
 
     // The new payout gate is independent of the legacy approved partner application.
-    // This fixture represents three separately reviewed checks for the referrer.
+    // Ensure the referral beneficiary has an active partner entitlement and
+    // update the verification row created during profile setup.
     await db.query(
-      `insert into public.partner_payout_verifications (
-         partner_id, identity_status, bank_status, agreement_status,
-         identity_document_path, bank_name, bank_code, beneficiary_name,
-         account_number_last4, bank_verification_reference,
-         signed_agreement_path, agreement_version
-       ) values (
-         $1::uuid, 'verified', 'verified', 'verified',
-         $2, 'Example Bank', '001', 'Kemi Referrer', '5678', 'TEST-BANK-REF',
-         $3, 'v1'
-       )`,
+      `update public.profiles set account_status = 'active' where id = $1::uuid`,
+      [referrerPartnerId],
+    );
+    await db.query(
+      `insert into public.partner_network_memberships (
+         user_id, primary_role, company, phone, status
+       ) values ($1::uuid, 'property_owner', 'Kemi Homes', '+2348012345678', 'active')
+       on conflict (user_id) do update set status = 'active'`,
+      [referrerPartnerId],
+    );
+    await db.query(
+      `update public.partner_payout_verifications
+       set identity_status = 'verified', bank_status = 'verified', agreement_status = 'verified',
+           identity_document_path = $2, bank_name = 'Example Bank', bank_code = '001',
+           beneficiary_name = 'Kemi Referrer', account_number_last4 = '5678',
+           bank_verification_reference = 'TEST-BANK-REF',
+           signed_agreement_path = $3, agreement_version = 'v1'
+       where partner_id = $1::uuid`,
       [referrerPartnerId, `${referrerPartnerId}/identity/id.pdf`, `${referrerPartnerId}/agreement/signed.pdf`],
     );
 
