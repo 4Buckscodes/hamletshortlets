@@ -98,6 +98,7 @@ function HoratioDrawer({
 
   const session = state.session;
   const role = session?.role ?? 'public';
+  const isPartner = role === 'partner' || session?.isPartnerMember === true;
 
   const approvedProperties = useMemo(
     () => state.properties.filter(p => p.status === 'approved'),
@@ -105,13 +106,13 @@ function HoratioDrawer({
   );
 
   const partnerProps = useMemo(
-    () => (role === 'partner' ? myPartnerProperties(state, session?.userId) : []),
-    [role, state, session?.userId],
+    () => (isPartner ? myPartnerProperties(state, session?.userId) : []),
+    [isPartner, state, session?.userId],
   );
 
   const partnerPropIds = useMemo(
-    () => (role === 'partner' ? new Set(propertyIdsOf(state, session?.userId)) : new Set<string>()),
-    [role, state, session?.userId],
+    () => (isPartner ? new Set(propertyIdsOf(state, session?.userId)) : new Set<string>()),
+    [isPartner, state, session?.userId],
   );
 
   const buildAnswer = useCallback(
@@ -147,7 +148,7 @@ function HoratioDrawer({
       }
 
       // 2. Partner workspace queries (strictly scoped to partner's authorised properties)
-      if (role === 'partner' && /(my prop|earning|commission|request|booking|mandate|wayfinder)/.test(q)) {
+      if (isPartner && /(my prop|earning|commission|request|booking|mandate|wayfinder)/.test(q)) {
         const myPendingBookings = state.bookings.filter(
           b => partnerPropIds.has(b.propertyId) && ['requested', 'checking'].includes(b.status),
         );
@@ -295,6 +296,7 @@ function HoratioDrawer({
     },
     [
       role,
+      isPartner,
       session,
       state.properties,
       state.bookings,
@@ -354,7 +356,7 @@ function HoratioDrawer({
           'How do pricing & caution deposits work?',
           'Show approved Lagos Mainland stays',
         ]
-      : role === 'partner'
+      : isPartner
         ? [
             'Summarise my properties & booking requests',
             'Explain partner commissions & listing terms',

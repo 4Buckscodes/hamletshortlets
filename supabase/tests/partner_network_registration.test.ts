@@ -23,7 +23,52 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
     await db.close();
   });
 
-  it('registers an active guest in partner_network_memberships, backfills blank profile company/phone without elevating role, and supports idempotent updates', async () => {
+  it('provisions an active partner membership from partner signup metadata before the first dashboard request', async () => {
+    const partnerId = await createTestUser(db, {
+      email: 'instant-owner@hamlet.test',
+      partnerSignup: {
+        role: 'property_owner',
+      },
+    });
+
+    const result = await db.query<{
+      profile_role: string;
+      membership_role: string;
+      company: string;
+      phone: string | null;
+      status: string;
+    }>(
+      `select p.role as profile_role, m.primary_role as membership_role,
+              m.company, m.phone, m.status
+       from public.profiles p
+       join public.partner_network_memberships m on m.user_id = p.id
+       where p.id = $1`,
+      [partnerId],
+    );
+
+    expect(result.rows[0]).toEqual({
+      profile_role: 'guest',
+      membership_role: 'property_owner',
+      company: 'HAMLET Partner',
+      phone: null,
+      status: 'active',
+    });
+
+    const access = await asUser(db, partnerId, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean }>(
+        `select public.has_role('guest') as guest_access,
+                public.has_role('partner') as partner_access,
+                public.can_submit_partner_property() as can_submit`,
+      ),
+    );
+    expect(access.rows[0]).toEqual({
+      guest_access: true,
+      partner_access: true,
+      can_submit: true,
+    });
+  });
+
+  it('registers an active guest without elevating the account role, supports same-role updates, and prevents self-service role escalation', async () => {
     const guestId = await createTestUser(db, {
       email: 'babsa11@yahoo.com',
       fullName: 'Adams Babatunde',
@@ -64,17 +109,48 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
       phone: '+2348155377898',
     });
 
-    // Updating an existing active membership succeeds and updates partner_network_memberships
+    const access = await asUser(db, guestId, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean; referral_code: string }>(
+        `select
+           public.has_role('guest') as guest_access,
+           public.has_role('partner') as partner_access,
+           public.can_submit_partner_property() as can_submit,
+           (select referral_code from public.profiles where id = $1) as referral_code`,
+        [guestId],
+      ),
+    );
+    expect(access.rows[0]).toMatchObject({
+      guest_access: true,
+      partner_access: true,
+      can_submit: true,
+    });
+    expect(access.rows[0]?.referral_code).toMatch(/^HML-/);
+
+    // Updating an existing active membership with the same role is idempotent.
     const updated = await asUser(db, guestId, tx =>
       tx.query<{ primary_role: string; company: string }>(
         `select primary_role, company from public.join_partner_network($1, $2, $3)`,
-        ['authorised_manager', 'Abundance Abodes Lagos', '+2348155377898'],
+        ['property_owner', 'Abundance Abodes Lagos', '+2348155377898'],
       ),
     );
     expect(updated.rows[0]).toEqual({
-      primary_role: 'authorised_manager',
+      primary_role: 'property_owner',
       company: 'Abundance Abodes Lagos',
     });
+
+    let roleChangeError = '';
+    try {
+      await asUser(db, guestId, tx =>
+        tx.query(`select * from public.join_partner_network($1, $2, $3)`, [
+          'authorised_manager',
+          'Abundance Abodes Lagos',
+          '+2348155377898',
+        ]),
+      );
+    } catch (error) {
+      roleChangeError = String(error);
+    }
+    expect(roleChangeError).toContain('primary partner role is already set');
   });
 
   it('returns varchar(255) auth.users.email cleanly in list_partner_network_members() and enforces RLS + suspension rules', async () => {
@@ -101,13 +177,63 @@ describe('Immediate Partner Network Registration & Admin Moderation RPCs', () =>
         '+2348011112222',
       ]),
     );
+    const memberAReferral = await db.query<{ referral_code: string }>(
+      `select referral_code from public.profiles where id = $1`,
+      [memberA],
+    );
+    const memberACode = memberAReferral.rows[0]?.referral_code;
+    expect(memberACode).toMatch(/^HML-/);
+
     await asUser(db, memberB, tx =>
-      tx.query(`select * from public.join_partner_network($1, $2, $3)`, [
+      tx.query(`select * from public.join_partner_network($1, $2, $3, $4)`, [
         'closing_agent',
         'Mainland Stays Advisory',
         '+2348033334444',
+        memberACode,
       ]),
     );
+
+    const closingAgentAccess = await asUser(db, memberB, tx =>
+      tx.query<{ guest_access: boolean; partner_access: boolean; can_submit: boolean }>(
+        `select
+           public.has_role('guest') as guest_access,
+           public.has_role('partner') as partner_access,
+           public.can_submit_partner_property() as can_submit`,
+      ),
+    );
+    expect(closingAgentAccess.rows[0]).toEqual({
+      guest_access: true,
+      partner_access: true,
+      can_submit: true,
+    });
+
+    const referralAttribution = await db.query<{ referrer_partner_id: string }>(
+      `select referrer_partner_id from public.partner_referrals where referred_partner_id = $1`,
+      [memberB],
+    );
+    expect(referralAttribution.rows[0]?.referrer_partner_id).toBe(memberA);
+
+    const attributionSummary = await asUser(db, memberA, tx =>
+      tx.query<{ summary: { referred_partners: Array<{ referred_partner_id: string; status: string }> } }>(
+        `select public.get_my_partner_attribution_summary() as summary`,
+      ),
+    );
+    expect(attributionSummary.rows[0]?.summary.referred_partners).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ referred_partner_id: memberB, status: 'registered' }),
+      ]),
+    );
+
+    const publicCodeLookup = await asAnon(db, tx =>
+      tx.query<{ resolved: { valid: boolean; partner_id: string } }>(
+        `select public.resolve_referral_code($1) as resolved`,
+        [memberACode],
+      ),
+    );
+    expect(publicCodeLookup.rows[0]?.resolved).toMatchObject({
+      valid: true,
+      partner_id: memberA,
+    });
 
     // RLS: Member A sees only their own row; anon cannot query or execute RPCs
     const memberASelect = await asUser(db, memberA, tx =>

@@ -9,18 +9,18 @@ import {
 import PartnerApplicationForm from '../partner-application-form';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Partner Application — HAMLET.REST',
+  title: 'Payout Identity Verification — HAMLET.REST',
   description:
-    'Complete the HAMLET partner application for property owners, authorised managers, operators, and closing agents in Lagos.',
+    'Complete identity verification for HAMLET partner payouts. Your partner workspace remains active while verification is reviewed.',
   pathname: '/partners/apply/form',
 });
 
 const PARTNER_APPLICATION_FORM_SCHEMA = buildInformationalPageSchema({
-  title: 'Partner Application — HAMLET',
+  title: 'Payout Identity Verification — HAMLET',
   description:
-    'Complete the HAMLET partner application for property owners, authorised managers, operators, and closing agents in Lagos.',
+    'Complete identity verification for HAMLET partner payouts. Your partner workspace remains active while verification is reviewed.',
   pathname: '/partners/apply/form',
-  breadcrumbName: 'Partner Application Form',
+  breadcrumbName: 'Payout Verification',
   parentBreadcrumbs: [{ name: 'Partner with HAMLET', path: '/partners/apply' }],
 });
 

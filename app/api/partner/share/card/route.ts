@@ -71,11 +71,16 @@ export async function GET(request: Request) {
     const includeQr = searchParams.get('includeQr') !== '0';
     const download = searchParams.get('download') === '1';
 
-    const [profileRes, stayRes, linkRes] = await Promise.all([
+    const [profileRes, membershipRes, stayRes, linkRes] = await Promise.all([
       db
         .from('profiles')
         .select('role,account_status,full_name,company')
         .eq('id', authData.user.id)
+        .maybeSingle(),
+      db
+        .from('partner_network_memberships')
+        .select('status')
+        .eq('user_id', authData.user.id)
         .maybeSingle(),
       db
         .from('properties')
@@ -99,11 +104,13 @@ export async function GET(request: Request) {
 
     if (
       !profileRes.data ||
-      !['partner', 'admin'].includes(String(profileRes.data.role)) ||
+      (profileRes.data.role !== 'partner' &&
+        profileRes.data.role !== 'admin' &&
+        membershipRes.data?.status !== 'active') ||
       (profileRes.data.account_status && profileRes.data.account_status !== 'active')
     ) {
       return NextResponse.json(
-        { error: 'Approved active partner access is required.' },
+        { error: 'An active HAMLET partner-network membership is required.' },
         { status: 403 },
       );
     }

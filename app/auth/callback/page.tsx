@@ -20,6 +20,9 @@ const REFERRAL_STORAGE_KEY = 'hamlet:referral-code';
 interface StoredOAuthContext {
   intent?: 'signin' | 'signup';
   next?: string | null;
+  partnerRole?: string;
+  partnerCompany?: string;
+  partnerPhone?: string;
 }
 
 interface CallbackProfileRow {
@@ -28,6 +31,7 @@ interface CallbackProfileRow {
   phone: string | null;
   company: string | null;
   role: string | null;
+  account_status?: string | null;
   referred_by_code?: string | null;
 }
 
@@ -141,13 +145,49 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
-        const { data: profileData } = await client
-          .from('profiles')
-          .select('id,full_name,phone,company,role')
-          .eq('id', user.id)
-          .maybeSingle();
+        const isPartnerSignup = intentParam === 'signup' && Boolean(requestedNext?.startsWith('/partners'));
+        if (isPartnerSignup && stored.partnerRole && stored.partnerPhone) {
+          const googleName = extractOAuthDisplayName(
+            user.user_metadata as Record<string, unknown> | undefined,
+            user.email,
+          );
+          const { error: profileUpdateError } = await client.rpc('update_own_profile', {
+            next_full_name: googleName,
+            next_phone: stored.partnerPhone,
+            next_company: stored.partnerCompany || googleName,
+          });
+          if (profileUpdateError) throw profileUpdateError;
+
+          const { error: membershipError } = await client.rpc('join_partner_network', {
+            next_role: stored.partnerRole,
+            next_company: stored.partnerCompany || googleName,
+            next_phone: stored.partnerPhone,
+            referral_code_input: window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null,
+          });
+          if (membershipError) throw membershipError;
+        }
+
+        const [{ data: profileData }, { data: membershipData }] = await Promise.all([
+          client
+            .from('profiles')
+            .select('id,full_name,phone,company,role,account_status')
+            .eq('id', user.id)
+            .maybeSingle(),
+          client
+            .from('partner_network_memberships')
+            .select('status')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
 
         const profile = (profileData as CallbackProfileRow | null) ?? null;
+        const effectiveRole =
+          profile?.role === 'admin'
+            ? 'admin'
+            : (profile?.role === 'partner' || membershipData?.status === 'active') &&
+                profile?.account_status !== 'suspended'
+              ? 'partner'
+              : profile?.role || 'guest';
 
         // Backfill display name from Google metadata when the profile row has an empty name
         const existingName = (profile?.full_name || '').trim();
@@ -176,7 +216,7 @@ export default function AuthCallbackPage() {
           Number.isFinite(createdAtMs) && Date.now() - createdAtMs < 2 * 60 * 1000;
 
         const destination = resolveOAuthPostAuthRedirect({
-          role: profile?.role,
+          role: effectiveRole,
           intent: intentParam,
           next: requestedNext,
           isNewlyCreatedAccount,

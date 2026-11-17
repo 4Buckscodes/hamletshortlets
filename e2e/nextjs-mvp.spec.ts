@@ -181,21 +181,22 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByText(/Page not found\./i)).toBeVisible();
   });
 
-  test('walks progressive 2-step guest sign-up on /signin and preserves ?next= intent', async ({
+  test('uses streamlined email-and-password guest sign-up and preserves ?next= intent', async ({
     page,
   }) => {
     await page.goto(
       '/signin?mode=signup&next=%2Fstays%2Fsample-id%3FcheckIn%3D2026-12-01%26checkOut%3D2026-12-04%26guests%3D2%26step%3D2',
     );
-    await expect(page.getByText(/Step 1 of 2/i).first()).toBeVisible();
-    await page.getByLabel(/Email address/i).fill('guest@example.com');
-    await page.getByLabel('Password', { exact: true }).fill('ValidPass123!');
-    await page.getByRole('button', { name: /Continue/i }).click();
-    await expect(page.getByText(/Step 2 of 2/i).first()).toBeVisible();
-    await expect(page.getByLabel(/Full name/i)).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Create account' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByLabel(/Email address/i)).toBeVisible();
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Create my account/i })).toBeVisible();
+    await expect(page.getByLabel(/Full name/i)).toHaveCount(0);
+    await expect(page.getByLabel(/Phone/i)).toHaveCount(0);
+    await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
   });
 
-  test('locks referral code on guest sign-up when arriving from a referral link', async ({
+  test('captures referral code from a referral link without adding a manual signup field', async ({
     page,
   }) => {
     await page.goto('/?ref=HML-LOCK123');
@@ -203,12 +204,13 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       .poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code')))
       .toBe('HML-LOCK123');
     await page.goto('/signin?mode=signup');
-    await page.getByLabel(/Email address/i).fill('guest@example.com');
-    await page.getByLabel('Password', { exact: true }).fill('ValidPass123!');
-    await page.getByRole('button', { name: /Continue/i }).click();
-    const referralCode = page.getByLabel('Referral code');
-    await expect(referralCode).toHaveValue('HML-LOCK123');
-    await expect(referralCode).toHaveAttribute('readonly', '');
+    await expect(page.getByLabel(/Email address/i)).toBeVisible();
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Create my account/i })).toBeVisible();
+    await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code')))
+      .toBe('HML-LOCK123');
   });
 
   test('redirects legacy #/ hash deep links cleanly to Next.js App Router paths during cutover', async ({

@@ -62,14 +62,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          version: latest
+          node-version: 22
+          cache: npm
+      - name: Install dependencies from lockfile
+        run: npm ci
       - name: Start disposable Supabase stack
-        run: supabase start
+        run: npx supabase start
       - name: Apply migrations and run database tests
-        run: supabase test db
+        run: npx supabase test db
       - name: Stop disposable Supabase stack
         if: always()
-        run: supabase stop --no-backup
+        run: npx supabase stop --no-backup

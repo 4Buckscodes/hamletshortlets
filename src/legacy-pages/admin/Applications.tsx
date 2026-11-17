@@ -20,7 +20,8 @@ export default function AdminApplications() {
   const [govSaving, setGovSaving] = useState(false);
 
   const list = state.applications.filter(a => tab === 'all' || a.status === tab);
-  const partnerAccounts = state.accounts.filter(a => a.role === 'partner');
+  const verifiedApplicantIds = new Set(state.applications.filter(a => a.status === 'approved').map(a => a.applicantId));
+  const partnerAccounts = state.accounts.filter(a => a.role === 'partner' || verifiedApplicantIds.has(a.id));
 
   const review = async () => {
     if (!noteFor) return;
@@ -29,11 +30,11 @@ export default function AdminApplications() {
     try {
       if (noteFor.action === 'approve') await approvePartner(noteFor.id, note.trim());
       else await reviewApplication(noteFor.id, noteFor.action === 'needs_correction' ? 'needs_correction' : 'rejected', note.trim());
-      toast(noteFor.action === 'approve' ? 'Application approved — applicant role updated to partner.' : noteFor.action === 'reject' ? 'Application rejected and logged.' : 'Correction requested and logged.', 'info');
+      toast(noteFor.action === 'approve' ? 'Identity verified — payout eligibility unlocked. Workspace access was already active.' : noteFor.action === 'reject' ? 'Identity verification declined and logged.' : 'Correction requested and logged.', 'info');
       setNoteFor(null);
       setNote('');
     } catch (error) {
-      toast(error instanceof Error ? error.message : 'Could not save application decision.', 'error');
+      toast(error instanceof Error ? error.message : 'Could not save identity-verification decision.', 'error');
     } finally {
       setSaving(false);
     }
@@ -78,8 +79,8 @@ export default function AdminApplications() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner network</p>
-      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner applications & governance</h1>
-      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Approval changes the applicant’s existing account to the partner role — never admin access. Approved partners can be suspended or reinstated below when justified, with documented audit trails.</p>
+      <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner identity verification</h1>
+      <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Partner registration and workspace access are automatic. This queue is only for identity verification before payout; verification does not change the account’s guest role or restrict workspace access.</p>
 
       <div className="mt-5 flex flex-wrap gap-1.5">
         {(['pending', 'needs_correction', 'approved', 'rejected', 'all'] as const).map(t => {
@@ -93,7 +94,7 @@ export default function AdminApplications() {
           <article key={a.id} className="flex flex-col rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <span className={`chip border ${statusCls[a.status]} capitalize`}>{a.status.replace('_', ' ')}</span>
+                <span className={`chip border ${statusCls[a.status]} capitalize`}>{(a.status === 'approved' ? 'verified' : a.status.replace('_', ' '))}</span>
                 <h2 className="mt-2 break-words font-display text-lg font-bold text-ink-50">{a.name}</h2>
                 <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-brass-300"><Building2 size={12} className="shrink-0" /><span className="min-w-0 break-words">{a.company} · {a.role}</span></p>
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] font-medium text-ink-400">
@@ -111,14 +112,14 @@ export default function AdminApplications() {
             {a.reviewNote && <p className="mt-3 break-words rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold uppercase text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
             {(a.status === 'pending' || a.status === 'needs_correction') && (
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-4 [&>button>svg]:shrink-0">
-                <button onClick={() => { setNoteFor({ id: a.id, action: 'approve' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Approve partner</button>
+                <button onClick={() => { setNoteFor({ id: a.id, action: 'approve' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Verify identity</button>
                 <button onClick={() => { setNoteFor(noteFor?.id === a.id ? null : { id: a.id, action: 'needs_correction' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-amber-700 bg-amber-950/40 px-4 py-2.5 text-[11.5px] font-bold text-amber-300 hover:bg-amber-950"><FileWarning size={14} /> Request correction</button>
                 <button onClick={() => { setNoteFor({ id: a.id, action: 'reject' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl border border-red-800 px-4 py-2.5 text-[11.5px] font-bold text-red-300 hover:bg-red-950"><XCircle size={14} /> Reject</button>
               </div>
             )}
             {noteFor?.id === a.id && (
               <div className="mt-3 rounded-xl border border-amber-800/50 bg-amber-950/10 p-3">
-                <p className="mb-2 text-[11px] font-semibold text-ink-300">{noteFor.action === 'approve' ? 'Approval note' : noteFor.action === 'reject' ? 'Reason for rejection' : 'What must they provide?'}</p>
+                <p className="mb-2 text-[11px] font-semibold text-ink-300">{noteFor.action === 'approve' ? 'Verification note' : noteFor.action === 'reject' ? 'Reason verification was declined' : 'What must they provide?'}</p>
                 <textarea autoFocus className="input-dark min-h-[64px] !text-[12px]" placeholder="Document the decision (min 10 characters)" value={note} onChange={e => setNote(e.target.value)} />
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button onClick={() => void review()} disabled={saving} className="rounded-xl bg-amber-600 px-3.5 py-2 text-[11px] font-bold text-ink-950 hover:bg-amber-500 disabled:opacity-50">{saving ? 'Saving…' : `Confirm ${noteFor.action === 'needs_correction' ? 'correction request' : noteFor.action}`}</button>
@@ -136,7 +137,7 @@ export default function AdminApplications() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400"><ShieldAlert size={13} className="shrink-0" /> Partner account governance</p>
-            <h2 className="mt-1 font-display text-xl font-black text-ink-50">Approved partner directory ({partnerAccounts.length})</h2>
+            <h2 className="mt-1 font-display text-xl font-black text-ink-50">Verified partner directory ({partnerAccounts.length})</h2>
             <p className="mt-0.5 text-[11.5px] font-medium text-ink-400">Suspend partners immediately for misrepresentation, safety violations, or off-platform payment solicitation. Every suspension or reinstatement is audit-logged.</p>
           </div>
         </div>
@@ -196,7 +197,7 @@ export default function AdminApplications() {
                 );
               })}
               {partnerAccounts.length === 0 && (
-                <tr><td colSpan={5} className="td py-10 text-center text-ink-500">No approved partner accounts yet.</td></tr>
+                <tr><td colSpan={5} className="td py-10 text-center text-ink-500">No verified partner accounts yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -240,7 +241,7 @@ export default function AdminApplications() {
         )}
       </section>
 
-      <p className="mt-6 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><KeyRound size={12} className="mt-0.5 shrink-0" />Approved applicants keep their existing sign-in and receive partner-role access only. Admin access is provisioned separately — never through this screen.</p>
+      <p className="mt-6 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-500"><KeyRound size={12} className="mt-0.5 shrink-0" />Verification unlocks payout eligibility only. Active network membership grants partner workspace access, while the same account can continue booking as a guest. Admin access is provisioned separately.</p>
     </div>
   );
 }

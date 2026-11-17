@@ -22,6 +22,7 @@ export default function GuestAccountOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
+  const [partnerMembershipActive, setPartnerMembershipActive] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
@@ -46,15 +47,17 @@ export default function GuestAccountOverviewPage() {
     }
     setEmail(user.email || '');
 
-    const [profileRes, bookingsRes, issuesRes] = await Promise.all([
+    const [profileRes, membershipRes, bookingsRes, issuesRes] = await Promise.all([
       db
         .from('profiles')
         .select('id,full_name,phone,company,role,account_status')
         .eq('id', user.id)
         .maybeSingle(),
+      db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
       db.from('bookings').select('id,status').eq('guest_id', user.id),
       db.from('booking_issues').select('id,status').eq('reporter_id', user.id),
     ]);
+    setPartnerMembershipActive(membershipRes.data?.status === 'active' && profileRes.data?.account_status !== 'suspended');
 
     if (profileRes.data) {
       const p = profileRes.data as ProfileSummary;
@@ -175,7 +178,7 @@ export default function GuestAccountOverviewPage() {
               </div>
 
               {/* Role Workspace Shortcuts */}
-              {profile?.role === 'partner' && (
+              {((profile?.role === 'partner' && profile.account_status !== 'suspended') || partnerMembershipActive) && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white p-5">
                   <div className="flex items-center gap-3">
                     <Building2 className="h-6 w-6 text-brass-600" />
@@ -203,7 +206,7 @@ export default function GuestAccountOverviewPage() {
                 </div>
               )}
 
-              {(!profile || profile.role === 'guest') && (
+              {(!profile || profile.role === 'guest') && !partnerMembershipActive && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white p-5">
                   <p className="m-0 text-sm font-bold text-ink-900">
                     Own, manage, or refer shortlets in Lagos?
@@ -262,7 +265,7 @@ export default function GuestAccountOverviewPage() {
                   )}
                 </FormField>
 
-                {profile?.role === 'partner' && (
+                {(profile?.role === 'partner' || partnerMembershipActive) && (
                   <FormField label="Business / trading name" optional>
                     {fieldProps => (
                       <input

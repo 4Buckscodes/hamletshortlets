@@ -33,10 +33,10 @@ export default function PartnerStartDashboard() {
   const [role, setRole] = useState('property_owner');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [schemaUnavailable, setSchemaUnavailable] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -50,6 +50,7 @@ export default function PartnerStartDashboard() {
       const params = new URLSearchParams(window.location.search);
       const refCode = params.get('ref')?.trim();
       if (refCode) {
+        setReferralCode(refCode.toUpperCase());
         try {
           window.localStorage.setItem('hamlet:referral-code', refCode.toUpperCase());
         } catch {
@@ -82,7 +83,7 @@ export default function PartnerStartDashboard() {
       const [{ data: p }, { data: m }] = await Promise.all([
         db
           .from('profiles')
-          .select('full_name,phone,company')
+          .select('full_name,phone,company,referred_by_code,referral_code,account_status')
           .eq('id', user.id)
           .maybeSingle(),
         db
@@ -93,6 +94,11 @@ export default function PartnerStartDashboard() {
       ]);
 
       if (!live) return;
+      if (p?.account_status === 'suspended' || m?.status === 'suspended') {
+        setError('Your HAMLET partner account is currently suspended. Please contact support for assistance.');
+        setLoading(false);
+        return;
+      }
       setName(
         p?.full_name ||
           String(
@@ -103,6 +109,7 @@ export default function PartnerStartDashboard() {
       );
       setPhone(m?.phone || p?.phone || String(user.user_metadata?.phone || ''));
       setCompany(m?.company || p?.company || '');
+      setReferralCode(String(p?.referred_by_code || refCode?.toUpperCase() || ''));
       if (m) {
         setMembership(m as Membership);
         setRole(m.primary_role);
@@ -124,25 +131,27 @@ export default function PartnerStartDashboard() {
     if (!db) return;
     setSaving(true);
     setError('');
-    setSchemaUnavailable(false);
 
     const { data, error: e2 } = await db.rpc('join_partner_network', {
       next_role: role,
       next_company: company.trim(),
       next_phone: phone.trim(),
+      referral_code_input: referralCode.trim().toUpperCase() || null,
     });
 
     if (e2) {
       if (e2.code === 'PGRST202' || /schema cache/i.test(e2.message)) {
-        setSchemaUnavailable(true);
         setError(
-          'Instant partner-network registration is temporarily refreshing. Please try again in a moment, or continue directly to the full partner application.',
+          'Partner registration is temporarily unavailable. Please refresh and try again; your workspace will open as soon as registration completes.',
         );
       } else {
         setError(e2.message);
       }
     } else {
       setMembership(data as Membership);
+      window.localStorage.removeItem('hamlet:referral-code');
+      window.location.assign('/partners');
+      return;
     }
     setSaving(false);
   }
@@ -161,7 +170,7 @@ export default function PartnerStartDashboard() {
           {loading ? 'Preparing your workspace' : `Welcome, ${first}.`}
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Join immediately and use the same account to close eligible bookings and introduce partners.
+          Create your partner profile and enter your workspace immediately. Upload properties, share approved stays, track earnings and invite other partners without waiting for manual account approval.
         </p>
         <p className="mt-2.5 max-w-2xl text-xs leading-relaxed text-ink-500">
           {APPROVED_OWNER_SERVICES_POLICY_COPY}
@@ -172,18 +181,7 @@ export default function PartnerStartDashboard() {
             role="alert"
             className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
           >
-            <p className="m-0">{error}</p>
-            {schemaUnavailable && (
-              <div className="mt-3">
-                <Link
-                  href="/partners/apply/form"
-                  className="secondary-button min-h-[42px] text-xs"
-                >
-                  Continue to full partner application <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            )}
-          </div>
+            <p className="m-0">{error}</p></div>
         )}
 
         {loading ? (
@@ -202,7 +200,7 @@ export default function PartnerStartDashboard() {
                 <ShieldCheck className="h-5 w-5 text-brass-700" />
                 <h2 className="mt-3 font-bold text-ink-900">Verification</h2>
                 <p className="mt-1 text-sm text-ink-600">
-                  Property management and payouts unlock after authority checks.
+                  Your workspace opens immediately. Property submissions are reviewed before publication; identity checks are only required before a payout.
                 </p>
               </article>
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
@@ -238,8 +236,8 @@ export default function PartnerStartDashboard() {
                   Registered as {roleLabel} · {membership.company}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <Link href="/partners/apply/form" className="primary-button">
-                    Continue property / authority checks{' '}
+                  <Link href="/partners" className="primary-button">
+                    Open your partner workspace{' '}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link href="/stays" className="secondary-button">
@@ -299,6 +297,17 @@ export default function PartnerStartDashboard() {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="+234…"
+                    className={INPUT_CLASS}
+                  />
+                </label>
+
+                <label className="mt-4 block text-xs font-bold text-ink-700">
+                  Referral code <span className="font-normal text-ink-400">· optional</span>
+                  <input
+                    value={referralCode}
+                    onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                    placeholder="HML-XXXXX"
+                    maxLength={24}
                     className={INPUT_CLASS}
                   />
                 </label>

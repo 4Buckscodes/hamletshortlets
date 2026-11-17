@@ -824,6 +824,14 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     .eq('id', user.id)
     .single();
   if (profileError) throw new Error(`Could not load your profile: ${profileError.message}`);
+  const { data: partnerMembership } = await supabase
+    .from('partner_network_memberships')
+    .select('primary_role,status')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  const isPartnerMember =
+    partnerMembership?.status === 'active' &&
+    (profile.account_status as string | undefined) !== 'suspended';
 
   const session: Session = {
     userId: user.id,
@@ -832,6 +840,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     email: user.email ?? '',
     phone: (profile.phone as string | undefined) || (user.user_metadata.phone as string | undefined) || undefined,
     partnerRole: profile.partner_role ?? undefined,
+    isPartnerMember,
     company: profile.company ?? undefined,
     referralCode: (profile.referral_code as string | undefined) ?? undefined,
     accountStatus: (profile.account_status as 'active' | 'suspended' | undefined) ?? 'active',
@@ -895,7 +904,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     safeQuery<RemoteWayfinderGuideRow>(supabase.from('property_wayfinder_guides').select('*').order('updated_at', { ascending: false })),
     safeQuery<RemoteWayfinderWaypointRow>(supabase.from('property_wayfinder_waypoints').select('*').order('sort_order', { ascending: true })),
     safeQuery<RemoteWayfinderStepRow>(supabase.from('property_wayfinder_steps').select('*').order('step_order', { ascending: true })),
-    session.role === 'admin' || session.role === 'partner'
+    session.role === 'admin' || session.role === 'partner' || session.isPartnerMember
       ? safeQuery<RemoteWayfinderSecretRow>(supabase.from('property_wayfinder_secrets').select('*'))
       : Promise.resolve([] as RemoteWayfinderSecretRow[]),
     safeQuery<RemoteWayfinderEventRow>(supabase.from('wayfinder_events').select('*').order('created_at', { ascending: false }).limit(250)),
@@ -994,7 +1003,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       created_at: string;
     }>;
   } = {};
-  if (session.role === 'partner') {
+  if (session.role === 'partner' || session.isPartnerMember) {
     try {
       const { data: summaryData } = await supabase.rpc('get_my_partner_attribution_summary');
       if (summaryData && typeof summaryData === 'object') {
@@ -3032,7 +3041,6 @@ export function HamletProvider({ children }: { children: ReactNode }) {
     registerPartner: async (input) => {
       const normalizedRefCode = normalizeReferralCode(input.referralCode || getPersistedPartnerRefCode());
       if (supabase) {
-        let applicantUserId = state.session?.userId;
         let applicantEmail = state.session?.email ?? input.email.trim().toLowerCase();
 
         if (!state.session) {
@@ -3054,7 +3062,6 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           if (!signUpData.session || !signUpData.user) {
             return { ok: true, needsEmailConfirmation: true };
           }
-          applicantUserId = signUpData.user.id;
           applicantEmail = signUpData.user.email ?? applicantEmail;
         } else if (state.session.role !== 'guest') {
           return {
@@ -3066,30 +3073,40 @@ export function HamletProvider({ children }: { children: ReactNode }) {
           };
         }
 
-        if (state.applications.some(a => a.applicantId === applicantUserId && a.status === 'pending')) {
-          return { ok: false, error: 'You already have a pending partner application under review.' };
-        }
+        const networkRoleByApplicationRole: Record<string, string> = {
+          'Property owner': 'property_owner',
+          'Property Owner': 'property_owner',
+          'Authorised manager': 'authorised_manager',
+          'Authorised Manager': 'authorised_manager',
+          'Agent (authorised)': 'authorised_manager',
+          'Property Manager': 'authorised_manager',
+          'Co-host / Hospitality Operator': 'authorised_manager',
+          'Multi-property operator': 'multi_property_operator',
+          'Shortlet Operator': 'multi_property_operator',
+          'Closing agent': 'closing_agent',
+          'Closing Agent': 'closing_agent',
+          'Referral Partner': 'closing_agent',
+        };
+        const networkRole = networkRoleByApplicationRole[input.role];
+        if (!networkRole) return { ok: false, error: 'Choose a valid HAMLET partner role.' };
 
-        const { error } = await supabase.from('partner_applications').insert({
-          applicant_id: applicantUserId!,
-          full_name: input.name.trim(),
-          email: applicantEmail,
-          phone: input.phone.trim(),
-          company: input.company.trim(),
-          role: input.role,
-          areas: input.areas,
-          properties_count: input.propertiesCount,
-          motivation: input.motivation.trim(),
-          referred_by_code: normalizedRefCode || null,
+        const { error: membershipError } = await supabase.rpc('join_partner_network', {
+          next_role: networkRole,
+          next_company: input.company.trim(),
+          next_phone: input.phone.trim(),
+          referral_code_input: normalizedRefCode || null,
         });
-        if (error) return { ok: false, error: error.message };
+        if (membershipError) return { ok: false, error: membershipError.message };
+
         clearPersistedPartnerRefCode();
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) return { ok: false, error: authError.message };
-        try {
-          dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
-        } catch (loadError) {
-          setBackendError(loadError instanceof Error ? loadError.message : 'Application saved, but the workspace could not refresh.');
+        if (authData.user) {
+          try {
+            dispatch({ type: 'HYDRATE', state: await loadSupabaseState(authData.user) });
+          } catch (loadError) {
+            setBackendError(loadError instanceof Error ? loadError.message : 'Partner workspace activated, but the dashboard could not refresh.');
+          }
         }
         return { ok: true };
       }
@@ -3147,6 +3164,30 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (!state.session) throw new Error('Sign in before updating your partner application.');
       const normalizedRef = input.referralCode !== undefined ? (normalizeReferralCode(input.referralCode) || null) : undefined;
       if (supabase) {
+        const networkRoleByApplicationRole: Record<string, string> = {
+          'Property owner': 'property_owner',
+          'Property Owner': 'property_owner',
+          'Authorised manager': 'authorised_manager',
+          'Authorised Manager': 'authorised_manager',
+          'Agent (authorised)': 'authorised_manager',
+          'Property Manager': 'authorised_manager',
+          'Co-host / Hospitality Operator': 'authorised_manager',
+          'Multi-property operator': 'multi_property_operator',
+          'Shortlet Operator': 'multi_property_operator',
+          'Closing agent': 'closing_agent',
+          'Closing Agent': 'closing_agent',
+          'Referral Partner': 'closing_agent',
+        };
+        const networkRole = networkRoleByApplicationRole[input.role];
+        if (!networkRole) throw new Error('Choose a valid HAMLET partner role.');
+        const { error: membershipError } = await supabase.rpc('join_partner_network', {
+          next_role: networkRole,
+          next_company: input.company.trim(),
+          next_phone: input.phone.trim(),
+          referral_code_input: normalizedRef || null,
+        });
+        if (membershipError) throw new Error(`Could not activate partner workspace: ${membershipError.message}`);
+
         const payload: Record<string, unknown> = {
           full_name: input.name.trim(),
           phone: input.phone.trim(),
@@ -3226,33 +3267,20 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         if (!s) {
           return { ok: false, error: 'Sign in with your property-partner account before submitting a listing.' };
         }
-        const isApprovedPartner = s.role === 'partner' || s.role === 'admin';
-        let hasPendingInventoryApplication = false;
-        if (!isApprovedPartner) {
-          const { data: applications, error: applicationError } = await supabase
-            .from('partner_applications')
-            .select('id,role,status')
-            .eq('applicant_id', s.userId)
-            .in('status', ['pending', 'needs_correction'])
-            .order('submitted_at', { ascending: false })
-            .limit(1);
-          if (applicationError) {
-            return {
-              ok: false,
-              error: 'We could not verify your partner application. Please refresh and try again.',
-            };
-          }
-          const application = applications?.[0];
-          hasPendingInventoryApplication =
-            Boolean(application) &&
-            ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-              String(application?.role),
-            );
+        const { data: membership, error: membershipError } = await supabase
+          .from('partner_network_memberships')
+          .select('primary_role,status')
+          .eq('user_id', s.userId)
+          .maybeSingle();
+        if (membershipError) {
+          return { ok: false, error: 'We could not verify your partner-network access. Please refresh and try again.' };
         }
-        if (!isApprovedPartner && !hasPendingInventoryApplication) {
+        const activePartnerMember = membership?.status === 'active';
+        const maySubmit = s.role === 'admin' || activePartnerMember;
+        if (!maySubmit) {
           return {
             ok: false,
-            error: 'Submit a property-owner, authorised-manager or multi-property-operator application before uploading a listing.',
+            error: 'Join the HAMLET partner network before uploading a listing. Every submitted property is reviewed separately before publication.',
           };
         }
         const { data: propertyId, error } = await supabase.rpc('submit_partner_property', {
@@ -3448,7 +3476,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
       if (supabase) {
         const property = state.properties.find(item => item.id === id);
         if (!property) throw new Error('Property not found. Refresh the review queue and try again.');
-        if (state.session.role === 'partner' && status === 'submitted') {
+        if ((state.session.role === 'partner' || state.session.isPartnerMember) && status === 'submitted') {
           const { error } = await supabase.rpc('resubmit_partner_property', { target_property_id: id });
           if (error) throw new Error(`Could not resubmit property: ${error.message}`);
         } else {
@@ -4690,7 +4718,7 @@ export function HamletProvider({ children }: { children: ReactNode }) {
         subject: `Wayfinder · ${ARRIVAL_ISSUE_TYPE_LABELS[input.arrivalCategory]}`,
         description: desc,
         reporter: state.session.name,
-        reporterType: state.session.role === 'partner' ? 'partner' : state.session.role === 'admin' ? 'internal' : 'guest',
+        reporterType: state.session.role === 'partner' || state.session.isPartnerMember ? 'partner' : state.session.role === 'admin' ? 'internal' : 'guest',
         status: 'open',
         createdAt: now,
         updatedAt: now,
@@ -4809,5 +4837,5 @@ export function useHamlet() {
 
 export function useRequireRole(role: AccountRole): Session | null {
   const { state } = useHamlet();
-  return state.session?.role === role ? state.session : null;
+  return state.session?.role === role || (role === 'partner' && state.session?.isPartnerMember) ? state.session : null;
 }

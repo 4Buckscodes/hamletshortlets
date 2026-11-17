@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Copy, Check } from 'lucide-react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
@@ -34,6 +35,7 @@ export default function PartnerEarningsPage() {
   const [copiedGuest, setCopiedGuest] = useState(false);
   const [bookings, setBookings] = useState<PartnerBookingRow[]>([]);
   const [commissions, setCommissions] = useState<CommissionRow[]>([]);
+  const [verificationStatus, setVerificationStatus] = useState('not_submitted');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -50,13 +52,16 @@ export default function PartnerEarningsPage() {
       return;
     }
 
-    const { data: profile } = await db
-      .from('profiles')
-      .select('role,referral_code')
-      .eq('id', user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: membership }, { data: verificationRows }] = await Promise.all([
+      db.from('profiles').select('role,referral_code,account_status').eq('id', user.id).maybeSingle(),
+      db.from('partner_network_memberships').select('status').eq('user_id', user.id).maybeSingle(),
+      db.from('partner_applications').select('status').eq('applicant_id', user.id).order('submitted_at', { ascending: false }).limit(10),
+    ]);
+    setVerificationStatus(verificationRows?.some(row => row.status === 'approved') ? 'approved' : String(verificationRows?.[0]?.status || 'not_submitted'));
 
-    const userRole = String(profile?.role || 'guest');
+    const profileRole = String(profile?.role || 'guest');
+    const userRole = profileRole === 'admin' ? 'admin' :
+      (profileRole === 'partner' || membership?.status === 'active') && profile?.account_status !== 'suspended' ? 'partner' : 'guest';
     setRole(userRole);
     // Ensure referral code exists for active partners
     let activeCode = String(profile?.referral_code || '');
@@ -167,6 +172,24 @@ export default function PartnerEarningsPage() {
           <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
             {error}
           </p>
+        )}
+
+        {!loading && role === 'partner' && verificationStatus !== 'approved' && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white p-4">
+            <div>
+              <p className="m-0 text-sm font-semibold text-ink-900">
+                {verificationStatus === 'pending' ? 'Identity verification is under review' :
+                  verificationStatus === 'needs_correction' ? 'Identity verification needs an update' :
+                  'Payout verification is not yet complete'}
+              </p>
+              <p className="m-0 mt-1 max-w-2xl text-xs leading-relaxed text-ink-600">
+                Your workspace, property submissions and earnings remain available. Identity verification is only required before HAMLET can approve a payout.
+              </p>
+            </div>
+            <Link href="/partners/apply/form" className="secondary-button min-h-[40px] text-xs">
+              {verificationStatus === 'pending' ? 'View verification' : 'Verify before payout'}
+            </Link>
+          </div>
         )}
 
         {loading ? (

@@ -26,6 +26,7 @@ export interface Session {
   email: string;
   phone?: string;
   partnerRole?: string;
+  isPartnerMember?: boolean;
   company?: string;
   referralCode?: string;
   accountStatus?: 'active' | 'suspended';

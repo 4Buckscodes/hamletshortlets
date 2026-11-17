@@ -122,7 +122,7 @@ export default function PartnerRegister() {
     setRefreshing(true);
     try {
       await refreshState();
-      toast('Latest application & role status loaded.');
+      toast('Partner-network membership status loaded.');
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not refresh status.', 'error');
     } finally {
@@ -173,7 +173,7 @@ export default function PartnerRegister() {
           motivation: form.motivation.trim(),
           referralCode: referralCode.trim(),
         });
-        toast('Updated partner application resubmitted for HAMLET review.');
+        toast('Identity-verification details resubmitted.');
         setDone(true);
         return;
       }
@@ -186,21 +186,21 @@ export default function PartnerRegister() {
         referralCode: referralCode.trim() || undefined,
       });
       if (!result.ok) {
-        setErrors({ account: result.error ?? 'Could not submit your application.' });
+        setErrors({ account: result.error ?? 'Could not activate your partner workspace.' });
         return;
       }
       if (result.needsEmailConfirmation) {
         setNeedsEmailConfirm(true);
         setDone(true);
-        toast('Account created — confirm your email to complete your partner application.');
+        toast('Account created — confirm your email to activate your partner workspace.');
         return;
       }
       if (!backendConfigured) await signIn(effectiveEmail, password || 'demo1234');
       setDone(true);
       toast(
         backendConfigured
-          ? 'Partner account created & application submitted for manual review.'
-          : 'Application submitted — demo partner workspace ready.',
+          ? 'Partner workspace activated. Identity verification is only required before payout.'
+          : 'Partner workspace activated — demo account ready.',
       );
     } catch (error) {
       setErrors({ account: error instanceof Error ? error.message : 'Could not submit your application.' });
@@ -276,7 +276,7 @@ export default function PartnerRegister() {
           </div>
 
           <p className="text-[10.5px] font-semibold text-ink-400">
-            {HAMLET_PARENT_COMPANY} · Applications reviewed manually · No admin access is ever granted publicly
+            {HAMLET_PARENT_COMPANY} · Instant partner workspace · Property and payout verification remain separate
           </p>
         </div>
       </div>
@@ -284,7 +284,7 @@ export default function PartnerRegister() {
       {/* Form / Status Panel */}
       <div className="flex items-center justify-center overflow-y-auto p-4 py-10 sm:p-8 lg:col-span-7">
         <AnimatePresence mode="wait">
-          {session && (session.role === 'partner' || session.role === 'admin') ? (
+          {session && (session.role === 'partner' || session.role === 'admin' || session.isPartnerMember) ? (
             <motion.div
               key="already-partner"
               initial={{ opacity: 0, scale: 0.96 }}
@@ -293,7 +293,7 @@ export default function PartnerRegister() {
             >
               <CheckCircle2 size={52} className="mx-auto text-emerald-400" />
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
-                {session.role === 'admin' ? 'Administrator active' : 'Approved partner active'}
+                {session.role === 'admin' ? 'Administrator active' : 'Partner workspace active'}
               </p>
               <h2 className="mt-1.5 font-display text-2xl font-bold text-paper">
                 {session.role === 'admin' ? 'Your Admin Console is ready' : 'Your Partner Workspace is active'}
@@ -323,16 +323,16 @@ export default function PartnerRegister() {
             >
               <CheckCircle2 size={56} className="mx-auto text-emerald-400" />
               <h2 className="mt-5 font-display text-3xl font-bold text-paper">
-                {needsEmailConfirm ? 'Confirm your email' : 'Application in review.'}
+                {needsEmailConfirm ? 'Confirm your email' : 'Identity verification pending.'}
               </h2>
               <p className="mt-3 text-[13px] font-medium leading-relaxed text-ink-200">
                 {needsEmailConfirm
                   ? `We created your HAMLET account for ${form.email}. Confirm the link sent to your inbox, then sign in here to submit your partner details.`
-                  : `Thank you, ${form.name.split(' ')[0]}. Your partner application for ${form.company} is in the HAMLET operations review queue.`}
+                  : `Thank you, ${form.name.split(' ')[0]}. Your partner workspace is active. Identity verification is only required before your first payout.`}
               </p>
               <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-900 px-5 py-3.5 text-[11.5px] font-semibold text-ink-300">
                 {backendConfigured ? (
-                  'You can track your application review status anytime from your HAMLET account. As soon as HAMLET operations approves your application, your Partner Workspace unlocks automatically.'
+                  'You can use your Partner Workspace immediately. HAMLET reviews each property before public listing and verifies partner identity before a payout.'
                 ) : (
                   <>
                     You are signed in to your demo partner workspace. Properties you submit will enter{' '}
@@ -375,7 +375,7 @@ export default function PartnerRegister() {
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-amber-300">
-                  <Clock3 size={13} /> Pending manual review
+                  <Clock3 size={13} /> Identity verification pending
                 </span>
                 {backendConfigured && (
                   <button
@@ -399,7 +399,7 @@ export default function PartnerRegister() {
                 Submitted {formatDateTime(existingApplication.submittedAt)}
               </p>
               <p className="mt-4 rounded-2xl border border-ink-800 bg-ink-950/70 p-4 text-xs font-medium leading-relaxed text-ink-200">
-                HAMLET operations is reviewing your identity, company details and authority scope. Once approved, refreshing this page or signing in will take you straight into the Partner Workspace.
+                Your workspace remains active while HAMLET reviews these details for payout verification. Property listings are reviewed separately before publication.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link to="/account" className="btn-brass !rounded-full !py-2.5 text-xs">
@@ -435,19 +435,19 @@ export default function PartnerRegister() {
               </div>
 
               <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">
-                {isCorrectionMode ? 'Respond to reviewer feedback' : 'Apply to join'}
+                {isCorrectionMode ? 'Update identity verification' : 'Join partner network'}
               </p>
               <h2 className="mt-1.5 font-display text-3xl font-bold text-white">
                 {isCorrectionMode
-                  ? 'Update & resubmit partner application'
-                  : 'Partner registration & application'}
+                  ? 'Update identity verification'
+                  : 'Partner network registration'}
               </h2>
               <p className="mt-1 text-xs font-medium text-ink-300">
                 {isCorrectionMode
-                  ? 'Address the correction note from HAMLET operations below and resubmit your application for review.'
+                  ? 'Update the verification details requested by HAMLET operations. Your workspace remains active.'
                   : !session && backendConfigured
-                    ? 'Create your HAMLET account and submit your partner application in one step. Every application is manually verified by HAMLET operations.'
-                    : 'Every application is reviewed manually. Submitting here never grants admin access — roles and permissions are assigned by HAMLET after verification.'}
+                    ? 'Create your HAMLET account and activate your partner workspace immediately. Identity verification is only required before payout.'
+                    : 'Partner access is automatic. Each property is reviewed before publication, and identity verification is required before payout. This form does not grant admin access.'}
               </p>
 
               {isCorrectionMode && existingApplication?.reviewNote && (
@@ -467,13 +467,13 @@ export default function PartnerRegister() {
 
               {existingApplication?.status === 'rejected' && existingApplication.reviewNote && (
                 <div className="mt-4 rounded-2xl border border-red-500/35 bg-red-950/30 p-3.5 text-[11.5px] font-semibold text-red-200">
-                  Previous application note: {existingApplication.reviewNote}
+                  Previous verification note: {existingApplication.reviewNote}
                 </div>
               )}
 
               {session?.role === 'guest' && !isCorrectionMode && (
                 <p className="mt-3 rounded-2xl border border-emerald-700 bg-emerald-900/35 p-3 text-[11px] font-semibold text-emerald-100">
-                  Signed in as <strong>{session.email}</strong> — your partner application will be linked directly to this account.
+                  Signed in as <strong>{session.email}</strong> — your identity-verification details will be linked to this account.
                 </p>
               )}
 
@@ -662,7 +662,7 @@ export default function PartnerRegister() {
                     >
                       {resolvedReferrer.valid
                         ? `Referred by ${resolvedReferrer.referrerName}${resolvedReferrer.referrerCompany ? ` (${resolvedReferrer.referrerCompany})` : ''} — verified server-side on approval.`
-                        : 'Code not matched to an active approved partner (self-referrals and unrecognised codes are ignored).'}
+                        : 'Code not matched to an active HAMLET partner (self-referrals and unrecognised codes are ignored).'}
                     </span>
                   )}
                 </label>
@@ -680,7 +680,7 @@ export default function PartnerRegister() {
               </div>
 
               <p className="mt-4 flex items-start gap-2 text-[10px] font-medium leading-relaxed text-ink-400">
-                <CircleAlert size={12} className="mt-0.5 shrink-0" /> By applying you consent to a manual review of your identity, authority and documentation. Providing false information leads to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).
+                <CircleAlert size={12} className="mt-0.5 shrink-0" /> By submitting, you consent to identity and authority checks before payout. Property listings are reviewed separately before publication. Providing false information may lead to rejection or suspension. Your data is handled under the HAMLET privacy notice (NDPR-aligned).
               </p>
 
               <button
@@ -693,8 +693,8 @@ export default function PartnerRegister() {
                   : isCorrectionMode
                     ? 'Save corrections & resubmit'
                     : !session && backendConfigured
-                      ? 'Create account & submit partner application'
-                      : 'Submit partner application'}{' '}
+                      ? 'Create account & activate partner workspace'
+                       : 'Submit identity verification'}{' '}
                 <ArrowRight size={16} />
               </button>
             </motion.form>

@@ -31,10 +31,14 @@ export async function POST(request: Request) {
   });
   const { data: auth, error: authError } = await db.auth.getUser(token);
   if (authError || !auth.user) return NextResponse.json({ error: 'Your session has expired. Sign in again.' }, { status: 401 });
-  const { data: profile, error: profileError } = await db.from('profiles')
-    .select('role').eq('id', auth.user.id).maybeSingle();
-  if (profileError || (profile?.role !== 'partner' && profile?.role !== 'admin')) {
-    return NextResponse.json({ error: 'Horatio is available to approved HAMLET partners.' }, { status: 403 });
+  const [{ data: profile, error: profileError }, { data: membership, error: membershipError }] = await Promise.all([
+    db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
+    db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
+  ]);
+  const activePartnerMember = !membershipError && membership?.status === 'active';
+  if (profileError || profile?.account_status === 'suspended' ||
+      (profile?.role !== 'admin' && !activePartnerMember)) {
+    return NextResponse.json({ error: 'Join the HAMLET partner network to use Horatio.' }, { status: 403 });
   }
 
   let body: { description?: unknown };

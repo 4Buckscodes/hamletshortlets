@@ -9,7 +9,6 @@ import {
   ChipMultiSelect,
   DraftStatusBar,
   FormField,
-  OptionCardGroup,
   StepFooterActions,
   StepProgressHeader,
   StepperCounter,
@@ -71,30 +70,20 @@ const NETWORK_ROLE_TO_APPLICATION_ROLE: Record<string, string> = {
   closing_agent: 'Closing agent',
 };
 
-const ROLE_OPTIONS = [
-  {
-    value: 'Property owner',
-    label: 'Property owner',
-    badge: 'Owner & host access',
-    description: 'List your own shortlet apartments or homes.',
-  },
-  {
-    value: 'Authorised manager',
-    label: 'Authorised property manager',
-    description: 'Manage properties under an owner mandate.',
-  },
-  {
-    value: 'Multi-property operator',
-    label: 'Multi-property operator',
-    description: 'Operate a portfolio of serviced apartments.',
-  },
-  {
-    value: 'Closing agent',
-    label: 'Closing agent',
-    badge: '10% booking commission',
-    description: 'Help guests book verified stays across HAMLET.',
-  },
-] as const;
+const APPLICATION_ROLE_TO_NETWORK_ROLE: Record<string, string> = {
+  'Property owner': 'property_owner',
+  'Property Owner': 'property_owner',
+  'Authorised manager': 'authorised_manager',
+  'Authorised Manager': 'authorised_manager',
+  'Agent (authorised)': 'authorised_manager',
+  'Property Manager': 'authorised_manager',
+  'Co-host / Hospitality Operator': 'authorised_manager',
+  'Multi-property operator': 'multi_property_operator',
+  'Shortlet Operator': 'multi_property_operator',
+  'Closing agent': 'closing_agent',
+  'Closing Agent': 'closing_agent',
+  'Referral Partner': 'closing_agent',
+};
 
 const APPLY_STEPS = [
   {
@@ -119,13 +108,13 @@ const APPLY_STEPS = [
   },
   {
     id: 'payout',
-    title: 'Payout details',
-    shortLabel: '5. Payout',
+    title: 'Payout setup (optional)',
+    shortLabel: '5. Payout setup',
   },
   {
     id: 'declarations',
-    title: 'Review & submit',
-    shortLabel: '6. Submit',
+    title: 'Identity verification',
+    shortLabel: '6. Verify identity',
   },
 ] as const;
 
@@ -193,7 +182,7 @@ export default function PartnerApplicationForm() {
 
     const [{ data: profile }, { data: apps }, { data: networkMembership }] =
       await Promise.all([
-        db.from('profiles').select('role,full_name,phone,company').eq('id', user.id).maybeSingle(),
+        db.from('profiles').select('role,full_name,phone,company,referred_by_code').eq('id', user.id).maybeSingle(),
         db
           .from('partner_applications')
           .select(
@@ -210,6 +199,11 @@ export default function PartnerApplicationForm() {
       ]);
 
     setRoleState(String(profile?.role || 'guest'));
+    const savedReferralCode = String(profile?.referred_by_code || '').trim().toUpperCase();
+    if (savedReferralCode) {
+      setLockedReferralCode(savedReferralCode);
+      setValues(prev => ({ ...prev, referralCode: savedReferralCode }));
+    }
     const latest = (apps?.[0] as ExistingApp | undefined) || null;
     setExisting(latest);
 
@@ -227,7 +221,7 @@ export default function PartnerApplicationForm() {
         areas: latest.areas?.length ? latest.areas : prev.areas,
         propertiesCount: latest.properties_count ?? prev.propertiesCount,
         authoritySummary: latest.motivation || prev.authoritySummary,
-        referralCode: latest.referred_by_code || prev.referralCode,
+        referralCode: latest.referred_by_code || String(profile?.referred_by_code || prev.referralCode),
       }));
     } else if (profile || networkMembership) {
       setValues(prev => ({
@@ -243,6 +237,7 @@ export default function PartnerApplicationForm() {
         company:
           prev.company ||
           String(networkMembership?.company || profile?.company || ''),
+        referralCode: prev.referralCode || String(profile?.referred_by_code || ''),
       }));
     }
 
@@ -324,6 +319,16 @@ export default function PartnerApplicationForm() {
     setBusy(true);
 
     try {
+      const networkRole = APPLICATION_ROLE_TO_NETWORK_ROLE[values.role];
+      if (!networkRole) throw new Error('Choose a valid HAMLET partner role.');
+      const { error: membershipError } = await db.rpc('join_partner_network', {
+        next_role: networkRole,
+        next_company: values.company.trim(),
+        next_phone: values.phone.trim(),
+        referral_code_input: values.referralCode.trim().toUpperCase() || null,
+      });
+      if (membershipError) throw new Error(membershipError.message);
+
       const fallbackSummary = `${values.role} operating across ${values.areas.join(', ')}${
         isInventoryRole
           ? ` (${Math.max(1, values.propertiesCount)} ${values.propertiesCount === 1 ? 'property' : 'properties'})`
@@ -357,7 +362,7 @@ export default function PartnerApplicationForm() {
         });
         if (rpcError) throw new Error(rpcError.message);
         clearDraft();
-        setMessage('Your updated partner application has been resubmitted for review.');
+        setMessage('Your updated identity-verification details have been resubmitted. Your partner workspace remains active.');
       } else {
         const { error: insertError } = await db.from('partner_applications').insert({
           applicant_id: userId,
@@ -374,7 +379,7 @@ export default function PartnerApplicationForm() {
         if (insertError) throw new Error(insertError.message);
         clearDraft();
         setMessage(
-          'Your partner application has been submitted. You can start uploading properties immediately while HAMLET reviews your partner profile. Your listings will remain under review until approved, and earnings are withheld until partner verification is complete.',
+          'Your identity-verification details have been submitted. Your partner workspace remains active while HAMLET completes the checks required before a payout. Property listings are reviewed separately before they appear publicly.',
         );
       }
 
@@ -383,7 +388,7 @@ export default function PartnerApplicationForm() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'Could not submit your partner application.',
+          : 'Could not submit your identity-verification details.',
       );
     } finally {
       setBusy(false);
@@ -405,7 +410,7 @@ export default function PartnerApplicationForm() {
           Step 0 — Sign in or create your HAMLET account first
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Partner applications link directly to your authenticated HAMLET account so we can notify you and unlock your partner workspace as soon as you are approved.
+          This step is for identity and payout verification only. Your partner workspace is available immediately after network registration; you do not need to wait for this review to upload properties, share stays or view earnings.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
@@ -430,7 +435,7 @@ export default function PartnerApplicationForm() {
       <section className="rounded-3xl border border-emerald-200 bg-white p-6 sm:p-8">
         <div className="flex items-center gap-2 text-emerald-800">
           <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <strong className="text-sm">Approved {roleState} account</strong>
+          <strong className="text-sm">Partner workspace active</strong>
         </div>
         <h2 className="serif mt-2 text-2xl font-medium text-ink-900">
           Your workspace is ready.
@@ -459,13 +464,13 @@ export default function PartnerApplicationForm() {
     return (
       <section className="rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
         <span className="inline-flex rounded-full bg-paper px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brass-700">
-          Application status: {existing.status}
+          Verification status: {existing.status}
         </span>
         <h2 className="serif mt-3 text-2xl font-medium text-ink-900">
           {existing.company} · {existing.role}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          Submitted {new Date(existing.submitted_at).toLocaleDateString('en-NG')}. HAMLET operations reviews every application manually before enabling partner permissions.
+          Submitted {new Date(existing.submitted_at).toLocaleDateString('en-NG')}. This verification review is only required before a payout. Your partner workspace and listing submissions remain available.
         </p>
         {existing.review_note && (
           <div className="mt-4 rounded-2xl border border-ink-100 bg-paper p-4 text-xs text-ink-700">
@@ -482,11 +487,11 @@ export default function PartnerApplicationForm() {
         <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950">
           <div className="flex items-center gap-2 font-bold">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700" />
-            <span>Correction requested on your partner application</span>
+            <span>Correction requested on your identity verification</span>
           </div>
           <p className="m-0 mt-1">
             {existing.review_note ||
-              'Please review and update your application details below, then resubmit.'}
+              'Please update the verification details below, then resubmit. Your workspace remains active.'}
           </p>
         </div>
       )}
@@ -512,18 +517,12 @@ export default function PartnerApplicationForm() {
             <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
               <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
               <p className="m-0 mt-1 text-xs text-ink-600">
-                Approved partners can close bookings across HAMLET and introduce new partners from one account.
+                Active partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
-            <OptionCardGroup
-              ariaLabel="Your main partner role"
-              options={ROLE_OPTIONS}
-              value={values.role}
-              onChange={role => setValues(prev => ({ ...prev, role }))}
-            />
-            <p className="m-0 text-xs leading-relaxed text-ink-600">
-              Your selection describes your main work and does not lock your account to that role.
-            </p>
+            <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
+              Your partner workspace is active. You can complete or update your partner role and profile details from inside the workspace whenever they are needed.
+            </div>
           </div>
         )}
 
@@ -590,7 +589,7 @@ export default function PartnerApplicationForm() {
             <FormField
               label="Partner referral code"
               optional
-              hint={referralResolved || 'Enter a code if an approved HAMLET partner invited you.'}
+              hint={referralResolved || 'Enter a code if an active HAMLET partner invited you.'}
             >
               {fieldProps => (
                 <input
@@ -732,7 +731,7 @@ export default function PartnerApplicationForm() {
                   className="mt-0.5 h-4 w-4 accent-ink-900"
                 />
                 <span>
-                  I confirm that the identity and contact information provided in this application are accurate.
+                  I confirm that the identity and contact information provided for payout verification are accurate.
                 </span>
               </label>
 
@@ -766,7 +765,7 @@ export default function PartnerApplicationForm() {
                   className="mt-0.5 h-4 w-4 accent-ink-900"
                 />
                 <span>
-                  I understand HAMLET reviews all partner accounts and listings manually before publication.
+                  I understand partner workspace access is immediate, each property is reviewed before public listing, and identity verification is required before payout.
                 </span>
               </label>
             </div>
@@ -804,8 +803,8 @@ export default function PartnerApplicationForm() {
           nextLabel="Continue"
           submitLabel={
             existing?.status === 'needs_correction'
-              ? 'Resubmit application'
-              : 'Submit partner application'
+              ? 'Resubmit verification'
+              : 'Submit identity verification'
           }
           busy={busy}
           busyLabel="Submitting…"

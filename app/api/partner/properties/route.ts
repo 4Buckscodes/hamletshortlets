@@ -212,36 +212,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const [{ data: profile, error: profileError }, { data: applications, error: applicationError }] =
+  const [{ data: profile }, { data: membership, error: membershipError }] =
     await Promise.all([
-      db.from('profiles').select('role').eq('id', auth.user.id).maybeSingle(),
-      db
-        .from('partner_applications')
-        .select('id,status,role')
-        .eq('applicant_id', auth.user.id)
-        .in('status', ['pending', 'needs_correction'])
-        .order('submitted_at', { ascending: false })
-        .limit(1),
+      db.from('profiles').select('role,partner_role,account_status').eq('id', auth.user.id).maybeSingle(),
+      db.from('partner_network_memberships').select('primary_role,status').eq('user_id', auth.user.id).maybeSingle(),
     ]);
 
-  const application = applications?.[0];
-  const hasPendingInventoryApplication =
-    !applicationError &&
-    Boolean(application) &&
-    ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
-      String(application?.role),
-    );
-  const maySubmit =
-    !profileError &&
-    (profile?.role === 'partner' ||
-      profile?.role === 'admin' ||
-      hasPendingInventoryApplication);
+  const activePartnerMember = !membershipError && membership?.status === 'active';
+  const maySubmit = profile?.role === 'admin' || activePartnerMember;
 
   if (!maySubmit) {
     return NextResponse.json(
       {
         error:
-          'Submit a property-owner, authorised-manager or multi-property-operator application before uploading a listing. You can upload while HAMLET reviews your partner application.',
+          'Join the HAMLET partner network before uploading a property. Each submitted listing is reviewed separately before it is published.',
       },
       { status: 403 },
     );

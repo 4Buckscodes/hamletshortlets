@@ -25,7 +25,7 @@ export default function SignInPage() {
           </section>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-ink-500">
-            Listing or managing stays? Sign in first, then join the Partner Network.
+            Listing or managing stays? Create an account to open your partner workspace immediately.
           </p>
         </div>
       </main>
