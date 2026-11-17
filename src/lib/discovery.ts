@@ -133,6 +133,15 @@ export function isApprovedBookableStay(
   return stay.status === 'approved';
 }
 
+/** Returns an ISO availability date only when it is today or later in the supplied local-date frame. */
+export function getCurrentOrFutureAvailabilityDate(
+  value: string | null | undefined,
+  todayIso: string,
+): string | null {
+  if (!value || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null;
+  return value >= todayIso ? value : null;
+}
+
 export function getStayTrustStatus(stay: Pick<PublicStayRecord, 'status' | 'verification'>): {
   verified: boolean;
   badge: 'Verified by HAMLET' | 'Approved listing';
