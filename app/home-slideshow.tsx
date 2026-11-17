@@ -70,7 +70,7 @@ function addDaysIso(isoDate: string, days: number): string {
 
 function formatPillDate(isoDate: string): string {
   if (!isoDate) return '';
-  const parsed = new Date(`${currentOrFutureDate}T12:00:00Z`);
+  const parsed = new Date(`${isoDate}T12:00:00Z`);
   if (!Number.isFinite(parsed.getTime())) return isoDate;
   return parsed.toLocaleDateString('en-GB', {
     day: 'numeric',
