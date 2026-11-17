@@ -56,7 +56,7 @@ export default function PartnerApplicationPage() {
         </div>
         <label style={labelStyle}>Business / company name<input name="company" required minLength={2} maxLength={160} style={field}/></label>
         <label style={labelStyle}>Partner role<select name="role" required style={field}><option value="">Choose your role</option><option value="owner">Property owner</option><option value="property_manager">Property manager</option><option value="shortlet_operator">Shortlet operator</option><option value="cohost">Co-host</option><option value="closing_agent">Closing agent</option><option value="referral">Referral partner</option></select></label>
-        <label style={labelStyle}>Areas you cover in Lagos<input name="areas" required placeholder="Lekki, Victoria Island, Ikeja" style={field}/></label>
+        <label style={labelStyle}>Areas you cover in Nigeria<input name="areas" required placeholder="Lagos, Abuja, Ibadan, Lekki, Ikeja…" style={field}/></label>
         <label style={labelStyle}>Properties you can bring<input name="propertiesCount" required type="number" min="0" max="10000" defaultValue="1" style={field}/></label>
         <label style={labelStyle}>Experience and reason for joining<textarea name="motivation" required minLength={20} maxLength={1500} rows={4} placeholder="Tell us about your properties, experience or network…" style={{ ...field, resize: 'vertical' }}/></label>
         {error && <p role="alert" style={{ margin: 0, color: '#9f2d20', fontSize: 13 }}>{error}</p>}
