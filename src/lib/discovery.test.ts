@@ -9,6 +9,7 @@ import {
   formatBedroomCountLabel,
   getActiveFilterBadges,
   getStayTrustStatus,
+  getCurrentOrFutureAvailabilityDate,
   getValidGuestNightlyNgn,
   isApprovedBookableStay,
   matchesAccommodationFilter,
@@ -53,6 +54,14 @@ function makeStay(overrides: Partial<PublicStayRecord> & { preview_only?: boolea
 }
 
 describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integrity', () => {
+  it('suppresses malformed and expired first-available dates without hiding current or future dates', () => {
+    expect(getCurrentOrFutureAvailabilityDate('2026-11-16', '2026-11-17')).toBeNull();
+    expect(getCurrentOrFutureAvailabilityDate('2026-11-17', '2026-11-17')).toBe('2026-11-17');
+    expect(getCurrentOrFutureAvailabilityDate('2026-12-01', '2026-11-17')).toBe('2026-12-01');
+    expect(getCurrentOrFutureAvailabilityDate('not-a-date', '2026-11-17')).toBeNull();
+    expect(getCurrentOrFutureAvailabilityDate(null, '2026-11-17')).toBeNull();
+  });
+
   it('exposes all required initial Lagos Island and Mainland discovery neighbourhoods', () => {
     const names = DISCOVERY_NEIGHBOURHOODS.map(h => h.name);
     for (const required of [
