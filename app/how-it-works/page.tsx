@@ -23,10 +23,10 @@ const HOW_IT_WORKS_SCHEMA = buildInformationalPageSchema({
 });
 
 const LIFECYCLE_STATES = [
-  { step: '1', code: 'requested', sub: 'Dates reviewed by partner' },
-  { step: '2', code: 'awaiting_payment', sub: '48-hour Paystack hold' },
-  { step: '3', code: 'confirmed', sub: 'Server-verified payment' },
-  { step: '4', code: 'completed', sub: 'Caution deposit inspected' },
+  { step: '1', tone: 'cobalt', code: 'requested', sub: 'Dates reviewed by partner' },
+  { step: '2', tone: 'champagne', code: 'awaiting_payment', sub: '48-hour Paystack hold' },
+  { step: '3', tone: 'jade', code: 'confirmed', sub: 'Server-verified payment' },
+  { step: '4', tone: 'terracotta', code: 'completed', sub: 'Caution deposit inspected' },
 ] as const;
 
 export default function HowItWorksPage() {
@@ -57,7 +57,17 @@ export default function HowItWorksPage() {
                   key={s.step}
                   className="rounded-2xl border border-white/12 bg-ink-900/90 p-4"
                 >
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brass-500 font-mono text-xs font-black text-ink-950">
+                  <span
+                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-black ${
+                      s.tone === 'cobalt'
+                        ? 'bg-hamlet-cobalt text-white'
+                        : s.tone === 'jade'
+                          ? 'bg-hamlet-jade text-white'
+                          : s.tone === 'terracotta'
+                            ? 'bg-hamlet-terracotta text-white'
+                            : 'bg-hamlet-champagne text-ink-950'
+                    }`}
+                  >
                     {s.step}
                   </span>
                   <p className="mt-2.5 font-mono text-xs font-bold text-brass-300">{s.code}</p>

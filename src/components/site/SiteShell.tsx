@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type MouseEvent,
@@ -54,12 +55,13 @@ import {
   type AnyPublicStay,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
+import { useDialogAccessibility } from '@/components/site/useDialogAccessibility';
 
 interface SessionSummary {
   userId: string;
   email: string;
   fullName: string;
-  role: 'guest' | 'partner' | 'admin';
+  role: 'guest' | 'partner_applicant' | 'partner' | 'admin';
 }
 
 interface NextHoratioContextValue {
@@ -158,8 +160,10 @@ function NextHoratioDrawer({
   onClearInitialPrompt: () => void;
 }) {
   const { currency } = useCurrency();
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<HoratioMessage[]>([]);
+  useDialogAccessibility(open, dialogRef, onClose);
 
   const ask = useCallback(
     (question: string) => {
@@ -184,15 +188,6 @@ function NextHoratioDrawer({
     return () => window.clearTimeout(timer);
   }, [open, initialPrompt, ask, onClearInitialPrompt]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
   if (!open) return null;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -204,9 +199,11 @@ function NextHoratioDrawer({
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Horatio — HAMLET Lagos concierge"
+      aria-label="Horatio — HAMLET booking guide"
+      tabIndex={-1}
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/60 backdrop-blur-xs sm:items-stretch sm:justify-end"
     >
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
@@ -390,30 +387,15 @@ export function SiteHeader() {
   const { openHoratio } = useNextHoratio();
   const [drawerOpenPath, setDrawerOpenPath] = useState<string | null>(null);
   const drawerOpen = drawerOpenPath === pathname;
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const setDrawerOpen = (open: boolean | ((prev: boolean) => boolean)) => {
     const next = typeof open === 'function' ? open(drawerOpen) : open;
     setDrawerOpenPath(next ? pathname : null);
   };
+  const closeDrawer = useCallback(() => setDrawerOpenPath(null), []);
   const [session, setSession] = useState<SessionSummary | null>(null);
-
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const previousOverflow =
-      typeof document !== 'undefined' ? document.body.style.overflow : '';
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'hidden';
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setDrawerOpenPath(null);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      if (typeof document !== 'undefined') {
-        document.body.style.overflow = previousOverflow;
-      }
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [drawerOpen]);
+  useDialogAccessibility(drawerOpen, drawerRef, closeDrawer);
 
   useEffect(() => {
     const db = getBrowserSupabase();
@@ -433,9 +415,30 @@ export function SiteHeader() {
         .select('full_name,role')
         .eq('id', user.id)
         .maybeSingle();
+      let role: SessionSummary['role'] =
+        profile?.role === 'admin' || profile?.role === 'partner'
+          ? profile.role
+          : 'guest';
+
+      if (role === 'guest') {
+        const { data: applications } = await db
+          .from('partner_applications')
+          .select('role,status')
+          .eq('applicant_id', user.id)
+          .in('status', ['pending', 'needs_correction'])
+          .order('submitted_at', { ascending: false })
+          .limit(1);
+        const application = applications?.[0];
+        if (
+          ['Property owner', 'Authorised manager', 'Multi-property operator'].includes(
+            String(application?.role),
+          )
+        ) {
+          role = 'partner_applicant';
+        }
+      }
+
       if (!active) return;
-      const role =
-        profile?.role === 'admin' || profile?.role === 'partner' ? profile.role : 'guest';
       setSession({
         userId: user.id,
         email: user.email || '',
@@ -473,16 +476,18 @@ export function SiteHeader() {
   const workspaceHref =
     session?.role === 'admin'
       ? '/admin'
-      : session?.role === 'partner'
+      : session?.role === 'partner' || session?.role === 'partner_applicant'
         ? '/partners'
         : '/account';
 
   const workspaceLabel =
     session?.role === 'admin'
       ? 'Admin console'
-      : session?.role === 'partner'
-        ? 'Partner workspace'
-        : 'My account';
+      : session?.role === 'partner_applicant'
+        ? 'Property onboarding'
+        : session?.role === 'partner'
+          ? 'Partner workspace'
+          : 'My account';
 
   const mobileGuestNav = [
     { href: '/stays', label: 'Explore stays' },
@@ -492,8 +497,17 @@ export function SiteHeader() {
     { href: '/faqs', label: 'FAQs' },
   ] as const;
 
+  const partnerNavItem =
+    session?.role === 'admin'
+      ? { href: '/admin/partners', label: 'Partner operations' }
+      : session?.role === 'partner'
+        ? { href: '/partners', label: 'Partner workspace' }
+        : session?.role === 'partner_applicant'
+          ? { href: '/partners', label: 'Continue property onboarding' }
+          : { href: '/partners/apply', label: 'Partner with us' };
+
   const mobileHostAndAboutNav = [
-    { href: '/partners/apply', label: 'Partner with us' },
+    partnerNavItem,
     { href: '/about', label: 'About HAMLET' },
   ] as const;
 
@@ -637,6 +651,7 @@ export function SiteHeader() {
 
         <div className="flex items-center lg:hidden">
           <button
+            ref={menuButtonRef}
             type="button"
             onClick={() => setDrawerOpen(prev => !prev)}
             aria-expanded={drawerOpen}
@@ -670,7 +685,14 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#121F3C] lg:hidden">
+        <div
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="HAMLET site navigation"
+          tabIndex={-1}
+          className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#121F3C] lg:hidden"
+        >
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
@@ -872,7 +894,10 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="border-t border-[#2C3F63] bg-[#121F3C] text-[#F8F5EE]">
+    <footer
+      data-hamlet-reveal="fade"
+      className="border-t border-[#2C3F63] bg-[#121F3C] text-[#F8F5EE]"
+    >
       <div className="mx-auto max-w-6xl px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:py-12">
         {/* Mobile editorial brand block + collapsible accordion navigation (< md) */}
         <div className="md:hidden">
@@ -1038,9 +1063,11 @@ export function StayNightlyPrice({
 export function StayListingCard({
   stay,
   querySuffix = '',
+  reveal = false,
 }: {
   stay: AnyPublicStay;
   querySuffix?: string;
+  reveal?: boolean;
 }) {
   const validImages = useMemo(
     () => (stay.image_urls ?? []).map(url => url.trim()).filter(Boolean),
@@ -1074,7 +1101,10 @@ export function StayListingCard({
   }
 
   return (
-    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg">
+    <article
+      data-hamlet-reveal={reveal ? 'up' : undefined}
+      className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg"
+    >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
         <Link
           href={detailHref}
@@ -1120,12 +1150,12 @@ export function StayListingCard({
         <span
           className={`pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
             trust.verified
-              ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+              ? 'border border-hamlet-jade-100 bg-hamlet-jade-50 text-hamlet-jade'
               : 'border border-ink-200 bg-white/95 text-ink-900'
           }`}
         >
           {trust.verified ? (
-            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-hamlet-jade" />
           ) : (
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
           )}

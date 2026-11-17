@@ -69,6 +69,7 @@ export function StayGallery({
               [activeUrl]: true,
             }))
           }
+          data-hamlet-reveal="image"
           className="h-full w-full object-cover opacity-100"
         />
 

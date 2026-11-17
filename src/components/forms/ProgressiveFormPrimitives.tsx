@@ -19,6 +19,7 @@ import {
   Save,
   X,
 } from 'lucide-react';
+import { useDialogAccessibility } from '@/components/site/useDialogAccessibility';
 
 export interface ProgressiveDraftConfig<T> {
   storageKey: string;
@@ -653,22 +654,18 @@ export function FocusedDrawer({
   onClose: () => void;
   children: ReactNode;
 }) {
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useDialogAccessibility(open, dialogRef, onClose);
 
   if (!open) return null;
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={title}
+      tabIndex={-1}
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/55 sm:items-stretch sm:justify-end"
     >
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />

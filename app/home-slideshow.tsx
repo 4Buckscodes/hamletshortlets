@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
@@ -20,6 +20,8 @@ import {
 } from '@/lib/discovery';
 import type { AnyPublicStay } from '@/lib/next-supabase';
 import { APPROVED_OWNER_SERVICES_POLICY_COPY, lagosIsoDateOffset } from '@/lib/pricing';
+import { getPreferredScrollBehavior } from '@/lib/motion';
+import { useDialogAccessibility } from '@/components/site/useDialogAccessibility';
 
 export interface HomeMarketplaceExperienceProps {
   approvedStays: AnyPublicStay[];
@@ -102,7 +104,13 @@ function formatCompactBedFact(
   return count === 1 ? '1 bed' : `${count} beds`;
 }
 
-function HomepageStayCard({ property }: { property: AnyPublicStay }) {
+function HomepageStayCard({
+  property,
+  reveal = false,
+}: {
+  property: AnyPublicStay;
+  reveal?: boolean;
+}) {
   const { currency, formatPrice } = useCurrency();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -158,12 +166,18 @@ function HomepageStayCard({ property }: { property: AnyPublicStay }) {
     const el = trackRef.current;
     if (!el || images.length === 0) return;
     const clamped = Math.max(0, Math.min(images.length - 1, index));
-    el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
+    el.scrollTo({
+      left: clamped * el.clientWidth,
+      behavior: getPreferredScrollBehavior(),
+    });
     setActiveSlide(clamped);
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]">
+    <article
+      data-hamlet-reveal={reveal ? 'up' : undefined}
+      className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]"
+    >
       {/* 4:3 Photo Carousel or Monogram Fallback */}
       <div className="relative aspect-[4/3] overflow-hidden bg-[#1D355C]">
         {images.length > 0 ? (
@@ -233,13 +247,19 @@ function HomepageStayCard({ property }: { property: AnyPublicStay }) {
         )}
 
         {/* Verification Badge */}
-        <span className="pointer-events-none absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-[20px] border border-[#9AD3AE] bg-[#E9F7EE] px-3 py-1.5 text-[12px] font-semibold text-[#14532D] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+        <span
+          className={`pointer-events-none absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-[20px] border px-3 py-1.5 text-[12px] font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.12)] ${
+            trust.verified
+              ? 'border-hamlet-jade-100 bg-hamlet-jade-50 text-hamlet-jade'
+              : 'border-ink-200 bg-white/95 text-ink-900'
+          }`}
+        >
           <svg
             width="14"
             height="14"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#14532D"
+            stroke={trust.verified ? '#286b52' : '#475569'}
             strokeWidth="2.6"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -414,8 +434,11 @@ export function HomeMarketplaceExperience({
   const router = useRouter();
   const { currency } = useCurrency();
   const railRef = useRef<HTMLDivElement | null>(null);
+  const searchDialogRef = useRef<HTMLDivElement | null>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const closeSearchDialog = useCallback(() => setSheetOpen(false), []);
+  useDialogAccessibility(sheetOpen, searchDialogRef, closeSearchDialog);
   const [selectedSide, setSelectedSide] = useState<CorridorSideFilter>('all');
   const [selectedArea, setSelectedArea] = useState('');
   const [checkIn, setCheckIn] = useState('');
@@ -481,24 +504,8 @@ export function HomeMarketplaceExperience({
     const node = railRef.current;
     if (!node) return;
     const distance = Math.max(240, Math.round(node.clientWidth * 0.72));
-    node.scrollBy({ left: direction * distance, behavior: 'smooth' });
+    node.scrollBy({ left: direction * distance, behavior: getPreferredScrollBehavior() });
   };
-
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setSheetOpen(false);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [sheetOpen]);
 
   const visibleChips = useMemo(() => {
     if (selectedSide === 'island') return ISLAND_CHIPS;
@@ -590,7 +597,10 @@ export function HomeMarketplaceExperience({
   return (
     <div className="bg-[#F8F5EE] text-[#121F3C]">
       {/* ── Hero: Deep Navy (#0E1F3B) + Skyscraper & Bridge Skyline + Cream Search Sheet ── */}
-      <section className="relative overflow-hidden bg-[#0E1F3B] text-[#F8F5EE]">
+      <section
+        data-hamlet-hero
+        className="relative overflow-hidden bg-[#0E1F3B] text-[#F8F5EE]"
+      >
         <div className="relative z-10 mx-auto max-w-6xl lg:grid lg:grid-cols-12 lg:items-end lg:gap-8 lg:px-6 lg:pt-8">
           <div className="px-5 pt-5 lg:col-span-6 lg:px-0 lg:pt-4 lg:pb-8">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
@@ -653,6 +663,7 @@ export function HomeMarketplaceExperience({
               onClick={() => setSheetOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={sheetOpen}
+              aria-controls="hamlet-search-dialog"
               className="flex min-h-[68px] w-full cursor-pointer items-center gap-3.5 rounded-[34px] border border-[#D6D0C0] bg-white pr-2.5 pl-[22px] text-left shadow-[0_6px_18px_rgba(18,31,60,0.08)] transition hover:border-[#C9A45C]"
             >
               <svg
@@ -711,9 +722,12 @@ export function HomeMarketplaceExperience({
           className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(10,18,34,0.58)] sm:items-center sm:p-5"
         >
           <div
+            ref={searchDialogRef}
+            id="hamlet-search-dialog"
             role="dialog"
             aria-modal="true"
             aria-label="Find a stay"
+            tabIndex={-1}
             className="max-h-[92dvh] w-full max-w-[440px] overflow-y-auto overscroll-y-contain rounded-t-[28px] bg-[#F8F5EE] px-5 pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] text-[#121F3C] shadow-2xl sm:max-w-[480px] sm:rounded-[28px] sm:pt-5"
           >
             <div
@@ -903,6 +917,7 @@ export function HomeMarketplaceExperience({
 
       {/* ── Explore Lagos Neighbourhoods Rail (Immediately Below Filters) ── */}
       <section
+        data-hamlet-surface="jade"
         aria-labelledby="neighbourhood-rail-heading"
         className="mx-auto max-w-6xl space-y-3.5 px-5 pt-2 pb-6 sm:px-6 lg:pt-4 lg:pb-8"
       >
@@ -913,6 +928,7 @@ export function HomeMarketplaceExperience({
             </p>
             <h2
               id="neighbourhood-rail-heading"
+              data-hamlet-reveal="text"
               className="mt-1 font-display text-xl font-bold text-ink-950 sm:text-2xl"
             >
               Explore Lagos neighbourhoods
@@ -1030,7 +1046,10 @@ export function HomeMarketplaceExperience({
         className="mx-auto max-w-6xl px-5 pt-2 pb-8 sm:px-6 lg:pt-4 lg:pb-12"
       >
         <div className="mb-4 flex items-baseline justify-between gap-3 lg:mb-6">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
+          <h2
+            data-hamlet-reveal="text"
+            className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]"
+          >
             Stays across Lagos
           </h2>
           <span className="shrink-0 text-[13px] font-medium text-[#4A5468]">
@@ -1094,12 +1113,17 @@ export function HomeMarketplaceExperience({
           </div>
         ) : (
           <div
+            data-hamlet-stagger
             className={`grid grid-cols-1 gap-6 md:grid-cols-2 ${
               displayedStays.length >= 3 ? 'lg:grid-cols-3' : ''
             }`}
           >
-            {displayedStays.map((stay: AnyPublicStay) => (
-              <HomepageStayCard key={stay.id} property={stay} />
+            {displayedStays.map((stay: AnyPublicStay, index: number) => (
+              <HomepageStayCard
+                key={stay.id}
+                property={stay}
+                reveal={index < 6}
+              />
             ))}
           </div>
         )}
@@ -1115,9 +1139,15 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── 4-Pillar Verification Standard ── */}
-      <section className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10">
+      <section
+        data-hamlet-surface="lavender"
+        className="mx-auto max-w-6xl px-5 py-7 sm:px-6 lg:py-10"
+      >
         <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]">
+          <h2
+            data-hamlet-reveal="text"
+            className="m-0 font-display text-[26px] font-bold leading-[1.2] text-[#121F3C] lg:text-[32px]"
+          >
             Listing checks, explained
           </h2>
         </div>
@@ -1125,10 +1155,14 @@ export function HomeMarketplaceExperience({
           Each approved stay shows its recorded outcome for these checks. Some may be pending or not yet provided; open a listing to see its details.
         </p>
 
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+        <div
+          data-hamlet-stagger
+          className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4"
+        >
           {VERIFICATION_PILLARS.map(pillar => (
             <div
               key={pillar.num}
+              data-hamlet-reveal="up"
               className="rounded-[20px] border border-[#E5DFD0] bg-white p-4 sm:p-5"
             >
               <span className="font-display text-[14px] font-bold text-[#7A5E22]">
@@ -1146,8 +1180,15 @@ export function HomeMarketplaceExperience({
       </section>
 
       {/* ── Partner CTA Card ── */}
-      <section className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14">
-        <div className="rounded-[28px] bg-[#121F3C] px-[22px] py-[26px] text-[#F8F5EE] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10">
+      <section
+        data-hamlet-surface="blush"
+        data-hamlet-accent="terracotta"
+        className="mx-auto max-w-6xl px-5 pt-7 pb-9 sm:px-6 lg:pb-14"
+      >
+        <div
+          data-hamlet-reveal="left"
+          className="rounded-[28px] border border-hamlet-terracotta/30 bg-[#121F3C] px-[22px] py-[26px] text-[#F8F5EE] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:p-10"
+        >
           <div className="lg:max-w-2xl">
             <p className="m-0 text-[11px] font-semibold uppercase tracking-[2px] text-[#C9A45C]">
               Property Owners &amp; Managers

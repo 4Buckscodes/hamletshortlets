@@ -52,7 +52,7 @@ const PILLAR_LABELS: Array<{ key: string; label: string }> = [
 const STATUS_BADGE: Record<string, { text: string; cls: string }> = {
   verified: {
     text: 'Verified by HAMLET',
-    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    cls: 'border-hamlet-jade-100 bg-hamlet-jade-50 text-hamlet-jade',
   },
   self_reported: {
     text: 'Self-reported',
@@ -207,12 +207,12 @@ export default async function PropertyDetailPage({ params }: Props) {
           <span
             className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold normal-case ${
               trust.verified
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                ? 'border-hamlet-jade-100 bg-hamlet-jade-50 text-hamlet-jade'
                 : 'border-ink-200 bg-white text-ink-800'
             }`}
           >
             {trust.verified ? (
-              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-hamlet-jade" />
             ) : (
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
             )}
@@ -220,7 +220,10 @@ export default async function PropertyDetailPage({ params }: Props) {
           </span>
         </div>
 
-        <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
+        <h1
+          data-hamlet-reveal="text"
+          className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl"
+        >
           {stay.title}
         </h1>
 
@@ -301,9 +304,13 @@ export default async function PropertyDetailPage({ params }: Props) {
             )}
 
             {/* Honest 4-Pillar Verification Breakdown */}
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
+            <section
+              data-hamlet-reveal
+              data-hamlet-surface="jade"
+              className="rounded-3xl border border-hamlet-jade-100 bg-hamlet-jade-50 p-6"
+            >
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-700" />
+                <ShieldCheck className="h-5 w-5 shrink-0 text-hamlet-jade" />
                 <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                   Verification status
                 </h2>
@@ -342,12 +349,12 @@ export default async function PropertyDetailPage({ params }: Props) {
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-sm text-ink-600">
-                  Valid ID at check-in, guests within stated capacity, and no unauthorized events.
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                  No property-specific house rules are listed yet. Confirm any additional requirements with the partner before sending a booking request.
                 </p>
               )}
               {Number(stay.refundable_deposit || 0) > 0 && (
-                <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
+                <p className="mt-4 rounded-2xl border border-hamlet-terracotta-100 bg-hamlet-terracotta-50 p-3.5 text-xs leading-relaxed text-ink-700">
                   <strong>Refundable caution deposit:</strong> Itemised separately without service fee or FX buffer; refunded after post-checkout inspection.
                 </p>
               )}

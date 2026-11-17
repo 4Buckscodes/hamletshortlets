@@ -2,15 +2,43 @@
 @source "../app";
 @source "../src";
 
+/*
+ * HAMLET's original V0 visual language, carried into the live App Router:
+ * midnight navy, champagne and warm ivory stay signature; these supporting hues
+ * are reserved for discovery, trust, partner guidance and incident states.
+ */
+@theme {
+  --color-hamlet-champagne: #c9a45c;
+  --color-hamlet-ivory: #f8f5ee;
+  --color-hamlet-jade-50: #edf5f0;
+  --color-hamlet-jade-100: #dbece2;
+  --color-hamlet-jade: #286b52;
+  --color-hamlet-cobalt-50: #eef1fc;
+  --color-hamlet-cobalt-100: #dbe3fa;
+  --color-hamlet-cobalt: #3659c9;
+  --color-hamlet-terracotta-50: #fbf1ed;
+  --color-hamlet-terracotta-100: #f3dfd6;
+  --color-hamlet-terracotta: #96503a;
+  --color-hamlet-blush: #f2e0d9;
+  --color-hamlet-lavender: #e9e6f1;
+  --color-hamlet-earth: #72593d;
+}
+
 @layer base {
   :root {
     --navy: #0e1f3b;
     --navy-deep: #091528;
-    --gold: #c9a44a;
+    --gold: #c9a45c;
     --paper: #f8f5ee;
     --clay: #efeade;
     --muted: #64748b;
     --line: #e8e4da;
+    --hamlet-focus: var(--color-hamlet-cobalt);
+    --hamlet-navy: var(--navy);
+    --hamlet-champagne: var(--color-hamlet-champagne);
+    --hamlet-jade: var(--color-hamlet-jade);
+    --hamlet-cobalt: var(--color-hamlet-cobalt);
+    --hamlet-terracotta: var(--color-hamlet-terracotta);
   }
 
   * {
@@ -19,6 +47,7 @@
 
   html,
   body {
+    min-width: 320px;
     margin: 0;
     background: var(--paper);
     color: var(--navy);
@@ -27,8 +56,37 @@
     overflow-x: clip;
   }
 
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100svh;
+  }
+
+  main {
+    min-width: 0;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  main :where(h1, h2, h3) {
+    text-wrap: balance;
+  }
+
+  main :where(p, li) {
+    overflow-wrap: anywhere;
+  }
+
   a {
     text-decoration: none;
+    text-underline-offset: 0.2em;
   }
 
   button,
@@ -44,11 +102,21 @@
   select,
   textarea {
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  :where(form, label) {
+    min-width: 0;
+  }
+
+  :where(input, select, textarea) {
+    max-width: 100%;
+    min-width: 0;
   }
 
   :focus-visible {
-    outline: 3px solid var(--gold);
-    outline-offset: 2px;
+    outline: 3px solid var(--hamlet-focus);
+    outline-offset: 3px;
   }
 }
 
@@ -82,6 +150,25 @@
   }
 
   /* HAMLET global premium interaction system */
+  :where(button, a[href], [role="button"], [role="tab"], [role="option"], summary) {
+    transition-property:
+      color,
+      background-color,
+      border-color,
+      box-shadow,
+      opacity,
+      transform;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.2, 0.75, 0.25, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    transition-property: border-color, background-color, box-shadow, color;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
   :where(.primary-button, .secondary-button, .btn-jade, .btn-brass, .btn-dark, .btn-outline, .btn-ghost-dark, a.btn, button.btn) {
     transform: translateZ(0);
     transition:
@@ -121,26 +208,94 @@
   }
 
   [data-hamlet-reveal] {
+    --hamlet-reveal-x: 0px;
+    --hamlet-reveal-y: 16px;
+    --hamlet-stagger-delay: 0ms;
     opacity: 1;
     transform: none;
+    clip-path: none;
   }
 
-  .hamlet-motion-ready [data-hamlet-reveal] {
+  [data-hamlet-reveal="fade"] {
+    --hamlet-reveal-y: 0px;
+  }
+
+  [data-hamlet-reveal="left"] {
+    --hamlet-reveal-x: 16px;
+    --hamlet-reveal-y: 0px;
+  }
+
+  [data-hamlet-reveal="right"] {
+    --hamlet-reveal-x: -16px;
+    --hamlet-reveal-y: 0px;
+  }
+
+  [data-hamlet-reveal="text"] {
+    --hamlet-reveal-y: 8px;
+  }
+
+  .hamlet-motion-ready [data-hamlet-reveal][data-motion-armed="true"],
+  .hamlet-motion-ready [data-hamlet-reveal][data-motion-animating="true"] {
     transition:
-      opacity 680ms cubic-bezier(0.2, 0.7, 0.2, 1),
-      transform 680ms cubic-bezier(0.2, 0.7, 0.2, 1);
-    will-change: opacity, transform;
+      opacity 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      clip-path 820ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--hamlet-stagger-delay, 0ms);
   }
 
-  .hamlet-motion-ready [data-hamlet-reveal]:not([data-revealed="true"]) {
+  .hamlet-motion-ready [data-hamlet-reveal][data-motion-armed="true"]:not([data-revealed="true"]) {
     opacity: 0;
-    transform: translate3d(0, 28px, 0);
+    transform: translate3d(var(--hamlet-reveal-x), var(--hamlet-reveal-y), 0);
+  }
+
+  .hamlet-motion-ready [data-hamlet-reveal="image"][data-motion-armed="true"]:not([data-revealed="true"]) {
+    --hamlet-reveal-y: 0px;
+    clip-path: inset(5% 3% 0 3% round 1.5rem);
   }
 
   .hamlet-motion-ready [data-hamlet-reveal][data-revealed="true"] {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-    will-change: auto;
+  }
+
+  .hamlet-motion-ready [data-hamlet-reveal="image"][data-revealed="true"][data-motion-animating="true"] {
+    clip-path: inset(0 round 1.5rem);
+  }
+
+  .hamlet-motion-ready [data-hamlet-reveal]:focus-within,
+  .hamlet-motion-ready [data-hamlet-reveal]:focus-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+
+  .hamlet-motion-ready [data-hamlet-stagger] > [data-hamlet-reveal]:nth-child(2) {
+    --hamlet-stagger-delay: 80ms;
+  }
+
+  .hamlet-motion-ready [data-hamlet-stagger] > [data-hamlet-reveal]:nth-child(3) {
+    --hamlet-stagger-delay: 160ms;
+  }
+
+  .hamlet-motion-ready [data-hamlet-stagger] > [data-hamlet-reveal]:nth-child(4) {
+    --hamlet-stagger-delay: 240ms;
+  }
+
+  .hamlet-motion-ready [data-hamlet-stagger] > [data-hamlet-reveal]:nth-child(5) {
+    --hamlet-stagger-delay: 320ms;
+  }
+
+  .hamlet-motion-ready [data-hamlet-stagger] > [data-hamlet-reveal]:nth-child(6) {
+    --hamlet-stagger-delay: 400ms;
+  }
+
+  [role="dialog"][aria-modal="true"] {
+    animation: hamlet-dialog-enter 180ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  @keyframes hamlet-dialog-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .primary-button {
@@ -199,6 +354,85 @@
     opacity: 0.55;
     cursor: not-allowed;
   }
+
+  .hamlet-page-shell {
+    width: min(1280px, calc(100% - 32px));
+    margin-inline: auto;
+  }
+
+  .hamlet-scroll-rail {
+    display: flex;
+    min-width: 0;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scroll-snap-type: x mandatory;
+  }
+
+  .hamlet-scroll-rail > * {
+    scroll-snap-align: start;
+  }
+
+  .hamlet-accent-rule {
+    display: block;
+    width: 2rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--hamlet-section-accent, var(--color-hamlet-champagne));
+  }
+
+  .hamlet-accent-icon {
+    color: var(--hamlet-section-accent, var(--color-hamlet-champagne));
+  }
+
+  [data-hamlet-hero]::before {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 76% 42%, rgb(54 89 201 / 20%), transparent 35%),
+      radial-gradient(ellipse at 22% 26%, rgb(40 107 82 / 16%), transparent 30%);
+    content: "";
+    pointer-events: none;
+  }
+
+  [data-hamlet-surface="jade"] {
+    background-color: var(--color-hamlet-jade-50);
+  }
+
+  [data-hamlet-surface="cobalt"] {
+    background-color: var(--color-hamlet-cobalt-50);
+  }
+
+  [data-hamlet-surface="blush"] {
+    background-color: var(--color-hamlet-terracotta-50);
+  }
+
+  [data-hamlet-surface="lavender"] {
+    background-color: var(--color-hamlet-lavender);
+  }
+
+  [data-hamlet-accent="jade"] {
+    --hamlet-section-accent: var(--color-hamlet-jade);
+  }
+
+  [data-hamlet-accent="cobalt"] {
+    --hamlet-section-accent: var(--color-hamlet-cobalt);
+  }
+
+  [data-hamlet-accent="terracotta"] {
+    --hamlet-section-accent: var(--color-hamlet-terracotta);
+  }
+
+  [data-hamlet-accent="lavender"] {
+    --hamlet-section-accent: #756b91;
+  }
+}
+
+@media (min-width: 640px) {
+  .hamlet-page-shell {
+    width: min(1280px, calc(100% - 48px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -208,5 +442,13 @@
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;
+  }
+
+  [data-hamlet-reveal],
+  .hamlet-motion-ready [data-hamlet-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition-delay: 0ms !important;
   }
 }

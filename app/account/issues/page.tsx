@@ -280,7 +280,7 @@ export default function AccountIssuesPage() {
       <main className="shell flex-1 py-8 sm:py-12">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Guest Support</p>
+            <p className="eyebrow text-hamlet-terracotta">Guest Support</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
               Report or track an issue
             </h1>
@@ -302,14 +302,14 @@ export default function AccountIssuesPage() {
         {message && (
           <p
             role="status"
-            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800"
+            className="mt-5 rounded-2xl border border-hamlet-jade-100 bg-hamlet-jade-50 p-4 text-xs font-semibold text-hamlet-jade"
           >
             {message}
           </p>
         )}
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">
-          <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
+          <section data-hamlet-accent="terracotta" className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
             {!loading && bookings.length === 0 ? (
               <div className="py-6 text-center">
                 <h2 className="serif text-2xl font-medium text-ink-900">
@@ -413,7 +413,7 @@ export default function AccountIssuesPage() {
 
                 {step === 2 && (
                   <div className="space-y-4">
-                    <div className="rounded-2xl border border-ink-100 bg-paper p-4 text-xs leading-relaxed text-ink-700">
+                    <div className="rounded-2xl border border-hamlet-terracotta-100 bg-hamlet-terracotta-50 p-4 text-xs leading-relaxed text-ink-700">
                       <p className="m-0 font-bold text-ink-900">{bookingLabel(bookingId)}</p>
                       <p className="m-0 mt-1">
                         Category: <strong>{category}</strong> · Urgency:{' '}
@@ -481,7 +481,7 @@ export default function AccountIssuesPage() {
                       {issue.description}
                     </p>
                     {issue.resolution && (
-                      <div className="mt-3 rounded-xl bg-emerald-50/70 p-3 text-xs text-emerald-900">
+                      <div className="mt-3 rounded-xl bg-hamlet-jade-50 p-3 text-xs text-hamlet-jade">
                         <strong>Operations update:</strong> {issue.resolution}
                       </div>
                     )}

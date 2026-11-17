@@ -156,7 +156,9 @@ export default function PartnerStartDashboard() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
       <main className="shell flex-1 py-8 sm:py-12">
-        <p className="eyebrow">HAMLET Partner Network</p>
+        <p data-hamlet-reveal="fade" className="eyebrow">
+          HAMLET Partner Network
+        </p>
         <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
           {loading ? 'Preparing your workspace' : `Welcome, ${first}.`}
         </h1>

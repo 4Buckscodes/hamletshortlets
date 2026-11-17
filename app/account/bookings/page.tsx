@@ -93,7 +93,7 @@ function LifecycleBar({ status }: { status: string }) {
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold ${
                     done
-                      ? 'bg-emerald-700 text-white'
+                      ? 'bg-hamlet-jade text-white'
                       : 'border border-ink-200 bg-paper text-ink-400'
                   }`}
                 >
@@ -106,7 +106,7 @@ function LifecycleBar({ status }: { status: string }) {
               {idx < STAGES.length - 1 && (
                 <div
                   className={`mx-1.5 h-0.5 flex-1 rounded ${
-                    current > idx ? 'bg-emerald-700' : 'bg-ink-100'
+                    current > idx ? 'bg-hamlet-jade' : 'bg-ink-100'
                   }`}
                 />
               )}
@@ -140,8 +140,9 @@ export default function GuestBookingsPage() {
 
   // Post-stay feedback drawer state
   const [feedbackBooking, setFeedbackBooking] = useState<Booking | null>(null);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState<number | ''>('');
   const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackError, setFeedbackError] = useState('');
 
   const load = useCallback(async () => {
     if (!db) {
@@ -315,6 +316,16 @@ export default function GuestBookingsPage() {
   async function submitFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!db || !feedbackBooking) return;
+    setFeedbackError('');
+    if (rating === '') {
+      setFeedbackError('Choose a rating before submitting your feedback.');
+      return;
+    }
+    if (feedbackComment.trim().length < 5) {
+      setFeedbackError('Add at least 5 characters describing your stay.');
+      return;
+    }
+
     setBusyId(feedbackBooking.id);
     setError('');
     setNotice('');
@@ -322,15 +333,16 @@ export default function GuestBookingsPage() {
       const { error: rpcError } = await db.rpc('submit_booking_feedback', {
         target_booking_id: feedbackBooking.id,
         feedback_rating: rating,
-        feedback_category: 'overall_stay',
-        feedback_comment: feedbackComment.trim() || 'Smooth stay.',
+        feedback_category: 'Stay experience',
+        feedback_comment: feedbackComment.trim(),
       });
       if (rpcError) throw new Error(rpcError.message);
       setNotice(`Thank you — your feedback for ${feedbackBooking.reference} has been recorded.`);
       setFeedbackBooking(null);
+      setRating('');
       setFeedbackComment('');
     } catch (caught) {
-      setError(
+      setFeedbackError(
         caught instanceof Error ? caught.message : 'Could not save stay feedback.',
       );
     } finally {
@@ -387,7 +399,7 @@ export default function GuestBookingsPage() {
         {notice && (
           <p
             role="status"
-            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800"
+            className="mt-5 rounded-2xl border border-hamlet-jade-100 bg-hamlet-jade-50 p-4 text-xs font-semibold text-hamlet-jade"
           >
             {notice}
           </p>
@@ -462,7 +474,7 @@ export default function GuestBookingsPage() {
                     </span>
                   )}
                   {b.payment_reference && (
-                    <span className="text-emerald-800">
+                    <span className="text-hamlet-jade">
                       Verified ref: <span className="font-mono">{b.payment_reference}</span>
                     </span>
                   )}
@@ -495,7 +507,12 @@ export default function GuestBookingsPage() {
                   {b.status === 'completed' && (
                     <button
                       type="button"
-                      onClick={() => setFeedbackBooking(b)}
+                      onClick={() => {
+                        setRating('');
+                        setFeedbackComment('');
+                        setFeedbackError('');
+                        setFeedbackBooking(b);
+                      }}
                       className="secondary-button min-h-[46px]"
                     >
                       <MessageSquarePlus className="h-4 w-4 shrink-0" />
@@ -598,10 +615,16 @@ export default function GuestBookingsPage() {
               {fieldProps => (
                 <select
                   {...fieldProps}
+                  required
                   value={rating}
-                  onChange={e => setRating(Number(e.target.value))}
+                  onChange={e =>
+                    setRating(e.target.value ? Number(e.target.value) : '')
+                  }
                   className={FIELD_INPUT_CLASS}
                 >
+                  <option value="" disabled>
+                    Choose a rating
+                  </option>
                   {[5, 4, 3, 2, 1].map(r => (
                     <option key={r} value={r}>
                       {r} / 5
@@ -611,19 +634,30 @@ export default function GuestBookingsPage() {
               )}
             </FormField>
 
-            <FormField label="Comments" optional>
+            <FormField
+              label="Your stay feedback"
+              hint="This feedback is shared privately with HAMLET operations."
+            >
               {fieldProps => (
                 <textarea
                   {...fieldProps}
+                  required
+                  minLength={5}
                   rows={4}
-                  maxLength={1500}
+                  maxLength={2000}
                   value={feedbackComment}
                   onChange={e => setFeedbackComment(e.target.value)}
-                  placeholder="How did the stay match the listing description?"
+                  placeholder="Describe your experience in your own words…"
                   className={`${FIELD_INPUT_CLASS} resize-y`}
                 />
               )}
             </FormField>
+
+            {feedbackError && (
+              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-800">
+                {feedbackError}
+              </p>
+            )}
 
             <button
               type="submit"

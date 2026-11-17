@@ -35,6 +35,7 @@ import {
 } from '@/lib/discovery';
 import { getBrowserSupabase, type AnyPublicStay } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
+import { getPreferredScrollBehavior } from '@/lib/motion';
 import {
   FIELD_INPUT_CLASS,
   FocusedDrawer,
@@ -276,20 +277,25 @@ export function DiscoveryMarketplace({
   function scrollNeighbourhoodRail(direction: -1 | 1) {
     const node = railRef.current;
     if (!node) return;
-    node.scrollBy({ left: direction * 280, behavior: 'smooth' });
+    node.scrollBy({ left: direction * 280, behavior: getPreferredScrollBehavior() });
   }
 
   return (
     <div className="space-y-8">
       {/* ── Horizontally Scrollable Lagos Neighbourhood Discovery Rail ── */}
-      <section aria-labelledby="neighbourhood-rail-heading" className="space-y-3.5">
+      <section
+        data-hamlet-surface="jade"
+        aria-labelledby="neighbourhood-rail-heading"
+        className="space-y-3.5"
+      >
         <div className="flex items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-hamlet-cobalt">
               Island &amp; Lagos Mainland corridors
             </p>
             <h2
               id="neighbourhood-rail-heading"
+              data-hamlet-reveal="fade"
               className="mt-1 font-display text-xl font-bold text-ink-950 sm:text-2xl"
             >
               Explore Lagos neighbourhoods
@@ -419,11 +425,12 @@ export function DiscoveryMarketplace({
           <div className="min-w-0">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
               {mode === 'homepage'
-                ? 'Verified Lagos shortlets'
+                ? 'Approved listings in Lagos'
                 : 'Lagos shortlet marketplace'}
             </p>
             <h2
               id="discovery-results-heading"
+              data-hamlet-reveal="text"
               className="mt-1 font-display text-2xl font-bold text-ink-950 sm:text-3xl"
             >
               Places worth staying in
@@ -822,12 +829,16 @@ export function DiscoveryMarketplace({
           </div>
         ) : (
           /* 4. Real Approved Bookable Stays Grid */
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredApproved.map(stay => (
+          <div
+            data-hamlet-stagger
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {filteredApproved.map((stay, index) => (
               <StayListingCard
                 key={stay.id}
                 stay={stay}
                 querySuffix={detailQuerySuffix}
+                reveal={index < 6}
               />
             ))}
           </div>

@@ -100,7 +100,10 @@ export default async function StaysCataloguePage({
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
               Lagos Island &amp; Lagos Mainland
             </p>
-            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
+            <h1
+              data-hamlet-reveal="text"
+              className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl"
+            >
               Explore approved shortlet stays across Lagos.
             </h1>
           </div>

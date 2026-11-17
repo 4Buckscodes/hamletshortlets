@@ -58,7 +58,7 @@ const HONEST_STATUSES = [
   {
     label: 'Verified by HAMLET',
     code: 'verified',
-    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    cls: 'border-hamlet-jade-100 bg-hamlet-jade-50 text-hamlet-jade',
     desc: 'Reviewed and confirmed by HAMLET.',
   },
   {
@@ -161,7 +161,7 @@ export default function SafetyPage() {
                   'Caution deposits tracked separately and reviewed post-checkout',
                 ].map(line => (
                   <li key={line} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-hamlet-jade" />
                     <span>{line}</span>
                   </li>
                 ))}
@@ -180,7 +180,7 @@ export default function SafetyPage() {
                   'NDPR-aligned privacy controls for identity and booking data',
                 ].map(line => (
                   <li key={line} className="flex items-start gap-2.5">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-hamlet-cobalt" />
                     <span>{line}</span>
                   </li>
                 ))}
@@ -188,9 +188,9 @@ export default function SafetyPage() {
             </section>
           </div>
 
-          <section data-hamlet-reveal className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink-950 p-6 text-paper sm:flex-row sm:items-center sm:p-8">
+          <section data-hamlet-reveal data-hamlet-accent="terracotta" className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink-950 p-6 text-paper sm:flex-row sm:items-center sm:p-8">
             <div>
-              <div className="flex items-center gap-2 text-brass-300">
+              <div className="flex items-center gap-2 text-hamlet-terracotta-100">
                 <LifeBuoy className="h-4 w-4 shrink-0" />
                 <span className="text-[11px] font-extrabold uppercase tracking-[0.2em]">
                   Need help during a stay?
