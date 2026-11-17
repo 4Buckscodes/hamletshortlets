@@ -8,7 +8,6 @@ export const metadata = {
 
 export default function AboutPage() {
   return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
-    <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="primary-button">Explore stays</Link></div></header>
     <section className="shell" style={{paddingBlock:'48px 72px',maxWidth:920}}>
       <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>About us</p>
       <h1 className="serif" style={{fontSize:'clamp(40px,7vw,68px)',fontWeight:500,lineHeight:1.04,margin:'8px 0 18px',maxWidth:780}}>A clearer way to find your next stay.</h1>
