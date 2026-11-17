@@ -63,13 +63,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Supabase CLI
+        id: setup-supabase-cli
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.2.0
       - name: Start disposable Supabase stack
         run: supabase start
       - name: Apply migrations and run database tests
         run: supabase test db
       - name: Stop disposable Supabase stack
-        if: always()
+        if: always() && steps.setup-supabase-cli.outcome == 'success'
         run: supabase stop --no-backup
