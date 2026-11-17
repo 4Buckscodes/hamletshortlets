@@ -51,9 +51,11 @@ describe('Partner payout verification controls', () => {
       [
         JSON.stringify({
           title: 'Verified test apartment', property_type: 'Apartment', area: 'Lekki',
-          public_address: 'Test address, Lagos', nightly_rate: 100000, capacity: 2,
-          bedrooms: 1, bathrooms: 1, amenities: ['Wifi'],
-          image_urls: ['https://images.example/test.jpg'], house_rules: ['No parties'],
+          public_address: 'Test address, Lagos', nightly_rate: 100000,
+          cleaning_fee: 0, mandatory_charges: [], refundable_deposit: 50000,
+          capacity: 2, bedrooms: 1, bathrooms: 1, bed_setup: '1 queen bed',
+          amenities: ['Wifi'], image_urls: ['https://images.example/test.jpg'],
+          house_rules: ['No parties'],
         }),
         JSON.stringify({
           authority_basis: 'Registered owner — title deed verified',
