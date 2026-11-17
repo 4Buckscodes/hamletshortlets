@@ -35,7 +35,6 @@ export default function SiteNav() {
   const contextLinks = isAdmin ? adminLinks : isPartner ? partnerLinks : isAccount ? guestLinks : [];
   const links = isAdmin || isPartner || isAccount ? contextLinks : publicLinks;
 
-  useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
     if (!open) return;
     const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
@@ -51,7 +50,7 @@ export default function SiteNav() {
           <span>HAMLET<span className="hamlet-brand-dot">.</span>REST</span>
         </Link>
         <nav className="hamlet-global-links" aria-label="Main navigation">
-          {links.map(item => <Link key={item.href} href={item.href} aria-current={pathname === item.href ? 'page' : undefined}>{item.label}</Link>)}
+          {links.map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} aria-current={pathname === item.href ? 'page' : undefined}>{item.label}</Link>)}
         </nav>
         <div className="hamlet-global-actions">
           {isAdmin || isPartner || isAccount
