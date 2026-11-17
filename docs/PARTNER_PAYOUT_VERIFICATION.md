@@ -33,6 +33,8 @@ The database does not call a bank API or independently validate identity. An adm
 
 ## Settlement enforcement
 
+HAMLET currently has a financial ledger and administrator reconciliation screen, but the repository does not contain an outbound Paystack transfer/recipient worker. The `approved` and `paid` ledger states are not themselves bank transfers. An administrator must complete an externally approved transfer process and record the confirmed result; do not describe this as automated settlement.
+
 - `update_payout_status` checks all three partner verification statuses and the associated property verification before approval/payment.
 - A database trigger on `booking_payment_records` independently enforces the same gate on INSERT/UPDATE, including booking-transition and service-role writes that do not call the admin RPC.
 - Partner commission/referral ledger rows cannot be approved or marked paid without a beneficiary account.
