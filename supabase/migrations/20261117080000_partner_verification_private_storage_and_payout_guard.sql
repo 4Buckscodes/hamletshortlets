@@ -158,7 +158,7 @@ begin
     join public.profiles p on p.id = m.user_id
     join public.partner_payout_verifications v on v.partner_id = m.user_id
     join public.properties pr on pr.id = property_ref
-    join public.property_access pa
+    left join public.property_access pa
       on pa.property_id = pr.id
       and pa.user_id = m.user_id
       and pa.status = 'active'
@@ -168,8 +168,10 @@ begin
       and v.identity_status = 'verified'
       and v.bank_status = 'verified'
       and v.agreement_status = 'verified'
+      and (new.record_type = 'referral_reward' or pa.user_id is not null)
       and pr.status = 'approved'
       and pr.verification->>'ownership' = 'verified'
+      and pr.verification->>'identity' = 'verified'
       and pr.verification->>'authority' = 'verified'
       and pr.verification->>'inspection' = 'verified'
   ) into ready;
