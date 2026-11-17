@@ -1077,3 +1077,31 @@ main:not(.home-page) summary::marker { color:var(--hamlet-coral); }
   .home-search-button { height:48px; min-height:48px !important; }
   .home-area-quick a { padding:6px 9px !important; }
 }
+
+
+/* Unified HAMLET navigation — one working information architecture on every route. */
+.hamlet-global-header{position:relative;z-index:100;width:100%;background:#172119;color:#f4f0e6;border-bottom:1px solid rgba(217,242,75,.22)}
+.hamlet-global-inner{width:min(1320px,calc(100% - 56px));min-height:76px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:28px}
+.hamlet-global-brand{display:inline-flex;align-items:center;gap:11px;white-space:nowrap;color:#fffdf6;font-size:15px;font-weight:850;letter-spacing:-.065em}
+.hamlet-global-monogram{display:grid;place-items:center;width:36px;height:36px;border:1px solid #d9f24b;color:#d9f24b;font:500 23px Georgia,serif;transform:rotate(-7deg)}
+.hamlet-brand-dot{color:#ff6948}
+.hamlet-global-links,.hamlet-global-actions{display:flex;align-items:center;gap:clamp(14px,2.5vw,32px)}
+.hamlet-global-links a{color:rgba(244,240,230,.78);font-size:12px;font-weight:650;transition:color .2s}
+.hamlet-global-links a:hover,.hamlet-global-links a[aria-current=page]{color:#d9f24b}
+.hamlet-global-partner{display:inline-flex;align-items:center;gap:5px;color:#d9f24b;font-size:12px;font-weight:750}
+.hamlet-global-signin{border:1px solid rgba(244,240,230,.45);padding:10px 15px;color:#fffdf6;font-size:12px;font-weight:700}
+.hamlet-global-toggle{display:none;border:1px solid rgba(244,240,230,.35);color:#fffdf6;background:transparent;width:42px;height:42px;place-items:center}
+.hamlet-mobile-menu{display:none}
+main:not(.home-page)>header:has(a[href="/"]){display:none!important}
+main.auth-page{min-height:calc(100svh - 76px);padding:clamp(28px,6vw,76px) 24px;display:grid;align-content:center;justify-items:center;background:radial-gradient(ellipse at 15% 15%,rgba(46,80,232,.16),transparent 34%),radial-gradient(ellipse at 90% 80%,rgba(255,105,72,.16),transparent 32%),#f4f0e6!important}
+.auth-page .auth-card{width:min(100%,520px);padding:clamp(24px,5vw,44px);background:#fffdf6;border:1px solid rgba(23,33,25,.14);border-top:5px solid #d9f24b;border-radius:4px;box-shadow:0 24px 70px rgba(23,33,25,.12)}
+.auth-page .auth-eyebrow{color:#2e50e8;font-size:10px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}
+.auth-page h1{color:#172119;font:500 clamp(36px,6vw,54px)/1.02 "Playfair Display Variable",Georgia,serif;letter-spacing:-.055em}
+.auth-page .auth-lede{color:#62675f;line-height:1.75}
+.auth-page input{min-height:48px;padding:11px 13px;background:#fff!important;border:1px solid rgba(23,33,25,.2)!important;border-radius:2px!important}
+.auth-page button[type=submit]{min-height:50px;background:#2e50e8!important;color:#fff!important;border:0;border-radius:2px;font-weight:800}
+.auth-page .auth-switch{padding:5px;background:#e9edda;border-radius:3px}
+.auth-page .auth-switch button[aria-pressed=true]{background:#d9f24b!important;color:#172119!important}
+.auth-page .auth-partner-note{width:min(100%,520px);color:#65695f;font-size:12px;line-height:1.7;margin-top:15px}
+@media(max-width:900px){.hamlet-global-inner{width:calc(100% - 36px)}.hamlet-global-links{gap:14px}.hamlet-global-links a{font-size:11px}}
+@media(max-width:700px){.hamlet-global-inner{width:calc(100% - 30px);min-height:66px;gap:12px}.hamlet-global-links,.hamlet-global-partner{display:none}.hamlet-global-actions{margin-left:auto;gap:9px}.hamlet-global-signin{padding:9px 11px}.hamlet-global-toggle{display:grid}.hamlet-mobile-menu{position:absolute;display:grid;gap:0;top:100%;left:0;right:0;padding:8px 20px 18px;background:#172119;border-top:1px solid rgba(217,242,75,.2);box-shadow:0 20px 30px rgba(0,0,0,.2)}.hamlet-mobile-menu a{min-height:50px;display:flex;align-items:center;justify-content:space-between;color:#fffdf6;border-bottom:1px solid rgba(244,240,230,.13);font-size:14px;font-weight:650}.hamlet-mobile-menu a:last-child{color:#d9f24b;border-bottom:0}}
