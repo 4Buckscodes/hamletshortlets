@@ -12,7 +12,7 @@ export default function SignInPage() {
       <section className="auth-card">
         <p className="auth-eyebrow">A better way to stay</p>
         <h1>Come on in.</h1>
-        <p className="auth-lede">Sign in to pick up where you left off, or create an account and find your next Lagos stay.</p>
+        <p className="auth-lede">Sign in to pick up where you left off, or create an account and find your next stay.</p>
         <SignInForm />
       </section>
       <p className="auth-partner-note">Looking to list or manage a property? <a href="/partners/apply">Partner with HAMLET</a> and bring your space to the right guests.</p>
