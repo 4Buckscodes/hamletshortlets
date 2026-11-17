@@ -16,6 +16,12 @@ export default function SiteFooter() {
           <Link href="/faqs">FAQs & support</Link>
           <Link href="/safety">Trust & safety</Link>
         </nav>
+        <nav className="site-footer-links" aria-label="Legal navigation">
+          <Link href="/legal/privacy">Privacy</Link>
+          <Link href="/legal/terms">Booking terms</Link>
+          <Link href="/legal/trust">Trust & verification</Link>
+          <Link href="/legal/pricing">Fees & settlement</Link>
+        </nav>
         <p className="site-footer-signoff">FIND YOUR PLACE.<br /><em>Stay easy.</em></p>
       </div>
       <div className="site-footer-legal"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>SHORTLETS, WITH ACCOUNTABILITY.</span></div>
