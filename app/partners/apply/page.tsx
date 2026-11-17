@@ -46,7 +46,6 @@ export default function PartnerApplicationPage() {
     finally { setBusy(false); }
   }
   return <main style={{ minHeight: '100svh', background: 'var(--paper)' }}>
-    <header style={{ background: '#fff', borderBottom: '1px solid var(--line)' }}><div className="shell" style={{ minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: 'var(--gold)' }}>.REST</span></Link><Link href="/partners" className="secondary-button">Partner workspace</Link></div></header>
     <section className="shell" style={{ maxWidth: 760, paddingBlock: 34 }}>
       <p style={{ color: '#806522', textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 11, fontWeight: 800 }}>Join HAMLET partners</p>
       <h1 className="serif" style={{ fontSize: 'clamp(34px,6vw,52px)', fontWeight: 500, margin: '8px 0 12px' }}>Let’s grow your property business.</h1>
