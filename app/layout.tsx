@@ -4,6 +4,7 @@ import '@fontsource-variable/playfair-display';
 import './globals.css';
 import SiteFooter from './site-footer';
 import MotionExperience from './motion-experience';
+import SiteNav from './site-nav';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.hamlet.rest'),
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-NG">
-      <body><MotionExperience>{children}<SiteFooter /></MotionExperience></body>
+      <body><MotionExperience><SiteNav />{children}<SiteFooter /></MotionExperience></body>
     </html>
   );
 }
