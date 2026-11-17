@@ -1114,3 +1114,13 @@ main.auth-page{min-height:calc(100svh - 76px);padding:clamp(28px,6vw,76px) 24px;
 .site-footer-signoff{color:#d9f24b!important}
 .site-footer-signoff em{color:#ff6948!important}
 .site-footer-legal{border-color:rgba(244,240,230,.2)!important}
+
+
+/* Search now captures the minimum booking intent: place, dates and guest count. */
+.home-search-form{grid-template-columns:minmax(190px,1.35fr) minmax(130px,1fr) minmax(130px,1fr) minmax(100px,.72fr) auto}
+.home-guests{border-right:1px solid rgba(23,33,25,.17)}
+@media(max-width:700px){
+ .home-search-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+ .home-search-field.home-guests{grid-column:1 / -1;height:58px!important;border-top:1px solid rgba(23,33,25,.12);border-right:0!important}
+ .home-search-field.home-guests select{max-width:100%}
+}
