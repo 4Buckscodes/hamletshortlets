@@ -87,14 +87,13 @@
     }
   }
 
-  /* Verified stays: restrained desktop hover, 3D presentation only on mobile */
+  /* Verified stays: restrained, flat 2D hover treatment */
   @media (hover: hover) and (pointer: fine) and (min-width: 768px) {
     .hamlet-verified-hover {
       transition: transform 240ms cubic-bezier(.2,.75,.25,1), filter 240ms ease;
-      transform-style: preserve-3d;
     }
     .hamlet-verified-hover:hover {
-      transform: perspective(1100px) rotateX(1deg) rotateY(-1deg) translateY(-2px);
+      transform: translateY(-2px);
       filter: drop-shadow(0 16px 24px rgba(28,36,55,.10));
     }
     .hamlet-verified-hover .editorial-card {
@@ -107,8 +106,6 @@
   }
 
   .hamlet-mobile-ring-card {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
 
   .editorial-link {
@@ -142,11 +139,6 @@
     font-family: "Playfair Display Variable", "Playfair Display", Georgia, serif;
   }
 
-  .hamlet-depth {
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-  }
-
   .pill {
     display: inline-flex;
     align-items: center;
@@ -162,7 +154,6 @@
 
   /* HAMLET global premium interaction system */
   :where(.primary-button, .secondary-button, .btn-jade, .btn-brass, .btn-dark, .btn-outline, .btn-ghost-dark, a.btn, button.btn) {
-    transform: translateZ(0);
     transition:
       transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1),
       box-shadow 180ms cubic-bezier(0.2, 0.75, 0.25, 1),
@@ -213,12 +204,12 @@
 
   .hamlet-motion-ready [data-hamlet-reveal]:not([data-revealed="true"]) {
     opacity: 0;
-    transform: translate3d(0, 28px, 0);
+    transform: translateY(28px);
   }
 
   .hamlet-motion-ready [data-hamlet-reveal][data-revealed="true"] {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translateY(0);
     will-change: auto;
   }
 
