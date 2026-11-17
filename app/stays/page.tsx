@@ -3,8 +3,6 @@ import { getPublicSupabase } from '@/lib/supabase-public';
 
 type SearchParams = Promise<{ city?: string; area?: string; checkIn?: string; checkOut?: string; guests?: string; bedrooms?: string; maxPrice?: string; type?: string }>;
 type Stay = { id:string; title:string; property_type:string|null; area:string|null; city:string|null; nightly_rate:number|string|null; bedrooms:number|null; bathrooms:number|null; capacity:number|null; image_urls:string[]|null; trust_label:string|null };
-const areas=['Lekki','Victoria Island','Ikoyi','Yaba','Ikeja GRA','Surulere'];
-
 const propertyTypes=['Apartment','Serviced apartment','Studio apartment','Duplex','Penthouse','Villa','Terrace'];
 const validDate=(value:string|undefined)=>!!value&&/^\d{4}-\d{2}-\d{2}$/.test(value);
 const boundedInt=(value:string|undefined,min:number,max:number)=>{if(!value||!/^\d+$/.test(value))return null;const n=Number(value);return Number.isSafeInteger(n)&&n>=min&&n<=max?n:null;};
@@ -13,7 +11,7 @@ export const metadata={title:'Explore shortlets across Nigeria',description:'Fin
 export default async function StaysPage({searchParams}:{searchParams:SearchParams}) {
  const params=await searchParams;
  const city=typeof params.city==='string'?params.city.trim().slice(0,80):'';
- const area=params.area&&areas.includes(params.area)?params.area:'';
+ const area=typeof params.area==='string'?params.area.trim().slice(0,80):'';
  const guests=boundedInt(params.guests,1,50);
  const bedrooms=boundedInt(params.bedrooms,0,20);
  const maxPrice=boundedInt(params.maxPrice,20000,100000000);
@@ -26,8 +24,11 @@ export default async function StaysPage({searchParams}:{searchParams:SearchParam
  let availabilityMessage='';
  if(supabase){
   let query=supabase.from('properties').select('id,title,property_type,area,city,nightly_rate,bedrooms,bathrooms,capacity,image_urls,trust_label').eq('status','approved').order('created_at',{ascending:false}).limit(100);
-  if(city) query=query.ilike('city',city);
-  if(area) query=query.ilike('area',area);
+  if(city){
+   const destination=city.replace(/[,%()]/g,' ').replace(/\s+/g,' ').trim();
+   if(destination) query=query.or('city.ilike.%'+destination+'%,area.ilike.%'+destination+'%,title.ilike.%'+destination+'%');
+  }
+  if(area) query=query.ilike('area','%'+area.replace(/[,%()]/g,' ')+'%');
   if(type) query=query.ilike('property_type',type);
   if(guests!==null) query=query.gte('capacity',guests);
   if(bedrooms!==null) query=query.gte('bedrooms',bedrooms);
@@ -54,10 +55,10 @@ export default async function StaysPage({searchParams}:{searchParams:SearchParam
   <section className="shell" style={{paddingBlock:'30px 70px'}}>
    <p style={{color:'#806522',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:800,fontSize:11}}>Find your next stay · Nigeria</p>
    <h1 className="serif" style={{fontSize:'clamp(34px,7vw,58px)',fontWeight:500,letterSpacing:'-.04em',margin:'8px 0 12px'}}>Find your kind of stay.</h1>
-   <p style={{color:'var(--muted)',lineHeight:1.65,maxWidth:620}}>Explore approved listings by destination, neighbourhood, guests, bedrooms, property type and nightly budget. Dates can be checked against recorded calendar conflicts; a property partner must still confirm your dates.</p>{availabilityMessage&&<p role="status" style={{fontSize:13,color:'var(--muted)',marginTop:10}}>{availabilityMessage}</p>}
+   <p style={{color:'var(--muted)',lineHeight:1.65,maxWidth:620}}>Explore approved listings across Nigeria. Search by city, state, area or neighbourhood, then refine by guests, bedrooms, property type and nightly budget. Dates can be checked against recorded calendar conflicts; a property partner must still confirm your dates.</p>{availabilityMessage&&<p role="status" style={{fontSize:13,color:'var(--muted)',marginTop:10}}>{availabilityMessage}</p>}
    <form action="/stays" method="get" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,180px),1fr))',alignItems:'end',gap:12,padding:16,background:'#fff',border:'1px solid var(--line)',borderRadius:22,marginTop:22}}>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Destination<input name="city" type="text" defaultValue={city} placeholder="Any city in Nigeria" className="pill" style={{width:'100%',borderRadius:12}}/></label>
-    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Neighbourhood<select name="area" defaultValue={area} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Any neighbourhood</option>{areas.map(a=><option key={a} value={a}>{a}</option>)}</select></label>
+    <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Area / neighbourhood<input name="area" type="text" defaultValue={area} placeholder="Any area or neighbourhood" className="pill" style={{width:'100%',borderRadius:12}}/></label>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Check-in<input name="checkIn" type="date" defaultValue={params.checkIn??''} className="pill" style={{width:'100%',borderRadius:12}}/></label>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Check-out<input name="checkOut" type="date" min={params.checkIn||undefined} defaultValue={params.checkOut??''} className="pill" style={{width:'100%',borderRadius:12}}/></label>
     <label style={{display:'grid',gap:7,fontSize:12,fontWeight:750}}>Guests<select name="guests" defaultValue={guests?.toString()||''} className="pill" style={{width:'100%',borderRadius:12}}><option value="">Any guest count</option>{[1,2,3,4,5,6,8,10,12,15,20].map(n=><option key={n} value={n}>{n} {n===1?'guest':'guests'}</option>)}</select></label>
