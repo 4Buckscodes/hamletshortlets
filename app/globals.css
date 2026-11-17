@@ -984,3 +984,96 @@ main:not(.home-page) summary::marker { color:var(--hamlet-coral); }
 @media (prefers-reduced-motion:reduce) {
   main:not(.home-page) :where(a,button,article) { transition:none !important; }
 }
+
+
+/* Mobile search section: compact booking controls, not a full-screen panel. */
+@media (max-width:700px) {
+  .home-search {
+    padding:24px 0 26px !important;
+  }
+  .home-search-heading {
+    margin:0 0 14px !important;
+    gap:4px !important;
+  }
+  .home-search-heading h2 {
+    margin:0 !important;
+    font-size:clamp(30px,8vw,40px) !important;
+    line-height:1.02 !important;
+  }
+  .home-search-form {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:0 !important;
+    border-radius:4px;
+    box-shadow:0 10px 26px rgba(23,33,25,.08);
+  }
+  .home-search-field,
+  .home-search-field.home-destination {
+    box-sizing:border-box;
+    min-width:0;
+    min-height:0 !important;
+    height:76px !important;
+    padding:10px 13px !important;
+    align-content:center;
+  }
+  .home-search-field.home-destination {
+    grid-column:1 / -1;
+    height:76px !important;
+    border-left:4px solid var(--hamlet-citrus);
+    border-right:0 !important;
+    border-bottom:1px solid rgba(23,33,25,.12);
+  }
+  .home-search-field:nth-child(2) {
+    grid-column:1;
+    border-right:1px solid rgba(23,33,25,.14);
+    border-bottom:0;
+  }
+  .home-search-field:nth-child(3) {
+    grid-column:2;
+    border-top:0 !important;
+    border-right:0;
+    border-bottom:0;
+  }
+  .home-search-field > span {
+    margin-bottom:5px !important;
+    font-size:8px !important;
+    letter-spacing:.11em;
+  }
+  .home-search-field select,
+  .home-search-field input {
+    min-height:28px !important;
+    height:28px !important;
+    padding:0 !important;
+    font-size:12px !important;
+  }
+  .home-search-button {
+    grid-column:1 / -1;
+    min-height:52px !important;
+    height:52px;
+    padding:0 16px !important;
+    font-size:14px;
+  }
+  .home-area-quick {
+    margin-top:14px !important;
+    gap:7px !important;
+    flex-wrap:wrap;
+  }
+  .home-area-quick > span {
+    flex-basis:100%;
+    margin-bottom:1px;
+    font-size:9px;
+  }
+  .home-area-quick a {
+    min-height:34px;
+    padding:7px 12px !important;
+    font-size:10px !important;
+  }
+}
+@media (max-width:380px) {
+  .home-search { padding-block:20px 22px !important; }
+  .home-search-field,
+  .home-search-field.home-destination { padding-inline:10px !important; }
+  .home-search-field,.home-search-field.home-destination { height:70px !important; }
+  .home-search-button { height:48px; min-height:48px !important; }
+  .home-area-quick a { padding:6px 9px !important; }
+}
