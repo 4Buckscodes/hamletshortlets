@@ -15,7 +15,6 @@ const areas = [
 ];
 export default function LagosGuidePage() {
  return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
-  <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="primary-button">Explore stays</Link></div></header>
   <section className="shell" style={{paddingBlock:'42px 70px',maxWidth:1000}}>
    <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>Neighbourhood guide</p>
    <h1 className="serif" style={{fontSize:'clamp(38px,7vw,64px)',fontWeight:500,lineHeight:1.05,margin:'8px 0 18px'}}>Choose your Lagos base.</h1>
