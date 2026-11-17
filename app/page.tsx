@@ -18,7 +18,7 @@ export default function HomePage() {
             <p className="home-kicker"><span className="home-kicker-dot" /> NOT JUST A PLACE TO SLEEP. A WAY IN.</p>
             <h1 id="home-title">Find your<br /><span>place to</span><br /><em>belong.</em></h1>
             <div className="home-intro-row"><p>Discover stays across Nigeria, starting in Lagos. Find a space that fits the way you travel.</p><a href="#find-your-stay" className="home-scroll" aria-label="Scroll to find your stay"><ArrowDown size={18} /></a></div>
-            <div className="home-coordinate">06° 27&apos; N <span>·</span> 03° 24&apos; E</div>
+            <div className="home-coordinate">LAGOS, NIGERIA <span>·</span> STARTING POINT</div>
           </div>
           <div className="home-hero-art">
             <div className="home-photo-frame"><img src="/images/hamlet-lagos-hero.png" alt="Sunlit Lagos apartment with tactile green and terracotta details" /><span className="home-image-index">A GOOD PLACE TO LAND <b>— NIGERIA</b></span></div>
@@ -35,6 +35,7 @@ export default function HomePage() {
           <label className="home-search-field home-destination"><span><MapPin size={17} /> THE NEIGHBOURHOOD</span><select name="area" defaultValue="" aria-label="Choose a neighbourhood"><option value="">Anywhere in Lagos</option>{areas.map(area => <option key={area} value={area}>{area}</option>)}</select></label>
           <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
           <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>
+          <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" defaultValue="2" aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10,12,15,20].map(count => <option key={count} value={count}>{count} {count===1?"guest":"guests"}</option>)}</select></label>
           <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
         </form>
         <div className="home-area-quick"><span>START WITH A VIBE</span>{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
@@ -46,7 +47,7 @@ export default function HomePage() {
         <Link className="home-all-stays" href="/stays">Explore available stays <ArrowRight size={16} /></Link>
       </section>
 
-      <section className="home-belief"><div className="home-shell home-belief-grid"><div><p className="home-section-label">03 / THE HAMLET FEELING</p><h2>Good stays.<br /><em>Zero guesswork.</em></h2></div><div className="home-belief-copy"><p>We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p><Link href="/how-it-works">Here&apos;s how we make it easier <ArrowUpRight size={16} /></Link></div><div className="home-belief-points"><div><ShieldCheck size={19} /><span><strong>Know before you go</strong><small>Clear details. No surprises at the door.</small></span></div><div><Sparkles size={19} /><span><strong>Find your kind of place</strong><small>Places with personality.</small></span></div><div><ArrowRight size={19} /><span><strong>Stay in control</strong><small>Request first. Confirm when you&apos;re ready.</small></span></div></div></div></section>
+      <section className="home-belief"><div className="home-shell home-belief-grid"><div><p className="home-section-label">03 / THE HAMLET FEELING</p><h2>Good stays.<br /><em>Zero guesswork.</em></h2></div><div className="home-belief-copy"><p>We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p><Link href="/how-it-works">Here&apos;s how we make it easier <ArrowUpRight size={16} /></Link></div><div className="home-belief-points"><div><ShieldCheck size={19} /><span><strong>Know before you go</strong><small>Key details are clear before you request.</small></span></div><div><Sparkles size={19} /><span><strong>Find your kind of place</strong><small>Places with personality.</small></span></div><div><ArrowRight size={19} /><span><strong>Stay in control</strong><small>Request first. Confirm when you&apos;re ready.</small></span></div></div></div></section>
 
     </main>
   );
