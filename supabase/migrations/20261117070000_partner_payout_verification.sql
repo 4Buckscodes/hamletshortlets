@@ -76,7 +76,8 @@ begin
     or length(btrim(coalesce(payout_bank_name,''))) < 2
     or length(btrim(coalesce(payout_bank_code,''))) < 2
     or length(btrim(coalesce(payout_beneficiary_name,''))) < 2
-    or coalesce(payout_account_last4,'') !~ '^[0-9]{4}
+    or coalesce(payout_account_last4,'') !~ '^[0-9]{4}$' then
+    raise exception 'Submit the identity document, bank beneficiary details and signed agreement.';
   end if;
 
   -- In production, accept only objects that already exist in the private evidence bucket.
