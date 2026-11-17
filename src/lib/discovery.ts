@@ -401,14 +401,16 @@ export function filterAndSortApprovedStays(
       if (isMainlandArea(areaVal || addrVal)) return false;
     }
 
-    if (
-      filters.area.trim() &&
-      !matchesLagosAreaFilter(
-        { area: areaVal, address: addrVal, title: stay.title },
-        filters.area,
-      )
-    ) {
-      return false;
+    if (filters.area.trim()) {
+      const location = { area: areaVal, address: addrVal, title: stay.title };
+      const requested = filters.area.trim().toLowerCase();
+      const isLagosCorridor = /lagos|lekki|ikoyi|yaba|ikeja|ajah|ikate|surulere|shomolu|somolu|gbagada|maryland|victoria island|oniru|banana island|magodo|ogudu|ilupeju|ebute metta/.test(requested);
+      const matchesDestination = isLagosCorridor
+        ? matchesLagosAreaFilter(location, filters.area)
+        : [areaVal, addrVal, stay.title || ''].some(value =>
+            value.toLowerCase().includes(requested),
+          );
+      if (!matchesDestination) return false;
     }
 
     if (!matchesAccommodationFilter(stay, filters.type)) {

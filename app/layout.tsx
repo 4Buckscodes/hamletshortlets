@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: '%s | HAMLET.REST',
   },
   description:
-    'Find your next shortlet in Lagos across Victoria Island, Ikoyi, Lekki, Yaba, Shomolu, Surulere and Ikeja GRA. Transparent pricing and verified booking steps.',
+    'Find your next shortlet across Nigeria. Explore approved listings, transparent pricing and straightforward booking requests.',
   applicationName: HAMLET_BRAND,
   manifest: '/site.webmanifest',
   icons: {
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     locale: 'en_NG',
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Shortlets, with accountability. Verified apartments across Lagos Island and Lagos Mainland.',
+      'Shortlets, with accountability. Explore approved apartments across Nigeria.',
     images: [
       {
         url: '/api/og/default',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'HAMLET.REST — Your stay, sorted.',
-    description: 'Shortlets, with accountability. Verified stays across Lagos.',
+    description: 'Shortlets, with accountability. Explore approved stays across Nigeria.',
     images: ['/api/og/default'],
   },
   robots: { index: true, follow: true },

@@ -18,9 +18,9 @@ import { StaysExplorer } from './stays-explorer';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Explore Lagos Shortlet Stays',
+  title: 'Explore Shortlet Stays Across Nigeria',
   description:
-    'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
+    'Explore approved shortlet stays across Nigeria. Search by city, area or neighbourhood, with clear property details and booking requests.',
   pathname: '/stays',
 });
 
@@ -91,10 +91,10 @@ export default async function StaysCataloguePage({
         <header className="mb-8 flex flex-col gap-3 border-b border-ink-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
-              Lagos Island &amp; Lagos Mainland
+              Shortlet stays across Nigeria
             </p>
             <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
-              Explore verified shortlet stays across Lagos.
+              Find a shortlet anywhere in Nigeria.
             </h1>
           </div>
 
