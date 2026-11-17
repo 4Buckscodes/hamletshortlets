@@ -74,7 +74,6 @@ export default function AccountIssuesPage() {
   };
 
   return <main style={{ minHeight: "100svh", background: "var(--paper)" }}>
-    <header style={{ background: "#fff", borderBottom: "1px solid var(--line)" }}><div className="shell" style={{ minHeight: 68, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><Link href="/" style={{ fontWeight: 850, fontSize: 19 }}>HAMLET<span style={{ color: "var(--gold)" }}>.REST</span></Link><Link href="/account/bookings" className="secondary-button">My bookings</Link></div></header>
     <section className="shell" style={{ paddingBlock: 34, maxWidth: 900 }}>
       <p style={{ color: "#806522", textTransform: "uppercase", letterSpacing: ".12em", fontSize: 11, fontWeight: 800 }}>Guest support</p>
       <h1 className="serif" style={{ fontSize: "clamp(34px,6vw,52px)", fontWeight: 500, margin: "8px 0 12px" }}>Report a booking issue</h1>
