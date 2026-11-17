@@ -79,7 +79,7 @@ export default function SignInForm() {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, padding: 5, borderRadius: 999, background: '#f1eee7', marginBottom: 24 }}>
+      <div className="auth-switch" style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
         <button type="button" onClick={() => { setMode('signin'); setError(''); setMessage(''); }} aria-pressed={mode === 'signin'} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 999, cursor: 'pointer', background: mode === 'signin' ? '#fff' : 'transparent', color: 'var(--navy)', fontWeight: 700 }}>Sign in</button>
         <button type="button" onClick={() => { setMode('signup'); setError(''); setMessage(''); }} aria-pressed={mode === 'signup'} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 999, cursor: 'pointer', background: mode === 'signup' ? '#fff' : 'transparent', color: 'var(--navy)', fontWeight: 700 }}>Create account</button>
       </div>
