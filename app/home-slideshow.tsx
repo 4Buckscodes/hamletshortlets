@@ -79,7 +79,7 @@ function formatPillDate(isoDate: string): string {
 }
 
 function formatAvailableFromDate(isoDate: string | null | undefined, todayIso: string): string | null {
-  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate) || isoDate < todayIso) return null;
   const parsed = new Date(`${isoDate}T12:00:00Z`);
   if (!Number.isFinite(parsed.getTime())) return null;
   return parsed.toLocaleDateString('en-GB', {
