@@ -50,7 +50,24 @@ Keep separate ledger treatment for:
 
 Owner-defined deal terms must be recorded as versioned, accepted commercial offers. Changes apply prospectively and must not silently rewrite terms attached to an existing booking.
 
-## Implemented in the current feature branch\n\n- Expo app shell and role-aware tabs.\n- Supabase session persistence using AsyncStorage.\n- Native email/password sign-in, guest sign-up, password reset request and email callback deep link.\n- Public approved stays catalogue and detail endpoints using the existing sanitised guest projection.\n- Native property detail screen and date selection.\n- Guest booking request POST to the existing server-authoritative booking route, including the current central pricing and availability checks.\n- Booking confirmation copy correctly states that partner confirmation is required before payment; no payment is captured in this milestone.\n\n## Delivery sequence
+## Implemented in the current feature branch
+
+- Expo app shell, role-aware tabs and Supabase session persistence using AsyncStorage.
+- Native email/password sign-in, guest sign-up, password reset, email callback deep link and profile editing.
+- Public approved-stays catalogue and sanitised property detail endpoints.
+- Native property detail, date selection, guest count and special requests.
+- Server-generated quote preview reusing the canonical pricing/FX modules; booking requests are recalculated server-side.
+- Guest booking request submission, booking history and permitted cancellation through existing server APIs/RPCs.
+- Secure Paystack checkout handoff for eligible `awaiting_payment` bookings through the existing Edge Function. The client validates the checkout URL and never treats app/browser return as payment confirmation; the signed provider webhook remains authoritative.
+- Partner network onboarding, separate authority application/status, private property drafts and authenticated property intake.
+- Multi-photo property picker, resize/re-encoding, upload limits and authenticated own-folder Storage uploads.
+- Partner portfolio, booking review, availability controls, referral/performance board and approved-property agent inventory desk.
+- Missing API configuration fails closed before partner photo upload work begins.
+- Mobile dependency lockfile is committed; mobile CI uses `npm ci`, Expo Doctor and TypeScript.
+
+These are code-level implementation claims. They do not mean that native device behavior, staging integrations, provider webhooks or store builds have been physically verified.
+
+## Delivery sequence
 
 ### M0 — Foundation
 Expo project, app identifiers, navigation, design tokens, environment validation, Supabase session persistence, deep links and CI checks.
