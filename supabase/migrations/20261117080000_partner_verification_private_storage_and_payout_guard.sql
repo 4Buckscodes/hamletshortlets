@@ -168,7 +168,7 @@ begin
       and v.identity_status = 'verified'
       and v.bank_status = 'verified'
       and v.agreement_status = 'verified'
-      and (new.record_type = 'referral_reward' or pa.user_id is not null)
+      and (new.record_type in ('referral_reward','closing_agent_commission') or pa.user_id is not null)
       and pr.status = 'approved'
       and pr.verification->>'ownership' = 'verified'
       and pr.verification->>'identity' = 'verified'
