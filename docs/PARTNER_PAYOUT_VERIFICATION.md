@@ -4,28 +4,46 @@
 
 Partner registration, partner workspace access, guest booking access and property submission are immediate. Payout verification is a separate control and must never be used to block those actions.
 
-A partner payout requires all of the following:
+A partner payout requires:
+1. An active HAMLET account and active partner-network membership.
+2. Identity evidence submitted and marked verified by an administrator.
+3. Bank beneficiary details submitted and independently checked by an administrator using an approved bank/provider channel.
+4. The current signed partner agreement submitted and marked verified.
+5. The associated booking's property approved with ownership, authority to list and physical inspection all verified.
+6. Active beneficiary access to the associated property for property-attributed commission.
 
-1. Active HAMLET account and active partner-network membership.
-2. Identity document submitted and marked verified by an administrator.
-3. Bank beneficiary details submitted and independently checked; the database stores the bank name/code, beneficiary name, last four account digits and a verification reference, never the full account number.
-4. Current signed partner agreement submitted and marked verified.
-5. The booking's property is approved, and its ownership, authority and inspection verification values are all `verified`.
-6. The beneficiary has active access to that property.
+## Partner submission
 
-## Workflow
+The partner workspace route is `/partners/payout-verification`.
 
-- Partner submits identity-document and signed-agreement storage paths, bank name/code, beneficiary name and account-number last four digits through `submit_partner_payout_verification`.
-- The row is created or updated with pending statuses. Changing identity, bank or agreement details resets only the affected check to pending.
-- An administrator independently checks the identity document, bank beneficiary using an approved bank/provider verification channel, and signed agreement.
-- An administrator records the outcome through `review_partner_payout_verification`. Bank verification requires a non-empty external verification reference.
-- `update_payout_status` rejects partner payout approval/payment until all partner checks and property-level checks pass.
+- Identity and signed agreement documents are uploaded to the private `partner-verification-documents` bucket.
+- Object paths are user-scoped: `<auth-user-uuid>/<identity|agreement>/<filename>`.
+- Accepted file types: PDF, JPEG, PNG and WEBP. Maximum size: 10 MB.
+- Bank details include bank name, bank code, beneficiary name and only the last four account digits. Never request or store a full account number, PIN or card credentials.
+- The `submit_partner_payout_verification` RPC stores the evidence paths and resets only changed checks to pending.
+- The bucket is private. Authenticated active partners can upload/read their own folder; active administrators can read documents for review. Admin document links are short-lived signed URLs.
 
-## Security and operational boundaries
+## Administrator review
 
-- Clients have read access to their own verification status, but no direct insert/update/delete privileges on the verification table.
-- Verification outcomes can only be changed by the admin RPC.
-- Full bank account numbers and raw identity-document contents are not stored in this table.
-- Document paths must point to a private storage bucket with access policies that permit the submitting partner and authorized administrators only. The migration does not create or configure that bucket, and the frontend upload flow is not part of this database change.
-- Bank verification is an operational manual/provider step. The reference is an audit pointer, not proof that an external bank API was called by this database function.
-- Do not deploy this migration to production until the private document bucket, upload/download policies, administrator review UI, and local migration tests have been completed.
+The review queue is `/admin/partner-verification`.
+
+Administrators independently set identity, bank and agreement outcomes to pending, verified or rejected. Bank verification requires a bank/provider reference. Reviewer notes and decisions are recorded in `admin_audit_log` and `partner_payout_verifications`.
+
+The database does not call a bank API or independently validate identity. An administrator must perform those checks through an approved provider/process before recording a verified outcome.
+
+## Settlement enforcement
+
+- `update_payout_status` checks all three partner verification statuses and the associated property verification before approval/payment.
+- A database trigger on `booking_payment_records` independently enforces the same gate on INSERT/UPDATE, including booking-transition and service-role writes that do not call the admin RPC.
+- Partner commission/referral ledger rows cannot be approved or marked paid without a beneficiary account.
+- Non-partner platform/provider ledger records retain their existing handling.
+- This trigger is a ledger-state control. Any external transfer worker must still be reviewed to confirm it never initiates a bank transfer without a ledger row that has passed this gate.
+
+## Release checklist
+
+- [ ] Run the full PGlite/Vitest suite and resolve all failures.
+- [ ] Run ESLint and Next.js production build.
+- [ ] Run Playwright E2E for partner upload, admin document review and payout blocking/allowing.
+- [ ] Verify the private bucket and policies on a non-production Supabase project before applying the migration to production.
+- [ ] Inspect every external transfer/settlement worker and reconcile its eligibility predicate with the ledger trigger.
+- [ ] Deploy application and migration together only after CI is green.
