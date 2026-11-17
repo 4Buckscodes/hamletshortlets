@@ -13,10 +13,6 @@ import {
   SlidersHorizontal,
   X,
 } from 'lucide-react';
-import {
-  ISLAND_AND_LEKKI_AREAS,
-  MAINLAND_AREAS,
-} from '@/lib/areas';
 import { CURRENCY_SYMBOLS, useCurrency } from '@/lib/currency';
 import {
   ACCOMMODATION_TYPE_OPTIONS,
@@ -507,32 +503,16 @@ export function DiscoveryMarketplace({
           <div className="mt-3.5 hidden gap-3 border-t border-ink-100 pt-3.5 lg:grid lg:grid-cols-6">
             <label className="min-w-0">
               <span className="mb-1 block text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
-                Neighbourhood
+                City, area or neighbourhood
               </span>
-              <select
+              <input
+                type="search"
                 value={filters.area}
-                onChange={e =>
-                  updateFilters({ area: e.target.value, side: 'all' })
-                }
+                onChange={e => updateFilters({ area: e.target.value.slice(0, 80), side: 'all' })}
+                placeholder="e.g. Lekki, Abuja, Ibadan"
                 className={FIELD_INPUT_CLASS}
-              >
-                <option value="">Any Lagos area</option>
-                <optgroup label="Lagos Mainland">
-                  <option value="Lagos Mainland">All Lagos Mainland</option>
-                  {MAINLAND_AREAS.map(a => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Lagos Island & Lekki">
-                  {ISLAND_AND_LEKKI_AREAS.map(a => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
+                aria-label="Search by city, area or neighbourhood"
+              />
             </label>
 
             <label className="min-w-0">
@@ -838,37 +818,21 @@ export function DiscoveryMarketplace({
       <FocusedDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        title="Filter Lagos stays"
+        title="Filter stays"
       >
         <div className="space-y-4">
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold text-ink-800">
-              Lagos neighbourhood
+              City, area or neighbourhood
             </span>
-            <select
+            <input
+              type="search"
               value={filters.area}
-              onChange={e =>
-                updateFilters({ area: e.target.value, side: 'all' })
-              }
+              onChange={e => updateFilters({ area: e.target.value.slice(0, 80), side: 'all' })}
+              placeholder="e.g. Lekki, Abuja, Ibadan"
               className={FIELD_INPUT_CLASS}
-            >
-              <option value="">Any Lagos area</option>
-              <optgroup label="Lagos Mainland">
-                <option value="Lagos Mainland">All Lagos Mainland</option>
-                {MAINLAND_AREAS.map(a => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Lagos Island & Lekki">
-                {ISLAND_AND_LEKKI_AREAS.map(a => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
+              aria-label="Search by city, area or neighbourhood"
+            />
           </label>
 
           <label className="block">
