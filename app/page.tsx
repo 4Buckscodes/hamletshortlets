@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ...buildPublicPageMetadata({
     title: 'HAMLET.REST — Your stay, sorted.',
     description:
-      'Verified shortlet apartments across Lagos Island and Lagos Mainland — clear details, trusted hosts, and straightforward booking requests.',
+      'Discover shortlet apartments across Nigeria — clear details, trusted hosts, and straightforward booking requests.',
     pathname: '/',
   }),
   title: {
