@@ -69,6 +69,9 @@ begin
   end if;
 
   if length(btrim(coalesce(identity_doc_path,''))) < 5
+    or split_part(btrim(identity_doc_path), '/', 1) <> actor_id::text
+    or length(btrim(coalesce(signed_agreement_doc_path,''))) < 5
+    or split_part(btrim(signed_agreement_doc_path), '/', 1) <> actor_id::text
     or length(btrim(coalesce(payout_bank_name,''))) < 2
     or length(btrim(coalesce(payout_bank_code,''))) < 2
     or length(btrim(coalesce(payout_beneficiary_name,''))) < 2
