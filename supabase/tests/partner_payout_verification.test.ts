@@ -16,8 +16,8 @@ describe('Partner payout verification controls', () => {
 
     await asUser(db, partnerId, tx => tx.query(
       `select public.submit_partner_payout_verification($1,$2,$3,$4,$5,$6,$7)`,
-      ['private/identity/id-front.pdf', 'Example Bank', '001', 'A. Partner', '1234',
-       'private/agreements/partner-v1.pdf', 'v1'],
+      [`${partnerId}/identity/id-front.pdf`, 'Example Bank', '001', 'A. Partner', '1234',
+       `${partnerId}/agreement/partner-v1.pdf`, 'v1'],
     ));
 
     const result = await asUser(db, partnerId, tx => tx.query(
@@ -44,8 +44,8 @@ describe('Partner payout verification controls', () => {
     });
     await asUser(db, partnerId, tx => tx.query(
       `select public.submit_partner_payout_verification($1,$2,$3,$4,$5,$6,$7)`,
-      ['private/identity/id.pdf', 'Example Bank', '001', 'A. Partner', '4321',
-       'private/agreements/partner-v1.pdf', 'v1'],
+      [`${partnerId}/identity/id.pdf`, 'Example Bank', '001', 'A. Partner', '4321',
+       `${partnerId}/agreement/partner-v1.pdf`, 'v1'],
     ));
 
     await expect(asUser(db, partnerId, tx => tx.query(
@@ -64,8 +64,8 @@ describe('Partner payout verification controls', () => {
     });
     await asUser(db, partnerId, tx => tx.query(
       `select public.submit_partner_payout_verification($1,$2,$3,$4,$5,$6,$7)`,
-      ['private/identity/id.pdf', 'Example Bank', '001', 'A. Partner', '9876',
-       'private/agreements/partner-v1.pdf', 'v1'],
+      [`${partnerId}/identity/id.pdf`, 'Example Bank', '001', 'A. Partner', '9876',
+       `${partnerId}/agreement/partner-v1.pdf`, 'v1'],
     ));
 
     await expect(asUser(db, partnerId, tx => tx.query(
