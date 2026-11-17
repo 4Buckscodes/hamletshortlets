@@ -828,3 +828,159 @@ main :where(input,select,textarea):focus-visible { outline:3px solid rgba(54,89,
   .home-search-button { min-height:62px; }
   .home-hero h1 em { text-shadow:3px 3px 0 rgba(46,80,232,.55); }
 }
+
+
+/* ------------------------------------------------------------------
+   HAMLET EXPERIENCE SYSTEM — applied across public, guest, partner and
+   operations routes. V0's vivid colour language, shared interaction rules.
+   ------------------------------------------------------------------ */
+:root {
+  --hamlet-forest:#172119;
+  --hamlet-cobalt:#2e50e8;
+  --hamlet-coral:#ff6948;
+  --hamlet-citrus:#d9f24b;
+  --hamlet-paper:#f4f0e6;
+  --hamlet-white:#fffdf6;
+  --hamlet-jade:#1c765e;
+}
+body { background:var(--hamlet-paper); color:var(--hamlet-forest); }
+main:not(.home-page) {
+  color:var(--hamlet-forest);
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(255,105,72,.075),transparent 30%),
+    radial-gradient(ellipse at 0% 35%,rgba(46,80,232,.055),transparent 28%),
+    var(--hamlet-paper) !important;
+}
+main:not(.home-page) > header {
+  background:rgba(255,253,246,.94) !important;
+  border-bottom:1px solid rgba(23,33,25,.12) !important;
+}
+main:not(.home-page) :where(h1,h2,h3) {
+  color:var(--hamlet-forest);
+  text-wrap:balance;
+}
+main:not(.home-page) :where(h1.serif,h1,h2.serif) {
+  letter-spacing:-.045em;
+}
+main:not(.home-page) h1 em,
+main:not(.home-page) h2 em { color:var(--hamlet-coral) !important; }
+main:not(.home-page) :where(a.primary-button,.primary-button,button[type="submit"]) {
+  border:0;
+  border-radius:3px;
+  background:var(--hamlet-cobalt) !important;
+  color:#fff !important;
+  box-shadow:0 8px 22px rgba(46,80,232,.14);
+}
+main:not(.home-page) :where(a.primary-button,.primary-button,button[type="submit"]):hover {
+  background:#1938c0 !important;
+  box-shadow:0 12px 28px rgba(46,80,232,.22);
+  transform:translateY(-2px);
+}
+main:not(.home-page) :where(.secondary-button,button:not([type="submit"])) {
+  border-radius:3px;
+}
+main:not(.home-page) :where(a,button,[role="button"]) {
+  cursor:pointer;
+  transition:color .18s ease,background-color .18s ease,border-color .18s ease,
+    box-shadow .22s ease,transform .22s cubic-bezier(.2,.72,.25,1);
+}
+main:not(.home-page) :where(a,button,[role="button"]):focus-visible {
+  outline:3px solid rgba(46,80,232,.35);
+  outline-offset:3px;
+}
+main:not(.home-page) :where(input,select,textarea) {
+  max-width:100%;
+  min-height:44px;
+  border-radius:3px !important;
+  border-color:rgba(23,33,25,.2) !important;
+  background:#fffdf6 !important;
+  color:var(--hamlet-forest) !important;
+}
+main:not(.home-page) :where(input,select,textarea):focus {
+  border-color:var(--hamlet-cobalt) !important;
+  box-shadow:0 0 0 3px rgba(46,80,232,.12) !important;
+  outline:0;
+}
+main:not(.home-page) :where(article,[style*="background: '#fff'"],[style*='background: "#fff"']) {
+  transition:transform .25s cubic-bezier(.2,.72,.25,1),box-shadow .25s ease,border-color .2s ease;
+}
+main:not(.home-page) article:hover {
+  border-color:rgba(46,80,232,.25) !important;
+  box-shadow:0 16px 38px rgba(23,33,25,.09);
+  transform:translateY(-3px);
+}
+main:not(.home-page) :where(section) { scroll-margin-top:84px; }
+main:not(.home-page) :where(p,li) { line-height:1.75; }
+main:not(.home-page) :where(small,label) { letter-spacing:.01em; }
+main:not(.home-page) :where(table) { border-collapse:collapse; }
+main:not(.home-page) :where(th) { background:#e4f0a7; color:#26321f; }
+main:not(.home-page) :where(td,th) { padding:12px; border-bottom:1px solid rgba(23,33,25,.12); text-align:left; }
+main:not(.home-page) :where([role="alert"]) { border-left:4px solid var(--hamlet-coral); }
+main:not(.home-page) :where([role="status"]) { border-left:4px solid var(--hamlet-jade); }
+
+/* Public content pages: editorial colour accents and layered section rhythm. */
+main:not(.home-page) > section:nth-of-type(3n+1) { --section-accent:var(--hamlet-cobalt); }
+main:not(.home-page) > section:nth-of-type(3n+2) { --section-accent:var(--hamlet-coral); }
+main:not(.home-page) > section:nth-of-type(3n) { --section-accent:var(--hamlet-jade); }
+main:not(.home-page) > section :where(h1,h2) { text-decoration-color:var(--section-accent); }
+main:not(.home-page) > section > p:first-child {
+  color:var(--section-accent, var(--hamlet-cobalt)) !important;
+  font-weight:800;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+/* Data workspaces: clarity first, colourful but disciplined. */
+main:not(.home-page) :where(.dashboard-grid,.stats-grid) > *,
+main:not(.home-page) :where(article) {
+  border-radius:4px !important;
+}
+main:not(.home-page) :where(.stat-card):nth-child(3n+1) { border-top:3px solid var(--hamlet-cobalt); }
+main:not(.home-page) :where(.stat-card):nth-child(3n+2) { border-top:3px solid var(--hamlet-coral); }
+main:not(.home-page) :where(.stat-card):nth-child(3n) { border-top:3px solid var(--hamlet-jade); }
+
+/* FAQ accordions and native disclosure interactions. */
+main:not(.home-page) details {
+  border:1px solid rgba(23,33,25,.14);
+  border-radius:4px;
+  background:#fffdf6;
+  padding:17px 19px;
+}
+main:not(.home-page) details[open] {
+  border-color:rgba(46,80,232,.4);
+  box-shadow:0 12px 28px rgba(23,33,25,.06);
+}
+main:not(.home-page) summary {
+  cursor:pointer;
+  font-weight:750;
+}
+main:not(.home-page) summary::marker { color:var(--hamlet-coral); }
+
+/* Site footer follows the same confident colour system. */
+.site-footer {
+  background:#172119 !important;
+  color:#fffdf6 !important;
+}
+.site-footer :where(a,p,span) { color:inherit; }
+.site-footer a:hover { color:var(--hamlet-citrus); }
+
+/* Responsive safeguards for existing inline-styled pages. */
+@media (max-width:760px) {
+  main:not(.home-page) { overflow-x:clip; }
+  main:not(.home-page) > section { padding-inline:0; }
+  main:not(.home-page) [style*="grid-template-columns"] {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  main:not(.home-page) [style*="display: flex"],
+  main:not(.home-page) [style*="display:flex"] {
+    flex-wrap:wrap;
+  }
+  main:not(.home-page) :where(input,select,textarea) { width:100%; min-width:0; }
+  main:not(.home-page) :where(button,.primary-button,.secondary-button) { min-height:46px; }
+  main:not(.home-page) :where(table) { display:block; overflow-x:auto; max-width:100%; }
+  main:not(.home-page) h1 { font-size:clamp(34px,9vw,56px) !important; }
+  main:not(.home-page) h2 { font-size:clamp(24px,6.5vw,38px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  main:not(.home-page) :where(a,button,article) { transition:none !important; }
+}
