@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, Menu, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
 
 const areas = ['Lekki', 'Victoria Island', 'Ikoyi', 'Yaba', 'Ikeja GRA', 'Surulere'];
 const destinations = [
