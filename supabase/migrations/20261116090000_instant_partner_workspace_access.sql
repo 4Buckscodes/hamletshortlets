@@ -1124,9 +1124,11 @@ begin
   -- Some deployed databases have a richer booking-integrity function with
   -- closing-agent/referral checks; the repository baseline only validates
   -- guest booking data. Patch the richer variant when those clauses exist.
-  if updated_definition <> function_definition then
-    execute updated_definition;
+  if updated_definition = function_definition then
+    raise exception 'Could not find the expected booking-attribution role check in %.', function_signature;
   end if;
+
+  execute updated_definition;
 end;
 $$;
 
@@ -1348,23 +1350,37 @@ declare
   function_signature regprocedure := 'public.transition_booking(text,text,text)'::regprocedure;
   function_definition text;
   updated_definition text;
+  previous_definition text;
 begin
   function_definition := pg_get_functiondef(function_signature);
+  previous_definition := updated_definition;
   updated_definition := replace(
     function_definition,
     $old$if actor_role = 'guest' then$old$,
     $new$if actor_role = 'guest' and (not public.has_role('partner') or (booking_row.guest_id = actor_id and next_status = 'cancelled')) then$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 1 was not found.';
+  end if;
+  previous_definition := updated_definition;
   updated_definition := replace(
     updated_definition,
     $old$elsif actor_role in ('partner', 'admin') then$old$,
     $new$elsif actor_role in ('partner', 'admin') or public.has_role('partner') then$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 2 was not found.';
+  end if;
+  previous_definition := updated_definition;
   updated_definition := replace(
     updated_definition,
     $old$operator_label := coalesce(nullif(actor_name, ''), 'HAMLET user') || ' (' || actor_role || ')';$old$,
     $new$operator_label := coalesce(nullif(actor_name, ''), 'HAMLET user') || ' (' || case when actor_role = 'admin' then 'admin' when public.has_role('partner') then 'partner' else 'guest' end || ')';$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 3 was not found.';
+  end if;
+  previous_definition := updated_definition;
   updated_definition := replace(
     updated_definition,
     $old$select (account_status = 'active') into agent_active
@@ -1380,6 +1396,10 @@ begin
         from public.profiles p
         where p.id = booking_row.closing_agent_id;$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 4 was not found.';
+  end if;
+  previous_definition := updated_definition;
   updated_definition := replace(
     updated_definition,
     $old$select (account_status = 'active') into referrer_active
@@ -1395,6 +1415,10 @@ begin
           from public.profiles p
           where p.id = ref_row.referrer_partner_id;$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 5 was not found.';
+  end if;
+  previous_definition := updated_definition;
   updated_definition := replace(
     updated_definition,
     $old$update public.booking_payment_records
@@ -1445,6 +1469,9 @@ begin
         and record_type in ('closing_agent_commission', 'accommodation_revenue', 'mandatory_charges')
         and payout_status = 'pending';$new$
   );
+  if updated_definition = previous_definition then
+    raise exception 'Expected transition_booking replacement 6 was not found.';
+  end if;
 
   if updated_definition = function_definition then
     raise exception 'Could not update the partner booking transition and payout rules.';
