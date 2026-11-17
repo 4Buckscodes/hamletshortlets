@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 type Booking={id:string;reference:string;check_in:string;check_out:string;guest_count:number;guest_total:number;refundable_deposit:number;status:string;special_requests?:string|null;created_at:string;properties?:{title?:string;area?:string}|null};
