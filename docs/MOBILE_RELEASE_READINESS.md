@@ -5,11 +5,15 @@ This checklist is the release gate for the Expo Android/iOS application. It is i
 ## Current release posture
 
 - Mobile implementation is on `feat/hamlet-expo-mobile-app` and is proposed through draft PR #94.
-- Current validated branch HEAD: `147c5bcfca804d168d47de92c9cdfd9f6e906cf8` on `feat/hamlet-expo-mobile-app`; PR #94 remains open and draft.
-- All three required code-level workflows passed on this exact commit:
+- Application/workflow validation commit: `147c5bcfca804d168d47de92c9cdfd9f6e906cf8`. The subsequent release-documentation-only commit `c0daf27e22ec1bb5e8c44178122fe6b6e92ce734` also passed all three required workflows; PR #94 remains open and draft.
+- Validation on `147c5bc`:
   - HAMLET Mobile Checks run #43998678831: clean lockfile install, Expo dependency validation and TypeScript.
   - HAMLET CI run #43998678872: clean lockfile install, lint, unit/PGlite database tests, production build and mobile/desktop Playwright journeys.
   - Referral Release Validation run #43998679024: lint, regression tests, production build, browser journeys and isolated Supabase migrations/database tests.
+- Documentation-only commit `c0daf27` revalidated successfully:
+  - HAMLET Mobile Checks run #43999414514.
+  - HAMLET CI run #43999414463.
+  - Referral Release Validation run #43999414558.
 - `apps/mobile/package-lock.json` is committed (npm lockfile v3, generated from the actual mobile manifest using Node 22). The mobile workflow uses `npm ci --no-audit --no-fund`.
 - Referral Release Validation pins Supabase CLI `3.2.0`; cleanup is guarded so it runs only when CLI setup succeeded.
 - These are code/CI results only. They do not constitute physical-device, staging provider, or store acceptance.
