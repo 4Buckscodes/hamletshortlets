@@ -27,7 +27,6 @@ export default async function PropertyDetailPage({params}:Props){
  const {data,error}=await db.from('properties').select('id,title,property_type,area,city,public_address,nightly_rate,bedrooms,bathrooms,capacity,bed_setup,image_urls,amenities,house_rules,trust_label,public_location_summary,cleaning_fee,refundable_deposit').eq('id',id).eq('status','approved').maybeSingle();
  if(error||!data)notFound();const p=data as Stay;const images=p.image_urls??[];
  return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
- <header style={{background:'#fff',borderBottom:'1px solid var(--line)'}}><div className="shell" style={{minHeight:68,display:'flex',justifyContent:'space-between',alignItems:'center'}}><Link href="/" style={{fontWeight:850,fontSize:19}}>HAMLET<span style={{color:'var(--gold)'}}>.REST</span></Link><Link href="/stays" className="secondary-button" style={{minHeight:42}}>← All stays</Link></div></header>
  <section className="shell" style={{paddingBlock:24}}>
  <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>{p.area||p.city||'Lagos'}{p.trust_label?' · '+p.trust_label:''}</p>
  <h1 className="serif" style={{fontSize:'clamp(34px,6vw,56px)',fontWeight:500,letterSpacing:'-.035em',margin:'8px 0 18px'}}>{p.title}</h1>
