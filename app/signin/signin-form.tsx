@@ -7,8 +7,12 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 type Mode = 'signin' | 'signup';
 
 function getSafeNextPath(): string {
-  const next = new URLSearchParams(window.location.search).get('next');
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/account/bookings';
+  const params = new URLSearchParams(window.location.search);
+  const next = params.get('redirect') || params.get('next');
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\\\') || next.includes('://')) return '/stays';
+  const pathname = next.split(/[?#]/)[0];
+  if (pathname === '/signin' || pathname.startsWith('/signin/') || pathname === '/signup' || pathname.startsWith('/signup/')) return '/stays';
+  return next;
 }
 
 function makeBrowserClient(): SupabaseClient | null {
