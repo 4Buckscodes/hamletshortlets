@@ -32,7 +32,7 @@ export default function HomePage() {
       <section className="home-search" id="find-your-stay" aria-label="Search for a stay"><div className="home-shell">
         <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
         <form action="/stays" method="get" className="home-search-form">
-          <label className="home-search-field home-destination"><span><MapPin size={17} /> THE DESTINATION</span><select name="city" defaultValue="" aria-label="Choose a destination"><option value="">Anywhere in Nigeria</option>{["Lagos","Abuja","Ibadan"].map(city => <option key={city} value={city}>{city}</option>)}</select></label>
+          <label className="home-search-field home-destination"><span><MapPin size={17} /> THE DESTINATION</span><input name="city" type="text" list="hamlet-destinations" placeholder="City anywhere in Nigeria" aria-label="Enter a destination" /><datalist id="hamlet-destinations"><option value="Lagos"/><option value="Abuja"/></datalist></label>
           <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
           <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>
           <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" defaultValue="2" aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10,12,15,20].map(count => <option key={count} value={count}>{count} {count===1?"guest":"guests"}</option>)}</select></label>
