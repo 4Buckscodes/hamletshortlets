@@ -16,9 +16,9 @@ export default function SiteFooter() {
           <Link href="/faqs">FAQs & support</Link>
           <Link href="/safety">Trust & safety</Link>
         </nav>
-        <p className="site-footer-signoff">HOME,<br /><em>but elsewhere.</em></p>
+        <p className="site-footer-signoff">FIND YOUR PLACE.<br /><em>Stay easy.</em></p>
       </div>
-      <div className="site-footer-legal"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>06° 27&apos; N · 03° 24&apos; E</span></div>
+      <div className="site-footer-legal"><span>© {new Date().getFullYear()} HAMLET.REST</span><span>SHORTLETS, WITH ACCOUNTABILITY.</span></div>
     </footer>
   );
 }
