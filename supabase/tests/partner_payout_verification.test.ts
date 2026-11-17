@@ -37,6 +37,43 @@ describe('Partner payout verification controls', () => {
     expect(access.rows[0]).toEqual({ guest_access: true, partner_access: true, can_submit: true });
   });
 
+  it('blocks ledger approval until partner verification and property checks are complete', async () => {
+    const partnerId = await createTestUser(db, {
+      email: 'payout-gate-partner@hamlet.test',
+      partnerSignup: { role: 'property_owner' },
+    });
+
+    const property = await asUser(db, partnerId, tx => tx.query<{ id: string }>(
+      `insert into public.properties (
+         title, property_type, area, public_address, nightly_rate, capacity,
+         status, verification
+       ) values (
+         'Verified test apartment', 'apartment', 'Lekki', 'Test address, Lagos',
+         100000, 2, 'approved',
+         '{"ownership":"verified","identity":"verified","authority":"verified","inspection":"verified"}'::jsonb
+       ) returning id`,
+    ));
+    const propertyId = property.rows[0].id;
+
+    const booking = await db.query<{ id: string }>(
+      `insert into public.bookings (
+         reference, property_id, guest_id, check_in, check_out, guest_count,
+         accommodation_subtotal, hamlet_guest_fee, guest_total
+       ) values (
+         'PAYOUT-GATE-TEST', $1, $2, '2026-12-01', '2026-12-03', 1,
+         200000, 10000, 210000
+       ) returning id`,
+      [propertyId, partnerId],
+    );
+
+    await expect(db.query(
+      `insert into public.booking_payment_records (
+         booking_id, record_type, amount, status, beneficiary_user_id, payout_status
+       ) values ($1, 'partner_commission', 20000, 'confirmed', $2, 'approved')`,
+      [booking.rows[0].id, partnerId],
+    )).rejects.toThrow(/Partner payout blocked/i);
+  });
+
   it('does not allow a partner to mark their own identity, bank or agreement as verified', async () => {
     const partnerId = await createTestUser(db, {
       email: 'self-verify@hamlet.test',
