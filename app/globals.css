@@ -1105,3 +1105,12 @@ main.auth-page{min-height:calc(100svh - 76px);padding:clamp(28px,6vw,76px) 24px;
 .auth-page .auth-partner-note{width:min(100%,520px);color:#65695f;font-size:12px;line-height:1.7;margin-top:15px}
 @media(max-width:900px){.hamlet-global-inner{width:calc(100% - 36px)}.hamlet-global-links{gap:14px}.hamlet-global-links a{font-size:11px}}
 @media(max-width:700px){.hamlet-global-inner{width:calc(100% - 30px);min-height:66px;gap:12px}.hamlet-global-links,.hamlet-global-partner{display:none}.hamlet-global-actions{margin-left:auto;gap:9px}.hamlet-global-signin{padding:9px 11px}.hamlet-global-toggle{display:grid}.hamlet-mobile-menu{position:absolute;display:grid;gap:0;top:100%;left:0;right:0;padding:8px 20px 18px;background:#172119;border-top:1px solid rgba(217,242,75,.2);box-shadow:0 20px 30px rgba(0,0,0,.2)}.hamlet-mobile-menu a{min-height:50px;display:flex;align-items:center;justify-content:space-between;color:#fffdf6;border-bottom:1px solid rgba(244,240,230,.13);font-size:14px;font-weight:650}.hamlet-mobile-menu a:last-child{color:#d9f24b;border-bottom:0}}
+
+/* Footer colour now continues the same forest/citrus/coral identity as the hero. */
+.site-footer-global{background:#172119!important;color:#f4f0e6!important;border-top:1px solid rgba(217,242,75,.25)}
+.site-footer-mark{border-color:#d9f24b!important;color:#d9f24b!important}
+.site-footer-wordmark>span:last-child>span{color:#ff6948!important}
+.site-footer-links a:hover{color:#d9f24b!important}
+.site-footer-signoff{color:#d9f24b!important}
+.site-footer-signoff em{color:#ff6948!important}
+.site-footer-legal{border-color:rgba(244,240,230,.2)!important}
