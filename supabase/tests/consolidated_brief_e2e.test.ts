@@ -100,23 +100,9 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
       role: 'guest',
     });
 
-    // Referral/closing-agent/property-partner recipients are payout-ready in this
-    // legacy referral-flow fixture; payout verification itself has dedicated tests.
-    await db.query(
-      `insert into public.partner_payout_verifications (
-         partner_id, identity_status, bank_status, agreement_status,
-         identity_document_path, bank_name, bank_code, beneficiary_name,
-         account_number_last4, bank_verification_reference,
-         signed_agreement_path, agreement_version
-       )
-       select id, 'verified', 'verified', 'verified',
-         id::text || '/identity/test.pdf', 'Example Bank', '001', 'Test Beneficiary',
-         '1234', 'TEST-BANK-REF',
-         id::text || '/agreement/test.pdf', 'v1'
-       from unnest(array[$1::uuid,$2::uuid,$3::uuid,$4::uuid]) as ids(id)
-       on conflict do nothing`,
-      [ownerPartnerId, referrerPartnerId, closingAgentApplicantId, unrelatedPartnerId],
-    );
+    // Profile creation now provisions payout-verification rows. Mark the
+    // legacy referral-flow recipients as payout-ready instead of inserting
+    // duplicate partner_id rows; payout verification has dedicated tests.
     await db.query(
       `update public.partner_payout_verifications
        set identity_status='verified', bank_status='verified', agreement_status='verified',
