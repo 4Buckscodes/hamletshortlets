@@ -119,8 +119,14 @@ declare
   ready boolean := false;
   property_ref text;
 begin
-  if new.payout_status not in ('approved','paid')
-    or new.beneficiary_user_id is null then
+  if new.payout_status not in ('approved','paid') then
+    return new;
+  end if;
+
+  if new.beneficiary_user_id is null then
+    if new.record_type in ('closing_agent_commission','partner_commission','referral_reward') then
+      raise exception 'Partner commission/referral payout cannot be approved without a beneficiary account.';
+    end if;
     return new;
   end if;
 
