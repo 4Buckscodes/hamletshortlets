@@ -10,7 +10,7 @@ One app with role-aware experiences for guests, owners, property managers and ag
 
 1. Install Node.js 22.13 or newer.
 2. Copy `.env.example` to `.env` and provide an isolated **staging** Supabase project URL, publishable key and matching HAMLET preview API origin. Do not point development or preview builds at production.
-3. Run `npm install`.
+3. Run `npm ci` to install the exact dependencies recorded in `package-lock.json`.
 4. Run `npx expo-doctor` to validate SDK-managed dependencies; avoid automatic dependency rewrites without reviewing the Expo SDK compatibility matrix.
 5. Run `npx tsc --noEmit`.
 6. Run `npx expo start` for the Metro development server.
@@ -63,7 +63,7 @@ Implemented in this branch:
 
 Booking requests remain requests: the property partner must confirm availability before payment opens. The native Bookings screen now hands eligible `awaiting_payment` bookings to the existing authenticated `paystack-initialize` Edge Function. The app opens only the returned Paystack HTTPS checkout URL and refreshes booking state when returning to the foreground; only the signed webhook confirms payment.
 
-Still to implement and test: richer agent lead pipeline and commission dispute workflow, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, accessibility and end-to-end physical-device QA. Native photo selection and upload code is implemented but still requires device testing against the staging Supabase Storage policies.
+Still to implement and test: richer agent lead pipeline and commission dispute workflow, caution-deposit inspection/refund flow, push notifications, Horatio, Google/Apple sign-in, app icon/splash screen, full accessibility pass and end-to-end physical-device QA. Native photo selection and upload code is implemented but still requires device testing against the staging Supabase Storage policies.
 
 The current production marketplace geography is Lagos-only; Abuja and Ibadan are shown as coming later until the backend geography guard is expanded.
 
