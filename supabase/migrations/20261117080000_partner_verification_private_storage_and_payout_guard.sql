@@ -22,7 +22,7 @@ begin
     execute 'drop policy if exists "Partners upload own verification documents" on storage.objects';
     execute 'drop policy if exists "Partners and admins read verification documents" on storage.objects';
     execute 'drop policy if exists "Partners update own verification documents" on storage.objects';
-    execute 'drop policy if exists "Partners delete own pending verification documents" on storage.objects';
+    execute 'drop policy if exists "Partners delete own verification documents" on storage.objects';
 
     execute $policy$
       create policy "Partners upload own verification documents"
