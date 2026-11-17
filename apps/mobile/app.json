@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "HAMLET",
+    "slug": "hamlet",
+    "scheme": "hamlet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "HAMLET needs access to your photos so you can add images of properties you are authorised to list.",
+          "cameraPermission": "HAMLET needs camera access so you can photograph properties you are authorised to list.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.abundanceabodes.hamlet"
+    },
+    "android": {
+      "package": "com.abundanceabodes.hamlet",
+      "adaptiveIcon": {
+        "backgroundColor": "#101D2D"
+      }
+    }
+  }
+}
