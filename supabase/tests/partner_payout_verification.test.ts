@@ -73,7 +73,10 @@ describe('Partner payout verification controls', () => {
       [propertyId],
     ));
 
-    const booking = await db.query<{ id: string }>(
+    const guestId = await createTestUser(db, {
+      email: 'payout-gate-guest@hamlet.test', fullName: 'Payout Gate Guest',
+    });
+    const booking = await asUser(db, guestId, tx => tx.query<{ id: string }>(
       `insert into public.bookings (
          reference, property_id, guest_id, check_in, check_out, guest_count,
          accommodation_subtotal, hamlet_guest_fee, guest_total
@@ -81,8 +84,8 @@ describe('Partner payout verification controls', () => {
          'PAYOUT-GATE-TEST', $1, $2, '2026-12-01', '2026-12-03', 1,
          200000, 10000, 210000
        ) returning id`,
-      [propertyId, partnerId],
-    );
+      [propertyId, guestId],
+    ));
 
     await expect(db.query(
       `insert into public.booking_payment_records (
