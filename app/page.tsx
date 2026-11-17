@@ -32,13 +32,13 @@ export default function HomePage() {
       <section className="home-search" id="find-your-stay" aria-label="Search for a stay"><div className="home-shell">
         <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
         <form action="/stays" method="get" className="home-search-form">
-          <label className="home-search-field home-destination"><span><MapPin size={17} /> THE NEIGHBOURHOOD</span><select name="area" defaultValue="" aria-label="Choose a neighbourhood"><option value="">Anywhere in Lagos</option>{areas.map(area => <option key={area} value={area}>{area}</option>)}</select></label>
+          <label className="home-search-field home-destination"><span><MapPin size={17} /> THE DESTINATION</span><select name="city" defaultValue="" aria-label="Choose a destination"><option value="">Anywhere in Nigeria</option>{["Lagos","Abuja","Ibadan"].map(city => <option key={city} value={city}>{city}</option>)}</select></label>
           <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
           <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>
           <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" defaultValue="2" aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10,12,15,20].map(count => <option key={count} value={count}>{count} {count===1?"guest":"guests"}</option>)}</select></label>
           <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
         </form>
-        <div className="home-area-quick"><span>START WITH A VIBE</span>{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
+        <div className="home-area-quick"><span>START WITH A VIBE · LAGOS</span>{areas.slice(0, 4).map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
       </div></section>
 
       <section className="home-neighbourhoods home-shell">
