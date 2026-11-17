@@ -43,17 +43,33 @@ describe('Partner payout verification controls', () => {
       partnerSignup: { role: 'property_owner' },
     });
 
-    const property = await asUser(db, partnerId, tx => tx.query<{ id: string }>(
-      `insert into public.properties (
-         title, property_type, area, public_address, nightly_rate, capacity,
-         status, verification
-       ) values (
-         'Verified test apartment', 'apartment', 'Lekki', 'Test address, Lagos',
-         100000, 2, 'approved',
-         '{"ownership":"verified","identity":"verified","authority":"verified","inspection":"verified"}'::jsonb
-       ) returning id`,
+    const adminId = await createTestUser(db, {
+      email: 'payout-gate-admin@hamlet.test', role: 'admin', fullName: 'Payout Gate Admin',
+    });
+    const submitted = await asUser(db, partnerId, tx => tx.query<{ id: string }>(
+      `select public.submit_partner_property($1::jsonb, $2::jsonb) as id`,
+      [
+        JSON.stringify({
+          title: 'Verified test apartment', property_type: 'Apartment', area: 'Lekki',
+          public_address: 'Test address, Lagos', nightly_rate: 100000, capacity: 2,
+          bedrooms: 1, bathrooms: 1, amenities: ['Wifi'],
+          image_urls: ['https://images.example/test.jpg'], house_rules: ['No parties'],
+        }),
+        JSON.stringify({
+          authority_basis: 'Registered owner — title deed verified',
+          submitted_role: 'Owner',
+          docs: [{ label: 'Title deed', status: 'self_reported' }],
+        }),
+      ],
     ));
-    const propertyId = property.rows[0].id;
+    const propertyId = submitted.rows[0].id;
+    await asUser(db, adminId, tx => tx.query(
+      `select public.review_partner_property(
+        $1, 'approved', 'Verified ownership, identity, authority and inspection.',
+        '{"ownership":"verified","identity":"verified","authority":"verified","inspection":"verified"}'::jsonb
+      )`,
+      [propertyId],
+    ));
 
     const booking = await db.query<{ id: string }>(
       `insert into public.bookings (
