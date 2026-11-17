@@ -61,10 +61,10 @@ export default function SiteNav() {
         </div>
       </div>
       {open && <nav id="hamlet-mobile-navigation" className="hamlet-mobile-menu" aria-label="Mobile navigation">
-        {links.map(item => <Link key={item.href} href={item.href} aria-current={pathname === item.href ? 'page' : undefined}>{item.label}</Link>)}
+        {links.map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} aria-current={pathname === item.href ? 'page' : undefined}>{item.label}</Link>)}
         {isAdmin || isPartner || isAccount
-          ? <Link href="/stays">Guest marketplace <ArrowUpRight size={15}/></Link>
-          : <><Link href="/partners/apply">Partner with us <ArrowUpRight size={15}/></Link><Link href="/signin">Sign in</Link></>}
+          ? <Link href="/stays" onClick={() => setOpen(false)}>Guest marketplace <ArrowUpRight size={15}/></Link>
+          : <><Link href="/partners/apply" onClick={() => setOpen(false)}>Partner with us <ArrowUpRight size={15}/></Link><Link href="/signin" onClick={() => setOpen(false)}>Sign in</Link></>}
       </nav>}
     </header>
   );
