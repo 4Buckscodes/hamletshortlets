@@ -1048,7 +1048,7 @@ export function HomeMarketplaceExperience({
             }`}
           >
             {displayedStays.map((stay: PublicStayRecord) => (
-              <HomepageStayCard key={stay.id} property={stay} />
+              <HomepageStayCard key={stay.id} property={stay} todayIso={todayIso} />
             ))}
           </div>
         )}
