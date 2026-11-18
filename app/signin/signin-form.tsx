@@ -217,7 +217,6 @@ export default function SignInForm() {
                 readOnly
                 aria-readonly="true"
                 className="hm-input font-mono uppercase"
-                style={{ cursor: 'not-allowed' }}
               />
             )}
           </FormField>
