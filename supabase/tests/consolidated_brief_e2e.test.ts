@@ -99,6 +99,21 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
       fullName: 'Chidi Guest',
       role: 'guest',
     });
+
+    // Profile creation now provisions payout-verification rows. Mark the
+    // legacy referral-flow recipients as payout-ready instead of inserting
+    // duplicate partner_id rows; payout verification has dedicated tests.
+    await db.query(
+      `update public.partner_payout_verifications
+       set identity_status='verified', bank_status='verified', agreement_status='verified',
+           identity_document_path=partner_id::text || '/identity/test.pdf',
+           bank_name='Example Bank', bank_code='001', beneficiary_name='Test Beneficiary',
+           account_number_last4='1234', bank_verification_reference='TEST-BANK-REF',
+           signed_agreement_path=partner_id::text || '/agreement/test.pdf',
+           agreement_version='v1'
+       where partner_id = any(array[$1::uuid,$2::uuid,$3::uuid,$4::uuid])`,
+      [ownerPartnerId, referrerPartnerId, closingAgentApplicantId, unrelatedPartnerId],
+    );
   });
 
   async function seedApprovedListing(input: {
@@ -590,7 +605,100 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
       [referrerPartnerId],
     );
 
-    // Admin updates payout status on the identity-verified referral_reward ledger line
+    // The new payout gate is independent of the legacy approved partner application.
+    // Ensure the referral beneficiary has an active partner entitlement and
+    // update the verification row created during profile setup.
+    await db.query(
+      `update public.profiles set account_status = 'active' where id = $1::uuid`,
+      [referrerPartnerId],
+    );
+    await db.query(
+      `insert into public.partner_network_memberships (
+         user_id, primary_role, company, phone, status
+       ) values ($1::uuid, 'property_owner', 'Kemi Homes', '+2348012345678', 'active')
+       on conflict (user_id) do update set status = 'active'`,
+      [referrerPartnerId],
+    );
+    await db.query(
+      `update public.partner_payout_verifications
+       set identity_status = 'verified', bank_status = 'verified', agreement_status = 'verified',
+           identity_document_path = $2, bank_name = 'Example Bank', bank_code = '001',
+           beneficiary_name = 'Kemi Referrer', account_number_last4 = '5678',
+           bank_verification_reference = 'TEST-BANK-REF',
+           signed_agreement_path = $3, agreement_version = 'v1'
+       where partner_id = $1::uuid`,
+      [referrerPartnerId, `${referrerPartnerId}/identity/id.pdf`, `${referrerPartnerId}/agreement/signed.pdf`],
+    );
+
+    // Assert every database-backed readiness prerequisite before attempting settlement.
+    const readiness = await db.query<{
+      has_partner_membership: boolean;
+      active_membership: boolean;
+      active_profile: boolean;
+      identity_verified: boolean;
+      bank_verified: boolean;
+      agreement_verified: boolean;
+      property_approved: boolean;
+      ownership_verified: boolean;
+      property_identity_verified: boolean;
+      authority_verified: boolean;
+      inspection_verified: boolean;
+      beneficiary_matches_referrer: boolean;
+    }>(
+      `select
+         exists (select 1 from public.partner_network_memberships m where m.user_id = $1::uuid) as has_partner_membership,
+         exists (select 1 from public.partner_network_memberships m where m.user_id = $1::uuid and m.status = 'active') as active_membership,
+         exists (select 1 from public.profiles p where p.id = $1::uuid and p.account_status = 'active') as active_profile,
+         exists (select 1 from public.partner_payout_verifications v where v.partner_id = $1::uuid and v.identity_status = 'verified') as identity_verified,
+         exists (select 1 from public.partner_payout_verifications v where v.partner_id = $1::uuid and v.bank_status = 'verified') as bank_verified,
+         exists (select 1 from public.partner_payout_verifications v where v.partner_id = $1::uuid and v.agreement_status = 'verified') as agreement_verified,
+         exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.status = 'approved') as property_approved,
+         exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'ownership' = 'verified') as ownership_verified,
+         exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'identity' = 'verified') as property_identity_verified,
+         exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'authority' = 'verified') as authority_verified,
+         exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'inspection' = 'verified') as inspection_verified,
+         exists (select 1 from public.booking_payment_records l where l.id = $3::uuid and l.beneficiary_user_id = $1::uuid and l.record_type = 'referral_reward') as beneficiary_matches_referrer,
+         exists (
+           select 1
+           from public.booking_payment_records l
+           join public.bookings b on b.id = l.booking_id
+           join public.partner_network_memberships m on m.user_id = l.beneficiary_user_id and m.status = 'active'
+           join public.profiles p on p.id = m.user_id and p.account_status = 'active'
+           join public.partner_payout_verifications v on v.partner_id = m.user_id
+           join public.properties pr on pr.id = b.property_id
+           left join public.property_access pa on pa.property_id = pr.id and pa.user_id = m.user_id and pa.status = 'active'
+           where l.id = $3::uuid
+             and l.record_type = 'referral_reward'
+             and l.beneficiary_user_id = $1::uuid
+             and v.identity_status = 'verified'
+             and v.bank_status = 'verified'
+             and v.agreement_status = 'verified'
+             and (l.record_type in ('referral_reward','closing_agent_commission') or pa.user_id is not null)
+             and pr.status = 'approved'
+             and pr.verification->>'ownership' = 'verified'
+             and pr.verification->>'identity' = 'verified'
+             and pr.verification->>'authority' = 'verified'
+             and pr.verification->>'inspection' = 'verified'
+         ) as exact_trigger_guard_ready`,
+      [referrerPartnerId, secondBooking.id, refLedger!.id],
+    );
+    expect(readiness.rows[0]).toEqual({
+      has_partner_membership: true,
+      active_membership: true,
+      active_profile: true,
+      identity_verified: true,
+      bank_verified: true,
+      agreement_verified: true,
+      property_approved: true,
+      ownership_verified: true,
+      property_identity_verified: true,
+      authority_verified: true,
+      inspection_verified: true,
+      beneficiary_matches_referrer: true,
+      exact_trigger_guard_ready: true,
+    });
+
+    // Admin updates payout status only after all independent checks are verified.
     await asUser(db, adminId, tx =>
       tx.query(`select public.update_payout_status($1::uuid, 'paid', 'Settled via bank transfer')`, [refLedger!.id]),
     );

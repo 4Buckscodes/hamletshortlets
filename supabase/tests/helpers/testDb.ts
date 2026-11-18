@@ -99,6 +99,7 @@ export async function resetTestData(db: PGlite): Promise<void> {
       public.booking_feedback,
       public.booking_caution_deposits,
       public.partner_referral_rewards,
+      public.partner_payout_verifications,
       public.partner_referrals,
       public.property_availability_blocks,
       public.booking_payment_records,

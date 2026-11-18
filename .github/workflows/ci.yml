@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/nextjs-mobile-first-rebuild
+      - feat/partner-payout-verification
   pull_request:
     branches:
       - main

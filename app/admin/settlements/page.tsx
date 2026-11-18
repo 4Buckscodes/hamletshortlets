@@ -187,7 +187,7 @@ export default function AdminSettlementsPage() {
               Financial reconciliation
             </h1>
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
-              Ledger status tracks reconciliation only — bank transfers run separately.
+              Ledger status records reconciliation only. HAMLET does not yet initiate bank transfers; confirm transfers through an approved external process before marking a payout paid.
             </p>
           </div>
           {allowed && <AdminNav current="settlements" />}
@@ -325,7 +325,7 @@ export default function AdminSettlementsPage() {
                   >
                     <option value="pending">pending</option>
                     <option value="approved">approved (ready for bank payout)</option>
-                    <option value="paid">paid (bank transfer completed)</option>
+                    <option value="paid">paid (external transfer confirmed)</option>
                     <option value="withheld">withheld (under dispute)</option>
                     <option value="reversed">reversed</option>
                   </select>
