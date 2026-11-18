@@ -9,7 +9,6 @@ import {
   OptionCardGroup,
   StepFooterActions,
   StepProgressHeader,
-  FIELD_INPUT_CLASS,
 } from '@/components/forms/ProgressiveFormPrimitives';
 import { AccountNav } from '../account-nav';
 
@@ -274,27 +273,32 @@ export default function AccountIssuesPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Guest Support</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Report or track an issue
-            </h1>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-600">
-              Never include passwords or payment card numbers.
-            </p>
+      <main className="hm-main" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive" aria-labelledby="account-title">
+          <div className="hm-shell hm-band-inner">
+            <div className="hm-band-row">
+              <div className="hm-band-copy">
+                <p className="hm-label">Guest Support</p>
+                <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
+                  Report or track an issue
+                </h1>
+              </div>
+              <div className="hm-band-aside">
+                <p className="hm-body">Never include passwords or payment card numbers.</p>
+              </div>
+            </div>
+            <AccountNav current="issues" />
           </div>
-          <AccountNav current="issues" />
-        </div>
+        </section>
+        <div className="hm-shell hm-section-tight hm-account">
 
         {error && (
           <p
             role="alert"
-            className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800"
+            className="mt-5 hm-notice hm-notice-bad"
           >
             {error}
           </p>
@@ -302,14 +306,14 @@ export default function AccountIssuesPage() {
         {message && (
           <p
             role="status"
-            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800"
+            className="mt-5 hm-notice hm-notice-ok"
           >
             {message}
           </p>
         )}
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">
-          <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-7">
+          <section className="hm-card p-6 lg:col-span-7">
             {!loading && bookings.length === 0 ? (
               <div className="py-6 text-center">
                 <h2 className="serif text-2xl font-medium text-ink-900">
@@ -319,7 +323,7 @@ export default function AccountIssuesPage() {
                   Booking support reports attach to an active or past booking request.
                 </p>
                 <div className="mt-5">
-                  <Link href="/stays" className="primary-button">
+                  <Link href="/stays" className="hm-btn hm-btn-primary">
                     Explore Lagos stays
                   </Link>
                 </div>
@@ -342,7 +346,7 @@ export default function AccountIssuesPage() {
                           required
                           value={bookingId}
                           onChange={e => setBookingId(e.target.value)}
-                          className={FIELD_INPUT_CLASS}
+                          className="hm-input"
                         >
                           <option value="">Choose a booking</option>
                           {bookings.map(b => (
@@ -388,7 +392,7 @@ export default function AccountIssuesPage() {
                           value={subject}
                           onChange={e => setSubject(e.target.value)}
                           placeholder="e.g. Gate security did not have check-in clearance"
-                          className={FIELD_INPUT_CLASS}
+                          className="hm-input"
                         />
                       )}
                     </FormField>
@@ -404,7 +408,7 @@ export default function AccountIssuesPage() {
                           value={description}
                           onChange={e => setDescription(e.target.value)}
                           placeholder="Describe what happened…"
-                          className={`${FIELD_INPUT_CLASS} resize-y`}
+                          className={`hm-input resize-y`}
                         />
                       )}
                     </FormField>
@@ -434,7 +438,7 @@ export default function AccountIssuesPage() {
                           value={evidenceNote}
                           onChange={e => setEvidenceNote(e.target.value)}
                           placeholder="Optional supporting detail…"
-                          className={`${FIELD_INPUT_CLASS} resize-y`}
+                          className={`hm-input resize-y`}
                         />
                       )}
                     </FormField>
@@ -504,7 +508,7 @@ export default function AccountIssuesPage() {
                           type="button"
                           disabled={busyFollowupId === issue.id}
                           onClick={() => void addEvidence(issue.id)}
-                          className="secondary-button min-h-[42px] px-3.5 text-xs"
+                          className="hm-btn hm-btn-ghost min-h-[42px] px-3.5 text-xs"
                         >
                           {busyFollowupId === issue.id ? 'Adding…' : 'Add note'}
                         </button>
@@ -519,6 +523,7 @@ export default function AccountIssuesPage() {
               </div>
             )}
           </section>
+        </div>
         </div>
       </main>
 

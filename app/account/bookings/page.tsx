@@ -22,7 +22,6 @@ import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
   FocusedDrawer,
   FormField,
-  FIELD_INPUT_CLASS,
 } from '@/components/forms/ProgressiveFormPrimitives';
 import { AccountNav } from '../account-nav';
 
@@ -339,19 +338,24 @@ export default function GuestBookingsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Your Account</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              Your bookings
-            </h1>
+      <main className="hm-main" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive" aria-labelledby="account-title">
+          <div className="hm-shell hm-band-inner">
+            <div className="hm-band-row">
+              <div className="hm-band-copy">
+                <p className="hm-label">Your Account</p>
+                <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
+                  Your bookings
+                </h1>
+              </div>
+            </div>
+            <AccountNav current="bookings" />
           </div>
-          <AccountNav current="bookings" />
-        </div>
+        </section>
+        <div className="hm-shell hm-section-tight hm-account">
 
         {/* Honest Server-Verified Payment Return Banner */}
         {paymentReturnRef && (
@@ -368,7 +372,7 @@ export default function GuestBookingsPage() {
             <button
               type="button"
               onClick={() => void load()}
-              className="secondary-button min-h-[40px] shrink-0"
+              className="hm-btn hm-btn-ghost min-h-[40px] shrink-0"
             >
               <RefreshCcw className="h-3.5 w-3.5 shrink-0" />
               Refresh status
@@ -379,7 +383,7 @@ export default function GuestBookingsPage() {
         {error && (
           <p
             role="alert"
-            className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800"
+            className="mt-5 hm-notice hm-notice-bad"
           >
             {error}
           </p>
@@ -387,7 +391,7 @@ export default function GuestBookingsPage() {
         {notice && (
           <p
             role="status"
-            className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800"
+            className="mt-5 hm-notice hm-notice-ok"
           >
             {notice}
           </p>
@@ -402,7 +406,7 @@ export default function GuestBookingsPage() {
             {items.map(b => (
               <article
                 key={b.id}
-                className="rounded-3xl border border-ink-100 bg-white p-5 sm:p-6"
+                className="hm-card p-5 sm:p-6"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -474,7 +478,7 @@ export default function GuestBookingsPage() {
                       type="button"
                       disabled={busyId === b.id}
                       onClick={() => void startPaystackCheckout(b)}
-                      className="primary-button min-h-[46px]"
+                      className="hm-btn hm-btn-primary min-h-[46px]"
                     >
                       <CreditCard className="h-4 w-4 shrink-0" />
                       {busyId === b.id ? 'Preparing Paystack…' : 'Pay securely via Paystack'}
@@ -485,7 +489,7 @@ export default function GuestBookingsPage() {
                     <button
                       type="button"
                       onClick={() => void openWayfinder(b)}
-                      className="secondary-button min-h-[46px]"
+                      className="hm-btn hm-btn-ghost min-h-[46px]"
                     >
                       <Compass className="h-4 w-4 shrink-0" />
                       Arrival & Wayfinder guide
@@ -496,7 +500,7 @@ export default function GuestBookingsPage() {
                     <button
                       type="button"
                       onClick={() => setFeedbackBooking(b)}
-                      className="secondary-button min-h-[46px]"
+                      className="hm-btn hm-btn-ghost min-h-[46px]"
                     >
                       <MessageSquarePlus className="h-4 w-4 shrink-0" />
                       Leave stay feedback
@@ -508,7 +512,7 @@ export default function GuestBookingsPage() {
                       type="button"
                       disabled={busyId === b.id}
                       onClick={() => void cancelBooking(b)}
-                      className="secondary-button min-h-[46px]"
+                      className="hm-btn hm-btn-ghost min-h-[46px]"
                     >
                       {busyId === b.id ? 'Cancelling…' : 'Cancel request'}
                     </button>
@@ -516,7 +520,7 @@ export default function GuestBookingsPage() {
 
                   <Link
                     href={`/account/issues?bookingId=${encodeURIComponent(b.id)}`}
-                    className="secondary-button min-h-[46px]"
+                    className="hm-btn hm-btn-ghost min-h-[46px]"
                   >
                     Report an issue
                   </Link>
@@ -525,12 +529,12 @@ export default function GuestBookingsPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-3xl border border-dashed border-ink-300 bg-white p-10 text-center">
+          <div className="mt-8 hm-card hm-card-dashed p-10 text-center">
             <h2 className="serif text-2xl font-medium text-ink-900">
               No bookings yet
             </h2>
             <div className="mt-5">
-              <Link href="/stays" className="primary-button">
+              <Link href="/stays" className="hm-btn hm-btn-primary">
                 Explore Lagos stays
               </Link>
             </div>
@@ -600,7 +604,7 @@ export default function GuestBookingsPage() {
                   {...fieldProps}
                   value={rating}
                   onChange={e => setRating(Number(e.target.value))}
-                  className={FIELD_INPUT_CLASS}
+                  className="hm-input"
                 >
                   {[5, 4, 3, 2, 1].map(r => (
                     <option key={r} value={r}>
@@ -620,7 +624,7 @@ export default function GuestBookingsPage() {
                   value={feedbackComment}
                   onChange={e => setFeedbackComment(e.target.value)}
                   placeholder="How did the stay match the listing description?"
-                  className={`${FIELD_INPUT_CLASS} resize-y`}
+                  className={`hm-input resize-y`}
                 />
               )}
             </FormField>
@@ -628,12 +632,13 @@ export default function GuestBookingsPage() {
             <button
               type="submit"
               disabled={Boolean(busyId)}
-              className="primary-button min-h-[48px] w-full"
+              className="hm-btn hm-btn-primary min-h-[48px] w-full"
             >
               {busyId ? 'Saving…' : 'Submit feedback'}
             </button>
           </form>
         </FocusedDrawer>
+        </div>
       </main>
 
       <SiteFooter />

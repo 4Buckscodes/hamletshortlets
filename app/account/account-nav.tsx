@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { WorkspaceTabs } from '@/components/ui';
 
 const ACCOUNT_LINKS = [
   { href: '/account', label: 'Overview & profile', id: 'overview' },
@@ -6,29 +6,7 @@ const ACCOUNT_LINKS = [
   { href: '/account/issues', label: 'Support issues', id: 'issues' },
 ] as const;
 
-export function AccountNav({
-  current,
-}: {
-  current: (typeof ACCOUNT_LINKS)[number]['id'];
-}) {
-  return (
-    <nav
-      aria-label="Guest account navigation"
-      className="flex flex-wrap gap-2"
-    >
-      {ACCOUNT_LINKS.map(item => {
-        const active = item.id === current;
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            aria-current={active ? 'page' : undefined}
-            className={active ? 'primary-button min-h-[42px]' : 'secondary-button min-h-[42px]'}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+export function AccountNav({ current }: { current: (typeof ACCOUNT_LINKS)[number]['id'] }) {
+  const active = ACCOUNT_LINKS.find(item => item.id === current)?.href ?? '/account';
+  return <WorkspaceTabs label="Guest account navigation" current={active} tabs={ACCOUNT_LINKS} />;
 }
