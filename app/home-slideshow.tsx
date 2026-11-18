@@ -163,9 +163,9 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_1px_2px_rgba(18,31,60,0.06),0_10px_28px_rgba(18,31,60,0.08)]">
+    <article className="hamlet-home-stay-card flex flex-col overflow-hidden rounded-[18px] border border-[#E8E6DD] bg-white shadow-none">
       {/* 4:3 Photo Carousel or Monogram Fallback */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#1D355C]">
+      <div className="relative aspect-[5/4] overflow-hidden bg-[#203E31]">
         {images.length > 0 ? (
           <>
             <div
@@ -253,7 +253,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
       </div>
 
       {/* Card Body */}
-      <div className="flex flex-1 flex-col px-5 pt-[18px] pb-5">
+      <div className="flex flex-1 flex-col px-3.5 pt-3.5 pb-4 sm:px-4 sm:pt-4 sm:pb-4">
         <div className="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[1.2px] text-[#7A5E22]">
           <span className="rounded-[12px] bg-[#121F3C] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[1.5px] text-[#C9A45C]">
             {isMainland ? 'Mainland' : 'Island'}
@@ -263,7 +263,7 @@ function HomepageStayCard({ property }: { property: PublicStayRecord }) {
           </span>
         </div>
 
-        <h3 className="mt-2.5 font-display text-[22px] font-bold leading-[1.25] text-[#121F3C]">
+        <h3 className="mt-2 font-display text-[18px] font-semibold leading-[1.25] text-[#173F32] sm:text-[20px]">
           <Link href={detailHref} className="transition hover:text-[#7A5E22]">
             {property.title}
           </Link>
