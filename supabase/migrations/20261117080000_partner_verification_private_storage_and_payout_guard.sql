@@ -117,7 +117,6 @@ as $$
 declare
   partner_beneficiary boolean := false;
   ready boolean := false;
-  property_ref text;
 begin
   if new.payout_status not in ('approved','paid') then
     return new;
@@ -148,21 +147,23 @@ begin
     return new;
   end if;
 
-  select b.property_id into property_ref
-  from public.bookings b
-  where b.id = new.booking_id;
-
+  -- Join the ledger row to its booking directly. Avoid converting the
+  -- booking property identifier through a text variable: its database type
+  -- must remain intact for the property join and match the RPC predicate.
   select exists (
     select 1
-    from public.partner_network_memberships m
+    from public.booking_payment_records l
+    join public.bookings b on b.id = l.booking_id
+    join public.partner_network_memberships m on m.user_id = l.beneficiary_user_id
     join public.profiles p on p.id = m.user_id
     join public.partner_payout_verifications v on v.partner_id = m.user_id
-    join public.properties pr on pr.id = property_ref
+    join public.properties pr on pr.id = b.property_id
     left join public.property_access pa
       on pa.property_id = pr.id
       and pa.user_id = m.user_id
       and pa.status = 'active'
-    where m.user_id = new.beneficiary_user_id
+    where l.id = new.id
+      and l.beneficiary_user_id = new.beneficiary_user_id
       and m.status = 'active'
       and p.account_status = 'active'
       and v.identity_status = 'verified'
@@ -183,6 +184,8 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.enforce_partner_payout_readiness() from public, anon, authenticated;
 
 drop trigger if exists booking_payment_partner_payout_readiness on public.booking_payment_records;
 create trigger booking_payment_partner_payout_readiness
