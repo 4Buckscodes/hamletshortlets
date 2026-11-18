@@ -15,7 +15,7 @@ const destinations = [
 export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
   const featured = approvedStays.slice(0, 6);
   return (
-    <main className="home-page">
+    <div className="home-page">
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-shell home-hero-grid">
           <div className="home-hero-copy">
@@ -60,6 +60,6 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
         <div className="home-destination-grid">{destinations.map((place, index) => <Link className={`home-destination home-destination-${index + 1}`} key={place.number} href={place.href}><img src={place.image} alt="" loading="lazy" /><span className="home-destination-tint" /><span className="home-destination-meta">LAGOS / {place.number}</span><span className="home-destination-caption"><span><strong>{place.name}</strong><small>{place.area}</small></span><span className="home-destination-arrow"><ArrowUpRight size={19} /></span></span></Link>)}</div>
               </section>
       <section className="home-belief"><div className="home-shell home-belief-grid"><div><p className="home-section-label">04 / THE HAMLET FEELING</p><h2>Good stays.<br /><em>Zero guesswork.</em></h2></div><div className="home-belief-copy"><p>We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p><Link href="/how-it-works">Here&apos;s how we make it easier <ArrowUpRight size={16} /></Link></div><div className="home-belief-points"><div><ShieldCheck size={19} /><span><strong>Know before you go</strong><small>Key details are clear before you request.</small></span></div><div><Sparkles size={19} /><span><strong>Find your kind of place</strong><small>Places with personality.</small></span></div><div><ArrowRight size={19} /><span><strong>Stay in control</strong><small>Request first. Confirm when you&apos;re ready.</small></span></div></div></div></section>
-    </main>
+    </div>
   );
 }
