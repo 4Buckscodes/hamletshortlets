@@ -274,6 +274,9 @@ export default function PartnerStartDashboard() {
                     />
                   </div>
                 </label>
+                <p className="mt-2 text-xs leading-relaxed text-ink-500">
+                  Your primary role describes your main work. Owners, property managers, operators and agents can use the same account to close eligible bookings and introduce partners.
+                </p>
 
                 <label className="mt-4 block text-xs font-bold text-ink-700">
                   Business / display name

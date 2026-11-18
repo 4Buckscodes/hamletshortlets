@@ -16,7 +16,7 @@ describe('immediate partner network registration safety', () => {
     expect(migration).toMatch(/char_length\(regexp_replace\(coalesce\(next_phone/i);
   });
   it('prevents self-reactivation and requires audited admin decisions', () => {
-    expect(migration).toMatch(/status = 'suspended'\) then\s*raise exception/i);
+    expect(migration).toMatch(/status\s*=\s*'suspended'\) then\s*raise exception/i);
     expect(migration).toMatch(/char_length\(btrim\(coalesce\(reason_note,''\)\)\) < 10/i);
     expect(migration).toMatch(/insert into public\.admin_audit_log/i);
     expect(migration).toMatch(/public\.has_role\('admin'\)/i);
