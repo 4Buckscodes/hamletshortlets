@@ -7,7 +7,7 @@ import {
   buildPublicPageMetadata,
 } from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
-import { HomeMarketplaceExperience } from './home-slideshow';
+import { V0HomeExperience } from './v0-home-experience';
 
 export const revalidate = 60;
 
@@ -56,10 +56,7 @@ export default async function HomePage() {
       <JsonLd id="hamlet-homepage-jsonld" data={pageSchema} />
 
       <main className="flex-1">
-        <HomeMarketplaceExperience
-          approvedStays={approvedStays}
-          queryError={queryError}
-        />
+        <V0HomeExperience approvedStays={approvedStays} />
       </main>
 
       <SiteFooter />
