@@ -1403,3 +1403,12 @@ main > header nav[aria-label="Admin workspace"] a{min-height:40px!important;bord
 
 :root { --navy:#172119; --navy-deep:#101a14; --gold:#d9f24b; --brand-blue:#172119; --brand-blue-strong:#101a14; --brand-coral:#ff6948; --home-lime:#d9f24b; --home-coral:#ff6948; }
 .home-page { --home-lime:#d9f24b; --home-coral:#ff6948; --home-ink:#172119; }
+
+
+/* Production-backed live inventory section within the approved V0 homepage */
+.home-live-stays { padding: 76px 0 88px; background: #f6f1e7; color: #172119; }
+.home-live-stays .home-section-top { margin-bottom: 28px; }
+.home-live-stays .home-all-stays { color: #172119; }
+.home-empty-stays { padding: 28px; border: 1px solid #d9ddcf; background: #fffdf8; color: #5d6a5c; }
+.home-empty-stays a { display: inline-flex; gap: 8px; margin-top: 10px; color: #172119; font-weight: 700; }
+@media (max-width: 760px) { .home-live-stays { padding: 56px 0 64px; } }
