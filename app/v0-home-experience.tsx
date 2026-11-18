@@ -24,7 +24,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
             <div className="home-coordinate">LAGOS, NIGERIA <span>·</span> STARTING POINT</div>
           </div>
           <div className="home-hero-art">
-            <div className="home-photo-frame"><img src="/images/prop/penthouse.jpg" alt="A premium Lagos shortlet interior" /><span className="home-image-index">A GOOD PLACE TO LAND <b>— NIGERIA</b></span></div>
+            <div className="home-photo-frame"><img src="https://raw.githubusercontent.com/4Buckscodes/hamletshortlets/fix/v0-sitewide-release-readiness/public/images/hamlet-lagos-hero.png" alt="Lagos city skyline and waterfront" /><span className="home-image-index">A GOOD PLACE TO LAND <b>— NIGERIA</b></span></div>
             <div className="home-stamp" aria-label="Lagos, Nigeria"><span>YOUR CITY</span><strong>YOUR<br />STAY</strong><span>HAMLET · 2026</span></div>
             <span className="home-side-note">IN GOOD COMPANY, ALWAYS</span>
           </div>
