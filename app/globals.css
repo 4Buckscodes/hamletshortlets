@@ -1716,3 +1716,25 @@ main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !importan
  .partner-workspace-page section .primary-button,
  .partner-workspace-page section .secondary-button { justify-content:center; }
 }
+
+/* Homepage neighbourhoods: compact strip placed after live listings. */
+.home-neighbourhoods.home-neighbourhoods-compact { padding-block: 56px 64px !important; }
+.home-neighbourhoods-compact .home-section-top { align-items: end; margin-bottom: 24px !important; }
+.home-neighbourhoods-compact .home-section-top h2 { font-size: clamp(30px, 3.6vw, 46px) !important; line-height: 1 !important; letter-spacing: -.06em !important; }
+.home-neighbourhoods-compact .home-section-aside { max-width: 300px; margin: 0; font-size: 14px; }
+.home-neighbourhoods-compact .home-destination-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; align-items: stretch !important; gap: 14px !important; }
+.home-neighbourhoods-compact .home-destination,
+.home-neighbourhoods-compact .home-destination-1,
+.home-neighbourhoods-compact .home-destination-3 { grid-column: auto !important; min-height: 0 !important; height: clamp(190px, 18vw, 240px); margin-top: 0 !important; border-radius: 12px; }
+.home-neighbourhoods-compact .home-destination-meta { font-size: 11px; }
+.home-neighbourhoods-compact .home-destination-caption strong { font-size: 21px; }
+.home-neighbourhoods-compact .home-destination-caption small { font-size: 12px; }
+@media (max-width: 760px) {
+  .home-neighbourhoods.home-neighbourhoods-compact { padding-block: 40px 44px !important; }
+  .home-neighbourhoods-compact .home-section-top { flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 18px !important; }
+  .home-neighbourhoods-compact .home-section-top h2 { font-size: clamp(28px, 8vw, 36px) !important; }
+  .home-neighbourhoods-compact .home-destination-grid { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px !important; margin-inline: -18px; padding-inline: 18px; scroll-padding-inline: 18px; scrollbar-width: none; }
+  .home-neighbourhoods-compact .home-destination,
+  .home-neighbourhoods-compact .home-destination-1,
+  .home-neighbourhoods-compact .home-destination-3 { flex: 0 0 72%; height: 180px; scroll-snap-align: start; border: 0 !important; }
+}
