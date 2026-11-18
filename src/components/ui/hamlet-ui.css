@@ -651,3 +651,48 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-detail-verified { border-color: v
 .hm-content .secondary-button { border-radius: 999px; }
 .hm-content .italic.text-brass-300, .hm-content .italic.text-brass-600, .hm-content .italic.text-brass-700 { color: var(--hm-coral); font-family: var(--hm-serif); font-style: normal; }
 .hm-content .bg-clay\/60, .hm-content .bg-clay\/45 { background: var(--hm-sand); }
+
+/* ---------- Partner workspace ----------
+ * Each page's first block (eyebrow, title, intro, PartnerNav) becomes a full-bleed forest band;
+ * the rest of the page keeps its markup and is restyled to kit tokens below. */
+.hm-partner { width: min(1240px, calc(100% - 64px)); flex: 1; margin-inline: auto; padding-bottom: 88px; }
+@media (max-width: 760px) { .hm-partner { width: calc(100% - 36px); padding-bottom: 64px; } }
+.hm-partner > :first-child {
+  position: relative; display: flex; flex-wrap: wrap !important; align-items: flex-end; justify-content: space-between; gap: 18px 24px;
+  margin-bottom: 36px; padding-block: clamp(36px, 5vw, 56px) 22px; background: var(--hm-band); color: var(--hm-on-band);
+  box-shadow: 0 0 0 100vmax var(--hm-band); clip-path: inset(0 -100vmax);
+}
+.hm-partner > :first-child.flex { flex-direction: row !important; }
+.hm-partner > :first-child.flex > div:first-child { flex: 1 1 320px; min-width: 0; }
+.hm-partner > :first-child:not(.flex) { flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 36px; }
+.hm-partner > :first-child .eyebrow { color: var(--hm-lime); font-size: 11px; letter-spacing: 0.16em; }
+.hm-partner > :first-child h1 { margin-top: 10px; color: var(--hm-on-band); font-family: var(--hm-sans); font-size: clamp(36px, 4.8vw, 66px); font-weight: 850; letter-spacing: -0.07em; line-height: 0.95; }
+.hm-partner > :first-child p:not(.eyebrow) { color: var(--hm-on-band-muted); }
+.hm-partner > :first-child > nav, .hm-partner > :first-child .hm-partner-tabs { flex-basis: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .hm-partner > :first-child .eyebrow { animation: hm-rise 600ms var(--hm-ease) both; }
+  .hm-partner > :first-child h1 { animation: hm-rise 800ms var(--hm-ease) 80ms both; }
+  .hm-partner > :first-child .hm-tabs { animation: hm-fade 700ms var(--hm-ease) 380ms both; }
+}
+.hm-partner-tabs { align-items: center; }
+.hm-partner-tabs .hm-partner-tabs-add { display: inline-flex; gap: 6px; margin-left: auto; border: 1px solid rgba(217, 242, 75, 0.6); color: var(--hm-lime); font-weight: 750; }
+.hm-partner-tabs .hm-partner-tabs-add:hover, .hm-partner-tabs .hm-partner-tabs-add[aria-current="page"] { background: var(--hm-lime); color: #172119; }
+@media (max-width: 760px) {
+  .hm-partner > :first-child { margin-bottom: 24px; padding-top: 28px; }
+  .hm-partner-tabs .hm-partner-tabs-add { margin-left: 0; }
+  .hm-partner-add { width: 100%; }
+}
+/* Partner body: legacy markup to kit tokens */
+.hm-partner .eyebrow { color: var(--hm-label); font-size: 11px; letter-spacing: 0.16em; }
+.hm-partner :where(.rounded-3xl.border.bg-white, .rounded-3xl.border-ink-100, .card) { border-color: var(--hm-line); border-radius: var(--hm-r-card); background: var(--hm-surface); box-shadow: none; }
+.hm-partner .rounded-3xl.border-dashed { border-color: var(--hm-field-line); border-radius: var(--hm-r-card); background: var(--hm-surface); }
+.hm-partner h2.serif, .hm-partner h3.serif { color: var(--hm-text); font-family: var(--hm-serif); font-weight: 500; letter-spacing: -0.03em; }
+.hm-partner .primary-button { border: 0 !important; border-radius: 999px !important; background: var(--hm-blue) !important; color: #fff !important; box-shadow: none !important; }
+.hm-partner .primary-button:hover:not(:disabled) { background: var(--hm-blue-deep) !important; }
+.hm-partner .secondary-button { border: 1px solid var(--hm-line) !important; border-radius: 999px !important; background: var(--hm-surface) !important; color: var(--hm-text) !important; }
+.hm-partner .secondary-button:hover:not(:disabled) { border-color: var(--hm-text); }
+.hm-partner :where(.bg-ink-950, .bg-ink-900).rounded-3xl { border-radius: var(--hm-r-card); background: var(--hm-band); }
+.hm-partner :is(.bg-ink-950, .bg-ink-900) :is(h2, h3, h2.serif, h3.serif) { color: var(--hm-on-band); }
+.hm-partner :is(.bg-ink-950, .bg-ink-900) .eyebrow { color: var(--hm-lime); }
+.hm-partner table thead tr { background: var(--hm-sand); }
+.hm-partner table th { color: var(--hm-muted); font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }

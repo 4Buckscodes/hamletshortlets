@@ -215,10 +215,10 @@ export default function PartnerDashboardPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell partner-workspace-page flex-1 py-6 sm:py-12">
+      <main className="hm-main hm-partner">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>
@@ -231,21 +231,17 @@ export default function PartnerDashboardPage() {
           {canUploadProperties && (
             <Link
               href="/partners/properties/new"
-              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
+              className="hm-btn hm-btn-lime hm-partner-add"
             >
-              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brass-500 text-ink-950">
-                <Plus className="h-4 w-4 stroke-[2.75]" />
-              </span>
+              <Plus size={16} strokeWidth={2.75} aria-hidden="true" />
               <span>Add a new listing</span>
             </Link>
           )}
+          {(['partner', 'admin'].includes(role)) && (
+            <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
+          )}
         </div>
 
-        {(['partner', 'admin'].includes(role)) && (
-          <div className="mt-5">
-            <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
-          </div>
-        )}
 
         {error && (
           <p
