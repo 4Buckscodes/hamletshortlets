@@ -138,10 +138,37 @@ export function renderCustomerEmail(
   let intro = 'Your HAMLET account is ready. Discover stays and manage your activity in one place.';
   let ctaLabel = 'Explore HAMLET';
   let ctaUrl = appUrl;
+  let subject = row.subject;
+  let extraContentHtml = '';
+  let extraContentText = '';
   const detailRows: Array<[string, unknown]> = [];
 
   switch (row.event_type) {
     case 'registration_completed':
+      if (payload.partner_signup === true) {
+        subject = 'Welcome to HAMLET — List, Share and Earn!';
+        heading = 'Welcome to HAMLET — List, Share and Earn!';
+        intro = 'You are now part of the HAMLET partner network. You can start listing properties, sharing available stays and building your network.';
+        ctaLabel = 'Open your partner workspace';
+        ctaUrl = appUrl + '/partners';
+        extraContentHtml =
+          '<div style="margin:0 0 22px;line-height:1.65;">' +
+          '<p style="margin:0 0 12px;"><strong>List your property.</strong> Own or manage shortlet apartments? Submit your properties on HAMLET. Each property will be reviewed separately before it becomes publicly available.</p>' +
+          '<p style="margin:0 0 12px;"><strong>Share stays and earn.</strong> You do not need to own a property. Share available HAMLET stays with your network and earn rewards when your referrals lead to qualifying bookings.</p>' +
+          '<p style="margin:0 0 12px;"><strong>Invite others.</strong> Bring property owners, managers and agents into the HAMLET network and grow your referral opportunities.</p>' +
+          '</div>';
+        extraContentText = [
+          'List your property: Submit properties you own or manage. Each property is reviewed separately before public listing.',
+          'Share stays and earn: Share available HAMLET stays with your network and earn rewards when referrals lead to qualifying bookings.',
+          'Invite others: Bring property owners, managers and agents into the HAMLET network and grow your referral opportunities.',
+        ].join('\\n\\n');
+      } else {
+        subject = 'Welcome to HAMLET — Your next stay starts here';
+        heading = 'Welcome to HAMLET';
+        intro = 'Your HAMLET account is ready. Explore verified stays, discover places across our locations and find the right place for your next trip.';
+        ctaLabel = 'Explore verified stays';
+        ctaUrl = appUrl + '/stays';
+      }
       break;
     case 'partner_application_submitted':
       heading = 'We have received your partner application';
@@ -211,6 +238,7 @@ export function renderCustomerEmail(
     '<h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;">' + escapeCustomerEmailHtml(heading) + '</h1>' +
     '<p style="margin:0 0 18px;line-height:1.65;">Hello ' + name + ',</p>' +
     '<p style="margin:0 0 22px;line-height:1.65;">' + escapeCustomerEmailHtml(intro) + '</p>' +
+    extraContentHtml +
     (htmlRows ? '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">' + htmlRows + '</table>' : '') +
     '<p style="margin:24px 0;"><a href="' + escapeCustomerEmailHtml(ctaUrl) + '" style="display:inline-block;padding:13px 19px;background:#17251f;color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">' +
     escapeCustomerEmailHtml(ctaLabel) + '</a></p>' +
@@ -221,6 +249,7 @@ export function renderCustomerEmail(
     '',
     'Hello ' + (row.recipient_name || 'there') + ',',
     intro,
+    ...(extraContentText ? ['', extraContentText] : []),
     '',
     ...visibleRows.map(([label, value]) => label + ': ' + String(value)),
     '',
