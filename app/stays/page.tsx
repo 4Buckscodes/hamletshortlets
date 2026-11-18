@@ -87,14 +87,14 @@ export default async function StaysCataloguePage({
       <SiteHeader />
       <JsonLd id="hamlet-stays-jsonld" data={staysPageSchema} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      <main className="stays-page mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-col gap-3 border-b border-ink-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
+            <p className="stays-page-kicker text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
               Lagos Island &amp; Lagos Mainland
             </p>
             <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
-              Explore verified shortlet stays across Lagos.
+              Find a stay that feels like yours.
             </h1>
           </div>
 
