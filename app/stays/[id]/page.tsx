@@ -5,14 +5,14 @@ import { getPublicSupabase } from '@/lib/supabase-public';
 import BookingRequestForm from './booking-request-form';
 
 type Props={params:Promise<{id:string}>};
-type Stay={id:string;title:string;property_type:string|null;area:string|null;city:string|null;public_address:string|null;nightly_rate:number|string|null;bedrooms:number|null;bathrooms:number|null;capacity:number|null;bed_setup:string|null;image_urls:string[]|null;amenities:string[]|null;house_rules:string[]|null;trust_label:string|null;public_location_summary:string|null;cleaning_fee:number|string|null;refundable_deposit:number|string|null};
+type Stay={id:string;title:string;property_type:string|null;area:string|null;public_address:string|null;nightly_rate:number|string|null;bedrooms:number|null;bathrooms:number|null;capacity:number|null;bed_setup:string|null;image_urls:string[]|null;amenities:string[]|null;house_rules:string[]|null;trust_label:string|null;public_location_summary:string|null;cleaning_fee:number|string|null;refundable_deposit:number|string|null};
 export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {id}=await params;
  const db=getPublicSupabase();
  if(!db)return {title:'Stay details | HAMLET.REST',robots:{index:false,follow:false}};
- const {data}=await db.from('properties').select('title,area,city,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
+ const {data}=await db.from('properties').select('title,area,property_type,bedrooms,capacity,image_urls').eq('id',id).eq('status','approved').maybeSingle();
  if(!data)return {title:'Stay unavailable | HAMLET.REST',robots:{index:false,follow:false}};
- const title=`${data.title} in ${data.area||data.city||'Nigeria'} | HAMLET.REST`;
+ const title=`${data.title} in ${data.area||'Nigeria'} | HAMLET.REST`;
  const description=`Explore ${data.title} in ${data.area||data.city||'Nigeria'} on HAMLET.REST. View stay details, guest capacity and booking request steps before you commit.`;
  const image=Array.isArray(data.image_urls)&&data.image_urls[0]&&/^https:\/\//i.test(data.image_urls[0])?data.image_urls[0]:undefined;
  return {
@@ -24,11 +24,11 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
 export default async function PropertyDetailPage({params}:Props){
  const {id}=await params;const db=getPublicSupabase();
  if(!db)return <main className="shell" style={{paddingBlock:40}}><Link href="/stays">← Back to stays</Link><h1 className="serif">Stay details</h1><p>Configure the public Supabase environment to load approved listing details.</p></main>;
- const {data,error}=await db.from('properties').select('id,title,property_type,area,city,public_address,nightly_rate,bedrooms,bathrooms,capacity,bed_setup,image_urls,amenities,house_rules,trust_label,public_location_summary,cleaning_fee,refundable_deposit').eq('id',id).eq('status','approved').maybeSingle();
+ const {data,error}=await db.from('properties').select('id,title,property_type,area,public_address,nightly_rate,bedrooms,bathrooms,capacity,bed_setup,image_urls,amenities,house_rules,trust_label,public_location_summary,cleaning_fee,refundable_deposit').eq('id',id).eq('status','approved').maybeSingle();
  if(error||!data)notFound();const p=data as Stay;const images=p.image_urls??[];
  return <main style={{minHeight:'100svh',background:'var(--paper)'}}>
  <section className="shell" style={{paddingBlock:24}}>
- <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>{p.area||p.city||'Nigeria'}{p.trust_label?' · '+p.trust_label:''}</p>
+ <p style={{color:'#806522',fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase'}}>{p.area||'Nigeria'}{p.trust_label?' · '+p.trust_label:''}</p>
  <h1 className="serif" style={{fontSize:'clamp(34px,6vw,56px)',fontWeight:500,letterSpacing:'-.035em',margin:'8px 0 18px'}}>{p.title}</h1>
  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,250px),1fr))',gap:10}}>{images.length?images.slice(0,5).map((url,i)=><img key={url} src={url} alt={p.title+' photo '+(i+1)} style={{width:'100%',height:230,objectFit:'cover',borderRadius:16}}/>):<div style={{minHeight:250,borderRadius:18,background:'linear-gradient(135deg,#e7dfce,#f7f3e9)',display:'grid',placeItems:'center',color:'#806522',fontSize:56}}>⌂</div>}</div>
  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,290px),1fr))',gap:24,marginTop:24}}>
