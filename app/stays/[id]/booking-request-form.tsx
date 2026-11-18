@@ -18,7 +18,6 @@ import {
   StepFooterActions,
   StepProgressHeader,
   StepperCounter,
-  FIELD_INPUT_CLASS,
 } from '@/components/forms/ProgressiveFormPrimitives';
 
 type Props = {
@@ -245,10 +244,11 @@ export default function BookingRequestForm({
       return (
         <div
           role="status"
-          className="rounded-2xl border border-ink-200 bg-paper p-4 text-xs leading-relaxed text-ink-700"
+          className="hm-notice"
+          style={{ flexDirection: 'column', gap: 4 }}
         >
-          <p className="m-0 font-bold text-ink-950">Price currently unavailable</p>
-          <p className="m-0 mt-1">
+          <p className="m-0 font-bold">Price currently unavailable</p>
+          <p className="m-0">
             Contact <strong>hello@hamlet.rest</strong> for rate confirmation.
           </p>
         </div>
@@ -259,27 +259,27 @@ export default function BookingRequestForm({
       return (
         <div
           role="status"
-          className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5"
+          className="hm-booking-success"
         >
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+            <CheckCircle2 size={20} aria-hidden="true" className="hm-booking-success-icon" />
             <div>
-              <h3 className="m-0 text-base font-bold text-ink-900">
+              <h3 className="hm-h3" style={{ fontSize: 20 }}>
                 Booking request sent
               </h3>
               {createdReference && (
-                <p className="m-0 mt-1 font-mono text-xs font-extrabold text-emerald-800">
+                <p className="hm-booking-ref">
                   Reference: {createdReference}
                 </p>
               )}
-              <p className="m-0 mt-2 text-xs leading-relaxed text-ink-700">
+              <p className="hm-meta" style={{ marginTop: 8 }}>
                 {message}
               </p>
             </div>
           </div>
 
           <div className="grid gap-2 pt-1">
-            <Link href="/account/bookings" className="primary-button w-full text-center">
+            <Link href="/account/bookings" className="hm-btn hm-btn-primary hm-btn-block">
               Track in My Bookings →
             </Link>
             <button
@@ -289,7 +289,7 @@ export default function BookingRequestForm({
                 setMessage('');
                 setStep(0);
               }}
-              className="secondary-button w-full"
+              className="hm-btn hm-btn-ghost hm-btn-block"
             >
               Start another date check
             </button>
@@ -299,7 +299,7 @@ export default function BookingRequestForm({
     }
 
     return (
-      <form onSubmit={handleStepSubmit} className="space-y-4">
+      <form onSubmit={handleStepSubmit} className="hm-booking-form">
         <StepProgressHeader
           steps={BOOKING_STEPS}
           currentStep={step}
@@ -309,7 +309,7 @@ export default function BookingRequestForm({
 
         {step === 0 ? (
           <div className="space-y-3.5">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="hm-booking-dates">
               <FormField label="Check-in">
                 {fieldProps => (
                   <input
@@ -322,7 +322,7 @@ export default function BookingRequestForm({
                       setCheckIn(e.target.value);
                       setError('');
                     }}
-                    className={FIELD_INPUT_CLASS}
+                    className="hm-input"
                   />
                 )}
               </FormField>
@@ -339,7 +339,7 @@ export default function BookingRequestForm({
                       setCheckOut(e.target.value);
                       setError('');
                     }}
-                    className={FIELD_INPUT_CLASS}
+                    className="hm-input"
                   />
                 )}
               </FormField>
@@ -355,12 +355,12 @@ export default function BookingRequestForm({
             />
 
             {checkingCalendar && (
-              <p className="m-0 text-xs text-ink-500">Checking recorded calendar dates…</p>
+              <p className="hm-meta">Checking recorded calendar dates…</p>
             )}
             {calendarConflict && (
               <p
                 role="alert"
-                className="m-0 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"
+                className="hm-notice hm-notice-bad"
               >
                 {calendarConflict}
               </p>
@@ -368,21 +368,22 @@ export default function BookingRequestForm({
           </div>
         ) : (
           <div className="space-y-3.5">
-            <div className="rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs">
+            <div className="hm-booking-summary">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-bold text-ink-900">
-                  <CalendarDays className="mr-1.5 inline h-3.5 w-3.5 text-brass-700" />
+                <span className="font-bold">
+                  <CalendarDays size={14} aria-hidden="true" className="mr-1.5 inline" />
                   {checkIn} → {checkOut} ({nights} {nights === 1 ? 'night' : 'nights'})
                 </span>
                 <button
                   type="button"
                   onClick={() => setStep(0)}
-                  className="cursor-pointer font-bold text-ink-700 underline"
+                  className="hm-link"
+                  style={{ fontSize: 13, paddingBottom: 2 }}
                 >
                   Change
                 </button>
               </div>
-              <p className="m-0 mt-1 text-ink-600">
+              <p className="hm-meta" style={{ marginTop: 4 }}>
                 {guests} {guests === 1 ? 'guest' : 'guests'} · {propertyTitle}
               </p>
             </div>
@@ -399,13 +400,14 @@ export default function BookingRequestForm({
                   value={requests}
                   onChange={e => setRequests(e.target.value)}
                   placeholder="e.g. Arriving around 4 PM from MMIA…"
-                  className={`${FIELD_INPUT_CLASS} resize-y`}
+                  className="hm-input"
+                  style={{ resize: 'vertical' }}
                 />
               )}
             </FormField>
 
-            <div className="flex items-start gap-2.5 rounded-2xl border border-ink-100 bg-paper/70 p-3 text-xs leading-relaxed text-ink-600">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+            <div className="hm-notice">
+              <ShieldCheck size={16} aria-hidden="true" />
               <span>
                 No charge now. A 48-hour Paystack payment window opens after host confirmation.
               </span>
@@ -415,8 +417,8 @@ export default function BookingRequestForm({
 
         {/* Authoritative Price Breakdown (`src/lib/pricing.ts`) */}
         {nights > 0 && domesticNightly !== null && (
-          <div className="space-y-2 rounded-2xl border border-ink-200 bg-paper/60 p-4 text-xs">
-            <div className="flex justify-between gap-2 text-ink-700">
+          <div className="hm-booking-breakdown" aria-live="polite">
+            <div className="hm-booking-line">
               <span>
                 Stay ({formatPrice(domesticNightly, { roundWhole: true })} × {nights}{' '}
                 {nights === 1 ? 'night' : 'nights'})
@@ -426,17 +428,17 @@ export default function BookingRequestForm({
               </span>
             </div>
             {cleaningFee > 0 && (
-              <div className="flex justify-between gap-2 text-ink-700">
+              <div className="hm-booking-line">
                 <span>Cleaning & turnover (mandatory)</span>
                 <span className="font-mono font-semibold">{formatPrice(cleaningFee)}</span>
               </div>
             )}
-            <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
+            <div className="hm-booking-total">
               <span>Total stay price</span>
               <span className="font-mono">{formatPrice(guestStayTotal)}</span>
             </div>
             {deposit > 0 && (
-              <div className="flex justify-between gap-2 pt-1 text-ink-600">
+              <div className="hm-booking-line hm-booking-line-muted">
                 <span>Refundable caution deposit</span>
                 <span className="font-mono font-semibold">
                   {formatCautionDeposit(deposit)}
@@ -444,7 +446,7 @@ export default function BookingRequestForm({
               </div>
             )}
             {currency !== 'NGN' && (
-              <p className="m-0 pt-1 text-[11px] leading-relaxed text-ink-500">
+              <p className="hm-field-hint" style={{ margin: 0 }}>
                 {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
               </p>
             )}
@@ -454,7 +456,7 @@ export default function BookingRequestForm({
         {error && (
           <p
             role="alert"
-            className="m-0 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-800"
+            className="hm-notice hm-notice-bad"
           >
             {error}
           </p>
@@ -475,27 +477,27 @@ export default function BookingRequestForm({
 
   return (
     <>
-      <div className="rounded-3xl border border-ink-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="mb-4 flex items-baseline justify-between gap-2 border-b border-ink-100 pb-4">
+      <div className="hm-card hm-booking hm-booking-scope">
+        <div className="hm-booking-head">
           <div>
-            <p className="m-0 text-xs font-semibold text-ink-500">All-in stay rate</p>
-            <p className="m-0 mt-0.5 font-mono text-2xl font-extrabold text-ink-900">
+            <p className="hm-field-label">All-in stay rate</p>
+            <p className="hm-booking-rate">
               {domesticNightly !== null ? (
                 <>
                   {formatPrice(domesticNightly, { roundWhole: true })}{' '}
-                  <span className="font-sans text-xs font-normal text-ink-500">
-                    / night{currency !== 'NGN' ? ` (${currency})` : ''}
+                  <span className="hm-meta" style={{ display: 'inline' }}>
+                    / night · fees included{currency !== 'NGN' ? ` (${currency})` : ''}
                   </span>
                 </>
               ) : (
-                <span className="font-sans text-base font-bold text-ink-600">
+                <span className="hm-meta" style={{ fontWeight: 700 }}>
                   Price unavailable
                 </span>
               )}
             </p>
           </div>
           {deposit > 0 && (
-            <span className="rounded-full bg-paper px-3 py-1 text-[11px] font-bold text-ink-700">
+            <span className="hm-status hm-status-neutral">
               Caution: {formatCautionDeposit(deposit, { roundWhole: true })}
             </span>
           )}
@@ -505,12 +507,12 @@ export default function BookingRequestForm({
       </div>
 
       {/* Mobile Sticky Bottom Action Bar (never obscures content due to pb-24 on detail main) */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ink-200 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+      <div className="hm-booking-bar">
+        <div className="hm-booking-bar-inner">
           <div className="min-w-0">
-            <p className="m-0 font-mono text-base font-extrabold text-ink-900">
+            <p className="hm-booking-bar-price">
               {domesticNightly === null ? (
-                <span className="font-sans text-sm font-bold text-ink-600">
+                <span className="hm-meta" style={{ fontWeight: 700 }}>
                   Price unavailable
                 </span>
               ) : (
@@ -518,13 +520,13 @@ export default function BookingRequestForm({
                   {nights > 0
                     ? formatPrice(guestStayTotal)
                     : formatPrice(domesticNightly, { roundWhole: true })}
-                  <span className="ml-1 font-sans text-xs font-normal text-ink-500">
+                  <span className="hm-meta" style={{ display: 'inline', marginLeft: 4 }}>
                     {nights > 0 ? `total (${nights}n)` : '/ night'}
                   </span>
                 </>
               )}
             </p>
-            <p className="m-0 truncate text-[11px] text-ink-500">
+            <p className="hm-meta" style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Partner confirms before payment
             </p>
           </div>
@@ -532,7 +534,7 @@ export default function BookingRequestForm({
             type="button"
             disabled={domesticNightly === null}
             onClick={() => setMobileSheetOpen(true)}
-            className="primary-button min-h-[46px] shrink-0 px-5 disabled:cursor-not-allowed disabled:opacity-50"
+            className="hm-btn hm-btn-primary"
           >
             {nights > 0 ? 'Request stay' : 'Check dates'}
           </button>
@@ -545,7 +547,7 @@ export default function BookingRequestForm({
         subtitle={propertyTitle}
         onClose={() => setMobileSheetOpen(false)}
       >
-        {renderFormBody()}
+        <div className="hm-booking-scope">{renderFormBody()}</div>
       </FocusedDrawer>
     </>
   );
