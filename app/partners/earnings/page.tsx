@@ -155,7 +155,7 @@ export default function PartnerEarningsPage() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="shell partner-workspace-page flex-1 py-8 sm:py-12">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Earnings & Referrals</p>
