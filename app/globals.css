@@ -1512,3 +1512,14 @@ main.shell .lg\:sticky { top:88px; }
   main.shell .space-y-8 > section[data-hamlet-reveal] { padding:16px !important; }
   main.shell .aspect-\[16\/10\] { aspect-ratio:4/3 !important; }
 }
+
+
+/* Sign-in and account entry surfaces */
+main.shell .max-w-md > section { border-radius:18px !important; border-color:#D9DDCF !important; box-shadow:none !important; }
+main.shell .max-w-md > section h1 { font-size:clamp(30px,5vw,42px) !important; }
+main.shell .max-w-md > p { color:#697567 !important; }
+main.shell [role="tablist"] { background:#EEEBDD !important; border-radius:999px !important; }
+main.shell [role="tab"][aria-selected="true"] { background:#172119 !important; color:#F6F1E7 !important; box-shadow:none !important; }
+main.shell [role="tab"][aria-selected="false"] { color:#697567 !important; }
+main.shell .rounded-2xl.border.border-red-200 { border-radius:12px !important; }
+main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !important; }
