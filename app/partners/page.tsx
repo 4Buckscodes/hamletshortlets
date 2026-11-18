@@ -218,7 +218,7 @@ export default function PartnerDashboardPage() {
     <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="hm-main hm-partner">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>

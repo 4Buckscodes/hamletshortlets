@@ -463,7 +463,7 @@ function PartnerMarketingContent() {
     <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="hm-main hm-partner">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">HAMLET Share Engine</p>
@@ -1182,7 +1182,7 @@ export default function PartnerMarketingPage() {
       fallback={
         <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
-          <main className="hm-main hm-partner">
+          <main className="hm-main hm-workspace">
             <p className="text-sm text-ink-600">Loading Marketing Studio…</p>
           </main>
           <SiteFooter />

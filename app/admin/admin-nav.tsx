@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { WorkspaceTabs } from '@/components/ui';
 
 const ADMIN_LINKS = [
   { href: '/admin', label: 'Overview', id: 'overview' },
@@ -13,33 +13,7 @@ const ADMIN_LINKS = [
   { href: '/admin/audit', label: 'Audit log', id: 'audit' },
 ] as const;
 
-export function AdminNav({
-  current,
-}: {
-  current: (typeof ADMIN_LINKS)[number]['id'];
-}) {
-  return (
-    <nav
-      aria-label="Administrator navigation"
-      className="flex flex-wrap gap-2"
-    >
-      {ADMIN_LINKS.map(item => {
-        const active = item.id === current;
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            aria-current={active ? 'page' : undefined}
-            className={
-              active
-                ? 'primary-button min-h-[40px] px-4 text-xs'
-                : 'secondary-button min-h-[40px] px-4 text-xs'
-            }
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+export function AdminNav({ current }: { current: (typeof ADMIN_LINKS)[number]['id'] }) {
+  const active = ADMIN_LINKS.find(item => item.id === current)?.href ?? '/admin';
+  return <WorkspaceTabs label="Administrator navigation" current={active} tabs={ADMIN_LINKS} />;
 }

@@ -164,7 +164,7 @@ export default function PartnerStartDashboard() {
   return (
     <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
-      <main className="hm-main hm-partner">
+      <main className="hm-main hm-workspace">
         <div>
         <p className="eyebrow">HAMLET Partner Network</p>
         <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">

@@ -161,7 +161,7 @@ export default function PartnerBookingsPage() {
     <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="hm-main hm-partner">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Partner Booking Review</p>

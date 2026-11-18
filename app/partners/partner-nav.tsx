@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import { useActiveTabInView } from '@/components/ui/useActiveTabInView';
 
 export type PartnerTab =
   | 'overview'
@@ -34,10 +35,11 @@ export function PartnerNav({
 }) {
   const isNewPropertyActive = current === 'new-property';
 
+  const navRef = useActiveTabInView<HTMLElement>(current);
   const items = applicant ? ITEMS.filter(item => item.id === 'overview') : ITEMS;
 
   return (
-    <nav aria-label="Partner workspace navigation" className="hm-tabs hm-partner-tabs">
+    <nav ref={navRef} aria-label="Partner workspace navigation" className="hm-tabs hm-partner-tabs">
       {items.map(item => (
         <Link key={item.id} href={item.href} aria-current={item.id === current ? 'page' : undefined}>
           {item.label}
