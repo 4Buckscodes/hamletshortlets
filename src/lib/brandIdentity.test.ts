@@ -9,12 +9,12 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
   it('defines Midnight Navy, Champagne Gold, Warm Ivory, and Slate Grey tokens in index.css', () => {
     const css = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
 
-    // Primary Midnight Navy (#0E1F3B), Champagne Gold (#C9A44A), Warm Ivory (#F8F5EE), Slate Grey (#64748B)
-    expect(css).toContain('--color-ink-900: #0E1F3B;');
-    expect(css).toContain('--color-brass-500: #C9A44A;');
-    expect(css).toContain('--color-paper: #F8F5EE;');
-    expect(css).toContain('--color-ink-500: #64748B;');
-    expect(css).toContain('--color-jade-700: #0E1F3B;');
+    // Approved V0 palette: Forest ink (#172119), Lime accent (#C5DE3F), Warm Ivory (#F6F1E7), Sage grey (#758071)
+    expect(css).toContain('--color-ink-900: #172119;');
+    expect(css).toContain('--color-brass-500: #C5DE3F;');
+    expect(css).toContain('--color-paper: #F6F1E7;');
+    expect(css).toContain('--color-ink-500: #758071;');
+    expect(css).toContain('--color-jade-700: #173F32;');
 
     // Typography: Playfair Display for headlines/serif & Inter for body/UI sans-serif
     expect(css).toContain('"Playfair Display Variable"');

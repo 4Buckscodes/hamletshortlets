@@ -91,8 +91,8 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(siteShell).toContain('bg-[#121F3C]');
     expect(siteShell).toContain('lg:backdrop-blur-xl');
 
-    // Full-screen mobile drawer in Warm Ivory (#F8F5EE) with gold-accented Horatio & guest/partner actions
-    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F8F5EE]');
+    // Full-screen mobile drawer in Forest (#172119) with gold-accented Horatio & guest/partner actions
+    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#172119]');
     expect(siteShell).toContain('h-dvh');
     expect(siteShell).toContain('M4 8h16M4 16h16');
     expect(siteShell).toContain('Ask Horatio');

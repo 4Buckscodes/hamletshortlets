@@ -1685,3 +1685,34 @@ main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !importan
  .partner-workspace-page > .mt-8.space-y-6 section { padding:16px!important; }
  .partner-workspace-page > div.mt-8.max-w-3xl { margin-top:20px!important; }
 }
+
+/* Partner operations: availability, Share & Studio, performance, profile and listing edit. */
+.partner-workspace-page section.rounded-3xl,
+.partner-workspace-page div.rounded-3xl:not(.border-dashed) { border-color:#d9ddcf!important; border-radius:15px!important; background:#fffdf7!important; box-shadow:none!important; }
+.partner-workspace-page section.rounded-3xl.bg-amber-50 { border-color:#e6d6a6!important; background:#fbf5e3!important; }
+.partner-workspace-page section h2.serif { color:#172119!important; font-size:clamp(21px,2.5vw,28px)!important; line-height:1.15!important; letter-spacing:-.035em!important; }
+.partner-workspace-page section[aria-label] > h2.serif,
+.partner-workspace-page section[aria-label] > div > h2.serif { font-size:clamp(22px,2.6vw,30px)!important; }
+.partner-workspace-page form.border-t,
+.partner-workspace-page section .border-t { border-color:#e2e3d8!important; }
+.partner-workspace-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.partner-workspace-page select,
+.partner-workspace-page textarea { min-height:44px; border-radius:9px!important; border-color:#d4dacb!important; background:#fffdf7!important; color:#172119; }
+.partner-workspace-page input:focus-visible,
+.partner-workspace-page select:focus-visible,
+.partner-workspace-page textarea:focus-visible { outline:2px solid #9eaa66!important; outline-offset:1px; }
+.partner-workspace-page section .primary-button,
+.partner-workspace-page section .secondary-button { border-radius:999px!important; }
+.partner-workspace-page section .secondary-button { border-color:#d9ddcf!important; background:transparent!important; }
+.partner-workspace-page section .secondary-button:hover { border-color:#172119!important; background:#172119!important; color:#f6f1e7!important; }
+.partner-workspace-page table { border-color:#e2e3d8!important; }
+.partner-workspace-page table thead tr { background:#f3f0e5!important; color:#596457!important; }
+.partner-workspace-page table th { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+.partner-workspace-page table tbody tr { border-color:#e2e3d8!important; }
+.partner-workspace-page table tbody tr:hover { background:#f8f6ee; }
+@media(max-width:760px){
+ .partner-workspace-page section.rounded-3xl,
+ .partner-workspace-page div.rounded-3xl:not(.border-dashed) { padding:16px!important; }
+ .partner-workspace-page section .primary-button,
+ .partner-workspace-page section .secondary-button { justify-content:center; }
+}
