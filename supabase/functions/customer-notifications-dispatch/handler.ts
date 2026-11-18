@@ -258,7 +258,7 @@ export function renderCustomerEmail(
     'HAMLET · Your stay, sorted.',
   ].join('\n');
 
-  return { subject: row.subject.replace(/[\r\n]+/g, ' ').trim(), html, text };
+  return { subject: subject.replace(/[\r\n]+/g, ' ').trim(), html, text };
 }
 
 export async function defaultSendCustomerEmail(

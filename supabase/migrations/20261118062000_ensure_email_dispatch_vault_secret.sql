@@ -1,4 +1,5 @@
--- Ensure the scheduled email dispatcher has its private Vault token.\ndo $extensions$
+-- Ensure the scheduled email dispatcher has its private Vault token.
+do $extensions$
 begin
   if exists (select 1 from pg_available_extensions where name = 'supabase_vault') then
     execute 'create extension if not exists supabase_vault with schema vault';
