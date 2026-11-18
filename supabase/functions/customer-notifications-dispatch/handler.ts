@@ -155,7 +155,7 @@ export function renderCustomerEmail(
           '<div style="margin:0 0 22px;line-height:1.65;">' +
           '<p style="margin:0 0 12px;"><strong>List your property.</strong> Own or manage shortlet apartments? Submit your properties on HAMLET. Each property will be reviewed separately before it becomes publicly available.</p>' +
           '<p style="margin:0 0 12px;"><strong>Share stays and earn.</strong> You do not need to own a property. Share available HAMLET stays with your network and earn rewards when your referrals lead to qualifying bookings.</p>' +
-          '<p style="margin:0 0 12px;"><strong>Invite others.</strong> Bring property owners, managers and agents into the HAMLET network and grow your referral opportunities.</p>' +
+          '<p style="margin:0 0 12px;"><strong>Invite others.</strong> Invite property owners, managers and agents to join HAMLET. When people you refer become active and generate qualifying activity, you can benefit through the partner referral programme.</p>' +
           '</div>';
         extraContentText = [
           'List your property: Submit properties you own or manage. Each property is reviewed separately before public listing.',
