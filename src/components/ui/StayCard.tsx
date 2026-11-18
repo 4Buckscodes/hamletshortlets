@@ -6,8 +6,10 @@ import { cx } from './cx';
 
 export interface StayCardProps {
   href: string;
+  /** Empty string shows the "photo coming soon" placeholder. */
   imageSrc: string;
   imageAlt: string;
+  onImageError?: () => void;
   /** Caps tag over the photo, e.g. "Verified · Lekki Phase 1". */
   tag?: string;
   title: string;
@@ -21,7 +23,7 @@ export interface StayCardProps {
 }
 
 /** Stay card: 4:3 photo with caption tag, Playfair title, one meta line, all-in guest price and a round arrow. */
-export function StayCard({ href, imageSrc, imageAlt, tag, title, meta, price, priceSuffix = '/ night · fees included', revealIndex, className }: StayCardProps) {
+export function StayCard({ href, imageSrc, imageAlt, onImageError, tag, title, meta, price, priceSuffix = '/ night · fees included', revealIndex, className }: StayCardProps) {
   const reveal = revealIndex === undefined ? null : revealProps(revealIndex, 'photo');
   return (
     <Link
@@ -30,7 +32,11 @@ export function StayCard({ href, imageSrc, imageAlt, tag, title, meta, price, pr
       {...(reveal ? { 'data-hamlet-reveal': '', style: reveal.style } : {})}
     >
       <div className="hm-media">
-        <img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" />
+        {imageSrc ? (
+          <img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" onError={onImageError} />
+        ) : (
+          <span className="hm-media-placeholder">Photo coming soon</span>
+        )}
         <span className="hm-media-tint" aria-hidden="true" />
         {tag ? <span className="hm-media-tag">{tag}</span> : null}
       </div>

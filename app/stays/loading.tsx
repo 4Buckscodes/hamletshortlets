@@ -1,47 +1,43 @@
 import { SiteFooter, SiteHeader } from '@/components/site/SiteShell';
 
+const block = (width: string, height: number, extra?: React.CSSProperties): React.CSSProperties => ({
+  width,
+  height,
+  borderRadius: 10,
+  background: 'var(--hm-sand)',
+  ...extra,
+});
+
 export default function StaysLoading() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main
-        aria-busy="true"
-        aria-label="Loading Lagos stays"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10"
-      >
-        <div className="mb-8 space-y-3 border-b border-ink-200/80 pb-6">
-          <div className="h-3 w-44 animate-pulse rounded-full bg-clay" />
-          <div className="h-9 w-full max-w-xl animate-pulse rounded-2xl bg-clay" />
-          <div className="h-4 w-full max-w-2xl animate-pulse rounded-xl bg-clay/80" />
-        </div>
+      <main className="hm-main" aria-busy="true" aria-label="Loading Lagos stays" style={{ flex: 1 }}>
+        <section className="hm-band">
+          <div className="hm-shell hm-band-inner" style={{ paddingBottom: 48 }}>
+            <div className="animate-pulse" style={block('220px', 12, { background: 'var(--hm-band-raised)' })} />
+            <div className="animate-pulse" style={block('min(560px, 100%)', 64, { background: 'var(--hm-band-raised)' })} />
+            <div className="animate-pulse" style={block('min(420px, 90%)', 48, { background: 'var(--hm-band-raised)' })} />
+          </div>
+        </section>
 
-        <div className="mb-8 flex gap-3 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="h-[76px] w-[204px] shrink-0 animate-pulse rounded-2xl border border-ink-100 bg-white"
-            />
-          ))}
-        </div>
-
-        <div className="mb-6 h-28 w-full animate-pulse rounded-3xl border border-ink-100 bg-white" />
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="overflow-hidden rounded-3xl border border-ink-100 bg-white"
-            >
-              <div className="aspect-[4/3] w-full animate-pulse bg-clay" />
-              <div className="space-y-3 p-5">
-                <div className="h-3 w-1/2 animate-pulse rounded-full bg-clay" />
-                <div className="h-5 w-4/5 animate-pulse rounded-xl bg-clay" />
-                <div className="h-4 w-2/3 animate-pulse rounded-xl bg-clay/80" />
-                <div className="h-8 w-full animate-pulse rounded-xl bg-clay/60" />
+        <div className="hm-shell hm-section-tight" style={{ display: 'grid', gap: 32 }}>
+          <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="hm-card animate-pulse" style={{ width: 236, height: 84, flex: 'none' }} />
+            ))}
+          </div>
+          <div className="hm-card animate-pulse" style={{ height: 120 }} />
+          <div className="hm-stay-grid">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} style={{ display: 'grid', gap: 12 }}>
+                <div className="animate-pulse" style={block('100%', 0, { aspectRatio: '4 / 3', height: 'auto' })} />
+                <div className="animate-pulse" style={block('70%', 20)} />
+                <div className="animate-pulse" style={block('45%', 14)} />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </main>
 

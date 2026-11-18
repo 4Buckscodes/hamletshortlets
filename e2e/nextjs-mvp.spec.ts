@@ -47,7 +47,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
       await page.goto('/stays');
       await expect(
-        page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+        page.getByRole('heading', { level: 1, name: /Find a stay/i }),
       ).toBeVisible();
       const staysOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
@@ -170,7 +170,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
     await page.goto('/stays');
     await expect(
-      page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+      page.getByRole('heading', { level: 1, name: /Find a stay/i }),
     ).toBeVisible();
     await expect(page.getByText(/Illustrative concept/i)).toHaveCount(0);
     await expect(page.getByText(/Lagos showcase concepts/i)).toHaveCount(0);
