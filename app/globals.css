@@ -1605,3 +1605,54 @@ main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !importan
  .property-detail-page section[data-hamlet-reveal] { padding:16px!important; }
  .property-detail-page .grid.items-start > div.flex.flex-wrap { gap:9px!important; padding:12px!important; font-size:11px!important; }
 }
+
+ 
+/* Partner workspace — calm operations desk, preserving existing data and actions. */
+.partner-workspace-page { padding-top:clamp(26px,4vw,52px)!important; padding-bottom:clamp(48px,6vw,76px)!important; }
+.partner-workspace-page > div:first-child { align-items:flex-end!important; gap:18px!important; padding-bottom:24px; border-bottom:1px solid #d9ddcf; }
+.partner-workspace-page > div:first-child .eyebrow { display:flex; align-items:center; gap:9px; font-size:10px!important; letter-spacing:.2em!important; }
+.partner-workspace-page > div:first-child .eyebrow:before { content:""; width:22px; height:1px; background:#a5b34b; }
+.partner-workspace-page > div:first-child h1 { max-width:760px; font-size:clamp(36px,5vw,58px)!important; line-height:1.02!important; letter-spacing:-.055em!important; }
+.partner-workspace-page > div:first-child > a { min-height:48px!important; padding-inline:20px!important; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] { display:flex; flex-wrap:wrap; align-items:center; gap:7px!important; padding:12px 0 16px; border-bottom:1px solid #e2e3d8; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] a { min-height:38px!important; padding-inline:14px!important; border:1px solid transparent!important; border-radius:999px!important; background:transparent!important; color:#657064!important; font-size:11px!important; font-weight:700!important; transition:background .18s,color .18s,border-color .18s; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] a:hover { border-color:#d9ddcf!important; background:#fffdf7!important; color:#172119!important; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] a[aria-current="page"] { background:#172119!important; color:#f6f1e7!important; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] a[href="/partners/properties/new"] { order:10; margin-left:auto; border-color:#d9ddcf!important; background:#fffdf7!important; color:#172119!important; }
+.partner-workspace-page nav[aria-label="Partner workspace navigation"] a[href="/partners/properties/new"]:hover { border-color:#172119!important; background:#172119!important; color:#f6f1e7!important; }
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > div,
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > a { min-height:112px; display:flex; flex-direction:column; justify-content:space-between; padding:17px!important; border:1px solid #d9ddcf!important; border-radius:14px!important; background:#fffdf7!important; }
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > div p:first-child,
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > a p:first-child { max-width:150px; color:#6b766a!important; font-size:11px!important; line-height:1.4!important; }
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > div p:last-child,
+.partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > a p:last-child { font-size:30px!important; font-weight:600!important; letter-spacing:-.05em; }
+.partner-workspace-page section.mt-6.flex.flex-col { border:1px solid #344438!important; border-radius:16px!important; background:#172119!important; box-shadow:none!important; }
+.partner-workspace-page section.mt-6.flex.flex-col h2 { max-width:560px; font-size:clamp(21px,2.4vw,28px)!important; line-height:1.15!important; letter-spacing:-.035em!important; }
+.partner-workspace-page section.mt-6.flex.flex-col p { max-width:590px; font-size:12px!important; line-height:1.7!important; }
+.partner-workspace-page h2.serif { letter-spacing:-.035em; }
+.partner-workspace-page article { padding:20px!important; border:1px solid #d9ddcf!important; border-radius:15px!important; background:#fffdf7!important; }
+.partner-workspace-page article h3 { max-width:460px; font-size:clamp(20px,2.2vw,26px)!important; line-height:1.1!important; letter-spacing:-.035em!important; }
+.partner-workspace-page article > div:first-child > p { color:#697567!important; line-height:1.65!important; }
+.partner-workspace-page article .rounded-2xl.border.bg-paper\/70 { border-color:#e2e3d8!important; border-radius:10px!important; background:#f5f2e9!important; }
+.partner-workspace-page article .border-t { border-color:#e2e3d8!important; }
+.partner-workspace-page article .secondary-button { min-height:38px!important; border-color:#d9ddcf!important; background:transparent!important; padding-inline:13px!important; font-size:11px!important; }
+.partner-workspace-page article .secondary-button:hover { border-color:#172119!important; background:#172119!important; color:#f6f1e7!important; }
+.partner-workspace-page .rounded-3xl.border-dashed { border-color:#cdd3bd!important; border-radius:15px!important; background:#fffdf7!important; }
+@media(max-width:760px){
+ .partner-workspace-page { width:calc(100% - 30px)!important; }
+ .partner-workspace-page > div:first-child { align-items:flex-start!important; padding-bottom:18px; }
+ .partner-workspace-page > div:first-child h1 { font-size:clamp(34px,9vw,46px)!important; }
+ .partner-workspace-page nav[aria-label="Partner workspace navigation"] { flex-wrap:nowrap!important; overflow-x:auto; overflow-y:hidden; margin-inline:-2px; padding:10px 2px 14px; scrollbar-width:thin; }
+ .partner-workspace-page nav[aria-label="Partner workspace navigation"] a { flex:0 0 auto; white-space:nowrap; }
+ .partner-workspace-page nav[aria-label="Partner workspace navigation"] a[href="/partners/properties/new"] { margin-left:0; }
+ .partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 { gap:9px!important; }
+ .partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > div,
+ .partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > a { min-height:94px; padding:13px!important; }
+ .partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > div p:last-child,
+ .partner-workspace-page .grid.grid-cols-2.sm\:grid-cols-4 > a p:last-child { font-size:26px!important; }
+ .partner-workspace-page section.mt-6.flex.flex-col { padding:18px!important; }
+ .partner-workspace-page article { padding:15px!important; }
+ .partner-workspace-page article .mt-5.flex.flex-wrap { gap:7px!important; }
+ .partner-workspace-page article .secondary-button { flex:1 1 auto; justify-content:center; }
+}
+@media(prefers-reduced-motion:reduce){.partner-workspace-page *{scroll-behavior:auto!important;transition:none!important}}
