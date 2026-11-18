@@ -218,7 +218,7 @@ export default function PartnerDashboardPage() {
     <div className="flex min-h-dvh flex-col bg-paper">
       <SiteHeader />
 
-      <main className="shell flex-1 py-6 sm:py-12">
+      <main className="shell partner-workspace-page flex-1 py-6 sm:py-12">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>
