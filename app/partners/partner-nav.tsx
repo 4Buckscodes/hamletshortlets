@@ -35,15 +35,15 @@ export function PartnerNav({
   const isNewPropertyActive = current === 'new-property';
 
   return (
-    <nav aria-label="Partner workspace navigation" className="flex flex-wrap gap-2">
+    <nav aria-label="Partner workspace navigation" className="flex w-full flex-nowrap gap-2 overflow-x-auto overscroll-x-contain pb-2 md:flex-wrap md:overflow-visible md:pb-0">
       {!hideNewListingAction && (
         <Link
           href="/partners/properties/new"
           aria-current={isNewPropertyActive ? 'page' : undefined}
           className={
             isNewPropertyActive
-              ? 'inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-ink-950 px-4 text-xs font-extrabold text-white'
-              : 'inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-brass-400/80 bg-ink-900 px-4 text-xs font-extrabold text-white shadow-2xs transition hover:border-brass-400 hover:bg-ink-800'
+              ? 'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full bg-ink-950 px-4 text-xs font-extrabold text-white'
+              : 'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full border border-brass-400/80 bg-ink-900 px-4 text-xs font-extrabold text-white shadow-2xs transition hover:border-brass-400 hover:bg-ink-800'
           }
         >
           <Plus className="h-3.5 w-3.5 shrink-0 text-brass-400 stroke-[2.75]" />
@@ -59,8 +59,8 @@ export function PartnerNav({
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'inline-flex min-h-[40px] items-center rounded-full bg-ink-950 px-4 text-xs font-bold text-white'
-                : 'inline-flex min-h-[40px] items-center rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-800 transition hover:border-ink-900'
+                ? 'inline-flex min-h-[40px] shrink-0 items-center rounded-full bg-ink-950 px-4 text-xs font-bold text-white'
+                : 'inline-flex min-h-[40px] shrink-0 items-center rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-800 transition hover:border-ink-900'
             }
           >
             {item.label}
