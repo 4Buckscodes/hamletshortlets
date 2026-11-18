@@ -1523,3 +1523,52 @@ main.shell [role="tab"][aria-selected="true"] { background:#172119 !important; c
 main.shell [role="tab"][aria-selected="false"] { color:#697567 !important; }
 main.shell .rounded-2xl.border.border-red-200 { border-radius:12px !important; }
 main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !important; }
+
+
+/* Stays discovery — editorial marketplace polish, retaining all discovery behaviour. */
+.stays-page { width:min(1320px,calc(100% - 48px))!important; max-width:1320px!important; padding-top:clamp(30px,4vw,58px)!important; padding-bottom:clamp(54px,7vw,92px)!important; }
+.stays-page > header { align-items:flex-end; gap:24px; margin-bottom:clamp(28px,4vw,44px)!important; border:0!important; padding:0 0 26px!important; position:relative; }
+.stays-page > header:after { content:""; position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg,#b6c27a 0%,#d9ddcf 42%,transparent 100%); }
+.stays-page .stays-page-kicker { display:flex; align-items:center; gap:10px; color:#78872f!important; font-size:10px!important; letter-spacing:.2em!important; }
+.stays-page .stays-page-kicker:before { content:""; display:inline-block; width:24px; height:1px; background:#a5b34b; }
+.stays-page > header h1 { max-width:720px; margin-top:12px!important; color:#172119!important; font-family:"Playfair Display Variable",Georgia,serif!important; font-size:clamp(38px,5.4vw,66px)!important; font-weight:500!important; line-height:1.02!important; letter-spacing:-.055em!important; }
+.stays-page > header a { min-height:44px!important; border-radius:999px!important; border-color:#cdd3bd!important; background:transparent!important; box-shadow:none!important; color:#26372b!important; padding-inline:18px!important; }
+.stays-page > header a:hover { border-color:#172119!important; background:#172119!important; color:#f6f1e7!important; }
+.stays-page > div > div { min-width:0; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] { gap:18px!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] h2,
+.stays-page #discovery-results-heading { color:#172119!important; font-family:"Playfair Display Variable",Georgia,serif!important; font-weight:500!important; letter-spacing:-.04em!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] > div:first-child > p,
+.stays-page #discovery-results-heading + p { color:#78872f!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] { gap:12px!important; padding-bottom:5px!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] > button { border-radius:14px!important; border-color:#dedfce!important; background:#fffdf7!important; box-shadow:none!important; color:#172119!important; transition:border-color .2s,transform .2s,background .2s!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] > button:hover { transform:translateY(-2px); border-color:#9eaa66!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] > button[aria-pressed="true"] { border-color:#172119!important; background:#172119!important; color:#f6f1e7!important; }
+.stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] > button img { border-radius:10px!important; }
+.stays-page #places-worth-staying-in { padding-top:12px!important; }
+.stays-page #places-worth-staying-in > div.rounded-3xl { border-radius:16px!important; border-color:#dedfce!important; background:#fffdf7!important; box-shadow:none!important; }
+.stays-page #places-worth-staying-in button,
+.stays-page #places-worth-staying-in select,
+.stays-page #places-worth-staying-in input { border-radius:999px!important; }
+.stays-page #places-worth-staying-in input[type="date"] { border-radius:10px!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article { overflow:hidden; border-radius:15px!important; border-color:#dedfce!important; background:#fffdf7!important; box-shadow:none!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article:hover { border-color:#aab58a!important; box-shadow:0 14px 34px -28px rgba(23,33,25,.45)!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article img { transition:transform .5s ease!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article:hover img { transform:scale(1.025); }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article h3 { color:#172119!important; font-family:"Playfair Display Variable",Georgia,serif!important; font-weight:500!important; letter-spacing:-.025em!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article .text-brass-700,
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article .text-brass-600 { color:#77852f!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article .bg-brass-500 { background:#d9f24b!important; color:#172119!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article .pill { border-radius:8px!important; background:#f3f0e5!important; }
+.stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 > article .mt-4.flex.items-center { border-color:#e4e3d8!important; }
+.stays-page .home-empty-stays { border-color:#dedfce!important; background:#fffdf7!important; }
+@media(max-width:760px){
+ .stays-page { width:calc(100% - 30px)!important; padding-top:26px!important; padding-bottom:48px!important; }
+ .stays-page > header { align-items:flex-start!important; gap:14px!important; padding-bottom:20px!important; margin-bottom:22px!important; }
+ .stays-page > header h1 { max-width:100%; font-size:clamp(36px,10vw,48px)!important; line-height:1.03!important; }
+ .stays-page > header a { min-height:40px!important; padding-inline:14px!important; font-size:11px!important; }
+ .stays-page section[aria-labelledby="neighbourhood-rail-heading"] [role="region"] > button { min-height:76px!important; }
+ .stays-page #places-worth-staying-in > div.rounded-3xl { padding:12px!important; }
+ .stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 { gap:14px!important; }
+}
+@media(prefers-reduced-motion:reduce){.stays-page #places-worth-staying-in article img{transition:none!important}}
