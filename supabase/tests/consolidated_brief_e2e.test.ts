@@ -657,7 +657,29 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
          exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'identity' = 'verified') as property_identity_verified,
          exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'authority' = 'verified') as authority_verified,
          exists (select 1 from public.properties pr join public.bookings b on b.property_id = pr.id where b.id = $2::uuid and pr.verification->>'inspection' = 'verified') as inspection_verified,
-         exists (select 1 from public.booking_payment_records l where l.id = $3::uuid and l.beneficiary_user_id = $1::uuid and l.record_type = 'referral_reward') as beneficiary_matches_referrer`,
+         exists (select 1 from public.booking_payment_records l where l.id = $3::uuid and l.beneficiary_user_id = $1::uuid and l.record_type = 'referral_reward') as beneficiary_matches_referrer,
+         exists (
+           select 1
+           from public.booking_payment_records l
+           join public.bookings b on b.id = l.booking_id
+           join public.partner_network_memberships m on m.user_id = l.beneficiary_user_id and m.status = 'active'
+           join public.profiles p on p.id = m.user_id and p.account_status = 'active'
+           join public.partner_payout_verifications v on v.partner_id = m.user_id
+           join public.properties pr on pr.id = b.property_id
+           left join public.property_access pa on pa.property_id = pr.id and pa.user_id = m.user_id and pa.status = 'active'
+           where l.id = $3::uuid
+             and l.record_type = 'referral_reward'
+             and l.beneficiary_user_id = $1::uuid
+             and v.identity_status = 'verified'
+             and v.bank_status = 'verified'
+             and v.agreement_status = 'verified'
+             and (l.record_type in ('referral_reward','closing_agent_commission') or pa.user_id is not null)
+             and pr.status = 'approved'
+             and pr.verification->>'ownership' = 'verified'
+             and pr.verification->>'identity' = 'verified'
+             and pr.verification->>'authority' = 'verified'
+             and pr.verification->>'inspection' = 'verified'
+         ) as exact_trigger_guard_ready`,
       [referrerPartnerId, secondBooking.id, refLedger!.id],
     );
     expect(readiness.rows[0]).toEqual({
@@ -673,6 +695,7 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
       authority_verified: true,
       inspection_verified: true,
       beneficiary_matches_referrer: true,
+      exact_trigger_guard_ready: true,
     });
 
     // Admin updates payout status only after all independent checks are verified.
