@@ -3,10 +3,12 @@ import { Suspense } from 'react';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/playfair-display';
 import './globals.css';
+import '@/components/ui/hamlet-ui.css';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteProviders } from '@/components/site/SiteShell';
 import ReferralAttributionCapture from '@/components/site/ReferralAttributionCapture';
 import { GlobalMotion } from '@/components/site/GlobalMotion';
+import { ThemeScript } from '@/components/ui/ThemeScript';
 import {
   buildGlobalStructuredDataGraph,
   HAMLET_BRAND,
@@ -59,7 +61,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0E1F3B',
+  themeColor: '#172119',
   width: 'device-width',
   initialScale: 1,
 };
@@ -70,8 +72,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-NG">
+    <html lang="en-NG" suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <JsonLd id="hamlet-global-jsonld" data={GLOBAL_STRUCTURED_DATA} />
       </head>
       <body>
