@@ -196,7 +196,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
   });
 
-  test('captures referral code from a referral link without adding a manual signup field', async ({
+  test('captures referral code from a referral link and shows it locked, not as a manual signup field', async ({
     page,
   }) => {
     await page.goto('/?ref=HML-LOCK123');
@@ -207,7 +207,9 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Email address/i)).toBeVisible();
     await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /Create my account/i })).toBeVisible();
-    await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
+    const referralField = page.getByLabel(/Referral code/i);
+    await expect(referralField).toHaveValue('HML-LOCK123');
+    await expect(referralField).not.toBeEditable();
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code')))
       .toBe('HML-LOCK123');
