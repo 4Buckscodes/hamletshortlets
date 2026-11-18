@@ -6,42 +6,42 @@
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Inter Variable", monospace;
 
   /* Midnight Navy & Slate Grey scale (primary #0E1F3B, secondary text #64748B) */
-  --color-ink-950: #091528;
-  --color-ink-900: #0E1F3B;
-  --color-ink-850: #13284C;
-  --color-ink-800: #1B3560;
-  --color-ink-700: #2B4875;
-  --color-ink-600: #475569;
-  --color-ink-500: #64748B;
-  --color-ink-400: #8595AB;
-  --color-ink-300: #CBD5E1;
-  --color-ink-200: #DCE2EC;
-  --color-ink-100: #E8E4DA;
-  --color-ink-50:  #F4F6F9;
+  --color-ink-950: #101A14;
+  --color-ink-900: #172119;
+  --color-ink-850: #203126;
+  --color-ink-800: #2B4031;
+  --color-ink-700: #425746;
+  --color-ink-600: #5D6A5C;
+  --color-ink-500: #758071;
+  --color-ink-400: #929B8D;
+  --color-ink-300: #C4CBBE;
+  --color-ink-200: #D9DDCF;
+  --color-ink-100: #E8E7DB;
+  --color-ink-50:  #F5F3E9;
 
   /* Champagne Gold accent (#C9A44A) */
-  --color-brass-200: #F5E8C4;
-  --color-brass-300: #E8D192;
-  --color-brass-400: #D8B968;
-  --color-brass-500: #C9A44A;
-  --color-brass-600: #AD8832;
-  --color-brass-700: #8A6A22;
+  --color-brass-200: #F0F7B7;
+  --color-brass-300: #E5F477;
+  --color-brass-400: #D9F24B;
+  --color-brass-500: #C5DE3F;
+  --color-brass-600: #82972A;
+  --color-brass-700: #59651F;
 
   /* Midnight Navy guest-facing primary ramp (anchored on #0E1F3B) */
-  --color-jade-50:  #F0F4FA;
-  --color-jade-100: #E0E8F5;
-  --color-jade-200: #C3D2EA;
-  --color-jade-300: #93B0DB;
-  --color-jade-400: #648EC9;
-  --color-jade-500: #2C528C;
-  --color-jade-600: #1B3B6F;
-  --color-jade-700: #0E1F3B;
-  --color-jade-800: #162D54;
-  --color-jade-900: #091528;
+  --color-jade-50:  #EFF4E9;
+  --color-jade-100: #DFE9D2;
+  --color-jade-200: #C0D6A9;
+  --color-jade-300: #91B56C;
+  --color-jade-400: #63945B;
+  --color-jade-500: #39765A;
+  --color-jade-600: #286346;
+  --color-jade-700: #173F32;
+  --color-jade-800: #123328;
+  --color-jade-900: #0D281F;
 
   /* Warm Ivory & secondary warm surface (#F8F5EE) */
-  --color-paper: #F8F5EE;
-  --color-clay: #EFEADE;
+  --color-paper: #F6F1E7;
+  --color-clay: #EFE8D9;
 
   /* Restrained Emerald — semantic verification & inspection accents */
   --color-emerald-50:  #ECFDF3;
