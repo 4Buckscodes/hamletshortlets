@@ -1462,3 +1462,39 @@ body { background:var(--paper); color:var(--ink); }
   .home-live-stays article.group > div:first-child { aspect-ratio:1.15 !important; }
   .home-live-stays article.group > a:last-child { padding:12px !important; }
 }
+
+
+/* Guest, partner and admin workspaces — preserve markup, permissions and actions */
+main.shell > .flex.flex-wrap.items-end.justify-between,
+main.shell > .flex.flex-col.gap-4 { border-bottom:1px solid #D9DDCF; padding-bottom:22px; }
+main.shell h1 { color:#172119 !important; letter-spacing:-.035em; }
+main.shell .eyebrow { color:#78872f !important; }
+main.shell article, main.shell section.rounded-3xl, main.shell .rounded-2xl.border { border-color:#D9DDCF !important; box-shadow:none !important; }
+main.shell article { border-radius:16px !important; }
+main.shell .rounded-2xl.bg-white, main.shell .rounded-3xl.bg-white { border-radius:16px !important; }
+main.shell .shadow-md, main.shell .shadow-lg, main.shell .shadow-xl { box-shadow:none !important; }
+main.shell .bg-ink-950, main.shell .bg-ink-900 { background:#172119 !important; }
+main.shell .text-brass-700, main.shell .text-brass-600 { color:#75852f !important; }
+main.shell .border-brass-400 { border-color:#B4C46B !important; }
+main.shell .bg-brass-500 { background:#D9F24B !important; color:#172119 !important; }
+main.shell nav[aria-label="Partner workspace navigation"],
+main.shell nav[aria-label="Guest account navigation"] { gap:8px; padding-block:12px; }
+main.shell nav[aria-label="Partner workspace navigation"] a,
+main.shell nav[aria-label="Guest account navigation"] a { border-radius:999px !important; min-height:40px; }
+main.shell nav[aria-label="Partner workspace navigation"] a[aria-current="page"],
+main.shell nav[aria-label="Guest account navigation"] a[aria-current="page"] { background:#172119 !important; color:#F6F1E7 !important; }
+main.shell form { accent-color:#75852f; }
+main.shell input, main.shell select, main.shell textarea { border-radius:10px !important; border-color:#D9DDCF !important; }
+main.shell input:focus, main.shell select:focus, main.shell textarea:focus { outline-color:#75852f !important; }
+main.shell .bg-emerald-50 { background:#EFF4E9 !important; }
+main.shell .text-emerald-800, main.shell .text-emerald-900 { color:#286346 !important; }
+main.shell .border-emerald-200 { border-color:#C0D6A9 !important; }
+@media (max-width:760px) {
+  main.shell { padding-top:22px !important; padding-bottom:38px !important; }
+  main.shell > .flex.flex-wrap.items-end.justify-between,
+  main.shell > .flex.flex-col.gap-4 { align-items:flex-start; }
+  main.shell nav[aria-label="Partner workspace navigation"],
+  main.shell nav[aria-label="Guest account navigation"] { overflow-x:auto; flex-wrap:nowrap; padding-bottom:10px; }
+  main.shell nav[aria-label="Partner workspace navigation"] a,
+  main.shell nav[aria-label="Guest account navigation"] a { white-space:nowrap; flex:0 0 auto; }
+}
