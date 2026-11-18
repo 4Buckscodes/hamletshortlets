@@ -1498,3 +1498,17 @@ main.shell .border-emerald-200 { border-color:#C0D6A9 !important; }
   main.shell nav[aria-label="Partner workspace navigation"] a,
   main.shell nav[aria-label="Guest account navigation"] a { white-space:nowrap; flex:0 0 auto; }
 }
+
+
+/* Property detail — editorial hierarchy with the production booking flow intact */
+main.shell .space-y-8 > section[data-hamlet-reveal] { padding:22px !important; background:#fffdf8 !important; }
+main.shell .space-y-8 > section[data-hamlet-reveal] h2 { color:#172119 !important; }
+main.shell .space-y-8 > section[data-hamlet-reveal] .pill { background:#F6F1E7 !important; border-color:#D9DDCF !important; }
+main.shell .aspect-\[16\/10\] { border-radius:16px !important; border:0 !important; }
+main.shell .aspect-\[16\/10\] img { object-position:center; }
+main.shell .flex.flex-wrap.items-center.gap-2.text-xs.font-extrabold { color:#75852f !important; }
+main.shell .lg\:sticky { top:88px; }
+@media (max-width:760px) {
+  main.shell .space-y-8 > section[data-hamlet-reveal] { padding:16px !important; }
+  main.shell .aspect-\[16\/10\] { aspect-ratio:4/3 !important; }
+}
