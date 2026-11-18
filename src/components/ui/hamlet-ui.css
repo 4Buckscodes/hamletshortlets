@@ -627,3 +627,27 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-detail-verified { border-color: v
   .hm-auth-points li { flex-direction: row; gap: 8px; }
   .hm-auth-form { padding-top: 28px; }
 }
+
+/* ---------- Content pages (How it works, Safety, FAQs, About, Lagos, Legal) ----------
+ * Heroes use the kit band; body markup keeps its structure and is restyled here so copy,
+ * links and structured data stay untouched. */
+.hm-content-hero .hm-band-inner { gap: 18px; padding-block: clamp(48px, 7vw, 88px) clamp(40px, 6vw, 72px); }
+.hm-content-title { max-width: 980px; font-size: clamp(44px, 6.6vw, 92px); }
+.hm-content-intro { max-width: 560px; font-size: 17px; }
+.hm-content-intro strong { color: var(--hm-on-band); }
+.hm-content-hero-photo { position: relative; overflow: hidden; }
+.hm-content-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: var(--hm-photo-filter); }
+.hm-content-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 26, 20, 0.9), rgba(16, 26, 20, 0.55) 55%, rgba(16, 26, 20, 0.2)); }
+@media (prefers-reduced-motion: no-preference) { .hm-content-hero-img { animation: hm-drift 18s ease-in-out infinite alternate; } }
+.hm-content .eyebrow { color: var(--hm-label); font-size: 11px; letter-spacing: 0.16em; }
+.hm-content .eyebrow-light { color: var(--hm-lime); font-size: 11px; letter-spacing: 0.16em; }
+.hm-content .card, .hm-content .rounded-3xl.border.bg-white { border: 1px solid var(--hm-line); border-radius: var(--hm-r-card); background: var(--hm-surface); box-shadow: none; color: var(--hm-text); }
+.hm-content h2.font-display, .hm-content h3.font-display { font-family: var(--hm-serif); font-weight: 500; letter-spacing: -0.03em; }
+.hm-content :where(section > div, section) > h2.font-display.text-3xl, .hm-content h2.font-display.sm\:text-4xl { font-family: var(--hm-sans); font-weight: 850; letter-spacing: -0.06em; line-height: 0.98; }
+.hm-content .rounded-3xl.bg-ink-950 { border-radius: var(--hm-r-card); background: var(--hm-band); }
+.hm-content .rounded-3xl.bg-ink-950 h2 { color: var(--hm-on-band); }
+.hm-content .btn-brass { border-radius: 999px; background: var(--hm-lime); color: #172119; }
+.hm-content .primary-button { border-radius: 999px; background: var(--hm-blue); color: #fff; }
+.hm-content .secondary-button { border-radius: 999px; }
+.hm-content .italic.text-brass-300, .hm-content .italic.text-brass-600, .hm-content .italic.text-brass-700 { color: var(--hm-coral); font-family: var(--hm-serif); font-style: normal; }
+.hm-content .bg-clay\/60, .hm-content .bg-clay\/45 { background: var(--hm-sand); }

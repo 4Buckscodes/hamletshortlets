@@ -83,17 +83,17 @@ const HONEST_STATUSES = [
 
 export default function SafetyPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-safety-jsonld" data={SAFETY_PAGE_SCHEMA} />
 
-      <main className="flex-1">
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">Safety &amp; protection</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">Safety &amp; protection</p>
+            <h1 className="hm-display hm-content-title">
               Four-pillar{' '}
-              <span className="italic text-brass-300">verification.</span>
+              <em>verification.</em>
             </h1>
           </div>
         </section>

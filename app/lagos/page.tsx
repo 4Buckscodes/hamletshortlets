@@ -98,32 +98,28 @@ export default function LagosGuidePage() {
   ]);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-lagos-guide-jsonld" data={schema} />
 
-      <main className="flex-1">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
         {/* Full-bleed Lagos Hero */}
-        <section data-hamlet-reveal className="relative overflow-hidden bg-ink-950 text-paper">
-          <img
-            src="/images/lagos-hero.jpg"
-            alt="Lagos cityscape"
-            className="absolute inset-0 h-full w-full object-cover opacity-100"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/50 to-ink-950/15" />
-          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-            <p className="eyebrow-light">Lagos area guide</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+        <section className="hm-band hm-band-arrive hm-content-hero hm-content-hero-photo">
+          <img src="/images/lagos-hero.jpg" alt="Lagos cityscape" className="hm-content-hero-img" />
+          <span className="hm-content-hero-shade" aria-hidden="true" />
+          <div className="hm-shell hm-band-inner" style={{ position: 'relative' }}>
+            <p className="hm-label">Lagos area guide</p>
+            <h1 className="hm-display hm-content-title">
               Lagos Mainland &amp;{' '}
-              <span className="italic text-brass-300">Lagos Island.</span>
+              <em>Lagos Island.</em>
             </h1>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link href="/stays?area=Lagos+Mainland" className="btn-brass !rounded-full !px-6">
+            <div className="hm-band-actions">
+              <Link href="/stays?area=Lagos+Mainland" className="hm-btn hm-btn-lime">
                 Lagos Mainland <ArrowRight className="h-4 w-4 shrink-0" />
               </Link>
               <Link
                 href="/stays?side=island"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+                className="hm-btn hm-btn-ghost"
               >
                 Lagos Island
               </Link>
