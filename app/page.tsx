@@ -32,7 +32,6 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const db = getPublicSupabase();
   let approvedStays: PublicStayRecord[] = [];
-  let queryError = false;
 
   if (db) {
     const { data, error } = await db
@@ -41,11 +40,7 @@ export default async function HomePage() {
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(36);
-    if (error) {
-      queryError = true;
-    } else {
-      approvedStays = (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>));
-    }
+    if (!error) approvedStays = (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>));
   }
 
   const pageSchema = buildHomepageSchema({ approvedStays });
