@@ -1572,3 +1572,36 @@ main.shell .rounded-2xl.border.border-emerald-200 { border-radius:12px !importan
  .stays-page #places-worth-staying-in .grid.grid-cols-1.gap-5 { gap:14px!important; }
 }
 @media(prefers-reduced-motion:reduce){.stays-page #places-worth-staying-in article img{transition:none!important}}
+
+
+/* Property detail — restrained hospitality editorial layout. Booking and trust logic remain untouched. */
+.property-detail-page { padding-top:clamp(24px,3vw,42px)!important; }
+.property-detail-page > div:first-child { margin-bottom:14px!important; }
+.property-detail-page > div:first-child a { min-height:42px; color:#687168!important; font-size:12px!important; }
+.property-detail-page > div:first-child a:hover { color:#172119!important; }
+.property-detail-page h1 { margin-top:12px!important; color:#172119!important; font-family:"Playfair Display Variable",Georgia,serif!important; font-size:clamp(36px,5.2vw,62px)!important; font-weight:500!important; line-height:1.02!important; letter-spacing:-.05em!important; }
+.property-detail-page > div.flex.flex-wrap.items-center { gap:10px!important; color:#78852f!important; font-size:10px!important; letter-spacing:.13em!important; }
+.property-detail-page > div.flex.flex-wrap.items-center > span { min-height:28px; }
+.property-detail-page > div.mt-6 { margin-top:24px!important; }
+.property-detail-page .grid.items-start { gap:clamp(24px,4vw,54px)!important; }
+.property-detail-page .grid.items-start > div.space-y-8 { gap:18px!important; }
+.property-detail-page .grid.items-start > div.space-y-8 > div.flex.flex-wrap { border:1px solid #dedfce!important; border-radius:12px!important; background:#fffdf7!important; color:#334236!important; padding:15px 18px!important; font-size:12px!important; }
+.property-detail-page section[data-hamlet-reveal] { border:1px solid #dedfce!important; border-radius:14px!important; background:#fffdf7!important; padding:clamp(18px,2.4vw,26px)!important; box-shadow:none!important; }
+.property-detail-page section[data-hamlet-reveal] h2 { color:#172119!important; font-family:"Playfair Display Variable",Georgia,serif!important; font-size:clamp(22px,2.4vw,29px)!important; font-weight:500!important; letter-spacing:-.035em!important; }
+.property-detail-page section[data-hamlet-reveal] p { color:#667066!important; font-size:13px!important; line-height:1.8!important; }
+.property-detail-page section[data-hamlet-reveal] .pill { min-height:34px!important; border-radius:8px!important; background:#f3f0e5!important; color:#465348!important; }
+.property-detail-page section[data-hamlet-reveal] .rounded-2xl.border { border-radius:9px!important; border-color:#e2e3d8!important; background:#f8f6ee!important; }
+.property-detail-page aside { min-width:0; }
+.property-detail-page aside > * { border-radius:14px!important; }
+.property-detail-page aside .primary-button { background:#172119!important; color:#f6f1e7!important; }
+.property-detail-page aside .primary-button:hover { background:#2c4433!important; }
+.property-detail-page aside .secondary-button { border-color:#d5d9ca!important; background:#fffdf7!important; }
+@media(min-width:1024px){.property-detail-page aside{top:94px!important}}
+@media(max-width:760px){
+ .property-detail-page { padding-top:20px!important; padding-bottom:36px!important; }
+ .property-detail-page h1 { font-size:clamp(34px,9.5vw,46px)!important; }
+ .property-detail-page .grid.items-start { gap:22px!important; }
+ .property-detail-page .grid.items-start > div.space-y-8 { gap:14px!important; }
+ .property-detail-page section[data-hamlet-reveal] { padding:16px!important; }
+ .property-detail-page .grid.items-start > div.flex.flex-wrap { gap:9px!important; padding:12px!important; font-size:11px!important; }
+}
