@@ -174,7 +174,7 @@ export default async function PropertyDetailPage({ params }: Props) {
       <SiteHeader />
       <JsonLd id="hamlet-property-detail-jsonld" data={structuredData} />
 
-      <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
+      <main className="property-detail-page shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
         <div className="mb-4">
           <Link
             href="/stays"
