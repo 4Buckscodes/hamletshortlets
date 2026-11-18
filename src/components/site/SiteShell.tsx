@@ -501,7 +501,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B] text-[#F8F5EE] lg:backdrop-blur-xl'
+          ? 'border-b border-[#314536] bg-[#172119] text-[#F4F0E6] lg:backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
@@ -513,8 +513,8 @@ export function SiteHeader() {
             className="inline-flex min-h-[44px] shrink-0 items-center"
           >
             {isHome ? (
-              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F8F5EE]">
-                HAMLET<span className="text-[#C9A45C]">.</span>
+              <span className="font-display text-[26px] font-bold tracking-[1px] text-[#F4F0E6]">
+                HAMLET<span className="text-[#D9F24B]">.</span>
               </span>
             ) : (
               <HamletWordmark />
@@ -536,7 +536,7 @@ export function SiteHeader() {
                     isHome
                       ? active
                         ? 'bg-white/15 font-bold text-[#F8F5EE]'
-                        : 'text-[#C5CCDA] hover:bg-white/10 hover:text-[#F8F5EE]'
+                        : 'text-[#C4CBBE] hover:bg-white/10 hover:text-[#F8F5EE]'
                       : active
                         ? 'bg-ink-900 font-bold text-white shadow-2xs'
                         : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
@@ -556,7 +556,7 @@ export function SiteHeader() {
             aria-label="Ask Horatio — HAMLET assistant"
             className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
               isHome
-                ? 'border border-[#C9A45C]/65 bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#223963]'
+                ? 'border border-[#C9A45C]/65 bg-[#203126] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#2B4031]'
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
@@ -571,7 +571,7 @@ export function SiteHeader() {
               href="/partners/apply"
               className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
                 isHome
-                  ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                  ? 'border border-[#49604A] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
                   : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
               }`}
             >
@@ -626,7 +626,7 @@ export function SiteHeader() {
               href="/signin"
               className={`inline-flex min-h-[38px] items-center justify-center rounded-full px-4.5 text-[12.5px] font-bold shadow-2xs transition ${
                 isHome
-                  ? 'bg-[#C9A45C] text-[#121F3C] hover:bg-[#d5b36d]'
+                  ? 'bg-[#D9F24B] text-[#172119] hover:bg-[#E5F477]'
                   : 'bg-ink-900 text-white hover:bg-ink-800'
               }`}
             >
@@ -645,7 +645,7 @@ export function SiteHeader() {
             className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition ${
               isHome
                 ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
-                : 'border border-[#D6D0C0] bg-white text-[#121F3C] shadow-2xs hover:border-[#121F3C]'
+                : 'border border-[#D6D0C0] bg-white text-[#172119] shadow-2xs hover:border-[#121F3C]'
             }`}
           >
             {drawerOpen ? (
@@ -670,7 +670,7 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-[#F8F5EE] text-[#121F3C] lg:hidden">
+        <div className="fixed inset-0 z-50 bg-[#172119] text-[#F4F0E6] lg:hidden">
           <nav
             id="hamlet-mobile-drawer"
             aria-label="Mobile navigation"
