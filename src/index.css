@@ -6,42 +6,42 @@
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Inter Variable", monospace;
 
   /* Midnight Navy & Slate Grey scale (primary #0E1F3B, secondary text #64748B) */
-  --color-ink-950: #091528;
-  --color-ink-900: #0E1F3B;
-  --color-ink-850: #13284C;
-  --color-ink-800: #1B3560;
-  --color-ink-700: #2B4875;
-  --color-ink-600: #475569;
-  --color-ink-500: #64748B;
-  --color-ink-400: #8595AB;
-  --color-ink-300: #CBD5E1;
-  --color-ink-200: #DCE2EC;
-  --color-ink-100: #E8E4DA;
-  --color-ink-50:  #F4F6F9;
+  --color-ink-950: #111A13;
+  --color-ink-900: #173F32;
+  --color-ink-850: #203E31;
+  --color-ink-800: #2D5140;
+  --color-ink-700: #456451;
+  --color-ink-600: #596B60;
+  --color-ink-500: #6C7D72;
+  --color-ink-400: #89958A;
+  --color-ink-300: #C2C9BE;
+  --color-ink-200: #D9DDD3;
+  --color-ink-100: #E8E6DD;
+  --color-ink-50:  #F5F3EC;
 
   /* Champagne Gold accent (#C9A44A) */
-  --color-brass-200: #F5E8C4;
-  --color-brass-300: #E8D192;
-  --color-brass-400: #D8B968;
-  --color-brass-500: #C9A44A;
-  --color-brass-600: #AD8832;
-  --color-brass-700: #8A6A22;
+  --color-brass-200: #F0E6D2;
+  --color-brass-300: #E4D1AD;
+  --color-brass-400: #CDB78B;
+  --color-brass-500: #B99A69;
+  --color-brass-600: #92754D;
+  --color-brass-700: #755638;
 
   /* Midnight Navy guest-facing primary ramp (anchored on #0E1F3B) */
-  --color-jade-50:  #F0F4FA;
-  --color-jade-100: #E0E8F5;
-  --color-jade-200: #C3D2EA;
-  --color-jade-300: #93B0DB;
-  --color-jade-400: #648EC9;
-  --color-jade-500: #2C528C;
-  --color-jade-600: #1B3B6F;
-  --color-jade-700: #0E1F3B;
-  --color-jade-800: #162D54;
-  --color-jade-900: #091528;
+  --color-jade-50:  #EEF4EF;
+  --color-jade-100: #DCE9DF;
+  --color-jade-200: #C0D6C6;
+  --color-jade-300: #91B59B;
+  --color-jade-400: #639477;
+  --color-jade-500: #39765A;
+  --color-jade-600: #286346;
+  --color-jade-700: #173F32;
+  --color-jade-800: #123328;
+  --color-jade-900: #0D281F;
 
   /* Warm Ivory & secondary warm surface (#F8F5EE) */
-  --color-paper: #F8F5EE;
-  --color-clay: #EFEADE;
+  --color-paper: #F6F1E7;
+  --color-clay: #EFE8D9;
 
   /* Restrained Emerald — semantic verification & inspection accents */
   --color-emerald-50:  #ECFDF3;
@@ -139,5 +139,56 @@
 @media (prefers-reduced-motion: reduce) {
   .hamlet-marquee-track {
     animation: none;
+  }
+}
+
+
+/* HAMLET contemporary Nigerian hospitality presentation layer */
+:root {
+  --hamlet-forest: #173F32;
+  --hamlet-forest-deep: #102F25;
+  --hamlet-ivory: #F6F1E7;
+  --hamlet-sand: #EFE8D9;
+  --hamlet-brass: #B99A69;
+  --hamlet-muted: #6C7D72;
+  --hamlet-line: #E8E6DD;
+}
+
+html { scroll-padding-top: 88px; }
+body { background: var(--hamlet-ivory); color: var(--hamlet-forest); }
+::selection { background: #E4D1AD; color: #102F25; }
+
+.card {
+  border-color: var(--hamlet-line);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(23,63,50,.035), 0 8px 24px -16px rgba(23,63,50,.18);
+}
+.btn-jade, .btn-dark, .primary-button {
+  border-radius: 999px;
+}
+.btn-outline, .btn-brass {
+  border-radius: 999px;
+}
+.input, .input-dark {
+  border-radius: 12px;
+}
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--hamlet-brass) 76%, white);
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card { transition: border-color 180ms ease, box-shadow 180ms ease; }
+  .card:hover {
+    border-color: #C8D3C8;
+    box-shadow: 0 12px 30px -20px rgba(23,63,50,.30);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
   }
 }
