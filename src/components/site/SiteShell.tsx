@@ -1069,7 +1069,7 @@ export function StayListingCard({
   }
 
   return (
-    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg">
+    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white transition-colors duration-200 hover:border-ink-300">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
         <Link
           href={detailHref}
@@ -1088,7 +1088,7 @@ export function StayListingCard({
                   [activePhoto]: true,
                 }))
               }
-              className="h-full w-full object-cover opacity-100 transition duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover opacity-100"
             />
           ) : (
             <div className="grid h-full w-full place-items-center bg-gradient-to-br from-clay via-paper to-clay px-4 text-center">
@@ -1154,7 +1154,7 @@ export function StayListingCard({
 
       <Link
         href={detailHref}
-        className="flex flex-1 flex-col justify-between p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
+        className="flex flex-1 flex-col justify-between p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
       >
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
