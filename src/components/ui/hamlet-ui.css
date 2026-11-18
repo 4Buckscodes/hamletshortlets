@@ -225,6 +225,8 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-stat-attention { border-color: #5
 textarea.hm-input { min-height: 110px; padding: 12px 14px; resize: vertical; }
 .hm-input:focus { outline: none; border-color: var(--hm-text); box-shadow: 0 0 0 4px rgba(217, 242, 75, 0.55); }
 .hm-input[aria-invalid="true"] { border-color: var(--hm-bad); }
+.hm-input[readonly] { background: var(--hm-sand); color: var(--hm-muted); cursor: not-allowed; }
+.hm-input[readonly]:focus { border-color: var(--hm-field-line); }
 .hm-field-hint { color: var(--hm-muted); font-size: 12px; line-height: 1.5; }
 .hm-field-error { color: var(--hm-bad); font-size: 12px; font-weight: 650; }
 
