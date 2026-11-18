@@ -381,7 +381,6 @@ const PRIMARY_NAV = [
   { href: '/stays', label: 'Explore stays' },
   { href: '/lagos', label: 'Lagos' },
   { href: '/how-it-works', label: 'How it works' },
-  { href: '/safety', label: 'Safety' },
   { href: '/faqs', label: 'FAQs' },
 ] as const;
 
@@ -501,7 +500,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 transition-colors ${
         isHome
-          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B] text-[#F8F5EE] lg:backdrop-blur-xl'
+          ? 'border-b border-[#1A3158]/60 bg-[#0E1F3B] text-[#F6F1E7] lg:backdrop-blur-xl'
           : 'border-b border-ink-100/90 bg-paper/95 lg:bg-paper/92 lg:backdrop-blur-xl'
       }`}
     >
@@ -536,7 +535,7 @@ export function SiteHeader() {
                     isHome
                       ? active
                         ? 'bg-white/15 font-bold text-[#F8F5EE]'
-                        : 'text-[#C5CCDA] hover:bg-white/10 hover:text-[#F8F5EE]'
+                        : 'text-[#D8E0D7] hover:bg-white/10 hover:text-[#F8F5EE]'
                       : active
                         ? 'bg-ink-900 font-bold text-white shadow-2xs'
                         : 'text-ink-600 hover:bg-white/85 hover:text-ink-900'
@@ -556,7 +555,7 @@ export function SiteHeader() {
             aria-label="Ask Horatio — HAMLET assistant"
             className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition ${
               isHome
-                ? 'border border-[#C9A45C]/65 bg-[#1A2D50] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#223963]'
+                ? 'border border-[#C9A45C]/65 bg-[#173F32] text-[#F8F5EE] hover:border-[#C9A45C] hover:bg-[#245642]'
                 : 'border border-brass-400/60 bg-white text-ink-900 shadow-2xs hover:border-brass-500 hover:bg-brass-200/25'
             }`}
           >
@@ -571,7 +570,7 @@ export function SiteHeader() {
               href="/partners/apply"
               className={`hidden min-h-[38px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition xl:inline-flex ${
                 isHome
-                  ? 'border border-[#2C3F63] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
+                  ? 'border border-[#496A57] bg-transparent text-[#F8F5EE] hover:border-[#C9A45C]'
                   : 'border border-ink-200 bg-white text-ink-800 hover:border-brass-500 hover:text-ink-950'
               }`}
             >
