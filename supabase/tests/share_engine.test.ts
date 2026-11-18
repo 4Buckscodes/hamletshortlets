@@ -304,8 +304,10 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
       return rows[0].p;
     });
     expect(perfCompleted.financials.completed_bookings).toBe(1);
-    expect(perfCompleted.financials.earnings_pending_ngn).toBe(45_000);
-    expect(perfCompleted.financials.earnings_eligible_ngn).toBe(0);
+    // transition_booking('completed') moves the closing-agent commission from
+    // 'pending' to 'approved', so it leaves "pending" and becomes payout-eligible.
+    expect(perfCompleted.financials.earnings_pending_ngn).toBe(0);
+    expect(perfCompleted.financials.earnings_eligible_ngn).toBe(45_000);
 
     // 8. Reversal / adjustment reconciles cleanly with ledger
     await asServiceRole(db, async tx => {
