@@ -1450,10 +1450,6 @@ body { background:var(--paper); color:var(--ink); }
 .home-live-stays article.group .mt-3.flex.flex-wrap { display:none !important; }
 .home-live-stays article.group .mt-3.flex.items-center { display:none !important; }
 .home-live-stays article.group .mt-4.flex.items-center { margin-top:10px !important; padding-top:10px !important; }
-#hamlet-mobile-drawer { background:#172119; color:#F6F1E7; }
-#hamlet-mobile-drawer a { color:inherit; }
-#hamlet-mobile-drawer a[aria-current="page"] { background:#D9F24B !important; color:#172119 !important; }
-#hamlet-mobile-drawer button { color:inherit; }
 @media (max-width: 760px) {
   .home-hero-grid { gap:24px; }
   .home-hero-copy h1 { font-size:clamp(52px,15vw,78px); }
