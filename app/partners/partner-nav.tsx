@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import { useActiveTabInView } from '@/components/ui/useActiveTabInView';
 
 export type PartnerTab =
   | 'overview'
@@ -34,39 +35,26 @@ export function PartnerNav({
 }) {
   const isNewPropertyActive = current === 'new-property';
 
+  const navRef = useActiveTabInView<HTMLElement>(current);
+  const items = applicant ? ITEMS.filter(item => item.id === 'overview') : ITEMS;
+
   return (
-    <nav aria-label="Partner workspace navigation" className="flex flex-wrap gap-2">
+    <nav ref={navRef} aria-label="Partner workspace navigation" className="hm-tabs hm-partner-tabs">
+      {items.map(item => (
+        <Link key={item.id} href={item.href} aria-current={item.id === current ? 'page' : undefined}>
+          {item.label}
+        </Link>
+      ))}
       {!hideNewListingAction && (
         <Link
           href="/partners/properties/new"
           aria-current={isNewPropertyActive ? 'page' : undefined}
-          className={
-            isNewPropertyActive
-              ? 'inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-ink-950 px-4 text-xs font-extrabold text-white'
-              : 'inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-brass-400/80 bg-ink-900 px-4 text-xs font-extrabold text-white shadow-2xs transition hover:border-brass-400 hover:bg-ink-800'
-          }
+          className="hm-partner-tabs-add"
         >
-          <Plus className="h-3.5 w-3.5 shrink-0 text-brass-400 stroke-[2.75]" />
+          <Plus size={14} strokeWidth={2.75} aria-hidden="true" />
           <span>Add a new listing</span>
         </Link>
       )}
-      {(applicant ? ITEMS.filter(item => item.id === 'overview') : ITEMS).map(item => {
-        const active = item.id === current;
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            aria-current={active ? 'page' : undefined}
-            className={
-              active
-                ? 'inline-flex min-h-[40px] items-center rounded-full bg-ink-950 px-4 text-xs font-bold text-white'
-                : 'inline-flex min-h-[40px] items-center rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-800 transition hover:border-ink-900'
-            }
-          >
-            {item.label}
-          </Link>
-        );
-      })}
     </nav>
   );
 }

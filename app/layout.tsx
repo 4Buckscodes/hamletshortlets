@@ -72,7 +72,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-NG" suppressHydrationWarning>
+    <html lang="en-NG" data-hm-dark="on" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <JsonLd id="hamlet-global-jsonld" data={GLOBAL_STRUCTURED_DATA} />

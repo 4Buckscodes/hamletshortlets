@@ -10,23 +10,25 @@ export default function GlobalRouteError({
   reset: () => void;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
-      <main className="shell flex flex-1 flex-col items-center justify-center py-20 text-center">
-        <p className="eyebrow">Temporary interruption</p>
-        <h1 className="serif mt-3 text-4xl font-medium text-ink-900 sm:text-5xl">
-          Could not load this view.
-        </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-500">
-          Try reloading or return to stays.
-        </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <button type="button" onClick={reset} className="primary-button">
-            Try again
-          </button>
-          <Link href="/stays" className="secondary-button">
-            Explore stays
-          </Link>
+      <main className="hm-main hm-status-screen hm-band hm-band-arrive" style={{ flex: 1 }}>
+        <div className="hm-shell hm-band-inner">
+          <p className="hm-label">Temporary interruption</p>
+          <h1 className="hm-display">
+            Could not load this view.
+            <br />
+            <em>Give it another go.</em>
+          </h1>
+          <p className="hm-body">Try reloading or return to stays.</p>
+          <div className="hm-band-actions">
+            <button type="button" onClick={reset} className="hm-btn hm-btn-lime">
+              Try again
+            </button>
+            <Link href="/stays" className="hm-btn hm-btn-ghost">
+              Explore stays
+            </Link>
+          </div>
         </div>
       </main>
       <SiteFooter />

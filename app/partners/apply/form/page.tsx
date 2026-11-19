@@ -26,25 +26,25 @@ const PARTNER_APPLICATION_FORM_SCHEMA = buildInformationalPageSchema({
 
 export default function PartnerApplyFormPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd
         id="hamlet-partner-apply-form-jsonld"
         data={PARTNER_APPLICATION_FORM_SCHEMA}
       />
-      <main className="flex-1">
-        <section className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">HAMLET Partner Network · Lagos</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
-              List with confidence. <span className="italic text-brass-300">Partner with clarity.</span>
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">HAMLET Partner Network · Lagos</p>
+            <h1 className="hm-display hm-content-title">
+              List with confidence. <em>Partner with clarity.</em>
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+            <p className="hm-body hm-content-intro">
               {APPROVED_OWNER_SERVICES_POLICY_COPY}
             </p>
           </div>
         </section>
-        <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="hm-shell hm-section-tight" style={{ maxWidth: 720 }}>
           <PartnerApplicationForm />
         </div>
       </main>
