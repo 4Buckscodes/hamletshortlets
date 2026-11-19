@@ -278,6 +278,14 @@ describe('isRejectedReferralCodeError', () => {
       isRejectedReferralCodeError({ message: 'This partner referral code is invalid or no longer active.' }),
     ).toBe(true);
     expect(isRejectedReferralCodeError({ message: 'Self-referrals are not permitted.' })).toBe(true);
+    expect(
+      isRejectedReferralCodeError({ message: 'Self-referrals using the same phone number are not permitted.' }),
+    ).toBe(true);
+    expect(
+      isRejectedReferralCodeError({
+        message: 'This account already has a recorded direct referring partner.',
+      }),
+    ).toBe(true);
   });
 
   it('does not match other membership errors', () => {

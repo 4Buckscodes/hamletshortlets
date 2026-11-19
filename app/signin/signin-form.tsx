@@ -208,6 +208,20 @@ export default function SignInForm() {
           </FormField>
         )}
 
+        {mode === 'signup' && lockedReferralCode && (
+          <FormField label="Referral code" hint="Applied from invite link.">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                value={lockedReferralCode}
+                readOnly
+                aria-readonly="true"
+                className="hm-input font-mono uppercase"
+              />
+            )}
+          </FormField>
+        )}
+
         {mode === 'signin' && (
           <div className="flex justify-end">
             <button type="button" onClick={() => { setMode('reset'); setError(''); setMessage(''); }} className="hm-link" style={{ fontSize: 13, paddingBottom: 2 }}>Forgot password?</button>

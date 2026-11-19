@@ -40,9 +40,14 @@ function contrast(a: string, b: string) {
 }
 
 describe('HAMLET UI kit — tokens and themes', () => {
-  it('keeps dark mode opt-in until every route uses the kit', () => {
+  it('scopes dark tokens to html[data-hm-dark="on"] and enables them site-wide with the theme boot script', () => {
     expect(darkStart).toBeGreaterThan(0);
     expect(css).not.toMatch(/prefers-color-scheme:\s*dark/);
+    const layout = readFileSync(path.resolve(__dirname, '../../../app/layout.tsx'), 'utf8');
+    expect(layout).toContain('data-hm-dark="on"');
+    expect(layout).toContain('<ThemeScript />');
+    const shell = readFileSync(path.resolve(__dirname, '../site/SiteShell.tsx'), 'utf8');
+    expect(shell.match(/<ThemeSwitch/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
   it('only overrides tokens in dark mode that exist in light mode', () => {

@@ -40,6 +40,7 @@ import {
   type DisplayCurrency,
 } from '@/lib/currency';
 import { isMainlandArea } from '@/lib/areas';
+import { ThemeSwitch } from '@/components/ui/ThemeSwitch';
 import { resolveLegacyHashRoute } from '@/lib/authRedirect';
 import {
   formatAccommodationLabel,
@@ -604,6 +605,11 @@ export function SiteHeader() {
               ))}
             </div>
 
+            <div className="hm-drawer-theme">
+              <span className="hm-label">Appearance</span>
+              <ThemeSwitch />
+            </div>
+
             <div className="hm-drawer-actions">
               {session ? (
                 <>
@@ -719,6 +725,7 @@ export function SiteFooter() {
         </div>
 
         <div className="hm-footer-bottom">
+          <ThemeSwitch className="hm-footer-theme" />
           <p>© {new Date().getFullYear()} HAMLET.REST · An Abundance Abodes product · Lagos, Nigeria.</p>
           <p>Bookings confirm only after partner acceptance and server-verified payment.</p>
         </div>
