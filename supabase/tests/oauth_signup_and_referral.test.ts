@@ -170,4 +170,49 @@ describe('Google / OIDC OAuth Sign-Up Profile Metadata & Referral Claiming', () 
     });
     expect(olderClaim).toBe(false);
   });
+  it('allows a guest-profile active network member to refer a new Google OAuth signup', async () => {
+    const referrerMemberId = await createTestUser(db, {
+      email: 'network-member-referrer@hamlet.test',
+      fullName: 'Network Member Referrer',
+      role: 'guest',
+    });
+
+    await asUser(db, referrerMemberId, async tx => {
+      await tx.query(
+        `select public.join_partner_network($1, $2, $3, $4)`,
+        ['closing_agent', 'Network Member Co', '+2348012345680', ''],
+      );
+    });
+
+    const memberCode = await asUser(db, referrerMemberId, async tx => {
+      const res = await tx.query<{ code: string }>(
+        `select public.ensure_my_referral_code() as code`,
+      );
+      return res.rows[0]!.code;
+    });
+
+    const insertedOAuthGuest = await db.query<{ id: string }>(
+      `insert into auth.users (email, raw_user_meta_data)
+       values ($1, $2::jsonb)
+       returning id`,
+      ['network-member-referred@hamlet.test', JSON.stringify({ name: 'Network Referred Guest' })],
+    );
+    const oauthGuestId = insertedOAuthGuest.rows[0]!.id;
+
+    const claimed = await asUser(db, oauthGuestId, async tx => {
+      const res = await tx.query<{ claimed: boolean }>(
+        `select public.claim_oauth_signup_referral($1) as claimed`,
+        [memberCode],
+      );
+      return res.rows[0]!.claimed;
+    });
+
+    expect(claimed).toBe(true);
+    const recorded = await db.query<{ referred_by_partner_id: string | null }>(
+      `select referred_by_partner_id from public.profiles where id = $1`,
+      [oauthGuestId],
+    );
+    expect(recorded.rows[0]!.referred_by_partner_id).toBe(referrerMemberId);
+  });
+
 });
