@@ -30,7 +30,6 @@ as $
       )
   );
 $;
-
 revoke all on function public.has_role(text) from public, anon;
 grant execute on function public.has_role(text) to authenticated, service_role;
 
@@ -56,7 +55,6 @@ as $
       and public.can_partner_share_property(psl.property_id, psl.partner_id)
   );
 $;
-
 revoke all on function public.validate_partner_share_token(text, text) from public;
 grant execute on function public.validate_partner_share_token(text, text)
   to anon, authenticated, service_role;
