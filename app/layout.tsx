@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import '@fontsource-variable/inter';
-import '@fontsource-variable/playfair-display';
 import './globals.css';
 import '@/components/ui/hamlet-ui.css';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -75,6 +73,8 @@ export default function RootLayout({
     <html lang="en-NG" data-hm-dark="on" suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <link rel="preload" href="/fonts/inter-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/playfair-display-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <JsonLd id="hamlet-global-jsonld" data={GLOBAL_STRUCTURED_DATA} />
       </head>
       <body>

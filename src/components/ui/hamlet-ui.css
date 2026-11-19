@@ -4,6 +4,10 @@
  * Every class is prefixed `hm-` so the kit can be adopted page by page next to legacy styles.
  */
 
+/* Self-hosted variable fonts, Latin subset only (₦ and other glyphs fall back to the system font). */
+@font-face { font-family: "Inter Variable"; font-style: normal; font-display: swap; font-weight: 100 900; src: url("/fonts/inter-latin-wght.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display Variable"; font-style: normal; font-display: swap; font-weight: 400 900; src: url("/fonts/playfair-display-latin-wght.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 /* ---------- Tokens (light) ---------- */
 :root {
   --hm-forest: #172119;
@@ -787,7 +791,7 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.secondary-button, .btn-outline) 
 .home-belief-points small { font-size: 13px !important; line-height: 1.5 !important; }
 .home-belief-copy a, .home-all-stays { font-size: 14px !important; }
 .home-destination-caption small { font-size: 12px !important; }
-.home-search-field select, .home-search-field input { font-size: 15px !important; }
+.home-search-field select, .home-search-field input { font-size: 16px !important; }
 .home-section-label { color: var(--hm-label) !important; }
 .home-belief .home-section-label { color: var(--hm-lime) !important; }
 .home-section-top h2 em { color: var(--hm-accent) !important; }
@@ -812,3 +816,35 @@ html[data-hm-dark="on"][data-theme="dark"] .home-section-top h2 em { color: var(
 @media (max-width: 760px) { .home-stamp { width: 112px !important; height: 112px !important; } .home-stamp strong { font-size: 20px !important; } .home-stamp span { font-size: 11px !important; letter-spacing: 0.02em !important; } }
 html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { background-color: var(--hm-sand); }
 .home-section-top h2 em, .home-belief h2 em, .home-hero h1 span { text-shadow: none !important; }
+
+/* ---------- Mobile-first: get people to a stay fast ---------- */
+.home-hero-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.home-hero-cta .hm-btn { min-height: 48px; }
+.home-area-quick a { min-height: 44px; display: inline-flex !important; align-items: center; padding: 0 16px !important; font-size: 13px !important; }
+.home-scroll { min-width: 44px; min-height: 44px; }
+@media (max-width: 760px) {
+  .home-hero h1 { font-size: clamp(52px, 14.5vw, 76px) !important; line-height: .86 !important; }
+  .home-hero-cta { margin-top: 20px; }
+  .home-hero-cta .hm-btn { flex: 1 1 140px; justify-content: center; }
+  .home-intro-row { margin-top: 18px !important; }
+  /* Stays: results first, the neighbourhood rail after them; skip decorative band media. */
+  .hm-main .hm-band-media { display: none; }
+  .hm-discovery { gap: 32px !important; }
+  .hm-discovery-results { order: 1; }
+  .hm-discovery-rail { order: 2; }
+  .hm-footer a, .hm-drawer a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+.hm-media picture, .home-photo-frame picture { display: contents; }
+@media (max-width: 760px) {
+  /* Stays band on phones: title + live count + one cue; the rest is below the results. */
+  .hm-band-compact .hm-band-aside > p, .hm-band-compact .hm-band-actions { display: none; }
+  .hm-band-compact .hm-band-copy { gap: 14px; }
+  .hm-chip-row-scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; scroll-snap-type: x proximity; }
+  .hm-chip-row-scroll::-webkit-scrollbar { display: none; }
+  .hm-chip-row-scroll .hm-chip { flex: none; scroll-snap-align: start; }
+  .hm-filter-toolbar > * { min-width: 0; max-width: 100%; }
+  .hm-filter-actions { width: 100%; flex-wrap: nowrap !important; justify-content: space-between; }
+  .hm-chip, .hm-filter-toolbar .hm-sort .hm-input { min-height: 44px; }
+  /* iOS zooms into any field under 16px on focus; keep every form control at 16px on phones. */
+  input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
+}
