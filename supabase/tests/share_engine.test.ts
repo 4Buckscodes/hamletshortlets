@@ -140,6 +140,37 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     );
   });
 
+  it('immediate partner membership: a guest-profile member can see approved stays and create a tracked share link', async () => {
+    const result = await asUser(db, guestAId, async tx => {
+      await tx.query(
+        `select public.join_partner_network($1, $2, $3, $4)`,
+        ['closing_agent', 'Ngozi Guest', '+2348012345678', ''],
+      );
+
+      const profile = await tx.query<{ role: string }>(
+        `select role from public.profiles where id = $1::uuid`,
+        [guestAId],
+      );
+      const catalogue = await tx.query<{ stays: Array<{ id: string; share_token: string | null }> }>(
+        `select public.list_partner_shareable_properties() as stays`,
+      );
+      const share = await tx.query<{ payload: { share_token: string } }>(
+        `select public.record_partner_share_action($1, 'whatsapp_handoff', '{}'::jsonb, null) as payload`,
+        [approvedPropertyId],
+      );
+
+      return {
+        profileRole: profile.rows[0].role,
+        stays: catalogue.rows[0].stays,
+        shareToken: share.rows[0].payload.share_token,
+      };
+    });
+
+    expect(result.profileRole).toBe('guest');
+    expect(result.stays.map(stay => stay.id)).toContain(approvedPropertyId);
+    expect(result.shareToken).toMatch(/^hsl_[a-z0-9]{16,64}$/);
+  });
+
   it('Scenario A + Ledger Reconciliation: tracks share -> visit -> auth bind -> enquiry -> booking -> confirmation -> completion -> reversal accurately', async () => {
     // 1. Closing agent initiates WhatsApp share & copies link
     const shareRes = await asUser(db, closingPartnerId, async tx => {
