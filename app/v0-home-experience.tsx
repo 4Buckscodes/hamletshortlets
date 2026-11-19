@@ -36,7 +36,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
       <section className="home-search" id="find-your-stay" aria-label="Search for a stay">
         <div className="home-shell">
           <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
-          <form action="/stays" method="get" className="home-search-form">
+          <form action="/stays" method="get" className="home-search-form" role="search" aria-label="Search Lagos shortlets">
             <label className="home-search-field home-destination"><span><MapPin size={17} /> THE DESTINATION</span><input name="area" type="text" list="hamlet-destinations" placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" /><datalist id="hamlet-destinations">{LAGOS_AREAS.map(area => <option key={area} value={area} />)}</datalist></label>
             <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
             <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>

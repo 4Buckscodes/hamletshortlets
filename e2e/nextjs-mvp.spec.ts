@@ -236,6 +236,12 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     const mobileSearchRegion = mobilePage.getByRole('region', { name: 'Search for a stay' });
     await expect(mobileSearchRegion).toBeVisible();
     await expect(mobileSearchRegion.getByRole('heading', { name: 'Where to?' })).toBeVisible();
+    const mobileSearchForm = mobileSearchRegion.getByRole('search', {
+      name: /Search Lagos shortlets/i,
+    });
+    await expect(mobileSearchForm).toBeVisible();
+    await expect(mobileSearchForm.getByLabel('Enter a Lagos area')).toBeVisible();
+    await expect(mobileSearchForm.getByRole('button', { name: /Find my stay/i })).toBeVisible();
 
     // Homepage trust section
     await expect(
