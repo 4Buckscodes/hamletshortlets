@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FOLLOW_UP_MIGRATION = readFileSync(
   path.resolve(
     __dirname,
-    '../migrations/20261118231000_partner_application_referral_network_members.sql',
+    '../migrations/20261119091832_partner_application_referral_network_members.sql',
   ),
   'utf8',
 );
