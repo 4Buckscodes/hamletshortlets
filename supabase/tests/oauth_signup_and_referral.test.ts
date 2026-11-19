@@ -230,6 +230,7 @@ describe('Google / OIDC OAuth Sign-Up Profile Metadata & Referral Claiming', () 
           hamlet_partner_signup: true,
           hamlet_partner_role: 'property_owner',
           hamlet_partner_company: 'Instant Partner Homes',
+          hamlet_partner_phone: '+2348012345681',
         }),
       ],
     );
