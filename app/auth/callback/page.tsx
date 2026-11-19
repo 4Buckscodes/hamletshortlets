@@ -8,6 +8,7 @@ import {
   buildNextSignInPath,
   extractOAuthDisplayName,
   formatOAuthErrorMessage,
+  isRejectedReferralCodeError,
   readRequestedRedirectFromSearch,
   resolveOAuthPostAuthRedirect,
 } from '@/lib/authRedirect';
@@ -158,12 +159,26 @@ export default function AuthCallbackPage() {
           });
           if (profileUpdateError) throw profileUpdateError;
 
-          const { error: membershipError } = await client.rpc('join_partner_network', {
+          const membershipArgs = {
             next_role: stored.partnerRole,
             next_company: stored.partnerCompany || googleName,
             next_phone: stored.partnerPhone,
-            referral_code_input: window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null,
+          };
+          const partnerReferralCode =
+            window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null;
+          let { error: membershipError } = await client.rpc('join_partner_network', {
+            ...membershipArgs,
+            referral_code_input: partnerReferralCode,
           });
+          if (membershipError && partnerReferralCode && isRejectedReferralCodeError(membershipError)) {
+            // A stale, invalid or self-referral code must not block partner signup:
+            // drop it and join without referral attribution.
+            window.localStorage.removeItem(REFERRAL_STORAGE_KEY);
+            ({ error: membershipError } = await client.rpc('join_partner_network', {
+              ...membershipArgs,
+              referral_code_input: null,
+            }));
+          }
           if (membershipError) throw membershipError;
         }
 
