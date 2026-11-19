@@ -225,6 +225,15 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     expect(visit.valid).toBe(true);
     expect(visit.property_id).toBe(approvedPropertyId);
 
+    const visitsAfter = await db.query<{ count: number }>(
+      `select count(*)::int as count
+       from public.property_share_events e
+       join public.partner_share_links l on l.id = e.share_link_id
+       where l.share_token = $1 and e.event_type = 'link_visited'`,
+      [shareToken],
+    );
+    expect(visitsAfter.rows[0].count).toBe(1);
+
     const visitorId = await createTestUser(db, {
       email: 'member-journey-visitor@hamlet.test',
       fullName: 'Partner Journey Guest',
