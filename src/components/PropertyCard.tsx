@@ -87,7 +87,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
         {/* Top badges + Save toggle */}
         <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">
           <span
-            className={`inline-flex max-w-[calc(100%-3rem)] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-extrabold shadow-xs backdrop-blur-md ${availabilityPillTone}`}
+            className={`inline-flex max-w-[calc(100%-3rem)] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-extrabold shadow-xs backdrop-blur-md ${availabilityPillTone}`}
           >
             <CalendarClock size={11} className="shrink-0" />
             <span className="truncate">{availability.primaryBadgeLabel}</span>
@@ -114,16 +114,16 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
         {/* Bottom overlay: Verification + Corridor */}
         <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-1.5">
           {verificationLabel ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/45 bg-ink-950/80 py-1 pl-2 pr-2.5 text-[10.5px] font-bold text-brass-300 backdrop-blur-md">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/45 bg-ink-950/80 py-1 pl-2 pr-2.5 text-[11px] font-bold text-brass-300 backdrop-blur-md">
               <ShieldCheck size={12} className="shrink-0 text-brass-400" />
               <span className="truncate">{verificationLabel}</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/75 px-2.5 py-1 text-[10px] font-semibold text-ink-200 backdrop-blur-md">
+            <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/75 px-2.5 py-1 text-[11px] font-semibold text-ink-200 backdrop-blur-md">
               {p.trustLabel}
             </span>
           )}
-          <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink-900 backdrop-blur-md">
+          <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink-900 backdrop-blur-md">
             {p.type}
           </span>
         </div>
@@ -182,7 +182,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
                 <span className="text-[11.5px] font-semibold text-ink-500">/ night</span>
               </div>
               {(est > guestNightlyNgn || (currency !== 'NGN' && activeRateIsAvailable)) && (
-                <p className="mt-0.5 truncate text-[10.5px] font-medium text-ink-500">
+                <p className="mt-0.5 truncate text-[11px] font-medium text-ink-500">
                   {est > guestNightlyNgn ? `~${formatStayPrice(est)}/nt with fees` : 'Quoted stay rate'}
                   {currency !== 'NGN' && activeRateIsAvailable ? ' · incl. 10% FX buffer' : ''}
                 </p>

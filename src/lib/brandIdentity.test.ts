@@ -9,11 +9,11 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
   it('defines Midnight Navy, Champagne Gold, Warm Ivory, and Slate Grey tokens in index.css', () => {
     const css = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
 
-    // Approved V0 palette: Forest ink (#172119), Lime accent (#C5DE3F), Warm Ivory (#F6F1E7), Sage grey (#758071)
+    // Approved V0 palette: Forest ink (#172119), Lime accent (#C5DE3F), Warm Ivory (#F6F1E7), Muted grey (#5B655A, 5.4:1 on ivory)
     expect(css).toContain('--color-ink-900: #172119;');
     expect(css).toContain('--color-brass-500: #C5DE3F;');
     expect(css).toContain('--color-paper: #F6F1E7;');
-    expect(css).toContain('--color-ink-500: #758071;');
+    expect(css).toContain('--color-ink-500: #5B655A;');
     expect(css).toContain('--color-jade-700: #173F32;');
 
     // Typography: Playfair Display for headlines/serif & Inter for body/UI sans-serif
@@ -31,7 +31,7 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
     expect(mainSrc).not.toMatch(/fraunces|public-sans/i);
   });
 
-  it('uses the HAMLET serif H monogram with Champagne Gold crossbar in Logo.tsx and favicon.svg', () => {
+  it('uses the HAMLET serif H monogram with a lime crossbar on forest in Logo.tsx and favicon.svg', () => {
     const logoSrc = readFileSync(join(ROOT, 'src/components/Logo.tsx'), 'utf8');
     const faviconSvg = readFileSync(join(ROOT, 'public/favicon.svg'), 'utf8');
     const manifest = JSON.parse(readFileSync(join(ROOT, 'public/site.webmanifest'), 'utf8')) as {
@@ -40,18 +40,22 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
     };
     const indexHtml = readFileSync(join(ROOT, 'index.html'), 'utf8');
 
-    expect(logoSrc).toContain('#0E1F3B');
+    expect(logoSrc).toContain('#172119');
     expect(logoSrc).toContain('#FFFFFF');
-    expect(logoSrc).toContain('#C9A44A');
+    expect(logoSrc).toContain('#D9F24B');
     expect(logoSrc).toContain('linearGradient');
 
-    expect(faviconSvg).toContain('#0E1F3B');
+    expect(faviconSvg).toContain('#172119');
     expect(faviconSvg).toContain('#FFFFFF');
-    expect(faviconSvg).toContain('#C9A44A');
+    expect(faviconSvg).toContain('#D9F24B');
+    for (const retired of [/#0E1F3B/i, /#C9A44A/i, /#121F3C/i]) {
+      expect(logoSrc).not.toMatch(retired);
+      expect(faviconSvg).not.toMatch(retired);
+    }
 
-    expect(manifest.background_color).toBe('#F8F5EE');
-    expect(manifest.theme_color).toBe('#0E1F3B');
-    expect(indexHtml).toContain('<meta name="theme-color" content="#0E1F3B" />');
+    expect(manifest.background_color).toBe('#F6F1E7');
+    expect(manifest.theme_color).toBe('#172119');
+    expect(indexHtml).toContain('<meta name="theme-color" content="#172119" />');
   });
 
   it('preserves existing HAMLET website wording and tagline unchanged', () => {

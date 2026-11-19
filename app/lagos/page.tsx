@@ -172,7 +172,7 @@ export default function LagosGuidePage() {
                       className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
                       Mainland
                     </span>
                     <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white">
@@ -228,7 +228,7 @@ export default function LagosGuidePage() {
                       className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
                       Island
                     </span>
                     <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white">

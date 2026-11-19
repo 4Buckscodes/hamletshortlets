@@ -48,19 +48,19 @@ const cachedPublicImages = new Map<string, string>();
 const EMBEDDED_ARCHITECTURAL_FALLBACK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0E1F3B"/>
-      <stop offset="55%" stop-color="#162F57"/>
-      <stop offset="100%" stop-color="#0A162B"/>
+      <stop offset="0%" stop-color="#172119"/>
+      <stop offset="55%" stop-color="#22302A"/>
+      <stop offset="100%" stop-color="#101A14"/>
     </linearGradient>
     <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#C9A45C" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="#C9A45C" stop-opacity="0.04"/>
+      <stop offset="0%" stop-color="#D9F24B" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#D9F24B" stop-opacity="0.04"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="900" fill="url(#bg)"/>
   <rect x="72" y="72" width="1056" height="756" rx="28" fill="none" stroke="url(#brass)" stroke-width="2"/>
-  <circle cx="980" cy="180" r="260" fill="#C9A45C" fill-opacity="0.08"/>
-  <circle cx="220" cy="760" r="320" fill="#C9A45C" fill-opacity="0.06"/>
+  <circle cx="980" cy="180" r="260" fill="#D9F24B" fill-opacity="0.08"/>
+  <circle cx="220" cy="760" r="320" fill="#D9F24B" fill-opacity="0.06"/>
 </svg>`;
 
 const EMBEDDED_FALLBACK_DATA_URL = `data:image/svg+xml;base64,${Buffer.from(
@@ -368,11 +368,11 @@ function renderOgHamletLogo({
   markSize?: number;
   wordSize?: number;
 }) {
-  const stemFill = light ? '#FFFFFF' : '#0E1F3B';
+  const stemFill = light ? '#FFFFFF' : '#172119';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <svg width={markSize} height={markSize} viewBox="0 0 64 64" fill="none">
-        <rect x="2" y="2" width="60" height="60" rx="14" fill="#0E1F3B" />
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#172119" />
         <g transform="translate(5.12 5.12) scale(0.84)">
           <path
             d="M6.5 7H26.5V9.2C22.4 9.3 21 11.5 21 16.6V47.4C21 52.5 22.4 54.7 26.5 54.8V57H6.5V54.8C10.6 54.7 12 52.5 12 47.4V16.6C12 11.5 10.6 9.3 6.5 9.2V7Z"
@@ -384,7 +384,7 @@ function renderOgHamletLogo({
           />
           <path
             d="M12 21.4C13.2 26.2 16.5 28.8 21 28.8H43C47.5 28.8 50.8 26.2 52 21.4V42.2C50.8 37.4 47.5 34.8 43 34.8H21C16.5 34.8 13.2 37.4 12 42.2V21.4Z"
-            fill="#C9A45C"
+            fill="#D9F24B"
           />
         </g>
       </svg>
@@ -400,7 +400,7 @@ function renderOgHamletLogo({
         }}
       >
         <span>HAMLET</span>
-        <span style={{ color: '#C9A45C' }}>.</span>
+        <span style={{ color: '#D9F24B' }}>.</span>
       </div>
     </div>
   );
@@ -421,7 +421,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
             display: 'flex',
             width: 1200,
             height: 630,
-            backgroundColor: '#0E1F3B',
+            backgroundColor: '#172119',
             color: '#FFFFFF',
             fontFamily: 'Inter, InterExt',
             position: 'relative',
@@ -437,8 +437,8 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
               width: 650,
               height: 630,
               padding: '54px 56px',
-              backgroundColor: '#0E1F3B',
-              borderRight: '2px solid rgba(201,164,92,0.35)',
+              backgroundColor: '#172119',
+              borderRight: '2px solid rgba(217,242,75,0.35)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -448,9 +448,9 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                   display: 'flex',
                   padding: '6px 14px',
                   borderRadius: 999,
-                  border: '1px solid rgba(201,164,92,0.55)',
-                  backgroundColor: 'rgba(201,164,92,0.14)',
-                  color: '#F6E5AB',
+                  border: '1px solid rgba(217,242,75,0.55)',
+                  backgroundColor: 'rgba(217,242,75,0.14)',
+                  color: '#EEF8B8',
                   fontSize: 13,
                   fontWeight: 700,
                   letterSpacing: '0.12em',
@@ -469,7 +469,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                   fontSize: 64,
                   fontWeight: 700,
                   lineHeight: 1.06,
-                  color: '#F8F5EE',
+                  color: '#F6F1E7',
                 }}
               >
                 Your stay, sorted.
@@ -479,7 +479,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                   display: 'flex',
                   fontSize: 26,
                   fontWeight: 600,
-                  color: '#C9A45C',
+                  color: '#D9F24B',
                 }}
               >
                 Shortlets, with accountability.
@@ -506,11 +506,11 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                 fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: '0.08em',
-                color: '#C9A45C',
+                color: '#D9F24B',
               }}
             >
               <span>TITLE · IDENTITY · AUTHORITY · INSPECTION</span>
-              <span style={{ color: '#F8F5EE' }}>hamlet.rest</span>
+              <span style={{ color: '#F6F1E7' }}>hamlet.rest</span>
             </div>
           </div>
 
@@ -606,7 +606,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
             width: 1200,
             height: 630,
             position: 'relative',
-            backgroundColor: '#0E1F3B',
+            backgroundColor: '#172119',
             color: '#FFFFFF',
             fontFamily: 'Inter, InterExt',
             overflow: 'hidden',
@@ -668,7 +668,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                       border: '1px solid rgba(248,245,238,0.28)',
                       fontSize: 13,
                       fontWeight: 600,
-                      color: '#F8F5EE',
+                      color: '#F6F1E7',
                     }}
                   >
                     HAMLET Stay Preview
@@ -684,7 +684,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                       : 'rgba(14,31,59,0.82)',
                     border: trust.verified
                       ? '1px solid rgba(110,231,183,0.65)'
-                      : '1px solid rgba(201,164,92,0.6)',
+                      : '1px solid rgba(217,242,75,0.6)',
                     fontSize: 14,
                     fontWeight: 700,
                     color: '#FFFFFF',
@@ -714,7 +714,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                     fontWeight: 700,
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: '#E1C26E',
+                    color: '#E5F477',
                   }}
                 >
                   <span>{areaLabel}</span>
@@ -729,7 +729,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                     fontSize: stay.title.length > 44 ? 42 : 50,
                     fontWeight: 700,
                     lineHeight: 1.1,
-                    color: '#F8F5EE',
+                    color: '#F6F1E7',
                   }}
                 >
                   {stay.title.length > 68 ? `${stay.title.slice(0, 65)}…` : stay.title}
@@ -765,7 +765,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                   padding: '18px 26px',
                   borderRadius: 22,
                   backgroundColor: 'rgba(14,31,59,0.9)',
-                  border: '1px solid rgba(201,164,92,0.55)',
+                  border: '1px solid rgba(217,242,75,0.55)',
                 }}
               >
                 {guestNightly !== null ? (
@@ -776,7 +776,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                         fontWeight: 700,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
-                        color: '#C9A45C',
+                        color: '#D9F24B',
                       }}
                     >
                       ALL-IN STAY RATE
@@ -796,7 +796,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                     </span>
                   </>
                 ) : (
-                  <span style={{ fontSize: 18, fontWeight: 700, color: '#F8F5EE' }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#F6F1E7' }}>
                     View stay on hamlet.rest
                   </span>
                 )}
@@ -892,12 +892,12 @@ export async function renderMarketingCardBuffer(
       : null;
 
   const isLightTheme = input.theme === 'ivory';
-  const bg = isLightTheme ? '#F8F5EE' : input.theme === 'lagoon' ? '#12263F' : '#0E1F3B';
+  const bg = isLightTheme ? '#F6F1E7' : input.theme === 'lagoon' ? '#1F2B24' : '#172119';
   const panelBg = isLightTheme ? '#FFFFFF' : 'rgba(255,255,255,0.06)';
-  const panelBorder = isLightTheme ? '#E3DAC8' : 'rgba(201,164,92,0.42)';
-  const textPrimary = isLightTheme ? '#0E1F3B' : '#F8F5EE';
-  const textMuted = isLightTheme ? '#4A5568' : 'rgba(248,245,238,0.78)';
-  const accent = isLightTheme ? '#946E21' : '#E1C26E';
+  const panelBorder = isLightTheme ? '#D9DDCF' : 'rgba(217,242,75,0.42)';
+  const textPrimary = isLightTheme ? '#172119' : '#F6F1E7';
+  const textMuted = isLightTheme ? '#5B655A' : 'rgba(248,245,238,0.78)';
+  const accent = isLightTheme ? '#4C5916' : '#E5F477';
 
   const renderWithPhoto = async (photoDataUrl: string): Promise<Buffer> => {
     if (input.format === 'social') {
@@ -932,7 +932,7 @@ export async function renderMarketingCardBuffer(
                   padding: '7px 14px',
                   borderRadius: 999,
                   backgroundColor: 'rgba(14,31,59,0.88)',
-                  border: '1px solid rgba(201,164,92,0.6)',
+                  border: '1px solid rgba(217,242,75,0.6)',
                   color: '#FFFFFF',
                   fontSize: 13,
                   fontWeight: 700,
@@ -1046,7 +1046,7 @@ export async function renderMarketingCardBuffer(
                       marginTop: 6,
                       padding: '12px 16px',
                       borderRadius: 16,
-                      backgroundColor: isLightTheme ? '#EFE9DC' : 'rgba(201,164,92,0.14)',
+                      backgroundColor: isLightTheme ? '#EDE9DC' : 'rgba(217,242,75,0.14)',
                       border: `1px solid ${panelBorder}`,
                     }}
                   >
@@ -1179,7 +1179,7 @@ export async function renderMarketingCardBuffer(
                   padding: '10px 18px',
                   borderRadius: 999,
                   backgroundColor: 'rgba(14,31,59,0.88)',
-                  border: '1px solid rgba(201,164,92,0.5)',
+                  border: '1px solid rgba(217,242,75,0.5)',
                 }}
               >
                 {renderOgHamletLogo({ light: true, markSize: 38, wordSize: 24 })}
@@ -1191,8 +1191,8 @@ export async function renderMarketingCardBuffer(
                   padding: '10px 20px',
                   borderRadius: 999,
                   backgroundColor: 'rgba(14,31,59,0.88)',
-                  border: '1px solid rgba(201,164,92,0.65)',
-                  color: '#F6E5AB',
+                  border: '1px solid rgba(217,242,75,0.65)',
+                  color: '#EEF8B8',
                   fontSize: 16,
                   fontWeight: 700,
                   letterSpacing: '0.06em',
@@ -1307,7 +1307,7 @@ export async function renderMarketingCardBuffer(
                     marginTop: isStory ? 14 : 8,
                     padding: '18px 24px',
                     borderRadius: 22,
-                    backgroundColor: isLightTheme ? '#EFE9DC' : 'rgba(201,164,92,0.14)',
+                    backgroundColor: isLightTheme ? '#EDE9DC' : 'rgba(217,242,75,0.14)',
                     border: `1px solid ${panelBorder}`,
                   }}
                 >
@@ -1441,8 +1441,8 @@ export async function renderBrandedQrPlacardBuffer(input: {
           width: 1080,
           height: 1350,
           padding: '72px 80px',
-          backgroundColor: '#0E1F3B',
-          color: '#F8F5EE',
+          backgroundColor: '#172119',
+          color: '#F6F1E7',
           fontFamily: 'Inter, InterExt',
         }}
       >
@@ -1454,7 +1454,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
               fontWeight: 700,
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              color: '#C9A45C',
+              color: '#D9F24B',
             }}
           >
             {`VERIFIED SHORTLET STAY · ${areaLabel}`}
@@ -1470,7 +1470,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
             padding: 36,
             borderRadius: 36,
             backgroundColor: '#FFFFFF',
-            border: '3px solid #C9A45C',
+            border: '3px solid #D9F24B',
           }}
         >
           <img
@@ -1497,7 +1497,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
               fontFamily: 'Playfair Display, Inter',
               fontSize: 42,
               fontWeight: 700,
-              color: '#F8F5EE',
+              color: '#F6F1E7',
               textAlign: 'center',
             }}
           >
@@ -1506,7 +1506,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
           <div style={{ display: 'flex', fontSize: 20, color: 'rgba(248,245,238,0.82)' }}>
             Scan with your phone camera to view photos, pricing & request dates on hamlet.rest
           </div>
-          <div style={{ display: 'flex', fontSize: 16, fontWeight: 700, color: '#C9A45C' }}>
+          <div style={{ display: 'flex', fontSize: 16, fontWeight: 700, color: '#D9F24B' }}>
             Your stay, sorted.
           </div>
         </div>
