@@ -50,9 +50,9 @@ export default async function HomePage() {
       <SiteHeader />
       <JsonLd id="hamlet-homepage-jsonld" data={pageSchema} />
 
-      <div style={{ flex: 1 }}>
+      <main style={{ flex: 1 }}>
         <V0HomeExperience approvedStays={approvedStays} />
-      </div>
+      </main>
 
       <SiteFooter />
     </div>
