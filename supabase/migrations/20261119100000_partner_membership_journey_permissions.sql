@@ -169,6 +169,25 @@ begin
     execute updated;
   end if;
 
+  -- Administrators may assign approved properties to an active network member
+  -- without requiring a profile-role elevation.
+  fn := pg_get_functiondef('public.grant_property_assignment(text,uuid,text,numeric,text)'::regprocedure);
+  updated := replace(
+    fn,
+    'if not found or partner_profile.role <> ''partner'' then',
+    'if not found or (
+      partner_profile.role not in (''partner'', ''admin'')
+      and not exists (
+        select 1 from public.partner_network_memberships m
+        where m.user_id = target_partner_id and m.status = ''active''
+      )
+    ) then'
+  );
+  if updated = fn then
+    raise exception 'Could not patch grant_property_assignment membership checks.';
+  end if;
+  execute updated;
+
   -- Legacy partner applications and resubmissions must accept referral codes
   -- issued to active network members as well as elevated partner/admin profiles.
   fn := pg_get_functiondef('public.validate_partner_application_referral()'::regprocedure);
