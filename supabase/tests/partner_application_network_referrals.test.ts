@@ -157,8 +157,8 @@ describe('Partner applications accept referral codes owned by network members', 
     expect(inserted.rows[0]).toEqual({ referred_by_partner_id: memberId, referred_by_code: code });
 
     if (referralRecordedOnInsert) {
-      // The legacy validator records the direct referral at submission time; the
-      // repository version records it when the application is approved.
+      // Both the legacy validator and the 20261119100000 catch-up record the direct
+      // referral at submission time ("joining is enough").
       const referral = await db.query<{ referrer_partner_id: string; status: string }>(
         `select referrer_partner_id::text, status from public.partner_referrals where referred_partner_id = $1`,
         [applicantId],
@@ -191,7 +191,7 @@ describe('Partner applications accept referral codes owned by network members', 
     );
     expect(after.rows[0].def).toBe(before.rows[0].def);
 
-    await assertMemberReferralAccepted({ referralRecordedOnInsert: false });
+    await assertMemberReferralAccepted({ referralRecordedOnInsert: true });
   });
 
   it('patches the legacy unaliased validator still deployed in production', async () => {
