@@ -34,6 +34,33 @@ $;
 revoke all on function public.has_role(text) from public, anon;
 grant execute on function public.has_role(text) to authenticated, service_role;
 
+-- QR image rendering is a preview, not a guest visit. Validate a share token
+-- without creating a visit event or first-touch attribution session.
+create or replace function public.validate_partner_share_token(
+  incoming_share_token text,
+  target_property_id text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1
+    from public.partner_share_links psl
+    where psl.share_token = lower(btrim(coalesce(incoming_share_token, '')))
+      and psl.property_id = target_property_id
+      and psl.status = 'active'
+      and (psl.expires_at is null or psl.expires_at > now())
+      and public.can_partner_share_property(psl.property_id, psl.partner_id)
+  );
+$;
+
+revoke all on function public.validate_partner_share_token(text, text) from public;
+grant execute on function public.validate_partner_share_token(text, text)
+  to anon, authenticated, service_role;
+
 create or replace function public.ensure_my_referral_code()
 returns text
 language plpgsql
