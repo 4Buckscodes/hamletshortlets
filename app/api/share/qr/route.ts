@@ -73,15 +73,22 @@ export async function GET(request: Request) {
         }
       }
     } else if (requestedToken) {
-      const { data: checkRes } = await publicDb.rpc('record_share_link_visit', {
-        incoming_share_token: requestedToken,
-        visitor_session_key: 'qr_verify_probe_0000',
-        client_idempotency_key: `qr_verify:${requestedToken}`,
-      });
-      const checkPayload = checkRes as { valid?: boolean; property_id?: string } | null;
-      if (checkPayload?.valid && checkPayload.property_id === propertyId) {
-        validatedToken = requestedToken;
+      // Rendering a QR is not a guest visit. Validate the bearer token without
+      // creating a visit event or first-touch attribution session.
+      const { data: tokenIsValid, error: tokenValidationError } = await publicDb.rpc(
+        'validate_partner_share_token',
+        {
+          incoming_share_token: requestedToken,
+          target_property_id: propertyId,
+        },
+      );
+      if (tokenValidationError || tokenIsValid !== true) {
+        return NextResponse.json(
+          { error: 'This tracked QR link is no longer available.' },
+          { status: 403 },
+        );
       }
+      validatedToken = requestedToken;
     }
 
     const targetUrl = validatedToken

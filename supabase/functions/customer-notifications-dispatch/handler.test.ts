@@ -130,6 +130,16 @@ describe('customer email lifecycle dispatcher', () => {
     }));
   });
 
+  it('uses the partner-specific subject selected by the registration email template', () => {
+    const rendered = renderCustomerEmail(makeRow({
+      event_type: 'registration_completed',
+      subject: 'Generic account registration',
+      payload: { partner_signup: true },
+    }), 'https://hamlet.rest');
+
+    expect(rendered.subject).toBe('Welcome to HAMLET — List, Share and Earn!');
+  });
+
   it('escapes untrusted user content in HTML email templates', () => {
     const html = renderCustomerEmail(makeRow({
       recipient_name: '<img src=x onerror=alert(1)>',
