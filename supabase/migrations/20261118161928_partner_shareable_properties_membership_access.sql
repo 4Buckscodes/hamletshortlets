@@ -118,6 +118,7 @@ begin
         'trust_label', pr.trust_label,
         'verification', pr.verification,
         'allow_partner_sharing', coalesce(pr.allow_partner_sharing, true),
+        'nightly_rate', pr.nightly_rate,
         'guest_nightly_ngn', pr.nightly_rate + public.multiply_ngn_bps(pr.nightly_rate, 2000),
         'can_manage', public.can_manage_property(pr.id),
         'is_assigned', exists (
