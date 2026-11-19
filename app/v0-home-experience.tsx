@@ -5,6 +5,7 @@ import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, ShieldCheck, Sparkles } fr
 import type { PublicStayRecord } from '@/lib/next-supabase';
 import { StayListingCard } from '@/components/site/SiteShell';
 import { LAGOS_AREAS } from '@/lib/areas';
+import { DateInput } from '@/components/ui/DateInput';
 
 const destinations = [
   { name: 'Island energy', area: 'Lekki · Ikoyi · Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?area=Lekki', number: '01' },
@@ -37,9 +38,9 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
         <div className="home-shell">
           <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
           <form action="/stays" method="get" className="home-search-form" role="search" aria-label="Search Lagos shortlets">
-            <label className="home-search-field home-destination"><span><MapPin size={17} /> THE DESTINATION</span><input name="area" type="text" list="hamlet-destinations" placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" /><datalist id="hamlet-destinations">{LAGOS_AREAS.map(area => <option key={area} value={area} />)}</datalist></label>
-            <label className="home-search-field"><span>CHECK IN</span><input name="checkIn" type="date" aria-label="Check-in date" /></label>
-            <label className="home-search-field"><span>CHECK OUT</span><input name="checkOut" type="date" aria-label="Check-out date" /></label>
+            <label className="home-search-field home-destination"><span><MapPin size={14} /> DESTINATION</span><input name="area" type="text" list="hamlet-destinations" placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" /><datalist id="hamlet-destinations">{LAGOS_AREAS.map(area => <option key={area} value={area} />)}</datalist></label>
+            <label className="home-search-field"><span>CHECK IN</span><DateInput name="checkIn" aria-label="Check-in date" /></label>
+            <label className="home-search-field"><span>CHECK OUT</span><DateInput name="checkOut" aria-label="Check-out date" /></label>
             <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" defaultValue="2" aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10,12,15,20].map(count => <option key={count} value={count}>{count} {count===1?'guest':'guests'}</option>)}</select></label>
             <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
           </form>

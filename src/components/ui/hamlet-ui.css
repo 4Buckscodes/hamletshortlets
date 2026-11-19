@@ -871,7 +871,7 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { backgr
 .hm-strip-search .hm-search-field:nth-child(4) select { appearance: auto; }
 .hm-strip-search .hm-btn { border-radius: 0; }
 /* Empty date fields read "Add date" like the design instead of the browser's mm/dd/yyyy. */
-.hm-strip-search .hm-search-field > .hm-date-wrap { position: relative; display: block; color: var(--hm-text); font-size: 15px; font-weight: 650; letter-spacing: normal; text-transform: none; }
+.hm-strip-search .hm-search-field > .hm-date-wrap, .home-page .home-search-field > .hm-date-wrap { position: relative; display: block !important; color: var(--hm-text) !important; font-size: 15px !important; font-weight: 650; letter-spacing: normal !important; text-transform: none !important; }
 .hm-date-wrap input { width: 100%; }
 .hm-date-wrap[data-empty="true"] input:not(:focus) { color: transparent; }
 .hm-date-wrap[data-empty="true"] input:not(:focus)::-webkit-datetime-edit { color: transparent; }
@@ -897,3 +897,26 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-stays-strip .hm-chip[aria-pressed
 
 /* Homepage "Pick your pace": the band colour runs edge to edge instead of a boxed panel. */
 .home-page .home-neighbourhoods { background: var(--hm-surface); box-shadow: 0 0 0 100vmax var(--hm-surface); clip-path: inset(0 -100vmax); }
+
+/* Homepage "Where to?": the kit search card from the design system, in a compact section. */
+.home-page .home-search { padding: 48px 0 40px !important; }
+.home-page .home-search-heading { align-items: end !important; margin-bottom: 20px !important; }
+.home-page .home-search-heading h2 { font-size: clamp(30px, 3.6vw, 46px) !important; line-height: 1 !important; }
+.home-page .home-search-form { grid-template-columns: 1.5fr 1fr 1fr 1fr auto !important; overflow: hidden; border: 1px solid var(--hm-field-line) !important; border-radius: 16px !important; background: var(--hm-surface) !important; box-shadow: none !important; }
+.home-page .home-search-field { gap: 7px !important; padding: 14px 18px !important; border-right: 1px solid var(--hm-line-soft, var(--hm-line)) !important; }
+.home-page .home-search-field > span:not(.hm-date-wrap) { color: var(--hm-muted) !important; font-size: 11px !important; letter-spacing: 0.13em !important; }
+.home-page .home-search-field input, .home-page .home-search-field select { color: var(--hm-text) !important; font-size: 15px !important; font-weight: 650 !important; }
+.home-page .home-search-button { min-width: 0 !important; min-height: 72px; gap: 10px !important; padding: 0 28px !important; border-radius: 0 !important; font-size: 15px !important; }
+.home-page .home-area-quick { margin-top: 16px !important; }
+@media (max-width: 1023px) {
+  .home-page .home-search-form { grid-template-columns: 1fr 1fr !important; }
+  .home-page .home-search-field:first-child { grid-column: 1 / -1; border-right: 0 !important; border-bottom: 1px solid var(--hm-line-soft, var(--hm-line)) !important; }
+  .home-page .home-search-field:nth-child(3) { border-right: 0 !important; }
+  .home-page .home-search-field:nth-child(4) { border-top: 1px solid var(--hm-line-soft, var(--hm-line)) !important; }
+  .home-page .home-search-button { min-height: 56px; border-top: 1px solid var(--hm-line-soft, var(--hm-line)) !important; }
+}
+@media (max-width: 760px) {
+  .home-page .home-search { padding: 32px 0 28px !important; }
+  .home-page .home-search-heading { margin-bottom: 14px !important; }
+  .home-page .home-search-field input, .home-page .home-search-field select { font-size: 16px !important; }
+}

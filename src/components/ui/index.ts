@@ -23,3 +23,4 @@ export { useCountUp } from './useCountUp';
 export * from './theme';
 export { cx } from './cx';
 export { useActiveTabInView } from './useActiveTabInView';
+export { DateInput } from './DateInput';
