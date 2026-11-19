@@ -12,7 +12,7 @@ import {
 } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteShell';
-import { AreaTicker, Button, PageBand } from '@/components/ui';
+import { AreaTicker, PageBand } from '@/components/ui';
 import { StaysExplorer } from './stays-explorer';
 
 export const dynamic = 'force-dynamic';
@@ -100,11 +100,6 @@ export default async function StaysCataloguePage({
           title="Find a stay"
           accent="that feels like yours."
           intro="Every listing is reviewed before it goes live. The price you see already includes HAMLET’s service fee."
-          actions={
-            <Button href="/lagos" variant="ghost" size="sm">
-              Lagos guide
-            </Button>
-          }
           scrollCue={{
             href: '#places-worth-staying-in',
             label: liveCount > 0 ? `Scroll to see ${liveCount} ${liveCount === 1 ? 'stay' : 'stays'}` : 'Scroll to explore',

@@ -310,11 +310,17 @@ export function DiscoveryMarketplace({
             </label>
             <label className="hm-search-field">
               <span>Check in</span>
-              <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} aria-label="Check-in date" />
+              <span className="hm-date-wrap" data-empty={filters.checkIn ? 'false' : 'true'}>
+                <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} aria-label="Check-in date" />
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
+              </span>
             </label>
             <label className="hm-search-field">
               <span>Check out</span>
-              <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} aria-label="Check-out date" />
+              <span className="hm-date-wrap" data-empty={filters.checkOut ? 'false' : 'true'}>
+                <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} aria-label="Check-out date" />
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
+              </span>
             </label>
             <label className="hm-search-field">
               <span>Guests</span>
