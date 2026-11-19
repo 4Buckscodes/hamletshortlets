@@ -170,6 +170,21 @@ begin
     execute updated;
   end if;
 
+  -- The Share & Studio card and WhatsApp copy require the owner base rate
+  -- as well as the guest-facing rate. Keep the RPC response aligned to its UI type.
+  fn := pg_get_functiondef('public.list_partner_shareable_properties()'::regprocedure);
+  updated := replace(
+    fn,
+    '''allow_partner_sharing'', coalesce(pr.allow_partner_sharing, true),',
+    '''allow_partner_sharing'', coalesce(pr.allow_partner_sharing, true),
+        ''nightly_rate'', pr.nightly_rate,'
+  );
+  if updated = fn and position('''nightly_rate''' in fn) = 0 then
+    raise exception 'Could not add owner nightly rate to list_partner_shareable_properties.';
+  elsif updated <> fn then
+    execute updated;
+  end if;
+
   -- Marketing analytics must use the same active-membership entitlement as the UI.
   fn := pg_get_functiondef('public.get_my_marketing_performance(integer)'::regprocedure);
   updated := replace(
