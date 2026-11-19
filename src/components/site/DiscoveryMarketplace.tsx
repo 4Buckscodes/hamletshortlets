@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
+  ArrowRight,
   ChevronLeft,
   ChevronRight,
   Loader2,
   RotateCcw,
+  Search,
   SlidersHorizontal,
   X,
 } from 'lucide-react';
@@ -73,6 +75,8 @@ export function DiscoveryMarketplace({
     ...initialFilters,
   }));
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
 
   const initialPairKey =
     initialFilters?.checkIn && initialFilters?.checkOut
@@ -283,6 +287,127 @@ export function DiscoveryMarketplace({
 
   return (
     <div className="hm-discovery" style={{ display: 'grid', gap: 48 }}>
+      {/* Search strip: dates, guests and quick filters, directly under the band (design: Stays). */}
+      {mode !== 'homepage' && (
+        <section className="hm-stays-strip" aria-label="Search and filter stays" data-open={searchOpen ? 'true' : undefined}>
+          <button type="button" className="hm-strip-summary" aria-expanded={searchOpen} onClick={() => setSearchOpen(true)}>
+            <span className="hm-strip-summary-text">
+              <b>{filters.area || 'Anywhere in Lagos'}</b>
+              <span>
+                {filters.checkIn && filters.checkOut ? `${filters.checkIn} → ${filters.checkOut}` : 'Add dates'} · {filters.guests || 1} {(filters.guests || 1) === 1 ? 'guest' : 'guests'}
+              </span>
+            </span>
+            <span className="hm-strip-summary-icon" aria-hidden="true">
+              <Search size={18} />
+            </span>
+          </button>
+          <div className="hm-search hm-strip-search">
+            <label className="hm-search-field">
+              <span>Destination</span>
+              <select value={filters.area} onChange={e => updateFilters({ area: e.target.value, side: 'all' })} aria-label="Destination">
+                <AreaOptions />
+              </select>
+            </label>
+            <label className="hm-search-field">
+              <span>Check in</span>
+              <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} aria-label="Check-in date" />
+            </label>
+            <label className="hm-search-field">
+              <span>Check out</span>
+              <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} aria-label="Check-out date" />
+            </label>
+            <label className="hm-search-field">
+              <span>Guests</span>
+              <select value={String(filters.guests || 1)} onChange={e => updateFilters({ guests: Number(e.target.value) || 1 })} aria-label="Guests">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(count => (
+                  <option key={count} value={count}>
+                    {count} {count === 1 ? 'guest' : 'guests'}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <a
+              href="#places-worth-staying-in"
+              className="hm-btn hm-btn-primary"
+              onClick={() => setSearchOpen(false)}
+            >
+              Update
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="hm-filter-toolbar hm-strip-filters">
+            <ChipRow label="Lagos corridor" className="hm-chip-row-scroll">
+              {(
+                [
+                  { id: 'all', label: 'All Lagos' },
+                  { id: 'island', label: 'Island & Lekki' },
+                  { id: 'mainland', label: 'Mainland' },
+                ] as const
+              ).map(tab => (
+                <Chip key={tab.id} pressed={filters.side === tab.id && !filters.area} onClick={() => updateFilters({ side: tab.id, area: '' })}>
+                  {tab.label}
+                </Chip>
+              ))}
+              <label className="hm-chip hm-chip-select hm-only-wide">
+                <span className="hm-sr-only">Property type</span>
+                <select value={filters.type} onChange={e => updateFilters({ type: e.target.value })}>
+                  {ACCOMMODATION_TYPE_OPTIONS.map(opt => (
+                    <option key={opt.value || 'any'} value={opt.value}>
+                      {opt.value ? opt.label : 'Property type'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="hm-chip hm-chip-select hm-only-wide">
+                <span className="hm-sr-only">Bedrooms</span>
+                <select value={filters.minBedrooms} onChange={e => updateFilters({ minBedrooms: Number(e.target.value) || 0 })}>
+                  {BEDROOM_FILTER_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.value ? opt.label : 'Bedrooms'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span className="hm-price-pop hm-only-wide">
+                <Chip pressed={priceOpen || Boolean(filters.minPriceInput || filters.maxPriceInput)} onClick={() => setPriceOpen(open => !open)} aria-expanded={priceOpen}>
+                  Price range
+                </Chip>
+                {priceOpen && (
+                  <span className="hm-price-panel">
+                    <label className="hm-field">
+                      <span className="hm-field-label">Min ₦ / night</span>
+                      <input type="text" inputMode="numeric" value={filters.minPriceInput} onChange={e => updateFilters({ minPriceInput: sanitisePrice(e.target.value) })} placeholder="No min" className="hm-input" aria-invalid={!priceValidation.valid || undefined} />
+                    </label>
+                    <label className="hm-field">
+                      <span className="hm-field-label">Max ₦ / night</span>
+                      <input type="text" inputMode="numeric" value={filters.maxPriceInput} onChange={e => updateFilters({ maxPriceInput: sanitisePrice(e.target.value) })} placeholder="No max" className="hm-input" aria-invalid={!priceValidation.valid || undefined} />
+                    </label>
+                  </span>
+                )}
+              </span>
+            </ChipRow>
+
+            <div className="hm-filter-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Chip className="hm-only-compact" onClick={() => setDrawerOpen(true)}>
+                <SlidersHorizontal size={14} aria-hidden="true" />
+                Filters{activeBadges.length > 0 ? ` (${activeBadges.length})` : ''}
+              </Chip>
+              <label className="hm-sort">
+                Sort
+                <select aria-label="Sort properties" value={filters.sort} onChange={e => updateFilters({ sort: e.target.value as DiscoverySortKey })} className="hm-input">
+                  {DISCOVERY_SORT_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Neighbourhood rail: image toggles that filter the results below. */}
       <section className="hm-discovery-rail" aria-labelledby="neighbourhood-rail-heading" style={{ display: 'grid', gap: 18 }}>
         <SectionHeader
@@ -343,9 +468,9 @@ export function DiscoveryMarketplace({
       <section className="hm-discovery-results" id="places-worth-staying-in" aria-labelledby="discovery-results-heading" style={{ display: 'grid', gap: 22, scrollMarginTop: 96 }}>
         <SectionHeader
           id="discovery-results-heading"
-          label={mode === 'homepage' ? 'Verified Lagos shortlets' : '02 / Real places, live listings'}
-          title="Places worth"
-          accent="staying in."
+          label={mode === 'homepage' ? 'Verified Lagos shortlets' : `${filteredApproved.length} verified ${filteredApproved.length === 1 ? 'stay' : 'stays'}${filters.area ? ` · ${filters.area}` : ' · Lagos'}`}
+          title="Real places,"
+          accent="live listings."
           aside={
             mode === 'homepage' ? (
               <Button href={fullCatalogueHref} variant="ghost" size="sm" arrow>
@@ -355,92 +480,7 @@ export function DiscoveryMarketplace({
           }
         />
 
-        <Card style={{ display: 'grid', gap: 16 }}>
-          <div className="hm-filter-toolbar">
-            <ChipRow label="Lagos corridor" className="hm-chip-row-scroll">
-              {(
-                [
-                  { id: 'all', label: 'All Lagos' },
-                  { id: 'mainland', label: 'Lagos Mainland' },
-                  { id: 'island', label: 'Lagos Island' },
-                ] as const
-              ).map(tab => (
-                <Chip key={tab.id} pressed={filters.side === tab.id && !filters.area} onClick={() => updateFilters({ side: tab.id, area: '' })}>
-                  {tab.label}
-                </Chip>
-              ))}
-            </ChipRow>
-
-            <div className="hm-filter-actions" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-              <Chip className="hm-only-compact" onClick={() => setDrawerOpen(true)}>
-                <SlidersHorizontal size={14} aria-hidden="true" />
-                Filters{activeBadges.length > 0 ? ` (${activeBadges.length})` : ''}
-              </Chip>
-              <label className="hm-sort">
-                Sort
-                <select
-                  aria-label="Sort properties"
-                  value={filters.sort}
-                  onChange={e => updateFilters({ sort: e.target.value as DiscoverySortKey })}
-                  className="hm-input"
-                >
-                  {DISCOVERY_SORT_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-
-          <div className="hm-filter-grid">
-            <label className="hm-field">
-              <span className="hm-field-label">Neighbourhood</span>
-              <select value={filters.area} onChange={e => updateFilters({ area: e.target.value, side: 'all' })} className="hm-input">
-                <AreaOptions />
-              </select>
-            </label>
-            <label className="hm-field">
-              <span className="hm-field-label">Type</span>
-              <select value={filters.type} onChange={e => updateFilters({ type: e.target.value })} className="hm-input">
-                {ACCOMMODATION_TYPE_OPTIONS.map(opt => (
-                  <option key={opt.value || 'any'} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="hm-field">
-              <span className="hm-field-label">Bedrooms</span>
-              <select value={filters.minBedrooms} onChange={e => updateFilters({ minBedrooms: Number(e.target.value) || 0 })} className="hm-input">
-                {BEDROOM_FILTER_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="hm-field">
-              <span className="hm-field-label">Min ₦ / night</span>
-              <input type="text" inputMode="numeric" value={filters.minPriceInput} onChange={e => updateFilters({ minPriceInput: sanitisePrice(e.target.value) })} placeholder="No min" className="hm-input" aria-invalid={!priceValidation.valid || undefined} />
-            </label>
-            <label className="hm-field">
-              <span className="hm-field-label">Max ₦ / night</span>
-              <input type="text" inputMode="numeric" value={filters.maxPriceInput} onChange={e => updateFilters({ maxPriceInput: sanitisePrice(e.target.value) })} placeholder="No max" className="hm-input" aria-invalid={!priceValidation.valid || undefined} />
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, minWidth: 0 }}>
-              <label className="hm-field">
-                <span className="hm-field-label">Check-in</span>
-                <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} className="hm-input" style={{ paddingInline: 8 }} />
-              </label>
-              <label className="hm-field">
-                <span className="hm-field-label">Check-out</span>
-                <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} className="hm-input" style={{ paddingInline: 8 }} />
-              </label>
-            </div>
-          </div>
-
+        <div className="hm-results-notes" style={{ display: 'grid', gap: 12 }}>
           {!priceValidation.valid && priceValidation.error && (
             <p role="alert" className="hm-notice hm-notice-bad" style={{ margin: 0 }}>
               <AlertCircle size={16} aria-hidden="true" />
@@ -463,7 +503,6 @@ export function DiscoveryMarketplace({
 
           {activeBadges.length > 0 && (
             <>
-              <hr className="hm-rule" />
               <div className="hm-chip-row">
                 <span className="hm-field-label">Active filters</span>
                 {activeBadges.map(badge => (
@@ -479,10 +518,10 @@ export function DiscoveryMarketplace({
               </div>
             </>
           )}
-        </Card>
+        </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <p aria-live="polite" className="hm-label" style={{ fontSize: 12 }}>
+          <p aria-live="polite" className="hm-sr-only">
             {queryError
               ? 'Marketplace temporarily unavailable'
               : approvedStays.length === 0

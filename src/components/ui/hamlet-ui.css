@@ -848,3 +848,42 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { backgr
   /* iOS zooms into any field under 16px on focus; keep every form control at 16px on phones. */
   input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
 }
+
+/* ---------- Stays search strip (design: Stays / StaysDark) ---------- */
+.hm-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.hm-only-wide { display: inline-flex; }
+@media (max-width: 1023px) { .hm-only-wide { display: none !important; } }
+.hm-discovery-results { order: 1; }
+.hm-discovery-rail { order: 2; }
+.hm-stays-strip { position: relative; z-index: 2; display: grid; gap: 18px; margin-top: -48px; padding-block: 28px; background: var(--hm-band-raised); color: var(--hm-on-band); }
+.hm-stays-strip::before { content: ""; position: absolute; inset: 0 -100vmax; z-index: -1; border-bottom: 1px solid var(--hm-band-line); background: var(--hm-band-raised); }
+.hm-main:has(.hm-stays-strip) { overflow-x: clip; }
+.hm-strip-search { border-color: var(--hm-band-line); background: transparent; color-scheme: dark; }
+.hm-strip-search .hm-search-field { border-color: var(--hm-band-line); }
+.hm-strip-search .hm-search-field > span { color: rgba(246, 241, 231, 0.72); }
+.hm-strip-search .hm-search-field input, .hm-strip-search .hm-search-field select { color: var(--hm-on-band); }
+.hm-strip-search .hm-search-field option { color: #172119; }
+.hm-strip-search .hm-btn { min-height: 72px; border-radius: 0 15px 15px 0; }
+.hm-stays-strip .hm-chip { border-color: rgba(246, 241, 231, 0.3); background: transparent; color: var(--hm-on-band); }
+.hm-stays-strip .hm-chip[aria-pressed="true"] { border-color: #D9F24B; background: #D9F24B; color: #172119; }
+.hm-stays-strip .hm-chip:hover { border-color: rgba(246, 241, 231, 0.6); }
+.hm-chip-select { position: relative; padding: 0 !important; }
+.hm-chip-select select { appearance: none; min-height: 40px; border: 0; padding: 0 16px; background: transparent; color: inherit; font: inherit; font-weight: 650; cursor: pointer; }
+.hm-chip-select option { color: #172119; }
+.hm-stays-strip .hm-sort { color: var(--hm-on-band); }
+.hm-stays-strip .hm-sort .hm-input { border-color: rgba(246, 241, 231, 0.3); background: transparent; color: var(--hm-on-band); color-scheme: dark; }
+.hm-stays-strip .hm-sort option { color: #172119; }
+.hm-price-pop { position: relative; }
+.hm-price-panel { position: absolute; top: calc(100% + 8px); left: 0; z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 320px; padding: 14px; border: 1px solid var(--hm-line); border-radius: 16px; background: var(--hm-surface); color: var(--hm-text); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25); }
+.hm-strip-summary { display: none; }
+@media (max-width: 760px) {
+  .hm-stays-strip { margin-top: -32px; padding-block: 18px 20px; gap: 14px; }
+  .hm-stays-strip:not([data-open="true"]) .hm-strip-search { display: none; }
+  .hm-stays-strip:not([data-open="true"]) .hm-strip-summary { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 6px 6px 6px 18px; border: 1px solid var(--hm-band-line); border-radius: 999px; background: transparent; color: var(--hm-on-band); text-align: left; font: inherit; cursor: pointer; }
+  .hm-strip-summary-text { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
+  .hm-strip-summary-text b, .hm-strip-summary-text span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hm-strip-summary-text b { font-size: 15px; }
+  .hm-strip-summary-text span { color: rgba(246, 241, 231, 0.72); font-size: 13px; }
+  .hm-strip-summary-icon { display: grid; width: 48px; height: 48px; flex: none; place-items: center; border-radius: 50%; background: var(--hm-blue); color: #fff; }
+  .hm-strip-search .hm-btn { border-radius: 0; }
+}
