@@ -196,6 +196,24 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     const shareToken = String(share.share_token);
     expect(shareToken).toMatch(/^hsl_[a-z0-9]{16,64}$/);
 
+    const tokenIsValid = await asAnon(db, async tx => {
+      const { rows } = await tx.query<{ valid: boolean }>(
+        `select public.validate_partner_share_token($1, $2) as valid`,
+        [shareToken, approvedPropertyId],
+      );
+      return rows[0].valid;
+    });
+    expect(tokenIsValid).toBe(true);
+
+    const visitsBefore = await db.query<{ count: number }>(
+      `select count(*)::int as count
+       from public.property_share_events e
+       join public.partner_share_links l on l.id = e.share_link_id
+       where l.share_token = $1 and e.event_type = 'link_visited'`,
+      [shareToken],
+    );
+    expect(visitsBefore.rows[0].count).toBe(0);
+
     const sessionKey = 'vsess_member_journey_visitor_0001';
     const visit = await asAnon(db, async tx => {
       const { rows } = await tx.query<{ res: { valid: boolean; property_id: string } }>(
