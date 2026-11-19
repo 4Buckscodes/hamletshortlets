@@ -176,12 +176,15 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     });
 
     const catalogue = await asUser(db, guestAId, async tx => {
-      const { rows } = await tx.query<{ stays: Array<{ id: string }> }>(
+      const { rows } = await tx.query<{ stays: Array<{ id: string; nightly_rate: number; guest_nightly_ngn: number }> }>(
         `select public.list_partner_shareable_properties() as stays`,
       );
       return rows[0].stays;
     });
-    expect(catalogue.map(stay => stay.id)).toContain(approvedPropertyId);
+    const shareableStay = catalogue.find(stay => stay.id === approvedPropertyId);
+    expect(shareableStay).toBeDefined();
+    expect(shareableStay!.nightly_rate).toBe(150_000);
+    expect(shareableStay!.guest_nightly_ngn).toBe(180_000);
 
     const share = await asUser(db, guestAId, async tx => {
       const { rows } = await tx.query<{ payload: Record<string, unknown> }>(
