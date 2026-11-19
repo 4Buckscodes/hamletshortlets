@@ -188,6 +188,36 @@ begin
   end if;
   execute updated;
 
+  -- Google OAuth and email signup referral capture must recognise active
+  -- network members who intentionally retain profiles.role = 'guest'.
+  fn := pg_get_functiondef('public.create_profile_for_new_user()'::regprocedure);
+  updated := replace(
+    fn,
+    'and p.role in (''partner'', ''admin'')',
+    'and (
+          p.role in (''partner'', ''admin'')
+          or exists (
+            select 1 from public.partner_network_memberships m
+            where m.user_id = p.id and m.status = ''active''
+          )
+        )'
+  );
+  if updated <> fn then execute updated; end if;
+
+  fn := pg_get_functiondef('public.claim_oauth_signup_referral(text)'::regprocedure);
+  updated := replace(
+    fn,
+    'and p.role in (''partner'', ''admin'')',
+    'and (
+          p.role in (''partner'', ''admin'')
+          or exists (
+            select 1 from public.partner_network_memberships m
+            where m.user_id = p.id and m.status = ''active''
+          )
+        )'
+  );
+  if updated <> fn then execute updated; end if;
+
   -- Legacy partner applications and resubmissions must accept referral codes
   -- issued to active network members as well as elevated partner/admin profiles.
   fn := pg_get_functiondef('public.validate_partner_application_referral()'::regprocedure);
@@ -279,6 +309,41 @@ begin
       'from public.profiles where id = referral_row.referrer_partner_id and role in (''partner'', ''admin'')',
       'from public.profiles p
     where p.id = referral_row.referrer_partner_id
+      and (
+        p.role in (''partner'', ''admin'')
+        or exists (
+          select 1 from public.partner_network_memberships m
+          where m.user_id = p.id and m.status = ''active''
+        )
+      )'
+    );
+    -- Later lifecycle hardening wraps these role checks in NOT EXISTS blocks.
+    updated := replace(
+      updated,
+      'select 1 from public.profiles
+    where id = generator_id
+      and role in (''partner'', ''admin'')
+      and account_status = ''active''',
+      'select 1 from public.profiles p
+    where p.id = generator_id
+      and p.account_status = ''active''
+      and (
+        p.role in (''partner'', ''admin'')
+        or exists (
+          select 1 from public.partner_network_memberships m
+          where m.user_id = p.id and m.status = ''active''
+        )
+      )'
+    );
+    updated := replace(
+      updated,
+      'select 1 from public.profiles
+    where id = referral_row.referrer_partner_id
+      and role in (''partner'', ''admin'')
+      and account_status = ''active''',
+      'select 1 from public.profiles p
+    where p.id = referral_row.referrer_partner_id
+      and p.account_status = ''active''
       and (
         p.role in (''partner'', ''admin'')
         or exists (
