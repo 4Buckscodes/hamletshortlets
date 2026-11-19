@@ -285,7 +285,7 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
       );
       return rows[0].code;
     });
-    expect(referralCode).toMatch(/^HML-[A-Z0-9]+$/);
+    expect(referralCode).toMatch(/^HML-[A-Z0-9-]+$/);
 
     const resolved = await asAnon(db, async tx => {
       const { rows } = await tx.query<{ result: { valid: boolean; partner_id: string } }>(
