@@ -140,36 +140,187 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     );
   });
 
-  it('immediate partner membership: a guest-profile member can see approved stays and create a tracked share link', async () => {
-    const result = await asUser(db, guestAId, async tx => {
+  it('immediate partner membership: completes share -> booking attribution -> analytics -> booking management without profile-role elevation', async () => {
+    await asUser(db, guestAId, async tx => {
       await tx.query(
         `select public.join_partner_network($1, $2, $3, $4)`,
         ['closing_agent', 'Ngozi Guest', '+2348012345678', ''],
       );
+    });
 
-      const profile = await tx.query<{ role: string }>(
-        `select role from public.profiles where id = $1::uuid`,
+    const memberProfile = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ role: string; membership_status: string }>(
+        `select p.role, m.status as membership_status
+         from public.profiles p
+         join public.partner_network_memberships m on m.user_id = p.id
+         where p.id = $1::uuid`,
         [guestAId],
       );
-      const catalogue = await tx.query<{ stays: Array<{ id: string; share_token: string | null }> }>(
+      return rows[0];
+    });
+    expect(memberProfile.role).toBe('guest');
+    expect(memberProfile.membership_status).toBe('active');
+
+    // The owner/admin can assign an approved property to the new member.
+    await asUser(db, adminId, async tx => {
+      await tx.query(
+        `select public.grant_property_assignment($1, $2::uuid, $3, $4::numeric, $5)`,
+        [
+          approvedPropertyId,
+          guestAId,
+          'Authorised manager for partner journey test',
+          0.10,
+          'Test partner commission agreement',
+        ],
+      );
+    });
+
+    const catalogue = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ stays: Array<{ id: string }> }>(
         `select public.list_partner_shareable_properties() as stays`,
       );
-      const share = await tx.query<{ payload: { share_token: string } }>(
+      return rows[0].stays;
+    });
+    expect(catalogue.map(stay => stay.id)).toContain(approvedPropertyId);
+
+    const share = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ payload: Record<string, unknown> }>(
         `select public.record_partner_share_action($1, 'whatsapp_handoff', '{}'::jsonb, null) as payload`,
         [approvedPropertyId],
       );
+      return rows[0].payload;
+    });
+    const shareToken = String(share.share_token);
+    expect(shareToken).toMatch(/^hsl_[a-z0-9]{16,64}$/);
 
-      return {
-        profileRole: profile.rows[0].role,
-        stays: catalogue.rows[0].stays,
-        shareToken: share.rows[0].payload.share_token,
-      };
+    const sessionKey = 'vsess_member_journey_visitor_0001';
+    const visit = await asAnon(db, async tx => {
+      const { rows } = await tx.query<{ res: { valid: boolean; property_id: string } }>(
+        `select public.record_share_link_visit($1, $2, 'member_visit_idem_1') as res`,
+        [shareToken, sessionKey],
+      );
+      return rows[0].res;
+    });
+    expect(visit.valid).toBe(true);
+    expect(visit.property_id).toBe(approvedPropertyId);
+
+    const visitorId = await createTestUser(db, {
+      email: 'member-journey-visitor@hamlet.test',
+      fullName: 'Partner Journey Guest',
+      role: 'guest',
+    });
+    await asUser(db, visitorId, async tx => {
+      const { rows } = await tx.query<{ count: number }>(
+        `select public.bind_share_attribution_to_guest($1) as count`,
+        [sessionKey],
+      );
+      expect(rows[0].count).toBe(1);
     });
 
-    expect(result.profileRole).toBe('guest');
-    expect(result.stays.map(stay => stay.id)).toContain(approvedPropertyId);
-    expect(result.shareToken).toMatch(/^hsl_[a-z0-9]{16,64}$/);
+    const checkIn = addDays(baseDateIso, 14);
+    const checkOut = addDays(baseDateIso, 17);
+    const booking = await asUser(db, visitorId, async tx => {
+      const { rows } = await tx.query<{
+        id: string;
+        closing_agent_id: string;
+        share_partner_id: string;
+        closing_agent_commission_ngn: number;
+      }>(
+        `insert into public.bookings (
+           reference, property_id, guest_id, check_in, check_out, guest_count, status
+         )
+         values ('HML-MEMBER-JOURNEY-001', $1, $2::uuid, $3::date, $4::date, 2, 'requested')
+         returning id, closing_agent_id::text, share_partner_id::text, closing_agent_commission_ngn`,
+        [approvedPropertyId, visitorId, checkIn, checkOut],
+      );
+      return rows[0];
+    });
+
+    expect(booking.closing_agent_id).toBe(guestAId);
+    expect(booking.share_partner_id).toBe(guestAId);
+    expect(booking.closing_agent_commission_ngn).toBe(45_000);
+
+    const performance = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ p: PartnerMarketingPerformance }>(
+        `select public.get_my_marketing_performance(30) as p`,
+      );
+      return rows[0].p;
+    });
+    expect(performance.events.whatsapp_handoff).toBe(1);
+    expect(performance.events.link_visited).toBe(1);
+    expect(performance.financials.booking_requests).toBe(1);
+    expect(performance.financials.potential_opportunity_ngn).toBe(45_000);
+
+    // Active membership + property assignment must permit the member to handle
+    // the booking even though profiles.role intentionally remains guest.
+    await asUser(db, guestAId, async tx => {
+      await tx.query(
+        `select public.transition_booking($1, 'checking', 'Checking availability.')`,
+        [booking.id],
+      );
+      await tx.query(
+        `select public.transition_booking($1, 'awaiting_payment', 'Availability confirmed.')`,
+        [booking.id],
+      );
+    });
+
+    const status = await db.query<{ status: string }>(
+      `select status from public.bookings where id = $1`,
+      [booking.id],
+    );
+    expect(status.rows[0].status).toBe('awaiting_payment');
   });
+
+  it('active network members can issue referral codes and recruit another member', async () => {
+    await asUser(db, guestAId, async tx => {
+      await tx.query(
+        `select public.join_partner_network($1, $2, $3, $4)`,
+        ['closing_agent', 'Ngozi Guest', '+2348012345678', ''],
+      );
+    });
+
+    const referralCode = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ code: string }>(
+        `select public.ensure_my_referral_code() as code`,
+      );
+      return rows[0].code;
+    });
+    expect(referralCode).toMatch(/^HML-[A-Z0-9]+$/);
+
+    const resolved = await asAnon(db, async tx => {
+      const { rows } = await tx.query<{ result: { valid: boolean; partner_id: string } }>(
+        `select public.resolve_referral_code($1) as result`,
+        [referralCode],
+      );
+      return rows[0].result;
+    });
+    expect(resolved.valid).toBe(true);
+    expect(resolved.partner_id).toBe(guestAId);
+
+    const referredId = await createTestUser(db, {
+      email: 'referred-member@hamlet.test',
+      fullName: 'Referred Network Member',
+      role: 'guest',
+    });
+    await asUser(db, referredId, async tx => {
+      await tx.query(
+        `select public.join_partner_network($1, $2, $3, $4)`,
+        ['property_owner', 'Referred Member Homes', '+2348012345679', referralCode],
+      );
+    });
+
+    const attribution = await asUser(db, guestAId, async tx => {
+      const { rows } = await tx.query<{ referrer_partner_id: string; referred_partner_id: string }>(
+        `select referrer_partner_id::text, referred_partner_id::text
+         from public.partner_referrals where referred_partner_id = $1::uuid`,
+        [referredId],
+      );
+      return rows[0];
+    });
+    expect(attribution.referrer_partner_id).toBe(guestAId);
+    expect(attribution.referred_partner_id).toBe(referredId);
+  });
+
 
   it('Scenario A + Ledger Reconciliation: tracks share -> visit -> auth bind -> enquiry -> booking -> confirmation -> completion -> reversal accurately', async () => {
     // 1. Closing agent initiates WhatsApp share & copies link
