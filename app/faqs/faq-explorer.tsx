@@ -107,7 +107,7 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
           >
             <Sparkles className="h-4 w-4 shrink-0 text-brass-600" /> Ask Horatio
           </button>
-          <Link href="/stays" className="btn-jade min-h-11 !rounded-full">
+          <Link href="/stays" className="hm-btn hm-btn-primary">
             Explore stays <ArrowRight className="h-4 w-4 shrink-0" />
           </Link>
         </div>

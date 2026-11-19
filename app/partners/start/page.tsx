@@ -37,6 +37,7 @@ export default function PartnerStartDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [signUpHref, setSignUpHref] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -75,7 +76,11 @@ export default function PartnerStartDashboard() {
         if (refCode) {
           signInParams.set('ref', refCode.toUpperCase());
         }
-        window.location.assign(`/signin?${signInParams.toString()}`);
+        // Signed out: show what partnering involves first, then one action to create the account.
+        if (live) {
+          setSignUpHref(`/signin?${signInParams.toString()}`);
+          setLoading(false);
+        }
         return;
       }
 
@@ -145,7 +150,7 @@ export default function PartnerStartDashboard() {
           'Partner registration is temporarily unavailable. Please refresh and try again; your workspace will open as soon as registration completes.',
         );
       } else {
-        setError(e2.message);
+        setError('We couldn’t create your partner profile just now. Please try again; if it keeps happening, contact hello@hamlet.rest.');
       }
     } else {
       setMembership(data as Membership);
@@ -154,6 +159,66 @@ export default function PartnerStartDashboard() {
       return;
     }
     setSaving(false);
+  }
+
+  if (signUpHref) {
+    return (
+      <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
+        <SiteHeader />
+        <main className="hm-main hm-content" style={{ flex: 1 }}>
+          <section className="hm-band hm-band-arrive hm-content-hero">
+            <div className="hm-shell hm-band-inner">
+              <p className="hm-label">Partner with HAMLET · Lagos</p>
+              <h1 className="hm-display hm-content-title">
+                List your Lagos stay. <em>Verified, then booked.</em>
+              </h1>
+              <p className="hm-body" style={{ maxWidth: 560 }}>
+                For property owners, authorised managers, multi-property operators and closing agents. Your workspace opens as soon as you create your partner account.
+              </p>
+            </div>
+          </section>
+          <div className="hm-shell hm-section-tight space-y-10">
+            <section>
+              <p className="hm-label">01 / How it works</p>
+              <ol className="hm-steps">
+                {[
+                  ['Create your partner account', 'Choose your role and open your workspace straight away.'],
+                  ['Add your listing', 'Photos, rate, rules and availability, from your phone if you like.'],
+                  ['HAMLET verifies it', 'Ownership, your identity, your authority to list, and a physical inspection, before it goes live.'],
+                  ['Guests request, you accept', 'You confirm dates; the guest pays inside HAMLET and the stay is confirmed once payment is verified.'],
+                ].map(([title, body], index) => (
+                  <li key={title} className="hm-step">
+                    <span className="hm-step-num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h2 className="hm-h3">{title}</h2>
+                      <p className="hm-body">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+            <section className="hm-pay-box">
+              <p className="hm-label">02 / How earnings work</p>
+              <ul>
+                <li><strong>Owners set their own nightly rate.</strong> Guests see it with HAMLET&apos;s 20% service fee already included, so nothing is taken from your rate for that fee.</li>
+                <li><strong>Closing agents</strong> earn 10% of the owner&apos;s agreed rate on bookings they close, paid from HAMLET&apos;s fee, not from the owner&apos;s rate.</li>
+                <li><strong>Eligible direct referrers</strong> earn 2.5% of the owner&apos;s agreed rate, under HAMLET&apos;s referral rules.</li>
+                <li>The refundable caution deposit is held separately and returned to the guest after the check-out inspection.</li>
+              </ul>
+            </section>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href={signUpHref} className="hm-btn hm-btn-primary">
+                Create partner account <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+              <Link href={signUpHref.replace('mode=signup', 'mode=signin')} className="hm-link">
+                Already a partner? Sign in
+              </Link>
+            </div>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
   }
 
   const first = name.trim().split(/\s+/)[0] || 'there';

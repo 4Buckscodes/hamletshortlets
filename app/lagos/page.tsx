@@ -7,6 +7,34 @@ import {
   buildPublicPageMetadata,
 } from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { getPublicSupabase } from '@/lib/supabase-public';
+import { isMainlandArea } from '@/lib/areas';
+
+export const revalidate = 300;
+
+/** Live count of verified stays per area, so the guide never sends guests to empty results. */
+async function loadAreaCounts(): Promise<Record<string, number>> {
+  const db = getPublicSupabase();
+  if (!db) return {};
+  const { data } = await db.from('properties').select('area').eq('status', 'approved');
+  const counts: Record<string, number> = {};
+  for (const row of (data ?? []) as Array<{ area?: string | null }>) {
+    const key = (row.area || '').trim();
+    if (!key) continue;
+    counts[key.toLowerCase()] = (counts[key.toLowerCase()] || 0) + 1;
+    if (isMainlandArea(key)) counts['lagos mainland'] = (counts['lagos mainland'] || 0) + 1;
+  }
+  return counts;
+}
+
+function stayCount(href: string, counts: Record<string, number>) {
+  const area = new URLSearchParams(href.split('?')[1] || '').get('area');
+  return area ? counts[area.toLowerCase()] || 0 : 0;
+}
+
+function countLabel(count: number) {
+  return count > 0 ? `${count} verified ${count === 1 ? 'stay' : 'stays'}` : 'No stays here yet · see the corridor';
+}
 
 export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
@@ -91,7 +119,8 @@ const MAINLAND_CHIPS = [
   { label: 'Ikeja GRA', href: '/stays?area=Ikeja+GRA' },
 ] as const;
 
-export default function LagosGuidePage() {
+export default async function LagosGuidePage() {
+  const counts = await loadAreaCounts();
   const schema = buildLagosNeighbourhoodGuideSchema([
     ...MAINLAND_GUIDES,
     ...ISLAND_GUIDES,
@@ -132,7 +161,7 @@ export default function LagosGuidePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Mainland</p>
+                <p className="eyebrow">01 / Lagos Mainland</p>
                 <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
                   Lagos Mainland &amp; environs
                 </h2>
@@ -146,7 +175,7 @@ export default function LagosGuidePage() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {MAINLAND_CHIPS.map(chip => (
+              {MAINLAND_CHIPS.filter(chip => chip.label.startsWith('All') || stayCount(chip.href, counts) > 0).map(chip => (
                 <Link
                   key={chip.label}
                   href={chip.href}
@@ -161,8 +190,8 @@ export default function LagosGuidePage() {
               {MAINLAND_GUIDES.map(item => (
                 <Link
                   key={item.name}
-                  href={item.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  href={stayCount(item.href, counts) > 0 ? item.href : '/stays?area=Lagos+Mainland'}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-300"
                 >
                   <div className="relative h-44 overflow-hidden bg-clay">
                     <img
@@ -185,7 +214,7 @@ export default function LagosGuidePage() {
                       <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{item.body}</p>
                     </div>
                     <span className="mt-4 inline-flex items-center justify-between border-t border-ink-100 pt-3 text-xs font-extrabold text-ink-900">
-                      <span>Explore stays</span>
+                      <span>{countLabel(stayCount(item.href, counts))}</span>
                       <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-ink-900" />
                     </span>
                   </div>
@@ -200,7 +229,7 @@ export default function LagosGuidePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Island &amp; Lekki</p>
+                <p className="eyebrow">02 / Lagos Island &amp; Lekki</p>
                 <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
                   Lagos Island &amp; Lekki corridor
                 </h2>
@@ -217,8 +246,8 @@ export default function LagosGuidePage() {
               {ISLAND_GUIDES.map(item => (
                 <Link
                   key={item.name}
-                  href={item.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  href={stayCount(item.href, counts) > 0 ? item.href : '/stays?side=island'}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-300"
                 >
                   <div className="relative h-44 overflow-hidden bg-clay">
                     <img
@@ -241,7 +270,7 @@ export default function LagosGuidePage() {
                       <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{item.body}</p>
                     </div>
                     <span className="mt-4 inline-flex items-center justify-between border-t border-ink-100 pt-3 text-xs font-extrabold text-ink-900">
-                      <span>Explore stays</span>
+                      <span>{countLabel(stayCount(item.href, counts))}</span>
                       <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-ink-900" />
                     </span>
                   </div>
@@ -260,7 +289,7 @@ export default function LagosGuidePage() {
                 Have a verified stay in Mainland or Island Lagos?
               </h2>
             </div>
-            <Link href="/partners/apply" className="btn-brass !rounded-full !px-6">
+            <Link href="/partners/apply" className="hm-btn hm-btn-lime">
               <Building2 className="h-4 w-4 shrink-0" /> Apply as a partner
             </Link>
           </div>

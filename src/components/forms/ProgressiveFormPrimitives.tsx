@@ -185,6 +185,16 @@ export function StepProgressHeader({
   maxCompletedStep?: number;
 }) {
   const active = steps[currentStep] ?? steps[0];
+  // Move focus to the new step's heading when the step changes (not on first render).
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus({ preventScroll: false });
+  }, [currentStep]);
   const pct = Math.round(((currentStep + 1) / Math.max(1, steps.length)) * 100);
 
   return (
@@ -223,7 +233,8 @@ export function StepProgressHeader({
                 disabled={!canClick}
                 onClick={() => canClick && onSelectStep?.(idx)}
                 aria-current={isCurrent ? 'step' : undefined}
-                className={`inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition ${
+                aria-label={`Step ${idx + 1}: ${step.title}${idx < currentStep ? ' (done)' : ''}`}
+                className={`inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition ${
                   isCurrent
                     ? 'border-ink-900 bg-ink-900 text-white'
                     : isDone
@@ -250,7 +261,7 @@ export function StepProgressHeader({
       )}
 
       <div>
-        <h2 className="serif text-2xl font-medium text-ink-900 sm:text-[28px]">
+        <h2 ref={headingRef} tabIndex={-1} className="serif text-2xl font-medium text-ink-900 outline-none">
           {active.title}
         </h2>
         {active.description && (
@@ -694,4 +705,4 @@ export function FocusedDrawer({
 }
 
 export const FIELD_INPUT_CLASS =
-  'min-h-[48px] w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-ink-400 transition focus:border-ink-900 focus:outline-none';
+  'min-h-[48px] w-full rounded-xl border border-[var(--hm-field-line)] bg-white px-3.5 py-2.5 text-sm text-ink-900 transition focus:border-ink-900 focus:outline-none';

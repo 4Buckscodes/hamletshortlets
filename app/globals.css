@@ -1079,9 +1079,10 @@ main > header nav[aria-label="Admin workspace"] a{min-height:40px!important;bord
 body { background:var(--paper); color:var(--ink); }
 [data-hamlet-reveal] { border-radius: 18px !important; border-color: #D9DDCF !important; box-shadow: none !important; }
 .shell { max-width: 1180px; }
-.eyebrow { color:#75852f; letter-spacing:.16em; }
+.eyebrow { color:#4c5916; letter-spacing:.16em; }
 .pill { border-radius: 10px !important; border-color:#D9DDCF !important; }
-.primary-button { background:#172119 !important; color:#F6F1E7 !important; border-radius:999px !important; box-shadow:none !important; }
+.primary-button { background:#2e50e8 !important; color:#fff !important; border-radius:999px !important; box-shadow:none !important; }
+.primary-button:hover { background:#1938c0 !important; }
 .secondary-button { border-radius:999px !important; }
 .home-page + * { margin-top:0; }
 .home-photo-frame img { object-position:center; }

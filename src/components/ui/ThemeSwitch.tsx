@@ -49,7 +49,25 @@ export function ThemeSwitch({ className }: { className?: string }) {
   return (
     <div role="radiogroup" aria-label="Appearance" className={cx('hm-theme-switch', className)}>
       {THEME_CHOICES.map(option => (
-        <button key={option} type="button" role="radio" aria-checked={choice === option} onClick={() => select(option)}>
+        <button
+          key={option}
+          type="button"
+          role="radio"
+          aria-checked={choice === option}
+          tabIndex={choice === option ? 0 : -1}
+          onClick={() => select(option)}
+          onKeyDown={event => {
+            // Radio-group keyboard pattern: arrows move and select, one Tab stop for the group.
+            const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
+            if (!step) return;
+            event.preventDefault();
+            const index = THEME_CHOICES.indexOf(option);
+            const next = THEME_CHOICES[(index + step + THEME_CHOICES.length) % THEME_CHOICES.length];
+            select(next);
+            const group = event.currentTarget.parentElement;
+            (group?.children[THEME_CHOICES.indexOf(next)] as HTMLElement | undefined)?.focus();
+          }}
+        >
           {LABELS[option]}
         </button>
       ))}

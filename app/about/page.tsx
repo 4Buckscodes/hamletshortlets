@@ -44,7 +44,7 @@ const FOUR_PILLARS = [
     Icon: Wifi,
     title: 'Power and Wi-Fi, explained',
     body: 'Backup power and internet setup listed per apartment.',
-    cta: 'Filter amenities',
+    cta: 'Explore stays',
     href: '/stays',
   },
   {
@@ -92,7 +92,7 @@ export default function AboutPage() {
         <section data-hamlet-reveal id="four-pillars" className="border-b border-ink-100 bg-clay/60 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="max-w-2xl">
-              <p className="eyebrow">Four pillars of a better stay</p>
+              <p className="eyebrow">01 / Four pillars of a better stay</p>
               <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
                 A good stay is about more than beautiful pictures.
               </h2>
@@ -134,7 +134,7 @@ export default function AboutPage() {
                 </h2>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/stays" className="btn-brass !rounded-full !px-6">
+                <Link href="/stays" className="hm-btn hm-btn-lime">
                   <ShieldCheck className="h-4 w-4 shrink-0" /> Explore stays
                 </Link>
                 <Link

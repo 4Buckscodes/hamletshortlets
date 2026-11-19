@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type MouseEvent,
@@ -379,7 +380,7 @@ export function NextCurrencySwitcher(_props?: {
 
 const PRIMARY_NAV = [
   { href: '/stays', label: 'Explore stays' },
-  { href: '/lagos', label: 'Lagos' },
+  { href: '/lagos', label: 'Lagos guide' },
   { href: '/how-it-works', label: 'How it works' },
   { href: '/safety', label: 'Safety' },
   { href: '/faqs', label: 'FAQs' },
@@ -395,6 +396,8 @@ export function SiteHeader() {
     setDrawerOpenPath(next ? pathname : null);
   };
   const [session, setSession] = useState<SessionSummary | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -403,15 +406,51 @@ export function SiteHeader() {
     if (typeof document !== 'undefined') {
       document.body.style.overflow = 'hidden';
     }
+    // Dialog behaviour: page behind is inert, focus moves in, Tab stays inside, Esc closes.
+    const drawer = drawerRef.current;
+    const background: HTMLElement[] = [];
+    for (let node: HTMLElement | null = drawer; node && node !== document.body; node = node.parentElement) {
+      const parent: HTMLElement | null = node.parentElement;
+      if (!parent) break;
+      for (const sibling of Array.from(parent.children)) {
+        if (sibling !== node && sibling instanceof HTMLElement && !sibling.hasAttribute('inert')) background.push(sibling);
+      }
+    }
+    background.forEach(node => node.setAttribute('inert', ''));
+    const toggle = menuButtonRef.current;
+    const focusables = () =>
+      drawer
+        ? (Array.from(drawer.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')) as HTMLElement[]).filter(
+            node => node.offsetParent !== null,
+          )
+        : [];
+    window.requestAnimationFrame(() => focusables()[1]?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setDrawerOpenPath(null);
+      if (event.key === 'Escape') {
+        setDrawerOpenPath(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => {
       if (typeof document !== 'undefined') {
         document.body.style.overflow = previousOverflow;
       }
+      background.forEach(node => node.removeAttribute('inert'));
       window.removeEventListener('keydown', onKeyDown);
+      toggle?.focus();
     };
   }, [drawerOpen]);
 
@@ -491,9 +530,10 @@ export function SiteHeader() {
   ] as const;
 
   const mobileHostAndAboutNav = [
-    { href: '/partners/apply', label: 'Partner with us' },
+    // Partners and admins already have a workspace; "Partner with us" is noise for them.
+    ...(session && session.role !== 'guest' ? [] : [{ href: '/partners/apply', label: 'Partner with us' }]),
     { href: '/about', label: 'About HAMLET' },
-  ] as const;
+  ];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const WorkspaceIcon = session?.role === 'admin' ? ShieldCheck : session?.role === 'partner' ? Building2 : User;
@@ -545,6 +585,7 @@ export function SiteHeader() {
 
         <button
           type="button"
+          ref={menuButtonRef}
           onClick={() => setDrawerOpen(prev => !prev)}
           aria-expanded={drawerOpen}
           aria-controls="hamlet-mobile-drawer"
@@ -562,7 +603,7 @@ export function SiteHeader() {
       </div>
 
       {drawerOpen && (
-        <div className="hm-drawer">
+        <div ref={drawerRef} className="hm-drawer" role="dialog" aria-modal="true" aria-label="Menu">
           <nav id="hamlet-mobile-drawer" aria-label="Mobile navigation" className="hm-drawer-inner">
             <div className="hm-drawer-top">
               <Link href="/" onClick={() => setDrawerOpen(false)} aria-label="HAMLET.REST home" className="hm-wordmark">
@@ -571,6 +612,27 @@ export function SiteHeader() {
               <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation menu" className="hm-header-icon">
                 <X size={18} aria-hidden="true" />
               </button>
+            </div>
+
+
+            <p className="hm-label">For guests</p>
+            <div className="hm-drawer-list">
+              {mobileGuestNav.map(item => (
+                <Link key={item.href} href={item.href} onClick={() => setDrawerOpen(false)} aria-current={isActive(item.href) ? 'page' : undefined}>
+                  {item.label}
+                  {isActive(item.href) ? <span className="hm-drawer-here">You&apos;re here</span> : <ArrowRight size={18} aria-hidden="true" />}
+                </Link>
+              ))}
+            </div>
+
+            <p className="hm-label">For hosts &amp; about</p>
+            <div className="hm-drawer-list">
+              {mobileHostAndAboutNav.map(item => (
+                <Link key={item.href} href={item.href} onClick={() => setDrawerOpen(false)} aria-current={isActive(item.href) ? 'page' : undefined}>
+                  {item.label}
+                  {isActive(item.href) ? <span className="hm-drawer-here">You&apos;re here</span> : <ArrowRight size={18} aria-hidden="true" />}
+                </Link>
+              ))}
             </div>
 
             <button
@@ -585,26 +647,6 @@ export function SiteHeader() {
               <ArrowRight size={18} aria-hidden="true" />
             </button>
 
-            <p className="hm-label">For guests</p>
-            <div className="hm-drawer-list">
-              {mobileGuestNav.map(item => (
-                <Link key={item.href} href={item.href} onClick={() => setDrawerOpen(false)} aria-current={isActive(item.href) ? 'page' : undefined}>
-                  {item.label}
-                  <ArrowRight size={18} aria-hidden="true" />
-                </Link>
-              ))}
-            </div>
-
-            <p className="hm-label">For hosts &amp; about</p>
-            <div className="hm-drawer-list">
-              {mobileHostAndAboutNav.map(item => (
-                <Link key={item.href} href={item.href} onClick={() => setDrawerOpen(false)} aria-current={isActive(item.href) ? 'page' : undefined}>
-                  {item.label}
-                  <ArrowRight size={18} aria-hidden="true" />
-                </Link>
-              ))}
-            </div>
-
             <div className="hm-drawer-theme">
               <span className="hm-label">Appearance</span>
               <ThemeSwitch />
@@ -613,16 +655,15 @@ export function SiteHeader() {
             <div className="hm-drawer-actions">
               {session ? (
                 <>
+                  <p className="hm-drawer-signed">Signed in as {session.email}</p>
                   <Link href={workspaceHref} onClick={() => setDrawerOpen(false)} className="hm-btn hm-btn-lime hm-btn-block">
                     {workspaceLabel}
                   </Link>
-                  {session.role !== 'guest' && (
-                    <Link href="/account" onClick={() => setDrawerOpen(false)} className="hm-btn hm-btn-ghost hm-btn-block">
-                      Guest account &amp; bookings
-                    </Link>
-                  )}
+                  <Link href="/account/bookings" onClick={() => setDrawerOpen(false)} className="hm-btn hm-btn-ghost hm-btn-block">
+                    My bookings
+                  </Link>
                   <button type="button" onClick={() => void handleSignOut()} className="hm-btn hm-btn-ghost hm-btn-block">
-                    Sign out ({session.email})
+                    Sign out
                   </button>
                 </>
               ) : (

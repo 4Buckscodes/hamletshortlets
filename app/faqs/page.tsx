@@ -17,7 +17,7 @@ export const metadata: Metadata = buildPublicPageMetadata({
 const FAQ_ITEMS: readonly FaqEntry[] = [
   {
     q: '1. Are the pictures on HAMLET real?',
-    a: 'Check each listing’s physical inspection pillar. Report any mismatch from your booking page.',
+    a: 'Yes. Listing photos are reviewed as part of the physical inspection before a stay goes live. If anything doesn’t match when you arrive, report it from your booking and HAMLET operations will follow up.',
     category: 'trust',
   },
   {

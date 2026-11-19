@@ -10,7 +10,7 @@ colors:
   sand: "#ede9dc"
   line: "#d9ddcf"
   line-soft: "#e6e7dc"
-  field-line: "#cdd3c3"
+  field-line: "#8a9285"
   muted: "#5b655a"
   lime: "#d9f24b"
   lime-ink: "#4c5916"
@@ -197,7 +197,7 @@ A forest ground with two bright notes and one action blue.
 - **Ivory** (#f6f1e7): page background.
 - **Surface** (#fffdf7): cards, inputs, the search card, tables.
 - **Sand** (#ede9dc): search and filter strips, table heads, summary boxes.
-- **Line** (#d9ddcf) and **Field Line** (#cdd3c3): every 1px border; fields use the stronger one.
+- **Line** (#d9ddcf): every decorative 1px border. **Field Line** (#8a9285; #5f6e64 at night): input, select and search-card outlines, 3:1 against their surface so fields stay identifiable (WCAG 1.4.11).
 - **Muted** (#5b655a): secondary text (5.4:1 on ivory).
 - **Lime Ink** (#4c5916): section labels on light (7.5:1).
 - **Status pairs:** OK, Warn, Bad and Info each come as an ink on a soft tint, always as a pill.

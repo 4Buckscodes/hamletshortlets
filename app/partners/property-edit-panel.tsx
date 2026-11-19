@@ -143,8 +143,8 @@ export default function PropertyEditPanel({ propertyId, status }: { propertyId: 
         <label style={labelStyle}>Authority to list this property<textarea value={authority} onChange={e => setAuthority(e.target.value)} rows={2} placeholder="Confirm ownership or written permission to list…" style={{ ...inputStyle, resize: 'vertical' }}/></label>
         <label style={labelStyle}>Correction summary (optional)<textarea value={correction} onChange={e => setCorrection(e.target.value)} rows={2} maxLength={500} placeholder="What did you change to address the review feedback?" style={{ ...inputStyle, resize: 'vertical' }}/></label>
         {status === 'draft' && <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}><input type="checkbox" name="saveAsDraft"/> Save as draft instead of submitting</label>}
-        {error && <p role="alert" style={{ margin: 0, color: '#9f2d20' }}>{error}</p>}
-        {notice && <p role="status" style={{ margin: 0, color: '#236238' }}>{notice}</p>}
+        {error && <p role="alert" style={{ margin: 0, color: 'var(--hm-bad)' }}>{error}</p>}
+        {notice && <p role="status" style={{ margin: 0, color: 'var(--hm-ok)' }}>{notice}</p>}
         <button className="primary-button" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save changes & submit for review'}</button>
       </form>}
     </div>}

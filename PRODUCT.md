@@ -9,7 +9,7 @@ web
 ## Users
 
 - **Primary: guests booking a stay in Lagos.** Three groups, all confirmed: Nigerians abroad and international visitors booking from outside Nigeria (pricing in USD/GBP, trust matters most); Nigerians travelling to or within Lagos, often for work; and Lagos residents taking short getaways. The default situation is a phone on variable mobile data with little patience: they want to see a real place, check dates and price, and send a request in a few taps.
-- **Secondary: partners.** Property owners, closing agents and property managers who list verified supply, accept or decline requests, manage availability and see earnings, in the partner workspace.
+- **Secondary: partners.** Property owners, closing agents and property managers who list verified supply, accept or decline requests, manage availability and see earnings, in the partner workspace. Partners join the network instantly and their workspace opens straight away; HAMLET verifies their identity before payouts and verifies every listing before it goes live.
 - **Internal: HAMLET operations.** Admins who verify listings, approve partners and reconcile bookings and settlements in the admin console.
 
 When guest and partner needs conflict, guests booking come first; partner and admin screens stay clear and efficient.
@@ -32,7 +32,7 @@ Every listing is verified before it goes live (ownership/title evidence, partner
 ## Capabilities and Constraints
 
 - Stack: Next.js App Router, React, Tailwind v4 with the `hm-` UI kit, Supabase (RLS, RPCs, edge functions), Paystack, Vercel.
-- Pricing contract (`docs/PRICING_AND_PAYMENT_CONTRACT.md`, `src/lib/pricing.ts`): the displayed guest price already includes a 20% guest service fee on the owner's agreed accommodation rate; cleaning/turnover is shown as its own line; the refundable caution deposit is itemised separately and carries no fee or FX buffer; USD/GBP quotes add a single 10% FX buffer with 30-minute validity. Partner allocations: 10% closing agent, 2.5% eligible direct referrer, 5% HAMLET (7.5% without a referrer), 2.5% settlement reserve.
+- Pricing contract (`docs/PRICING_AND_PAYMENT_CONTRACT.md`, `src/lib/pricing.ts`): the displayed guest price already includes a 20% guest service fee on the owner's agreed accommodation rate; cleaning/turnover is shown as its own line; the refundable caution deposit is itemised separately and carries no fee or FX buffer; USD/GBP quotes add a single 10% FX buffer with 30-minute validity. Partner allocations: 10% closing agent, 2.5% eligible direct referrer, 5% HAMLET (7.5% without a referrer), 2.5% settlement reserve. Agent and referrer allocations are percentages of the owner's agreed rate (B), paid out of the 20% fee pool, never deducted from the owner's rate.
 - Booking requests are limited to 1–60 nights and to the listing's stated capacity.
 - Guest data is handled under Nigeria's NDPR.
 - Undecided: launch geography beyond Lagos, domain cutover timing, a staging database separate from production.

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -145,6 +145,11 @@ export default function PartnerApplicationForm() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  // Validation and submit errors take focus so keyboard and screen-reader users land on them.
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   const [message, setMessage] = useState('');
 
   const isInventoryRole = [
@@ -385,10 +390,11 @@ export default function PartnerApplicationForm() {
 
       await load();
     } catch (caught) {
+      const raw = caught instanceof Error ? caught.message : '';
       setError(
-        caught instanceof Error
-          ? caught.message
-          : 'Could not submit your identity-verification details.',
+        !raw || /fetch|network|TypeError/i.test(raw)
+          ? 'We couldn’t reach HAMLET to submit your details. Check your connection and try again; your answers are saved on this device.'
+          : raw,
       );
     } finally {
       setBusy(false);
@@ -409,7 +415,7 @@ export default function PartnerApplicationForm() {
         <h2 className="serif m-0 text-2xl font-medium text-ink-900">
           Step 0 — Sign in or create your HAMLET account first
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-600">
+        <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-ink-600">
           This step is for identity and payout verification only. Your partner workspace is available immediately after network registration; you do not need to wait for this review to upload properties, share stays or view earnings.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -514,13 +520,13 @@ export default function PartnerApplicationForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {step === 0 && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
+            <div className="rounded-2xl bg-paper p-4 text-sm leading-relaxed text-ink-800">
               <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
               <p className="m-0 mt-1 text-xs text-ink-600">
                 Active partners can close bookings across HAMLET and introduce new partners from one account.
               </p>
             </div>
-            <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
+            <div className="rounded-2xl bg-paper p-4 text-sm text-ink-700">
               Your partner workspace is active. You can complete or update your partner role and profile details from inside the workspace whenever they are needed.
             </div>
           </div>
@@ -535,6 +541,7 @@ export default function PartnerApplicationForm() {
                   required
                   minLength={2}
                   maxLength={120}
+                  autoComplete="name"
                   value={values.fullName}
                   onChange={e =>
                     setValues(prev => ({ ...prev, fullName: e.target.value }))
@@ -551,6 +558,7 @@ export default function PartnerApplicationForm() {
                   required
                   type="tel"
                   inputMode="tel"
+                  autoComplete="tel"
                   minLength={7}
                   maxLength={32}
                   value={values.phone}
@@ -576,6 +584,7 @@ export default function PartnerApplicationForm() {
                   required
                   minLength={2}
                   maxLength={160}
+                  autoComplete="organization"
                   value={values.company}
                   onChange={e =>
                     setValues(prev => ({ ...prev, company: e.target.value }))
@@ -774,8 +783,11 @@ export default function PartnerApplicationForm() {
 
         {error && (
           <p
+            id="apply-form-error"
+            ref={errorRef}
+            tabIndex={-1}
             role="alert"
-            className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold text-red-800"
+            className="m-0 rounded-2xl bg-red-50 p-3.5 text-sm font-semibold text-red-800 outline-none"
           >
             {error}
           </p>

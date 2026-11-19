@@ -337,14 +337,14 @@ export default function PartnerDashboardPage() {
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   href="/partners/marketing"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
                 >
                   <Share2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Open Share & Studio</span>
                 </Link>
                 <Link
                   href="/partners/analytics"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white/20"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white/20"
                 >
                   <BarChart3 className="h-3.5 w-3.5 shrink-0" />
                   <span>My performance</span>
@@ -395,7 +395,7 @@ export default function PartnerDashboardPage() {
                       </p>
 
                       {p.review_note && (
-                        <div className="mt-3 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                        <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-50 p-3 text-xs text-amber-950">
                           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" />
                           <span>
                             <strong>Review note:</strong> {p.review_note}
@@ -404,7 +404,7 @@ export default function PartnerDashboardPage() {
                       )}
 
                       {p.status === 'approved' && (
-                        <div className="mt-4 rounded-2xl border border-ink-100 bg-paper/70 p-3.5">
+                        <div className="mt-4 rounded-2xl bg-paper/70 p-3.5">
                           <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
                             <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-700">
                               Instant distribution
@@ -440,7 +440,7 @@ export default function PartnerDashboardPage() {
                     <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-100 pt-4">
                       <Link
                         href={`/partners/properties/${encodeURIComponent(p.id)}/edit`}
-                        className="secondary-button min-h-[42px]"
+                        className="secondary-button min-h-[44px]"
                       >
                         {['needs_correction', 'draft'].includes(p.status)
                           ? 'Edit & resubmit'
@@ -449,7 +449,7 @@ export default function PartnerDashboardPage() {
 
                       <Link
                         href={`/partners/availability?property=${encodeURIComponent(p.id)}`}
-                        className="secondary-button min-h-[42px]"
+                        className="secondary-button min-h-[44px]"
                       >
                         Calendar
                       </Link>
@@ -459,7 +459,7 @@ export default function PartnerDashboardPage() {
                           type="button"
                           disabled={busyId === p.id}
                           onClick={() => void togglePause(p)}
-                          className="secondary-button min-h-[42px]"
+                          className="secondary-button min-h-[44px]"
                         >
                           {p.status === 'approved' ? (
                             <>
@@ -478,7 +478,7 @@ export default function PartnerDashboardPage() {
                       {p.status === 'approved' && (
                         <Link
                           href={`/stays/${encodeURIComponent(p.id)}`}
-                          className="secondary-button min-h-[42px]"
+                          className="secondary-button min-h-[44px]"
                         >
                           Public page →
                         </Link>
