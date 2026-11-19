@@ -69,6 +69,39 @@ typography:
     fontSize: "11px"
     fontWeight: 800
     letterSpacing: "0.16em"
+  lead:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 400
+    lineHeight: 1.6
+  control:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 750
+  caption:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 700
+  field:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 650
+  price:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "30px"
+    fontWeight: 850
+    letterSpacing: "-0.04em"
+    fontFeature: "tnum"
+  stamp:
+    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
+    fontSize: "24px"
+    fontWeight: 900
+    lineHeight: 0.85
+    letterSpacing: "-0.06em"
+  wordmark:
+    fontFamily: "Playfair Display Variable, Playfair Display, Georgia, serif"
+    fontSize: "26px"
+    fontWeight: 700
 rounded:
   field: "10px"
   media: "10px"
@@ -192,6 +225,7 @@ A forest ground with two bright notes and one action blue.
 - **Body** (400, 15px, 1.7): paragraphs, max 65–75ch.
 - **Meta** (400, 13px, 1.6): secondary lines, captions, hints.
 - **Label** (800, 11px, +0.16em, uppercase): numbered section labels and field captions. 11px is the floor for any text.
+- **UI steps:** Lead (17px) for intros and the stay-card title on phones, Control (14px, 750) for buttons, Caption (12px, 700) for status pills, Field (16px) for form values on phones, Price (30px, 850, tabular numerals) for the booking price, Stamp (24px, 900) inside the YOUR STAY stamp, Wordmark (Playfair 26px, 22px on phones). Nothing else.
 
 ### Named Rules
 **The One Serif Phrase Rule.** Each headline gets exactly one Playfair phrase. Two serif phrases in one heading dilute the voice.
