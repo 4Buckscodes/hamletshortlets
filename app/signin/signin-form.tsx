@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import {
@@ -181,11 +182,36 @@ export default function SignInForm() {
         <button type="button" role="tab" aria-selected={mode === 'signup'} onClick={() => { setMode('signup'); setError(''); setMessage(''); }}>Create account</button>
       </div>
 
+      <div className="hm-auth-heading">
+        <h2 className="hm-h2">
+          {mode === 'signup' ? (
+            <>
+              Create your <em>account.</em>
+            </>
+          ) : mode === 'reset' ? (
+            <>
+              Reset your <em>password.</em>
+            </>
+          ) : (
+            <>
+              Good to see you <em>again.</em>
+            </>
+          )}
+        </h2>
+        <p className="hm-meta">
+          {mode === 'signup'
+            ? 'Book verified stays or open your partner workspace.'
+            : mode === 'reset'
+              ? 'We’ll email you a secure link to set a new password.'
+              : 'Sign in to manage your bookings or your partner workspace.'}
+        </p>
+      </div>
+
       {(mode === 'signin' || (mode === 'signup' && !isPartnerSignup)) && (
         <div className="hm-auth-oauth">
           <GoogleContinueButton mode={mode === 'signup' ? 'signup' : 'signin'} busy={oauthBusy} disabled={busy} onClick={() => void handleGoogleAuth()} />
           <div className="hm-auth-divider">
-            <span>or continue with email</span>
+            <span>or with email</span>
           </div>
         </div>
       )}
@@ -233,10 +259,13 @@ export default function SignInForm() {
 
         <div className="hm-auth-actions">
           <button type="submit" disabled={busy || oauthBusy} className="hm-btn hm-btn-primary hm-btn-block">
-            {busy ? (mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in to HAMLET'}
+            {busy ? (mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in'}
           </button>
           {mode === 'reset' && <button type="button" onClick={() => { setMode('signin'); setError(''); }} className="hm-btn hm-btn-ghost hm-btn-block">Back to sign in</button>}
         </div>
+        <p className="hm-field-hint" style={{ margin: 0, textAlign: 'center' }}>
+          By continuing you agree to HAMLET’s <Link href="/legal" className="hm-link" style={{ fontSize: 'inherit' }}>terms and privacy notice (NDPR)</Link>.
+        </p>
       </form>
     </div>
   );

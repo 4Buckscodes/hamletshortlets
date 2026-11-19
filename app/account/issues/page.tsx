@@ -281,14 +281,17 @@ export default function AccountIssuesPage() {
           <div className="hm-shell hm-band-inner">
             <div className="hm-band-row">
               <div className="hm-band-copy">
-                <p className="hm-label">Guest Support</p>
+                <p className="hm-label">Guest account · Support</p>
                 <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
-                  Report or track an issue
+                  Report or track
+                  <br />
+                  <em>an issue.</em>
                 </h1>
-              </div>
-              <div className="hm-band-aside">
                 <p className="hm-body">Never include passwords or payment card numbers.</p>
               </div>
+              <Link href="/stays" className="hm-btn hm-btn-lime">
+                Find a new stay <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <AccountNav current="issues" />
           </div>

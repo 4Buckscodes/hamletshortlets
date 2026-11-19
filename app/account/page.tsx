@@ -122,11 +122,16 @@ export default function GuestAccountOverviewPage() {
           <div className="hm-shell hm-band-inner">
             <div className="hm-band-row">
               <div className="hm-band-copy">
-                <p className="hm-label">Your HAMLET Account</p>
+                <p className="hm-label">Guest account</p>
                 <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
-                  {fullName ? `Welcome, ${fullName.split(' ')[0]}.` : 'Your account'}
+                  {fullName ? `Welcome, ${fullName.split(' ')[0]}.` : 'Your account,'}
+                  <br />
+                  <em>{fullName ? 'Good to see you.' : 'all in one place.'}</em>
                 </h1>
               </div>
+              <Link href="/stays" className="hm-btn hm-btn-lime">
+                Find a new stay <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <AccountNav current="overview" />
           </div>

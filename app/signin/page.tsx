@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 const POINTS = [
-  { title: 'Guests', text: 'Request verified stays and track every booking in one place.' },
-  { title: 'Partners', text: 'Create an account to open your partner workspace straight away.' },
-  { title: 'Private', text: 'Your details stay with HAMLET and are never shown to other guests.' },
+  { title: 'Guests', text: 'Request stays and track every booking.' },
+  { title: 'Partners', text: 'Open your workspace straight away.' },
+  { title: 'Private', text: 'Your details stay with HAMLET.' },
 ] as const;
 
 export default function SignInPage() {

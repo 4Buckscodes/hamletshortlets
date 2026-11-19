@@ -7,7 +7,6 @@ import {
   RefreshCcw,
   Compass,
   MessageSquarePlus,
-  Check,
   AlertCircle,
 } from 'lucide-react';
 import { extractEdgeFunctionError } from '@/lib/supabase';
@@ -23,6 +22,7 @@ import {
   FocusedDrawer,
   FormField,
 } from '@/components/forms/ProgressiveFormPrimitives';
+import { Chip, ChipRow, StatusPill, type StatusTone } from '@/components/ui';
 import { AccountNav } from '../account-nav';
 
 type Booking = {
@@ -41,7 +41,7 @@ type Booking = {
   quoted_guest_total?: number | null;
   quote_expires_at?: string | null;
   created_at: string;
-  properties?: { title?: string; area?: string } | null;
+  properties?: { title?: string; area?: string; image_urls?: string[] | null } | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -58,73 +58,55 @@ const STATUS_LABEL: Record<string, string> = {
   no_show: 'Recorded no-show',
 };
 
-const STAGES = ['Requested', 'Checking', 'Awaiting payment', 'Confirmed', 'Completed'] as const;
-const STAGE_IDX: Record<string, number> = {
-  requested: 0,
-  checking: 1,
-  awaiting_payment: 2,
-  confirmed: 3,
-  completed: 4,
+const STATUS_TONE: Record<string, StatusTone> = {
+  requested: 'warn',
+  checking: 'warn',
+  awaiting_payment: 'info',
+  confirmed: 'ok',
+  completed: 'neutral',
+  cancelled: 'neutral',
+  expired: 'neutral',
+  refunded: 'neutral',
+  disputed: 'bad',
+  declined: 'bad',
+  no_show: 'bad',
 };
 
-function LifecycleBar({ status }: { status: string }) {
-  const closed = ['cancelled', 'declined', 'expired', 'refunded', 'disputed', 'no_show'].includes(
-    status,
-  );
-  const current = STAGE_IDX[status] ?? -1;
+type BookingFilter = 'all' | 'upcoming' | 'requests' | 'past' | 'cancelled';
+const BOOKING_FILTERS: Array<{ id: BookingFilter; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'requests', label: 'Requests' },
+  { id: 'past', label: 'Past' },
+  { id: 'cancelled', label: 'Cancelled' },
+];
 
-  if (closed) {
-    return (
-      <p className="m-0 mt-3 text-xs font-semibold text-ink-500">
-        Closed status: <strong className="text-ink-900">{STATUS_LABEL[status] || status}</strong>
-      </p>
-    );
-  }
+function bookingGroup(b: { status: string; check_out: string }, today: string): Exclude<BookingFilter, 'all'> {
+  if (['requested', 'checking', 'awaiting_payment'].includes(b.status)) return 'requests';
+  if (['cancelled', 'expired', 'refunded', 'declined'].includes(b.status)) return 'cancelled';
+  if (b.status === 'confirmed' && b.check_out >= today) return 'upcoming';
+  return 'past';
+}
 
-  return (
-    <div className="mt-4">
-      <div className="flex items-center">
-        {STAGES.map((label, idx) => {
-          const done = current >= idx;
-          return (
-            <div key={label} className="flex flex-1 items-center last:flex-none">
-              <div className="flex flex-col items-center">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold ${
-                    done
-                      ? 'bg-emerald-700 text-white'
-                      : 'border border-ink-200 bg-paper text-ink-400'
-                  }`}
-                >
-                  {current > idx ? <Check className="h-3 w-3 shrink-0" /> : idx + 1}
-                </span>
-                <span className="mt-1 hidden text-[11px] font-bold text-ink-600 sm:block">
-                  {label}
-                </span>
-              </div>
-              {idx < STAGES.length - 1 && (
-                <div
-                  className={`mx-1.5 h-0.5 flex-1 rounded ${
-                    current > idx ? 'bg-emerald-700' : 'bg-ink-100'
-                  }`}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+function nightsLabel(checkIn: string, checkOut: string) {
+  const n = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86400000);
+  return Number.isFinite(n) && n > 0 ? ` · ${n} ${n === 1 ? 'night' : 'nights'}` : '';
 }
 
 export default function GuestBookingsPage() {
   const db = useMemo(() => getBrowserSupabase(), []);
   const { formatPrice, formatCautionDeposit } = useCurrency();
   const [items, setItems] = useState<Booking[]>([]);
+  const [filter, setFilter] = useState<BookingFilter>('all');
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState('');
+  const visibleItems = useMemo(() => {
+    if (filter === 'all') return items;
+    const today = new Date().toISOString().slice(0, 10);
+    return items.filter(b => bookingGroup(b, today) === filter);
+  }, [items, filter]);
   const [paymentReturnRef, setPaymentReturnRef] = useState<string | null>(null);
 
   // Wayfinder probe drawer state
@@ -163,7 +145,7 @@ export default function GuestBookingsPage() {
     const { data, error: queryError } = await db
       .from('bookings')
       .select(
-        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at,properties(title,area)',
+        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at,properties(title,area,image_urls)',
       )
       .order('created_at', { ascending: false });
 
@@ -346,11 +328,16 @@ export default function GuestBookingsPage() {
           <div className="hm-shell hm-band-inner">
             <div className="hm-band-row">
               <div className="hm-band-copy">
-                <p className="hm-label">Your Account</p>
+                <p className="hm-label">Guest account</p>
                 <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
-                  Your bookings
+                  Your bookings,
+                  <br />
+                  <em>all in one place.</em>
                 </h1>
               </div>
+              <Link href="/stays" className="hm-btn hm-btn-lime">
+                Find a new stay <span aria-hidden="true">→</span>
+              </Link>
             </div>
             <AccountNav current="bookings" />
           </div>
@@ -403,32 +390,34 @@ export default function GuestBookingsPage() {
           </p>
         ) : items.length > 0 ? (
           <div className="mt-6 space-y-4">
-            {items.map(b => (
-              <article
-                key={b.id}
-                className="hm-card p-5 sm:p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="m-0 font-mono text-xs font-extrabold text-brass-700">
-                      {b.reference}
-                    </p>
-                    <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
-                      {b.properties?.title || 'HAMLET stay'}
-                    </h2>
-                    <p className="m-0 mt-1 text-xs text-ink-500">
-                      {b.properties?.area || 'Lagos'} · {b.check_in} → {b.check_out} ·{' '}
-                      {b.guest_count} {b.guest_count === 1 ? 'guest' : 'guests'}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-ink-200 bg-paper px-3.5 py-1.5 text-xs font-bold text-ink-900">
-                    {STATUS_LABEL[b.status] || b.status}
-                  </span>
+            <ChipRow label="Filter bookings" className="hm-chip-row-scroll">
+              {BOOKING_FILTERS.map(f => (
+                <Chip key={f.id} pressed={filter === f.id} onClick={() => setFilter(f.id)}>
+                  {f.label}
+                </Chip>
+              ))}
+            </ChipRow>
+            {visibleItems.length === 0 && (
+              <p className="hm-meta">No {BOOKING_FILTERS.find(f => f.id === filter)?.label.toLowerCase()} bookings.</p>
+            )}
+            {visibleItems.map(b => (
+              <article key={b.id} className="hm-card hm-booking-item">
+                <div className="hm-media hm-booking-item-media">
+                  {b.properties?.image_urls?.[0] ? (
+                    <img src={b.properties.image_urls[0]} alt="" loading="lazy" decoding="async" />
+                  ) : null}
                 </div>
-
-                <LifecycleBar status={b.status} />
-
-                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-4 text-xs text-ink-700">
+                <div className="hm-booking-item-body">
+                  <StatusPill tone={STATUS_TONE[b.status] || 'neutral'}>{STATUS_LABEL[b.status] || b.status}</StatusPill>
+                  <h2 className="hm-h3" style={{ fontSize: 22 }}>
+                    {b.properties?.title || 'HAMLET stay'}
+                    {b.properties?.area ? `, ${b.properties.area}` : ''}
+                  </h2>
+                  <p className="hm-meta">
+                    {b.check_in} → {b.check_out}
+                    {nightsLabel(b.check_in, b.check_out)} · {b.guest_count} {b.guest_count === 1 ? 'guest' : 'guests'}
+                  </p>
+                <div className="hm-booking-item-facts">
                   <span>
                     Stay total:{' '}
                     <strong className="font-mono text-ink-900">
@@ -465,14 +454,16 @@ export default function GuestBookingsPage() {
                       })}
                     </span>
                   )}
+                  <span>Ref. <span className="font-mono">{b.reference}</span></span>
                   {b.payment_reference && (
-                    <span className="text-emerald-800">
-                      Verified ref: <span className="font-mono">{b.payment_reference}</span>
+                    <span>
+                      Payment ref: <span className="font-mono">{b.payment_reference}</span>
                     </span>
                   )}
                 </div>
+                </div>
 
-                <div className="mt-4 flex flex-wrap gap-2.5">
+                <div className="hm-booking-item-actions">
                   {b.status === 'awaiting_payment' && (
                     <button
                       type="button"

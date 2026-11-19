@@ -967,3 +967,44 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-detail-verified-panel { backgroun
 .hm-booking-scope .hm-date-wrap { position: relative; display: block; }
 .hm-booking-scope .hm-date-ph { left: 15px; }
 .hm-booking-form { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- Guest bookings list (design: Account) ---------- */
+.hm-booking-item { display: grid; grid-template-columns: 180px minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 18px; }
+.hm-booking-item-media { align-self: stretch; min-height: 130px; border-radius: 12px; background: var(--hm-sand); }
+.hm-booking-item-body { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 8px; }
+.hm-booking-item-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--hm-muted); font-size: 13px; }
+.hm-booking-item-facts strong { color: var(--hm-text); }
+.hm-booking-item-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 190px; }
+@media (max-width: 900px) {
+  .hm-booking-item { grid-template-columns: 120px minmax(0, 1fr); }
+  .hm-booking-item-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; min-width: 0; }
+}
+@media (max-width: 560px) {
+  .hm-booking-item { grid-template-columns: 76px minmax(0, 1fr); align-items: start; gap: 14px; padding: 14px; }
+  .hm-booking-item-media { align-self: start; min-height: 76px; height: 76px; }
+  .hm-booking-item-body .hm-h3 { font-size: 19px !important; }
+  .hm-booking-item-actions > * { flex: 1 1 100%; }
+}
+
+/* ---------- Sign in (design: SignIn) ---------- */
+.hm-auth-heading { display: flex; flex-direction: column; gap: 8px; margin: 22px 0 18px; }
+.hm-auth-heading .hm-h2 { font-size: clamp(28px, 3vw, 38px); }
+.hm-auth-heading .hm-h2 em { color: var(--hm-accent); font-family: var(--hm-serif); font-weight: 500; }
+@media (max-width: 760px) {
+  /* Phones: title strip only, so the form and its Sign in button are on the first screen. */
+  .hm-auth .hm-auth-points { display: none; }
+  .hm-auth-heading { margin: 16px 0 12px; }
+  .hm-auth-heading .hm-meta { display: none; }
+}
+@media (min-width: 761px) and (max-height: 820px) {
+  .hm-auth-form { padding-block: 20px; }
+  .hm-auth-heading { margin: 14px 0 12px; }
+  .hm-auth-fields { gap: 12px; }
+}
+@media (max-width: 760px) {
+  .hm-auth-panel { gap: 0; padding: 20px 18px; }
+  .hm-auth-copy .hm-display { font-size: 40px; }
+  .hm-auth-form { padding: 16px 18px 28px; }
+  .hm-auth-oauth { gap: 10px; }
+}
+@media (max-width: 760px) { .hm-auth-oauth { margin-bottom: 12px; } .hm-auth-fields { gap: 12px; } }
