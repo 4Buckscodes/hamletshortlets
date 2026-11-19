@@ -183,6 +183,17 @@ begin
       )
     ) then'
   );
+  updated := replace(
+    updated,
+    'if not found or partner_role_val <> ''partner'' then',
+    'if not found or (
+      partner_role_val not in (''partner'', ''admin'')
+      and not exists (
+        select 1 from public.partner_network_memberships m
+        where m.user_id = target_partner_id and m.status = ''active''
+      )
+    ) then'
+  );
   if updated = fn then
     raise exception 'Could not patch grant_property_assignment membership checks.';
   end if;
