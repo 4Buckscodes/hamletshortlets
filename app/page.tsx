@@ -46,11 +46,11 @@ export default async function HomePage() {
   const pageSchema = buildHomepageSchema({ approvedStays });
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#F8F5EE] text-[#121F3C]">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-homepage-jsonld" data={pageSchema} />
 
-      <main className="flex-1">
+      <main style={{ flex: 1 }}>
         <V0HomeExperience approvedStays={approvedStays} />
       </main>
 

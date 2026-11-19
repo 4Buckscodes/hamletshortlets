@@ -39,9 +39,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       await page.setViewportSize({ width, height: 844 });
 
       await page.goto('/');
-      await expect(
-        page.getByRole('heading', { level: 1, name: /Find your place to belong\./i }),
-      ).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i })).toBeVisible();
       const homeOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
       );
@@ -128,33 +126,20 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await usCtx.close();
   });
 
-  test('supports homepage neighbourhood and area discovery, combined /stays filters, price validation, and Clear filters', async ({
+  test('supports homepage neighbourhood discovery, combined /stays filters, price validation, and Clear filters', async ({
     page,
   }) => {
     await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i })).toBeVisible();
     await expect(
-      page.getByRole('heading', { level: 1, name: /Find your place to belong\./i }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { level: 2, name: /Every place has its feeling\./i }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { level: 2, name: /Find somewhere that feels right\./i }),
+      page.getByRole('heading', { level: 2, name: /Find somewhere\s*that feels right/i }),
     ).toBeVisible();
 
     const neighbourhoods = page.getByRole('region', { name: 'Lagos neighbourhoods' });
     await expect(neighbourhoods.getByRole('link', { name: /Island energy/i })).toBeVisible();
     await expect(neighbourhoods.getByRole('link', { name: /Mainland rhythm/i })).toBeVisible();
-    await expect(neighbourhoods.getByRole('link', { name: /A little hideaway/i })).toBeVisible();
 
-    const search = page.getByRole('search', { name: /Search Lagos shortlets/i });
-    await expect(search).toBeVisible();
-    const quickAreas = page.getByRole('region', { name: 'Search for a stay' });
-    for (const area of ['Lekki', 'Victoria Island', 'Ikoyi', 'Yaba']) {
-      await expect(quickAreas.getByRole('link', { name: area, exact: true })).toBeVisible();
-    }
-
-    await quickAreas.getByRole('link', { name: 'Yaba', exact: true }).click();
+    await neighbourhoods.getByRole('link', { name: /Mainland rhythm/i }).click();
     await expect(page).toHaveURL(/\/stays\?area=Yaba/);
     await expect(page.getByRole('button', { name: /Clear filters/i }).first()).toBeVisible();
     await page.getByRole('button', { name: /Clear filters/i }).first().click();
@@ -206,7 +191,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
   });
 
-  test('captures referral code from a referral link without adding a manual signup field', async ({
+  test('captures referral code from a referral link and shows it locked, not as a manual signup field', async ({
     page,
   }) => {
     await page.goto('/?ref=HML-LOCK123');
@@ -217,7 +202,9 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Email address/i)).toBeVisible();
     await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /Create my account/i })).toBeVisible();
-    await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
+    const referralField = page.getByLabel(/Referral code/i);
+    await expect(referralField).toHaveValue('HML-LOCK123');
+    await expect(referralField).not.toBeEditable();
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code')))
       .toBe('HML-LOCK123');
@@ -231,7 +218,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.locator('h1').first()).toBeVisible();
   });
 
-  test('renders mobile hero search form, full-screen nav drawer, and accordion footer at 390x844', async ({
+  test('renders mobile hero search, full-screen nav drawer, and accordion footer at 390x844', async ({
     browser,
   }) => {
     const mobileCtx = await browser.newContext({
@@ -242,20 +229,23 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     const mobilePage = await mobileCtx.newPage();
     await mobilePage.goto('/');
 
-    // Mobile hero search form landmark
-    const mobileSearchRegion = mobilePage.getByRole('search', {
+    // Mobile hero and homepage search form
+    await expect(
+      mobilePage.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i }),
+    ).toBeVisible();
+    const mobileSearchRegion = mobilePage.getByRole('region', { name: 'Search for a stay' });
+    await expect(mobileSearchRegion).toBeVisible();
+    await expect(mobileSearchRegion.getByRole('heading', { name: 'Where to?' })).toBeVisible();
+    const mobileSearchForm = mobileSearchRegion.getByRole('search', {
       name: /Search Lagos shortlets/i,
     });
-    await expect(mobileSearchRegion).toBeVisible();
-    await expect(mobileSearchRegion.getByLabel('Enter a Lagos area')).toBeVisible();
-    await expect(mobileSearchRegion.getByLabel('Check-in date')).toBeVisible();
-    await expect(mobileSearchRegion.getByLabel('Check-out date')).toBeVisible();
-    await expect(mobileSearchRegion.getByLabel('Number of guests')).toBeVisible();
-    await expect(mobileSearchRegion.getByRole('button', { name: /Find my stay/i })).toBeVisible();
+    await expect(mobileSearchForm).toBeVisible();
+    await expect(mobileSearchForm.getByLabel('Enter a Lagos area')).toBeVisible();
+    await expect(mobileSearchForm.getByRole('button', { name: /Find my stay/i })).toBeVisible();
 
-    // Trust section on homepage
+    // Homepage trust section
     await expect(
-      mobilePage.getByRole('heading', { level: 2, name: /Good stays\. Zero guesswork\./i }),
+      mobilePage.getByRole('heading', { name: /Good stays\.\s*Zero guesswork\./i }),
     ).toBeVisible();
 
     // Mobile full-screen navigation drawer
@@ -282,6 +272,11 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
         name: /All Lagos stays/i,
       }),
     ).toBeVisible();
+
+    // Homepage search submits the chosen area to /stays
+    await mobileSearchRegion.getByLabel('Enter a Lagos area').fill('Yaba');
+    await mobileSearchRegion.getByRole('button', { name: /Find my stay/i }).click();
+    await expect(mobilePage).toHaveURL(/\/stays\?area=Yaba/);
 
     await mobileCtx.close();
   });

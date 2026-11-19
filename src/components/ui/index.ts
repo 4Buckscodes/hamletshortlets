@@ -22,3 +22,4 @@ export { ThemeSwitch } from './ThemeSwitch';
 export { useCountUp } from './useCountUp';
 export * from './theme';
 export { cx } from './cx';
+export { useActiveTabInView } from './useActiveTabInView';

@@ -162,9 +162,10 @@ export default function PartnerStartDashboard() {
     membership?.primary_role;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
+        <div>
         <p className="eyebrow">HAMLET Partner Network</p>
         <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
           {loading ? 'Preparing your workspace' : `Welcome, ${first}.`}
@@ -175,6 +176,7 @@ export default function PartnerStartDashboard() {
         <p className="mt-2.5 max-w-2xl text-xs leading-relaxed text-ink-500">
           {APPROVED_OWNER_SERVICES_POLICY_COPY}
         </p>
+        </div>
 
         {error && (
           <div
@@ -274,6 +276,9 @@ export default function PartnerStartDashboard() {
                     />
                   </div>
                 </label>
+                <p className="mt-2 text-xs leading-relaxed text-ink-500">
+                  Your primary role describes your main work. Owners, property managers, operators and agents can use the same account to close eligible bookings and introduce partners.
+                </p>
 
                 <label className="mt-4 block text-xs font-bold text-ink-700">
                   Business / display name

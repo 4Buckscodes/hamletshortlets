@@ -31,17 +31,17 @@ const LIFECYCLE_STATES = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-how-it-works-jsonld" data={HOW_IT_WORKS_SCHEMA} />
 
-      <main className="flex-1">
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">How it works</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">How it works</p>
+            <h1 className="hm-display hm-content-title">
               Booked clearly.{' '}
-              <span className="italic text-brass-300">Paid only when confirmed.</span>
+              <em>Paid only when confirmed.</em>
             </h1>
           </div>
         </section>

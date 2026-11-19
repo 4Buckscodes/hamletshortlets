@@ -22,7 +22,10 @@ describe('locked referral capture and static hero', () => {
   it('preserves referral attribution during partner application resubmission', () => {
     expect(resubmissionMigration).toContain("application_data ->> 'referred_by_code'");
     expect(resubmissionMigration).toContain("referred_by_code = nullif(clean_referral_code, '')");
-    expect(resubmissionMigration).toContain('update of referred_by_code, applicant_id on public.partner_applications');
+    // The resubmission RPC relies on the BEFORE UPDATE validation trigger defined
+    // in 20261029100000_lock_signup_referral_attribution.sql (not redefined here).
+    expect(resubmissionMigration).toMatch(/BEFORE UPDATE trigger from the prior migration/);
+    expect(migration).toContain('update of referred_by_code, applicant_id on public.partner_applications');
   });
 
   it('passes the captured guest referral code into auth metadata and renders it read-only', () => {

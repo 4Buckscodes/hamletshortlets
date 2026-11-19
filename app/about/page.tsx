@@ -67,22 +67,22 @@ const FOUR_PILLARS = [
 
 export default function AboutPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-about-jsonld" data={ABOUT_PAGE_SCHEMA} />
 
-      <main className="flex-1">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
         {/* Midnight Navy Hero */}
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">
               {HAMLET_BRAND_NAME} · By {HAMLET_PARENT_COMPANY}
             </p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+            <h1 className="hm-display hm-content-title">
               Shortlet stays,{' '}
-              <span className="italic text-brass-300">with accountability.</span>
+              <em>with accountability.</em>
             </h1>
-            <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+            <p className="hm-body hm-content-intro">
               Built by <strong className="text-white">{HAMLET_PARENT_COMPANY}</strong> for verified Lagos shortlets.
             </p>
           </div>
