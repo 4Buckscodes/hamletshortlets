@@ -106,8 +106,8 @@ export default function AdminCommunicationsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="m-0 text-sm font-bold text-ink-900">{row.title}</h2>
-                      {!row.read_at && <span className="rounded-full bg-brass-100 px-2 py-1 text-[10px] font-bold text-brass-800">NEW</span>}
-                      <span className="rounded-full bg-ink-50 px-2 py-1 text-[10px] font-semibold text-ink-600">{DELIVERY_LABELS[row.delivery_status]}</span>
+                      {!row.read_at && <span className="rounded-full bg-brass-100 px-2 py-1 text-[11px] font-bold text-brass-800">NEW</span>}
+                      <span className="rounded-full bg-ink-50 px-2 py-1 text-[11px] font-semibold text-ink-600">{DELIVERY_LABELS[row.delivery_status]}</span>
                     </div>
                     <p className="mt-2 text-sm text-ink-700">{row.message}</p>
                     <p className="mt-2 text-xs text-ink-500">{row.event_type} · {new Date(row.created_at).toLocaleString('en-NG')} · Attempts: {row.delivery_attempts}{row.delivered_at ? ` · Accepted: ${new Date(row.delivered_at).toLocaleString('en-NG')}` : ''}</p>

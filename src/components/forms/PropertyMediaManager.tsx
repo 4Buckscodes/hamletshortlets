@@ -871,18 +871,18 @@ export function PropertyMediaManager({
                   />
                   <div className="pointer-events-none absolute inset-x-2 top-2 flex items-center justify-between gap-1.5">
                     {isCover ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/90 px-2.5 py-1 text-[10px] font-bold text-white">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/90 px-2.5 py-1 text-[11px] font-bold text-white">
                         <Star className="h-3 w-3 shrink-0 fill-brass-400 text-brass-400" />
                         Cover photo
                       </span>
                     ) : (
-                      <span className="rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-bold text-white">
+                      <span className="rounded-full bg-ink-950/70 px-2 py-0.5 text-[11px] font-bold text-white">
                         #{idx + 1}
                       </span>
                     )}
 
                     {meta && meta.optimisedBytes > 0 && (
-                      <span className="rounded-full bg-emerald-950/85 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+                      <span className="rounded-full bg-emerald-950/85 px-2 py-0.5 text-[11px] font-semibold text-emerald-100">
                         {formatBytes(meta.optimisedBytes)} WebP
                       </span>
                     )}

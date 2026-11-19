@@ -31,7 +31,7 @@ export async function generateQrCodePngBuffer(
     margin,
     errorCorrectionLevel: 'M',
     color: {
-      dark: options?.darkColor ?? '#0E1F3B',
+      dark: options?.darkColor ?? '#172119',
       light: options?.lightColor ?? '#FFFFFF',
     },
   });
@@ -47,7 +47,7 @@ export async function generateQrCodeDataUrl(
   const buf = await generateQrCodePngBuffer(targetUrl, {
     size: options?.size ?? 512,
     margin: options?.margin ?? 4,
-    darkColor: options?.darkColor ?? '#0E1F3B',
+    darkColor: options?.darkColor ?? '#172119',
     lightColor: options?.lightColor ?? '#FFFFFF',
   });
   return `data:image/png;base64,${buf.toString('base64')}`;

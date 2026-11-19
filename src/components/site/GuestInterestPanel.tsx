@@ -220,7 +220,7 @@ export function GuestInterestPanel({
                 setConsent(event.target.checked);
                 if (error) setError('');
               }}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[#0E1F3B]"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#172119]"
             />
             <span>
               I consent to HAMLET contacting me by email when relevant verified stays open in Lagos.

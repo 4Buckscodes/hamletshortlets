@@ -698,7 +698,7 @@ function PartnerMarketingContent() {
                                   {spec.label}
                                 </p>
                                 <p
-                                  className={`m-0 mt-0.5 font-mono text-[10px] ${
+                                  className={`m-0 mt-0.5 font-mono text-[11px] ${
                                     active ? 'text-brass-400' : 'text-ink-500'
                                   }`}
                                 >
@@ -732,7 +732,7 @@ function PartnerMarketingContent() {
                                 <p className="m-0 text-xs font-extrabold">
                                   {t.label}
                                 </p>
-                                <p className="m-0 mt-0.5 text-[10px] text-ink-500">
+                                <p className="m-0 mt-0.5 text-[11px] text-ink-500">
                                   {t.summary}
                                 </p>
                               </button>
@@ -897,7 +897,7 @@ function PartnerMarketingContent() {
                               Branded HAMLET QR
                             </p>
                             <p
-                              className={`m-0 mt-0.5 text-[10px] ${
+                              className={`m-0 mt-0.5 text-[11px] ${
                                 qrVariant === 'branded'
                                   ? 'text-brass-400'
                                   : 'text-ink-500'
@@ -920,7 +920,7 @@ function PartnerMarketingContent() {
                               Standalone QR
                             </p>
                             <p
-                              className={`m-0 mt-0.5 text-[10px] ${
+                              className={`m-0 mt-0.5 text-[11px] ${
                                 qrVariant === 'standalone'
                                   ? 'text-brass-400'
                                   : 'text-ink-500'
@@ -941,7 +941,7 @@ function PartnerMarketingContent() {
                             <p className="m-0 text-xs font-extrabold">
                               Card + embedded QR →
                             </p>
-                            <p className="m-0 mt-0.5 text-[10px] text-ink-500">
+                            <p className="m-0 mt-0.5 text-[11px] text-ink-500">
                               Full photo flyer with QR
                             </p>
                           </button>

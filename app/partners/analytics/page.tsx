@@ -414,26 +414,26 @@ export default function PartnerMarketingAnalyticsPage() {
                               {row.title}
                             </h3>
                           </div>
-                          <span className="rounded-full bg-paper px-2.5 py-0.5 text-[10px] font-bold text-ink-700">
+                          <span className="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-bold text-ink-700">
                             {row.shares} shares
                           </span>
                         </div>
 
                         <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-xs">
                           <div>
-                            <dt className="text-[10px] text-ink-500">Visits</dt>
+                            <dt className="text-[11px] text-ink-500">Visits</dt>
                             <dd className="m-0 font-mono font-bold text-ink-900">
                               {row.visits} ({row.unique_visitors}u)
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-[10px] text-ink-500">Requests</dt>
+                            <dt className="text-[11px] text-ink-500">Requests</dt>
                             <dd className="m-0 font-mono font-bold text-ink-900">
                               {row.booking_requests} ({row.enquiries} enq)
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-[10px] text-ink-500">Confirmed</dt>
+                            <dt className="text-[11px] text-ink-500">Confirmed</dt>
                             <dd className="m-0 font-mono font-bold text-emerald-800">
                               {row.confirmed_bookings} ({row.completed_bookings} done)
                             </dd>
