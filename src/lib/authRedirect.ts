@@ -490,3 +490,17 @@ export function normalizeDirectPathnameToHash(
   const cleanSearch = search && search !== '?' ? search : '';
   return `/#${pathname}${cleanSearch}`;
 }
+
+/**
+ * True when join_partner_network() rejected only the referral code (unknown,
+ * inactive or self-referral), so the caller can retry without attribution.
+ */
+export function isRejectedReferralCodeError(
+  error: { message?: string | null } | null | undefined,
+): boolean {
+  const message = error?.message ?? '';
+  return (
+    /referral code is invalid or no longer active/i.test(message) ||
+    /self-referrals/i.test(message)
+  );
+}

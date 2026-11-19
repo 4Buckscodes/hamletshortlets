@@ -5,6 +5,7 @@ import {
   buildWorkspaceSignInPath,
   extractOAuthDisplayName,
   formatOAuthErrorMessage,
+  isRejectedReferralCodeError,
   normalizeDirectPathnameToHash,
   resolveLegacyHashRoute,
   resolveNextAppPostSignInRedirect,
@@ -268,5 +269,24 @@ describe('authRedirect helpers', () => {
       '/partners/start',
     );
     expect(resolveNextAppPostSignInRedirect('guest', '/partners/bookings')).toBe('/account');
+  });
+});
+
+describe('isRejectedReferralCodeError', () => {
+  it('matches join_partner_network referral-code rejections', () => {
+    expect(
+      isRejectedReferralCodeError({ message: 'This partner referral code is invalid or no longer active.' }),
+    ).toBe(true);
+    expect(isRejectedReferralCodeError({ message: 'Self-referrals are not permitted.' })).toBe(true);
+  });
+
+  it('does not match other membership errors', () => {
+    expect(isRejectedReferralCodeError({ message: 'Enter a valid phone number.' })).toBe(false);
+    expect(
+      isRejectedReferralCodeError({
+        message: 'This partner-network membership is suspended. Contact HAMLET support.',
+      }),
+    ).toBe(false);
+    expect(isRejectedReferralCodeError(null)).toBe(false);
   });
 });
