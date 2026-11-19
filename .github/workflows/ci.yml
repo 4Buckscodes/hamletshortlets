@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - feat/nextjs-mobile-first-rebuild
+      - feat/hamlet-v0-design-production-integration
   pull_request:
     branches:
       - main
+      - feat/hamlet-v0-design-production-integration
 
 permissions:
   contents: read
