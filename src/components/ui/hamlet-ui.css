@@ -758,3 +758,21 @@ html[data-hm-dark="on"][data-theme="dark"] .home-area-quick a { border-color: va
 html[data-hm-dark="on"][data-theme="dark"] .home-empty-stays { border-color: var(--hm-line); background: var(--hm-surface); color: var(--hm-text); }
 html[data-hm-dark="on"][data-theme="dark"] .home-belief { background: var(--hm-band-raised); }
 html[data-hm-dark="on"][data-theme="dark"] :is(.secondary-button, .btn-outline) { border-color: var(--hm-line) !important; background: var(--hm-surface) !important; color: var(--hm-text) !important; }
+
+/* ---------- Homepage polish: overrides earlier V0 passes that fought each other ---------- */
+.home-stamp { color: #172119 !important; }
+.home-hero h1 em, .home-hero-copy h1 em { color: var(--hm-coral) !important; text-shadow: none !important; }
+.home-search-form { overflow: hidden; border-radius: 16px !important; }
+.home-search-field, .home-search-field.home-destination { background: var(--hm-surface) !important; }
+.home-search-button {
+  min-width: 180px; border-radius: 0 !important; background: var(--hm-blue) !important; color: #fff !important; box-shadow: none !important;
+  font-size: 14px !important; font-weight: 750 !important; transition: background-color var(--hm-t-micro);
+}
+.home-search-button:hover { background: var(--hm-blue-deep) !important; }
+.home-area-quick a { border-color: var(--hm-line) !important; background: var(--hm-surface) !important; color: var(--hm-text) !important; }
+.home-area-quick a:hover { border-color: var(--hm-text) !important; }
+@media (max-width: 760px) {
+  .home-search-button { min-height: 52px; min-width: 0; }
+}
+.home-search-field.home-destination { border-top: 0 !important; border-bottom: 0 !important; border-left: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+@media (max-width: 760px) { .home-search-field.home-destination { border-bottom: 1px solid var(--hm-line-soft) !important; } }
