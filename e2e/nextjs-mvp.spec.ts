@@ -75,8 +75,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     }
 
     const heroBg = await page
-      .getByRole('main')
-      .locator('section')
+      .locator('main section')
       .first()
       .evaluate(el => getComputedStyle(el).backgroundColor);
     expect(heroBg).not.toBe('rgba(0, 0, 0, 0)');
