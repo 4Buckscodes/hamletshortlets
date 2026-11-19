@@ -15,7 +15,7 @@ const destinations = [
 export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
   const featured = approvedStays.slice(0, 6);
   return (
-    <div className="home-page">
+    <div className="home-page" role="main">
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-shell home-hero-grid">
           <div className="home-hero-copy">
