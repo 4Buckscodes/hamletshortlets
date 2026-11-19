@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any -- prototype uses heterogeneous Lucide icon components and compact sample records */
+
 import { useState } from 'react';
 import {
   ArrowRight, ArrowUpRight, Bell, CalendarDays, Check, ChevronRight,
