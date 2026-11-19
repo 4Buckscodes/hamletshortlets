@@ -170,9 +170,9 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     expect(lagosPage).toContain('Shomolu');
     expect(lagosPage).toContain('Surulere');
 
-    // Progressive step headers remain on guest, support and partner onboarding forms.
+    // Progressive step headers remain on support and partner onboarding forms. The guest booking
+    // card follows the approved StayDetail design: one short form, no stepper.
     for (const progressiveFile of [
-      'app/stays/[id]/booking-request-form.tsx',
       'app/account/issues/page.tsx',
       'app/partners/apply/partner-application-form.tsx',
     ]) {

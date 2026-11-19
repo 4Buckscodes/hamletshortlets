@@ -950,3 +950,20 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-stays-strip .hm-chip[aria-pressed
   .hm-gallery-main { aspect-ratio: 16 / 9; }
   .hm-detail-title { font-size: clamp(30px, 8.4vw, 40px); }
 }
+
+/* ---------- Stay detail body (design: StayDetail) ---------- */
+.hm-h4 { margin: 0; font-family: var(--hm-serif); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.15; }
+.hm-detail-content { gap: 32px !important; }
+.hm-detail-block { display: flex; flex-direction: column; gap: 12px; }
+.hm-detail-block .hm-h3 { font-size: clamp(22px, 2.4vw, 28px); }
+.hm-detail-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .hm-detail-pair { grid-template-columns: 1fr; } }
+.hm-detail-mini { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
+.hm-detail-verified-panel { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 18px; padding: 26px; border-radius: 16px; background: var(--hm-band); color: var(--hm-on-band); }
+.hm-detail-verified-panel > div { display: flex; flex-direction: column; gap: 6px; }
+.hm-detail-verified-panel .hm-meta { color: var(--hm-on-band-muted); }
+.hm-detail-verified-icon { color: var(--hm-lime); }
+html[data-hm-dark="on"][data-theme="dark"] .hm-detail-verified-panel { background: var(--hm-band-raised); }
+.hm-booking-scope .hm-date-wrap { position: relative; display: block; }
+.hm-booking-scope .hm-date-ph { left: 15px; }
+.hm-booking-form { display: flex; flex-direction: column; gap: 14px; }

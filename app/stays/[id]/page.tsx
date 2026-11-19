@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, BadgeCheck, Bath, BedDouble, Check, CheckCircle2, Clock, MapPin, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Bath, BedDouble, Check, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import {
   formatAccommodationLabel,
@@ -24,27 +24,12 @@ import {
   HAMLET_CANONICAL_ORIGIN,
 } from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
-import { StatusPill, type StatusTone } from '@/components/ui';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
 type Props = { params: Promise<{ id: string }> };
-
-const PILLAR_LABELS: Array<{ key: string; label: string }> = [
-  { key: 'ownership', label: 'Ownership / title evidence' },
-  { key: 'identity', label: 'Partner identity check' },
-  { key: 'authority', label: 'Authority to list' },
-  { key: 'inspection', label: 'Physical property inspection' },
-];
-
-const STATUS_BADGE: Record<string, { text: string; tone: StatusTone }> = {
-  verified: { text: 'Verified by HAMLET', tone: 'ok' },
-  self_reported: { text: 'Self-reported', tone: 'neutral' },
-  pending_review: { text: 'Pending review', tone: 'warn' },
-  missing: { text: 'Not yet provided', tone: 'neutral' },
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -142,7 +127,6 @@ export default async function PropertyDetailPage({ params }: Props) {
   const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
   const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
   const images = stay.image_urls ?? [];
-  const verification = stay.verification ?? {};
   const structuredData = buildPropertyDetailSchema({
     stay,
     publicLocationSummary: wayfinderMeta.public_location_summary,
@@ -162,20 +146,16 @@ export default async function PropertyDetailPage({ params }: Props) {
         <section className="hm-band hm-band-arrive" aria-labelledby="stay-title">
           <div className="hm-shell hm-band-inner hm-detail-band">
             <Link href="/stays" className="hm-detail-back">
-              <ArrowLeft size={16} aria-hidden="true" /> All Lagos stays
+              <ArrowLeft size={16} aria-hidden="true" /> All Lagos stays · {place}
             </Link>
             <div className="hm-band-copy">
               <p className="hm-label">
                 <MapPin size={14} aria-hidden="true" />
-                {place}, Lagos · {accommodationLabel}
+                {trust.verified ? 'Verified stay · ' : ''}{place}, Lagos
               </p>
               <h1 id="stay-title" className="hm-display hm-detail-title">
                 {stay.title}
               </h1>
-              <span className={trust.verified ? 'hm-detail-trust hm-detail-trust-ok' : 'hm-detail-trust'}>
-                {trust.verified ? <BadgeCheck size={15} aria-hidden="true" /> : <CheckCircle2 size={15} aria-hidden="true" />}
-                {trust.badge}
-              </span>
             </div>
             <StayGallery title={stay.title} images={images} />
           </div>
@@ -209,10 +189,11 @@ export default async function PropertyDetailPage({ params }: Props) {
                   <Users size={16} aria-hidden="true" />
                   Up to {stay.capacity ?? 2} guests
                 </li>
+                <li>{accommodationLabel}</li>
                 {stay.bed_setup && <li>{stay.bed_setup}</li>}
               </ul>
 
-              <section data-hamlet-reveal="" className="hm-reveal hm-detail-section" aria-labelledby="stay-location">
+              <section className="hm-detail-block" aria-labelledby="stay-location">
                 <p className="hm-label">{label('Location')}</p>
                 <h2 id="stay-location" className="hm-h3">
                   {place}
@@ -220,7 +201,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <p className="hm-body">
                   {wayfinderMeta.public_location_summary ||
                     stay.public_address ||
-                    `Located in ${stay.area || 'Lagos'}. Exact check-in details unlock once confirmed.`}
+                    `Located in ${stay.area || 'Lagos'}.`}
                 </p>
                 {wayfinderMeta.public_landmarks && wayfinderMeta.public_landmarks.length > 0 && (
                   <ul className="hm-detail-tags">
@@ -229,70 +210,62 @@ export default async function PropertyDetailPage({ params }: Props) {
                     ))}
                   </ul>
                 )}
-                <p className="hm-meta hm-detail-note">
-                  <Clock size={15} aria-hidden="true" />
-                  Host confirms dates before payment opens. The exact address and arrival guide unlock after confirmation.
-                </p>
+                <p className="hm-meta">The exact address and arrival guidance are shared once your booking is confirmed and paid.</p>
               </section>
 
               {hasAmenities && (
-                <section data-hamlet-reveal="" className="hm-reveal hm-detail-section" aria-labelledby="stay-amenities">
-                  <p className="hm-label">{label('Amenities')}</p>
-                  <h2 id="stay-amenities" className="hm-h3">
-                    What’s in the place
-                  </h2>
-                  <ul className="hm-detail-amenities">
-                    {stay.amenities!.map(amenity => (
-                      <li key={amenity}>
-                        <Check size={16} aria-hidden="true" />
-                        {amenity}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
+                <>
+                  <hr className="hm-rule" />
+                  <section className="hm-detail-block" aria-labelledby="stay-amenities">
+                    <p className="hm-label" id="stay-amenities">{label('Amenities')}</p>
+                    <ul className="hm-detail-amenities">
+                      {stay.amenities!.map(amenity => (
+                        <li key={amenity}>
+                          <Check size={16} aria-hidden="true" />
+                          {amenity}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                </>
               )}
 
-              <section data-hamlet-reveal="" className={trust.verified ? 'hm-reveal hm-detail-section hm-detail-verified' : 'hm-reveal hm-detail-section'} aria-labelledby="stay-verification">
-                <p className="hm-label">{label('Verification')}</p>
-                <h2 id="stay-verification" className="hm-h3">
-                  <ShieldCheck size={20} aria-hidden="true" /> Verification status
-                </h2>
-                <ul className="hm-detail-pillars">
-                  {PILLAR_LABELS.map(({ key, label: pillar }) => {
-                    const raw = verification[key] || 'pending_review';
-                    const badge = STATUS_BADGE[raw] || STATUS_BADGE.pending_review;
-                    return (
-                      <li key={key}>
-                        <span>{pillar}</span>
-                        <StatusPill tone={badge.tone}>{badge.text}</StatusPill>
-                      </li>
-                    );
-                  })}
-                </ul>
-                {trust.verified && <p className="hm-meta">Listing, photos and partner identity were reviewed before this stay went live. Payment is only taken after the partner accepts your request.</p>}
-              </section>
-
-              <section data-hamlet-reveal="" className="hm-reveal hm-detail-section" aria-labelledby="stay-rules">
-                <p className="hm-label">{label('House rules & caution')}</p>
-                <h2 id="stay-rules" className="hm-h3">
-                  House rules
-                </h2>
-                {stay.house_rules && stay.house_rules.length > 0 ? (
-                  <ul className="hm-detail-rules">
-                    {stay.house_rules.map(rule => (
-                      <li key={rule}>{rule}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="hm-body">Valid ID at check-in, guests within stated capacity, and no unauthorized events.</p>
-                )}
-                {Number(stay.refundable_deposit || 0) > 0 && (
-                  <p className="hm-notice">
-                    <span>
-                      <strong>Refundable caution deposit:</strong> Itemised separately without service fee or FX buffer; refunded after post-checkout inspection.
-                    </span>
+              <hr className="hm-rule" />
+              <div className="hm-detail-pair">
+                <section className="hm-card hm-detail-mini" aria-labelledby="stay-rules">
+                  <p className="hm-label" id="stay-rules">{label('House rules')}</p>
+                  {stay.house_rules && stay.house_rules.length > 0 ? (
+                    <ul className="hm-detail-rules">
+                      {stay.house_rules.map(rule => (
+                        <li key={rule}>{rule}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="hm-meta">Valid ID at check-in · Guests within stated capacity · No parties or events</p>
+                  )}
+                </section>
+                <section className="hm-card hm-detail-mini" aria-labelledby="stay-caution">
+                  <p className="hm-label" id="stay-caution">{label('Caution terms')}</p>
+                  <p className="hm-meta">
+                    {Number(stay.refundable_deposit || 0) > 0
+                      ? 'A refundable caution deposit is held for this stay and returned after check-out inspection, under the partner’s caution terms.'
+                      : 'No caution deposit is required for this stay.'}
                   </p>
-                )}
+                </section>
+              </div>
+
+              <section className="hm-detail-verified-panel" aria-labelledby="stay-verification">
+                <span className="hm-detail-verified-icon" aria-hidden="true">
+                  <ShieldCheck size={26} />
+                </span>
+                <div>
+                  <h2 id="stay-verification" className="hm-h4">{trust.verified ? 'Verified by HAMLET' : trust.badge}</h2>
+                  <p className="hm-meta">
+                    {trust.verified
+                      ? 'Listing, photos and partner identity were reviewed before this stay went live. Payment is only taken after the partner accepts your request.'
+                      : 'HAMLET is still reviewing this listing. Payment is only taken after the partner accepts your request.'}
+                  </p>
+                </div>
               </section>
             </div>
 
