@@ -72,7 +72,7 @@ begin
     return prof.referral_code;
   end if;
 
-  new_code := public.generate_unique_referral_code(prof.full_name);
+  new_code := public.generate_unique_referral_code(coalesce(prof.full_name, 'HAMLET Partner'));
   update public.profiles set referral_code = new_code where id = actor_id;
   return new_code;
 end;
