@@ -5,7 +5,7 @@ import {
   ArrowRight, ArrowUpRight, Bell, CalendarDays, Check, ChevronRight,
   Heart, Home, LayoutDashboard, MapPin, Menu, Search, ShieldCheck,
   Users, Wallet, X, Sparkles, FileCheck2, AlertTriangle, CreditCard,
-  BedDouble, Bath, Wifi, Clock3, Filter, CalendarCheck, ChartNoAxesCombined, Plus,
+  BedDouble, Bath, Wifi, Zap, CarFront, MessageCircle, Clock3, Filter, CalendarCheck, ChartNoAxesCombined, Plus,
 } from 'lucide-react';
 
 type Area = 'guest' | 'partner' | 'admin';
