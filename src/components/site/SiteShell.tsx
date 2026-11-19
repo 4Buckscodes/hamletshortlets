@@ -741,11 +741,14 @@ export function SiteFooter() {
 export function StayNightlyPrice({
   guestNightlyNgn,
   className = '',
+  withFeesNote = false,
 }: {
   guestNightlyNgn: number;
   className?: string;
+  /** Append "· fees included" when the surrounding card does not already say it. */
+  withFeesNote?: boolean;
 }) {
-  const { formatPrice, currency } = useCurrency();
+  const { formatPrice } = useCurrency();
   const domesticNightly = getValidPublicGuestNightlyNgn(guestNightlyNgn);
 
   if (domesticNightly === null) {
@@ -758,11 +761,11 @@ export function StayNightlyPrice({
 
   return (
     <span className={className}>
-      <strong className="font-mono text-lg font-extrabold text-ink-900">
+      <strong className="hm-money text-lg font-extrabold text-ink-900">
         {formatPrice(domesticNightly, { roundWhole: true })}
       </strong>{' '}
       <span className="text-xs font-medium text-ink-500">
-        / night{currency !== 'NGN' ? ` (${currency})` : ''}
+        / night{withFeesNote ? ' · fees included' : ''}
       </span>
     </span>
   );
@@ -954,7 +957,7 @@ export function StayListingCard({
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
-          <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} />
+          <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote />
           <span className="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-ink-900 transition group-hover:translate-x-0.5">
             View stay <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
           </span>

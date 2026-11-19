@@ -33,8 +33,9 @@ export default function SignInForm() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'signup') setMode('signup');
       const requestedRedirect = readRequestedRedirectFromSearch(window.location.search);
+      // Most guests reaching sign-in from a booking are new: open on Create account.
+      if (params.get('mode') === 'signup' || (params.get('mode') !== 'signin' && requestedRedirect?.startsWith('/stays/'))) setMode('signup');
       setRequestedNext(requestedRedirect?.startsWith('/partners') ? '/partners' : requestedRedirect);
       const referralCode = params.get('ref') || window.localStorage.getItem('hamlet:referral-code');
       if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
@@ -46,10 +47,11 @@ export default function SignInForm() {
   }, []);
 
   const isPartnerSignup = Boolean(requestedNext?.startsWith('/partners'));
+  const bookingIntent = Boolean(requestedNext?.startsWith('/stays/'));
   const contextHint = requestedNext?.startsWith('/partners')
     ? 'Create your account and open your partner workspace straight away.'
     : requestedNext?.startsWith('/stays/')
-      ? 'Your selected stay and dates are saved — you will return after signing in.'
+      ? 'Your stay, dates and guests are saved. You will come straight back to send the request.'
       : null;
 
   async function resolveRoleAndNavigate(userId: string, isSignup: boolean) {
@@ -184,7 +186,11 @@ export default function SignInForm() {
 
       <div className="hm-auth-heading">
         <h2 className="hm-h2">
-          {mode === 'signup' ? (
+          {bookingIntent && mode !== 'reset' ? (
+            <>
+              Almost there. <em>{mode === 'signup' ? 'Create an account' : 'Sign in'}</em> to send your request.
+            </>
+          ) : mode === 'signup' ? (
             <>
               Create your <em>account.</em>
             </>

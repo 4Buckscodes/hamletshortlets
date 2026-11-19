@@ -19,7 +19,6 @@ import {
   MAINLAND_AREAS,
   isMainlandArea,
 } from '@/lib/areas';
-import { CURRENCY_SYMBOLS, useCurrency } from '@/lib/currency';
 import {
   ACCOMMODATION_TYPE_OPTIONS,
   BEDROOM_FILTER_OPTIONS,
@@ -65,8 +64,6 @@ export function DiscoveryMarketplace({
   queryError = false,
 }: DiscoveryMarketplaceProps) {
   const router = useRouter();
-  const { currency } = useCurrency();
-  const symbol = CURRENCY_SYMBOLS[currency];
   const railRef = useRef<HTMLDivElement | null>(null);
   const todayIso = useMemo(() => lagosIsoDateOffset(0), []);
 
@@ -337,7 +334,7 @@ export function DiscoveryMarketplace({
               className="hm-btn hm-btn-primary"
               onClick={() => setSearchOpen(false)}
             >
-              Update
+              Find my stay
               <ArrowRight size={16} aria-hidden="true" />
             </a>
           </div>
@@ -542,9 +539,6 @@ export function DiscoveryMarketplace({
                 Checking dates…
               </span>
             )}
-            <span className="hm-meta" style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700 }}>
-              {symbol} ({currency})
-            </span>
           </div>
         </div>
 
@@ -719,7 +713,7 @@ function StayResultCard({ stay, querySuffix, index }: { stay: PublicStayRecord; 
       imageSrc={photo}
       imageAlt={`${stay.title} in ${locationText}`}
       onImageError={() => setFailed(count => count + 1)}
-      tag={[trust.verified ? 'Verified' : 'Approved', area || null, corridor].filter(Boolean).join(' · ')}
+      tag={[trust.verified ? 'Verified' : 'Approved', area || corridor].filter(Boolean).join(' · ')}
       title={stay.title}
       meta={`${formatAccommodationLabel(stay.property_type, stay.bedrooms)}${capacity}`}
       price={<StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} />}

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
-import { lagosIsoDateOffset, nightsBetween } from '@/lib/pricing';
+import { formatNaira, lagosIsoDateOffset, nightsBetween } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -23,6 +23,19 @@ type Props = {
   capacity: number | null;
   firstAvailableDate?: string | null;
 };
+
+function formatDay(iso: string) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  return Number.isNaN(date.getTime())
+    ? iso
+    : date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+function addDays(iso: string, days: number) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
 export default function BookingRequestForm({
   propertyId,
@@ -52,6 +65,19 @@ export default function BookingRequestForm({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [resumed, setResumed] = useState(false);
+
+  useEffect(() => {
+    if (!db) return;
+    let active = true;
+    void db.auth.getSession().then(({ data }) => {
+      if (active) setSignedIn(Boolean(data.session));
+    });
+    return () => {
+      active = false;
+    };
+  }, [db]);
 
   // Hydrate booking intent from URL query params (?checkIn=...&checkOut=...&guests=...)
   useEffect(() => {
@@ -64,6 +90,15 @@ export default function BookingRequestForm({
       if (qOut && /^\d{4}-\d{2}-\d{2}$/.test(qOut)) setCheckOut(qOut);
       if (Number.isInteger(qGuests) && qGuests >= 1 && qGuests <= maxGuests) {
         setGuests(qGuests);
+      }
+      // Back from sign-in with a booking intent: bring the request straight back into view.
+      if (params.get('resume') === '1' && qIn && qOut && qOut > qIn) {
+        setResumed(true);
+        if (window.matchMedia('(max-width: 1023px)').matches) {
+          setMobileSheetOpen(true);
+        } else {
+          document.querySelector('.hm-detail-aside')?.scrollIntoView({ block: 'start' });
+        }
       }
     }, 0);
     return () => window.clearTimeout(timer);
@@ -110,6 +145,7 @@ export default function BookingRequestForm({
     if (checkIn) qs.set('checkIn', checkIn);
     if (checkOut) qs.set('checkOut', checkOut);
     qs.set('guests', String(guests));
+    qs.set('resume', '1');
     const activeShareToken =
       (typeof window !== 'undefined'
         ? extractShareTokenFromSearchParams(new URLSearchParams(window.location.search))
@@ -124,7 +160,7 @@ export default function BookingRequestForm({
     setMessage('');
 
     if (!nights || nights < 1) {
-      setError('Choose a check-in date and a later check-out date.');
+      setError('Choose your check-in and check-out dates to send a request.');
       return;
     }
     if (nights > 60) {
@@ -132,7 +168,7 @@ export default function BookingRequestForm({
       return;
     }
     if (checkIn < minCheckIn) {
-      setError(`Check-in must be on or after ${minCheckIn}.`);
+      setError(`The earliest check-in for this stay is ${formatDay(minCheckIn)}.`);
       return;
     }
     if (guests > maxGuests) {
@@ -191,7 +227,7 @@ export default function BookingRequestForm({
           );
           return;
         }
-        throw new Error(result.error || 'We could not submit the booking request.');
+        throw new Error(result.error || 'We couldn’t send your request. Nothing has been charged; please try again.');
       }
       setCreatedReference(result.booking?.reference || null);
       setMessage(
@@ -202,7 +238,7 @@ export default function BookingRequestForm({
       setError(
         caught instanceof Error
           ? caught.message
-          : 'We could not submit the request. Please try again.',
+          : 'We couldn’t send your request. Check your connection and try again; nothing has been charged.',
       );
     } finally {
       setBusy(false);
@@ -268,7 +304,7 @@ export default function BookingRequestForm({
     }
 
     return (
-      <form onSubmit={handleStepSubmit} className="hm-booking-form">
+      <form onSubmit={handleStepSubmit} className="hm-booking-form" noValidate>
         <div className="hm-booking-dates">
           <FormField label="Check-in">
             {fieldProps => (
@@ -280,7 +316,9 @@ export default function BookingRequestForm({
                   min={minCheckIn}
                   value={checkIn}
                   onChange={e => {
-                    setCheckIn(e.target.value);
+                    const next = e.target.value;
+                    setCheckIn(next);
+                    if (next && (!checkOut || checkOut <= next)) setCheckOut(addDays(next, 1));
                     setError('');
                   }}
                   className="hm-input"
@@ -296,7 +334,7 @@ export default function BookingRequestForm({
                   {...fieldProps}
                   required
                   type="date"
-                  min={checkIn || minCheckIn}
+                  min={checkIn ? addDays(checkIn, 1) : addDays(minCheckIn, 1)}
                   value={checkOut}
                   onChange={e => {
                     setCheckOut(e.target.value);
@@ -330,7 +368,7 @@ export default function BookingRequestForm({
               maxLength={1000}
               value={requests}
               onChange={e => setRequests(e.target.value)}
-              placeholder="Optional"
+              placeholder="e.g. Arriving around 9pm from the airport"
               className="hm-input"
               style={{ resize: 'vertical' }}
             />
@@ -351,19 +389,19 @@ export default function BookingRequestForm({
               <>
                 <div className="hm-booking-line">
                   <span>
-                    All-in stay rate · {nights} {nights === 1 ? 'night' : 'nights'}
+                    {nights} {nights === 1 ? 'night' : 'nights'} · fees included
                   </span>
-                  <span className="font-mono font-semibold">{formatPrice(guestAccommodationTotal)}</span>
+                  <span className="hm-money">{formatPrice(guestAccommodationTotal)}</span>
                 </div>
                 {cleaningFee > 0 && (
                   <div className="hm-booking-line">
                     <span>Cleaning & turnover</span>
-                    <span className="font-mono font-semibold">{formatPrice(cleaningFee)}</span>
+                    <span className="hm-money">{formatPrice(cleaningFee)}</span>
                   </div>
                 )}
                 <div className="hm-booking-total">
-                  <span>Total stay price</span>
-                  <span className="font-mono">{formatPrice(guestStayTotal)}</span>
+                  <span>Total to pay once accepted</span>
+                  <span className="hm-money">{formatPrice(guestStayTotal)}</span>
                 </div>
               </>
             ) : (
@@ -373,13 +411,16 @@ export default function BookingRequestForm({
             )}
             {deposit > 0 && (
               <div className="hm-booking-line hm-booking-line-muted">
-                <span>Refundable caution deposit</span>
-                <span className="font-mono font-semibold">{formatCautionDeposit(deposit)}</span>
+                <span>
+                  Refundable caution deposit
+                  <small>Held separately and returned after check-out</small>
+                </span>
+                <span className="hm-money">{formatCautionDeposit(deposit)}</span>
               </div>
             )}
             {currency !== 'NGN' && nights > 0 && (
               <p className="hm-field-hint" style={{ margin: 0 }}>
-                {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
+                Shown in {currency} at today’s rate, including a 10% exchange buffer. In naira the stay is {formatNaira(guestStayTotal)}.
               </p>
             )}
           </div>
@@ -396,7 +437,11 @@ export default function BookingRequestForm({
           {!busy && <ArrowRight size={16} aria-hidden="true" />}
         </button>
         <p className="hm-field-hint" style={{ margin: 0, textAlign: 'center' }}>
-          You won’t be charged yet. The partner reviews your request first.
+          {resumed && signedIn
+            ? 'Signed in. Your dates are saved; tap Request to book to send it.'
+            : signedIn === false
+              ? 'You won’t be charged yet. Next, sign in or create an account (about 30 seconds) and your request is ready to send.'
+              : 'You won’t be charged yet. The partner reviews your request first.'}
         </p>
       </form>
     );
@@ -411,7 +456,7 @@ export default function BookingRequestForm({
               <>
                 {formatPrice(domesticNightly, { roundWhole: true })}{' '}
                 <span className="hm-meta" style={{ display: 'inline' }}>
-                  / night · fees included{currency !== 'NGN' ? ` (${currency})` : ''}
+                  / night · fees included
                 </span>
               </>
             ) : (
@@ -440,13 +485,13 @@ export default function BookingRequestForm({
                     ? formatPrice(guestStayTotal)
                     : formatPrice(domesticNightly, { roundWhole: true })}
                   <span className="hm-meta" style={{ display: 'inline', marginLeft: 4 }}>
-                    {nights > 0 ? `total (${nights}n)` : '/ night'}
+                    {nights > 0 ? `total · ${nights} ${nights === 1 ? 'night' : 'nights'}` : '/ night · fees included'}
                   </span>
                 </>
               )}
             </p>
             <p className="hm-meta" style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Partner confirms before payment
+              No charge until the partner accepts
             </p>
           </div>
           <button
@@ -455,7 +500,7 @@ export default function BookingRequestForm({
             onClick={() => setMobileSheetOpen(true)}
             className="hm-btn hm-btn-primary"
           >
-            {nights > 0 ? 'Request stay' : 'Check dates'}
+            {nights > 0 ? 'Request to book' : 'Check dates'}
           </button>
         </div>
       </div>

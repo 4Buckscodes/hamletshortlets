@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Bath, BedDouble, Check, MapPin, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bath, BedDouble, Check, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import {
   formatAccommodationLabel,
@@ -23,7 +23,7 @@ import {
   HAMLET_BRAND,
   HAMLET_CANONICAL_ORIGIN,
 } from '@/lib/structured-data';
-import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { SiteHeader, SiteFooter, StayNightlyPrice } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
@@ -148,14 +148,22 @@ export default async function PropertyDetailPage({ params }: Props) {
             <Link href="/stays" className="hm-detail-back">
               <ArrowLeft size={16} aria-hidden="true" /> All Lagos stays · {place}
             </Link>
-            <div className="hm-band-copy">
-              <p className="hm-label">
-                <MapPin size={14} aria-hidden="true" />
-                {trust.verified ? 'Verified stay · ' : ''}{place}, Lagos
-              </p>
-              <h1 id="stay-title" className="hm-display hm-detail-title">
-                {stay.title}
-              </h1>
+            <div className="hm-band-row">
+              <div className="hm-band-copy">
+                <p className="hm-label">
+                  <MapPin size={14} aria-hidden="true" />
+                  {trust.verified ? 'Verified stay · ' : ''}{place}, Lagos
+                </p>
+                <h1 id="stay-title" className="hm-display hm-detail-title">
+                  {stay.title}
+                </h1>
+              </div>
+              <div className="hm-detail-band-action">
+                <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote className="hm-detail-band-price" />
+                <a href="#request-to-book" className="hm-btn hm-btn-lime">
+                  Check dates <ArrowRight size={16} aria-hidden="true" />
+                </a>
+              </div>
             </div>
             <StayGallery title={stay.title} images={images} />
           </div>
@@ -269,7 +277,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               </section>
             </div>
 
-            <aside className="hm-detail-aside" aria-label="Request to book">
+            <aside id="request-to-book" className="hm-detail-aside" aria-label="Request to book">
               <BookingRequestForm
                 propertyId={stay.id}
                 propertyTitle={stay.title}
