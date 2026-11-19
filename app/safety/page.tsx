@@ -130,7 +130,7 @@ export default function SafetyPage() {
               {HONEST_STATUSES.map(item => (
                 <div
                   key={item.code}
-                  className="rounded-2xl border border-ink-100 bg-paper/75 p-4"
+                  className="border-t border-ink-200 pt-4"
                 >
                   <span
                     className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold ${item.cls}`}

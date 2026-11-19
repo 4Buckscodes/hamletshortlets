@@ -139,7 +139,7 @@ export default function LagosGuidePage() {
               </div>
               <Link
                 href="/stays?area=Lagos+Mainland"
-                className="btn-outline !rounded-full !px-5 !py-2 text-xs"
+                className="btn-outline !min-h-[44px] !rounded-full !px-5 !py-2 text-sm"
               >
                 Browse Mainland <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
@@ -150,7 +150,7 @@ export default function LagosGuidePage() {
                 <Link
                   key={chip.label}
                   href={chip.href}
-                  className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-xs font-bold text-ink-700 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
+                  className="inline-flex min-h-[44px] items-center rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-bold text-ink-700 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
                 >
                   {chip.label}
                 </Link>
@@ -207,7 +207,7 @@ export default function LagosGuidePage() {
               </div>
               <Link
                 href="/stays?side=island"
-                className="btn-outline !rounded-full !px-5 !py-2 text-xs"
+                className="btn-outline !min-h-[44px] !rounded-full !px-5 !py-2 text-sm"
               >
                 Browse Island <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>

@@ -55,7 +55,7 @@ export default function HowItWorksPage() {
               {LIFECYCLE_STATES.map(s => (
                 <div
                   key={s.step}
-                  className="rounded-2xl border border-white/12 bg-ink-900/90 p-4"
+                  className="border-t border-white/15 pt-4"
                 >
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brass-500 font-mono text-xs font-black text-ink-950">
                     {s.step}

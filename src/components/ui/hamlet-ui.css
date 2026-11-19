@@ -287,7 +287,7 @@ textarea.hm-input { min-height: 110px; padding: 12px 14px; resize: vertical; }
 
 /* ---------- Theme switch ---------- */
 .hm-theme-switch { display: inline-grid; grid-template-columns: repeat(3, auto); gap: 2px; padding: 4px; border: 1px solid var(--hm-line); border-radius: 999px; background: var(--hm-page); }
-.hm-theme-switch button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--hm-muted); cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+.hm-theme-switch button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--hm-muted); cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
 .hm-theme-switch button[aria-checked="true"] { background: var(--hm-text); color: var(--hm-page); }
 .hm-band .hm-theme-switch { border-color: var(--hm-band-line); background: transparent; }
 .hm-band .hm-theme-switch button { color: var(--hm-on-band-muted); }
@@ -1045,3 +1045,7 @@ input, textarea { caret-color: var(--hm-blue); }
 .home-page .home-search-heading h2::first-letter { color: var(--hm-accent) !important; }
 
 .home-page .home-side-note { white-space: nowrap; }
+
+/* Content pages: comfortable reading measure and the display floor on phones. */
+:is(#terms, #verification, #privacy, #partners, #pricing, #cancellations, #caution) :is(p, li) { max-width: 70ch; }
+@media (max-width: 760px) { .hm-content-title { font-size: clamp(38px, 10.5vw, 52px) !important; } }

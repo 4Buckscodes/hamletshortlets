@@ -102,7 +102,7 @@ export default function AboutPage() {
               {FOUR_PILLARS.map(({ num, Icon, title, body, cta, href }) => (
                 <article
                   key={num}
-                  className="flex flex-col rounded-3xl border border-ink-100 bg-white p-6 shadow-2xs"
+                  className="flex flex-col rounded-3xl border border-ink-100 bg-white p-6"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
@@ -114,7 +114,7 @@ export default function AboutPage() {
                   <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">{body}</p>
                   <Link
                     href={href}
-                    className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-extrabold text-ink-900 transition hover:text-brass-700"
+                    className="mt-auto inline-flex min-h-[44px] items-center gap-1.5 pt-3 text-sm font-extrabold text-ink-900 transition hover:text-brass-700"
                   >
                     {cta} <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                   </Link>
