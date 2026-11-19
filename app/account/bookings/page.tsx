@@ -90,7 +90,7 @@ function LifecycleBar({ status }: { status: string }) {
             <div key={label} className="flex flex-1 items-center last:flex-none">
               <div className="flex flex-col items-center">
                 <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold ${
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold ${
                     done
                       ? 'bg-emerald-700 text-white'
                       : 'border border-ink-200 bg-paper text-ink-400'
@@ -98,7 +98,7 @@ function LifecycleBar({ status }: { status: string }) {
                 >
                   {current > idx ? <Check className="h-3 w-3 shrink-0" /> : idx + 1}
                 </span>
-                <span className="mt-1 hidden text-[10px] font-bold text-ink-600 sm:block">
+                <span className="mt-1 hidden text-[11px] font-bold text-ink-600 sm:block">
                   {label}
                 </span>
               </div>
@@ -442,7 +442,7 @@ export default function GuestBookingsPage() {
                         : formatPrice(Number(b.guest_total || 0))}
                     </strong>
                     {b.quote_currency && b.quote_currency !== 'NGN' && (
-                      <span className="ml-1 text-[10px] font-medium text-ink-500">
+                      <span className="ml-1 text-[11px] font-medium text-ink-500">
                         Locked {b.quote_currency} quote
                       </span>
                     )}

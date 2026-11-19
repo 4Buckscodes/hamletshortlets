@@ -93,6 +93,7 @@ export default async function StaysCataloguePage({
 
       <main className="hm-main" style={{ flex: 1 }}>
         <PageBand
+          className="hm-band-compact"
           headingId="stays-title"
           live={liveCount > 0}
           kicker={liveCount > 0 ? `01 / Explore Lagos stays · ${liveCount} live now` : '01 / Explore Lagos stays'}

@@ -232,7 +232,7 @@ export function StepProgressHeader({
                 }`}
               >
                 <span
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-extrabold ${
+                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-extrabold ${
                     isCurrent
                       ? 'bg-brass-500 text-ink-950'
                       : isDone
@@ -405,7 +405,7 @@ export function OptionCardGroup({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold text-ink-900">{option.label}</span>
                 {option.badge && (
-                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-700">
+                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
                     {option.badge}
                   </span>
                 )}

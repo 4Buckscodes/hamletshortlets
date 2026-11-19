@@ -845,7 +845,7 @@ export function StayListingCard({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/55 to-transparent" />
 
         {corridor && (
-          <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+          <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
             {corridor}
           </span>
         )}
@@ -883,7 +883,7 @@ export function StayListingCard({
             >
               <ChevronRight className="h-4 w-4 shrink-0" />
             </button>
-            <span className="pointer-events-none absolute bottom-2.5 right-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 font-mono text-[10px] font-bold text-white">
+            <span className="pointer-events-none absolute bottom-2.5 right-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 font-mono text-[11px] font-bold text-white">
               {safeIdx + 1} / {usableImages.length}
             </span>
           </>

@@ -67,7 +67,7 @@ export function CeremonyExplorer() {
               </span>
               <div className="min-w-0 flex-1">
                 <p
-                  className={`text-[10.5px] font-bold uppercase tracking-wider ${
+                  className={`text-[11px] font-bold uppercase tracking-wider ${
                     selected ? 'text-ink-300' : 'text-ink-400'
                   }`}
                 >
@@ -88,7 +88,7 @@ export function CeremonyExplorer() {
                 <StepIcon className="h-3.5 w-3.5 shrink-0 text-brass-700" />
                 {step.badge}
               </span>
-              <span className="font-mono text-2xl font-black text-ink-200">{step.num}</span>
+              <span aria-hidden="true" className="font-mono text-2xl font-black text-ink-200">{step.num}</span>
             </div>
             <h2 className="mt-4 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
               {step.title}

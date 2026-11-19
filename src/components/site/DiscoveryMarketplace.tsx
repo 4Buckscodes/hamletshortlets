@@ -284,7 +284,7 @@ export function DiscoveryMarketplace({
   return (
     <div className="hm-discovery" style={{ display: 'grid', gap: 48 }}>
       {/* Neighbourhood rail: image toggles that filter the results below. */}
-      <section aria-labelledby="neighbourhood-rail-heading" style={{ display: 'grid', gap: 18 }}>
+      <section className="hm-discovery-rail" aria-labelledby="neighbourhood-rail-heading" style={{ display: 'grid', gap: 18 }}>
         <SectionHeader
           id="neighbourhood-rail-heading"
           label="Island & Lagos Mainland corridors"
@@ -340,7 +340,7 @@ export function DiscoveryMarketplace({
       </section>
 
       {/* Results: filters, live summary and the stay grid. */}
-      <section id="places-worth-staying-in" aria-labelledby="discovery-results-heading" style={{ display: 'grid', gap: 22, scrollMarginTop: 96 }}>
+      <section className="hm-discovery-results" id="places-worth-staying-in" aria-labelledby="discovery-results-heading" style={{ display: 'grid', gap: 22, scrollMarginTop: 96 }}>
         <SectionHeader
           id="discovery-results-heading"
           label={mode === 'homepage' ? 'Verified Lagos shortlets' : '02 / Real places, live listings'}
@@ -357,7 +357,7 @@ export function DiscoveryMarketplace({
 
         <Card style={{ display: 'grid', gap: 16 }}>
           <div className="hm-filter-toolbar">
-            <ChipRow label="Lagos corridor">
+            <ChipRow label="Lagos corridor" className="hm-chip-row-scroll">
               {(
                 [
                   { id: 'all', label: 'All Lagos' },
@@ -371,7 +371,7 @@ export function DiscoveryMarketplace({
               ))}
             </ChipRow>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+            <div className="hm-filter-actions" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
               <Chip className="hm-only-compact" onClick={() => setDrawerOpen(true)}>
                 <SlidersHorizontal size={14} aria-hidden="true" />
                 Filters{activeBadges.length > 0 ? ` (${activeBadges.length})` : ''}

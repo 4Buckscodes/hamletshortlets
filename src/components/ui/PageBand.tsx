@@ -81,7 +81,11 @@ export function PageBand({ kicker, title, accent, intro, actions, children, arri
           {media ? (
             <div className="hm-band-media">
               <div className="hm-media hm-band-media-main">
-                <img src={media.src} alt={media.alt} fetchPriority="high" />
+                <picture>
+                  {/* The band image is hidden on phones; a 1px placeholder there means it never downloads. */}
+                  <source media="(max-width: 760px)" srcSet="data:image/gif;base64,R0lGODlhAQABAAAAACw=" />
+                  <img src={media.src} alt={media.alt} fetchPriority="high" />
+                </picture>
                 <span className="hm-media-tint" aria-hidden="true" />
                 {media.caption ? (
                   <span className={cx('hm-band-media-caption', media.inset && 'hm-band-media-caption-offset')}>

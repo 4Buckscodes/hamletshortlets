@@ -4,6 +4,10 @@
  * Every class is prefixed `hm-` so the kit can be adopted page by page next to legacy styles.
  */
 
+/* Self-hosted variable fonts, Latin subset only (₦ and other glyphs fall back to the system font). */
+@font-face { font-family: "Inter Variable"; font-style: normal; font-display: swap; font-weight: 100 900; src: url("/fonts/inter-latin-wght.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair Display Variable"; font-style: normal; font-display: swap; font-weight: 400 900; src: url("/fonts/playfair-display-latin-wght.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 /* ---------- Tokens (light) ---------- */
 :root {
   --hm-forest: #172119;
@@ -384,7 +388,7 @@ textarea.hm-input { min-height: 110px; padding: 12px 14px; resize: vertical; }
 .hm-rail-item[aria-pressed="true"] { border-color: var(--hm-text); background: var(--hm-text); color: var(--hm-page); }
 .hm-rail-item img { width: 60px; height: 60px; flex: none; border-radius: 10px; object-fit: cover; filter: var(--hm-photo-filter); }
 .hm-rail-item-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
-.hm-rail-item-text small { color: var(--hm-label); font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.hm-rail-item-text small { color: var(--hm-label); font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .hm-rail-item[aria-pressed="true"] small { color: var(--hm-lime); }
 .hm-rail-item-text b { overflow: hidden; font-family: var(--hm-serif); font-size: 17px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .hm-rail-item-text span { overflow: hidden; color: var(--hm-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
@@ -776,3 +780,71 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.secondary-button, .btn-outline) 
 }
 .home-search-field.home-destination { border-top: 0 !important; border-bottom: 0 !important; border-left: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 @media (max-width: 760px) { .home-search-field.home-destination { border-bottom: 1px solid var(--hm-line-soft) !important; } }
+
+/* ---------- Guideline compliance pass (type floor 11px, contrast 4.5:1, retired palette) ---------- */
+/* Homepage: labels to 11px, body copy to 15px, guideline label/accent colours on light. */
+.home-kicker, .home-section-label, .home-coordinate, .home-hero-bottom, .home-search-heading span, .home-search-field > span, .home-area-quick > span, .home-destination-meta { font-size: 11px !important; letter-spacing: 0.14em !important; }
+.home-image-index, .home-side-note { font-size: 11px !important; }
+.home-area-quick a { font-size: 13px !important; padding: 8px 14px !important; }
+.home-intro-row p, .home-section-aside, .home-belief-copy p { font-size: 15px !important; line-height: 1.7 !important; }
+.home-belief-points strong { font-size: 15px !important; }
+.home-belief-points small { font-size: 13px !important; line-height: 1.5 !important; }
+.home-belief-copy a, .home-all-stays { font-size: 14px !important; }
+.home-destination-caption small { font-size: 12px !important; }
+.home-search-field select, .home-search-field input { font-size: 16px !important; }
+.home-section-label { color: var(--hm-label) !important; }
+.home-belief .home-section-label { color: var(--hm-lime) !important; }
+.home-section-top h2 em { color: var(--hm-accent) !important; }
+.home-search-field, .home-search-field option { color: var(--hm-text) !important; border-color: var(--hm-line-soft) !important; }
+.home-search-field option { background: var(--hm-surface); }
+@media (max-width: 760px) { .home-image-index { font-size: 11px !important; padding: 10px 12px !important; } }
+
+/* Lime/brass fills always carry forest text, in both themes. */
+:is(.bg-brass-400, .bg-brass-500)[class*="text-ink-9"] { color: #172119 !important; }
+
+/* Dark: selected rail tile reads lime on forest text, empty-state link stays readable. */
+html[data-hm-dark="on"][data-theme="dark"] .hm-rail-item[aria-pressed="true"] { border-color: var(--hm-lime); background: var(--hm-lime); color: #172119; }
+html[data-hm-dark="on"][data-theme="dark"] .hm-rail-item[aria-pressed="true"] :is(small, .hm-rail-item-text span) { color: rgba(23, 33, 25, 0.78); }
+html[data-hm-dark="on"][data-theme="dark"] .home-empty-stays a { color: var(--hm-text) !important; }
+html[data-hm-dark="on"][data-theme="dark"] .home-section-label { color: var(--hm-lime) !important; }
+html[data-hm-dark="on"][data-theme="dark"] .home-section-top h2 em { color: var(--hm-coral) !important; }
+
+/* Hero stamp: 11px type floor needs a slightly larger badge. */
+.home-stamp { width: 132px !important; height: 132px !important; }
+.home-stamp span { font-size: 11px !important; letter-spacing: 0.06em !important; }
+.home-stamp strong { font-size: 24px !important; }
+@media (max-width: 760px) { .home-stamp { width: 112px !important; height: 112px !important; } .home-stamp strong { font-size: 20px !important; } .home-stamp span { font-size: 11px !important; letter-spacing: 0.02em !important; } }
+html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { background-color: var(--hm-sand); }
+.home-section-top h2 em, .home-belief h2 em, .home-hero h1 span { text-shadow: none !important; }
+
+/* ---------- Mobile-first: get people to a stay fast ---------- */
+.home-hero-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.home-hero-cta .hm-btn { min-height: 48px; }
+.home-area-quick a { min-height: 44px; display: inline-flex !important; align-items: center; padding: 0 16px !important; font-size: 13px !important; }
+.home-scroll { min-width: 44px; min-height: 44px; }
+@media (max-width: 760px) {
+  .home-hero h1 { font-size: clamp(52px, 14.5vw, 76px) !important; line-height: .86 !important; }
+  .home-hero-cta { margin-top: 20px; }
+  .home-hero-cta .hm-btn { flex: 1 1 140px; justify-content: center; }
+  .home-intro-row { margin-top: 18px !important; }
+  /* Stays: results first, the neighbourhood rail after them; skip decorative band media. */
+  .hm-main .hm-band-media { display: none; }
+  .hm-discovery { gap: 32px !important; }
+  .hm-discovery-results { order: 1; }
+  .hm-discovery-rail { order: 2; }
+  .hm-footer a, .hm-drawer a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+.hm-media picture, .home-photo-frame picture { display: contents; }
+@media (max-width: 760px) {
+  /* Stays band on phones: title + live count + one cue; the rest is below the results. */
+  .hm-band-compact .hm-band-aside > p, .hm-band-compact .hm-band-actions { display: none; }
+  .hm-band-compact .hm-band-copy { gap: 14px; }
+  .hm-chip-row-scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; scroll-snap-type: x proximity; }
+  .hm-chip-row-scroll::-webkit-scrollbar { display: none; }
+  .hm-chip-row-scroll .hm-chip { flex: none; scroll-snap-align: start; }
+  .hm-filter-toolbar > * { min-width: 0; max-width: 100%; }
+  .hm-filter-actions { width: 100%; flex-wrap: nowrap !important; justify-content: space-between; }
+  .hm-chip, .hm-filter-toolbar .hm-sort .hm-input { min-height: 44px; }
+  /* iOS zooms into any field under 16px on focus; keep every form control at 16px on phones. */
+  input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
+}

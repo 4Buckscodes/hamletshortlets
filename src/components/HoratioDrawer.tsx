@@ -393,7 +393,7 @@ function HoratioDrawer({
               <span className="font-display text-lg font-bold tracking-wide text-white">
                 Horatio
               </span>
-              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-widest text-brass-300">
+              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-brass-300">
                 HAMLET Guide
               </span>
             </div>
@@ -465,7 +465,7 @@ function HoratioDrawer({
                   </div>
                 )}
                 {msg.note && (
-                  <p className="border-t border-ink-100 pt-2 text-[10.5px] font-medium text-ink-500">
+                  <p className="border-t border-ink-100 pt-2 text-[11px] font-medium text-ink-500">
                     {msg.note}
                   </p>
                 )}
@@ -494,7 +494,7 @@ function HoratioDrawer({
               <Send size={15} />
             </button>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-ink-400">
+          <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-ink-400">
             <span className="inline-flex items-center gap-1">
               <Compass size={11} className="shrink-0" /> Suggestion & discovery only
             </span>
