@@ -145,10 +145,11 @@ begin
           where m.user_id = p.id and m.status = ''active''
         ))'
   );
-  if updated = fn then
+  if updated = fn and position('partner_network_memberships' in fn) = 0 then
     raise exception 'Could not patch enforce_booking_request_integrity partner membership checks.';
+  elsif updated <> fn then
+    execute updated;
   end if;
-  execute updated;
 
   -- Active members may manage bookings for properties explicitly assigned to them.
   -- A member who is also the guest must still be able to cancel their own request.
@@ -163,10 +164,11 @@ begin
     'elsif actor_role in (''partner'', ''admin'') then',
     'elsif actor_role in (''partner'', ''admin'') or public.has_role(''partner'') then'
   );
-  if updated = fn then
+  if updated = fn and position('public.has_role(''partner'')' in fn) = 0 then
     raise exception 'Could not patch transition_booking partner membership checks.';
+  elsif updated <> fn then
+    execute updated;
   end if;
-  execute updated;
 
   -- Marketing analytics must use the same active-membership entitlement as the UI.
   fn := pg_get_functiondef('public.get_my_marketing_performance(integer)'::regprocedure);
@@ -181,10 +183,11 @@ begin
       )
     ) then'
   );
-  if updated = fn then
+  if updated = fn and position('partner_network_memberships' in fn) = 0 then
     raise exception 'Could not patch get_my_marketing_performance membership checks.';
+  elsif updated <> fn then
+    execute updated;
   end if;
-  execute updated;
 
   -- Referral summary access is also granted to active network members.
   fn := pg_get_functiondef('public.get_my_partner_attribution_summary()'::regprocedure);
@@ -226,10 +229,11 @@ begin
       )
     ) then'
   );
-  if updated = fn then
+  if updated = fn and position('partner_network_memberships' in fn) = 0 then
     raise exception 'Could not patch grant_property_assignment membership checks.';
+  elsif updated <> fn then
+    execute updated;
   end if;
-  execute updated;
 
   -- Google OAuth and email signup referral capture must recognise active
   -- network members who intentionally retain profiles.role = 'guest'.
