@@ -10,7 +10,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -29,7 +29,7 @@ as $
         )
       )
   );
-$;
+$$;
 revoke all on function public.has_role(text) from public, anon;
 grant execute on function public.has_role(text) to authenticated, service_role;
 
@@ -44,7 +44,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.partner_share_links psl
@@ -54,7 +54,7 @@ as $
       and (psl.expires_at is null or psl.expires_at > now())
       and public.can_partner_share_property(psl.property_id, psl.partner_id)
   );
-$;
+$$;
 revoke all on function public.validate_partner_share_token(text, text) from public;
 grant execute on function public.validate_partner_share_token(text, text)
   to anon, authenticated, service_role;
