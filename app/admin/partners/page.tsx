@@ -154,7 +154,7 @@ export default function AdminPartnersPage() {
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                      <span className="text-[11px] font-extrabold text-brass-700">
                         {app.role}
                       </span>
                       <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">

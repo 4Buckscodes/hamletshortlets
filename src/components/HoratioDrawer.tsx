@@ -390,10 +390,10 @@ function HoratioDrawer({
               <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brass-500 text-ink-950">
                 <Sparkles size={14} />
               </span>
-              <span className="font-display text-lg font-bold tracking-wide text-white">
+              <span className="font-display text-lg font-bold text-white">
                 Horatio
               </span>
-              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-brass-300">
+              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[11px] font-extrabold text-brass-300">
                 HAMLET Guide
               </span>
             </div>
@@ -414,7 +414,7 @@ function HoratioDrawer({
         {/* Body */}
         <div className="flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-4 sm:p-5">
           <div className="rounded-2xl border border-ink-200 bg-white p-4 shadow-2xs">
-            <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500">
+            <div className="flex items-center gap-2 text-[11px] font-extrabold text-ink-500">
               <ShieldCheck size={14} className="shrink-0 text-emerald-600" />
               <span>Quick questions</span>
             </div>

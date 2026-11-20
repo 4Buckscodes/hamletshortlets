@@ -1,78 +1,63 @@
 'use client';
 
 import { useEffect } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const REVEAL_SELECTOR = '[data-hamlet-reveal]';
 
 /**
- * Progressive section reveals for the public experience.
- * Observes initial content and content added during client-side navigation.
- * Content remains visible when JavaScript or IntersectionObserver is unavailable,
- * and when the visitor requests reduced motion.
+ * The one scroll-triggered motion on the site: content below the fold settles in with a short
+ * fade and a small rise, in batches so a row of stays arrives together. Content that is already
+ * on screen is never hidden, and nothing moves for visitors who ask for reduced motion.
+ * The hero photo also drifts a few pixels slower than the page.
  */
 export function GlobalMotion() {
   useEffect(() => {
-    if (
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      !('IntersectionObserver' in window)
-    ) {
-      return;
-    }
+    gsap.registerPlugin(ScrollTrigger);
+    const seen = new WeakSet<Element>();
+    const mm = gsap.matchMedia();
 
-    const root = document.documentElement;
-    const observed = new WeakSet<HTMLElement>();
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          const node = entry.target as HTMLElement;
-          node.dataset.revealed = 'true';
-          observer.unobserve(node);
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const arm = (scope: ParentNode) => {
+        const fresh = Array.from(scope.querySelectorAll<HTMLElement>(REVEAL_SELECTOR)).filter(node => !seen.has(node));
+        const below = fresh.filter(node => node.getBoundingClientRect().top > window.innerHeight * 0.92);
+        fresh.forEach(node => seen.add(node));
+        if (!below.length) return;
+        gsap.set(below, { autoAlpha: 0, y: 14 });
+        ScrollTrigger.batch(below, {
+          start: 'top 92%',
+          once: true,
+          onEnter: batch => gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.07, overwrite: true, clearProps: 'transform,opacity,visibility' }),
         });
-      },
-      {
-        threshold: 0,
-        rootMargin: '0px 0px -8% 0px',
-      },
-    );
+      };
 
-    const observe = (scope: ParentNode) => {
-      if (scope instanceof HTMLElement && scope.matches(REVEAL_SELECTOR)) {
-        if (!observed.has(scope)) {
-          observed.add(scope);
-          observer.observe(scope);
-        }
+      arm(document);
+
+      const parallax = document.querySelector<HTMLElement>('[data-hero-parallax]');
+      if (parallax && window.matchMedia('(min-width: 761px)').matches) {
+        gsap.to(parallax, {
+          yPercent: 6,
+          ease: 'none',
+          scrollTrigger: { trigger: parallax.parentElement ?? parallax, start: 'top top', end: 'bottom top', scrub: true },
+        });
       }
 
-      scope.querySelectorAll<HTMLElement>(REVEAL_SELECTOR).forEach(node => {
-        if (observed.has(node)) return;
-        observed.add(node);
-        observer.observe(node);
+      // Client navigation and streamed content add sections after mount.
+      const mutations = new MutationObserver(records => {
+        records.forEach(record => record.addedNodes.forEach(node => {
+          if (node instanceof HTMLElement) arm(node);
+        }));
       });
-    };
+      mutations.observe(document.body, { childList: true, subtree: true });
 
-    // Set the ready class only after the observer is installed, avoiding a
-    // flash of hidden content if setup fails.
-    observe(document);
-    root.classList.add('hamlet-motion-ready');
-
-    // Next.js client navigation and streamed content can add sections later.
-    const mutations = new MutationObserver(records => {
-      records.forEach(record => {
-        record.addedNodes.forEach(node => {
-          if (node instanceof HTMLElement) observe(node);
-        });
-      });
+      return () => {
+        mutations.disconnect();
+        document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR).forEach(node => gsap.set(node, { clearProps: 'all' }));
+      };
     });
 
-    mutations.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      mutations.disconnect();
-      observer.disconnect();
-      root.classList.remove('hamlet-motion-ready');
-    };
+    return () => mm.revert();
   }, []);
 
   return null;

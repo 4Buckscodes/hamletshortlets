@@ -100,6 +100,15 @@ export default function GuestBookingsPage() {
     const today = new Date().toISOString().slice(0, 10);
     return items.filter(b => bookingGroup(b, today) === filter);
   }, [items, filter]);
+  const filterCounts = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const counts: Record<string, number> = { all: items.length };
+    for (const b of items) {
+      const group = bookingGroup(b, today);
+      counts[group] = (counts[group] ?? 0) + 1;
+    }
+    return counts;
+  }, [items]);
   const [paymentReturnRef, setPaymentReturnRef] = useState<string | null>(null);
 
   // Wayfinder probe drawer state
@@ -342,7 +351,7 @@ export default function GuestBookingsPage() {
                 </h1>
               </div>
               <Link href="/stays" className="hm-btn hm-btn-lime">
-                Find a new stay <span aria-hidden="true">→</span>
+                Find a new stay
               </Link>
             </div>
             <AccountNav current="bookings" />
@@ -395,19 +404,20 @@ export default function GuestBookingsPage() {
             Loading your bookings…
           </p>
         ) : items.length > 0 ? (
-          <div className="mt-6 space-y-4">
+          <div className="hm-booking-list">
             <ChipRow label="Filter bookings" className="hm-chip-row-scroll">
               {BOOKING_FILTERS.map(f => (
                 <Chip key={f.id} pressed={filter === f.id} onClick={() => setFilter(f.id)}>
                   {f.label}
+                  {filterCounts[f.id] ? <span className="hm-chip-count">{filterCounts[f.id]}</span> : null}
                 </Chip>
               ))}
             </ChipRow>
             {visibleItems.length === 0 && (
-              <p className="hm-meta">No {BOOKING_FILTERS.find(f => f.id === filter)?.label.toLowerCase()} bookings.</p>
+              <div className="hm-empty"><p className="hm-empty-title">Nothing under {BOOKING_FILTERS.find(f => f.id === filter)?.label.toLowerCase()}.</p><p className="hm-body">Bookings move here as their status changes. Switch filter to see the rest.</p></div>
             )}
             {visibleItems.map(b => (
-              <article key={b.id} className="hm-card hm-booking-item">
+              <article key={b.id} className="hm-booking-item" data-hamlet-reveal>
                 <div className="hm-media hm-booking-item-media">
                   {b.properties?.image_urls?.[0] ? (
                     <img src={b.properties.image_urls[0]} alt="" loading="lazy" decoding="async" />
@@ -529,11 +539,10 @@ export default function GuestBookingsPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-8 hm-card hm-card-dashed p-10 text-center">
-            <h2 className="serif text-2xl font-medium text-ink-900">
-              No bookings yet
-            </h2>
-            <div className="mt-5">
+          <div className="hm-empty mt-8">
+            <h2 className="hm-empty-title">No bookings yet</h2>
+            <p className="hm-body">When you request a stay it appears here, with its status, payment deadline and arrival guide.</p>
+            <div>
               <Link href="/stays" className="hm-btn hm-btn-primary">
                 Explore Lagos stays
               </Link>

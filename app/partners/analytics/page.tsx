@@ -171,7 +171,7 @@ export default function PartnerMarketingAnalyticsPage() {
             </h2>
             <div className="mt-4">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
             </div>
           </section>
@@ -315,7 +315,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   href="/partners/earnings"
                   className="text-xs font-bold text-brass-700 underline underline-offset-2 hover:text-ink-950"
                 >
-                  Open full payout ledger →
+                  Open full payout ledger
                 </Link>
               </div>
 
@@ -392,7 +392,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   </p>
                   <div className="mt-4">
                     <Link href="/partners/marketing" className="primary-button text-xs">
-                      Open Share & Studio →
+                      Open Share & Studio
                     </Link>
                   </div>
                 </div>
@@ -407,7 +407,7 @@ export default function PartnerMarketingAnalyticsPage() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                            <p className="m-0 text-[11px] font-extrabold text-brass-700">
                               {row.area || 'Lagos'}
                             </p>
                             <h3 className="m-0 mt-0.5 text-sm font-bold text-ink-950">
@@ -466,7 +466,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   <div className="mt-4 hidden overflow-hidden rounded-3xl border border-ink-100 bg-white md:block">
                     <table className="w-full border-collapse text-left text-xs">
                       <thead>
-                        <tr className="border-b border-ink-100 bg-paper/70 text-[11px] font-extrabold uppercase tracking-wider text-ink-600">
+                        <tr className="border-b border-ink-100 bg-paper/70 text-[11px] font-extrabold text-ink-600">
                           <th className="px-5 py-3.5">Property</th>
                           <th className="px-3 py-3.5">Shares</th>
                           <th className="px-3 py-3.5">Visits (Unique)</th>

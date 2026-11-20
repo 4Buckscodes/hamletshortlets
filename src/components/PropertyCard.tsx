@@ -123,7 +123,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
               {p.trustLabel}
             </span>
           )}
-          <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink-900 backdrop-blur-md">
+          <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-extrabold text-ink-900 backdrop-blur-md">
             {p.type}
           </span>
         </div>
@@ -131,7 +131,7 @@ export function PropertyCard({ p, searchQuery }: { p: Property; searchQuery?: st
 
       {/* Card Body */}
       <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-[0.13em] text-ink-500">
+        <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-ink-500">
           <span className="truncate">
             {p.area} · {corridorLabel}
           </span>

@@ -2,9 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import '@/components/ui/hamlet-ui.css';
+import '@/components/ui/home.css';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteProviders } from '@/components/site/SiteShell';
 import ReferralAttributionCapture from '@/components/site/ReferralAttributionCapture';
+import { MotionProvider } from '@/components/ui/motion';
 import { GlobalMotion } from '@/components/site/GlobalMotion';
 import { ThemeScript } from '@/components/ui/ThemeScript';
 import {
@@ -59,7 +61,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#172119',
+  themeColor: '#f4f3ef',
   width: 'device-width',
   initialScale: 1,
 };
@@ -73,8 +75,8 @@ export default function RootLayout({
     <html lang="en-NG" data-hm-dark="on" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <link rel="preload" href="/fonts/inter-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/playfair-display-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/hanken-grotesk-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/newsreader-latin-wght.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <JsonLd id="hamlet-global-jsonld" data={GLOBAL_STRUCTURED_DATA} />
       </head>
       <body>
@@ -83,7 +85,7 @@ export default function RootLayout({
             <ReferralAttributionCapture />
           </Suspense>
           <GlobalMotion />
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </SiteProviders>
       </body>
     </html>

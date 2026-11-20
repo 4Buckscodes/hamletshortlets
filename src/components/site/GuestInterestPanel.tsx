@@ -113,7 +113,7 @@ export function GuestInterestPanel({
           <Sparkles className="h-5 w-5 shrink-0" />
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+          <p className="text-[11px] font-extrabold text-brass-700">
             Early-access updates
           </p>
           <h3

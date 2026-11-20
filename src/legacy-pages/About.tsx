@@ -95,7 +95,7 @@ export default function About() {
                 className="flex flex-col rounded-3xl border border-ink-100 bg-white p-5 shadow-2xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                  <span className="font-mono text-xs font-extrabold text-brass-600">
                     {num}
                   </span>
                   <Icon size={19} className="shrink-0 text-ink-900" strokeWidth={1.8} />

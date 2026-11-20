@@ -10,17 +10,17 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
     const css = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
 
     // Approved V0 palette: Forest ink (#172119), Lime accent (#C5DE3F), Warm Ivory (#F6F1E7), Muted grey (#5B655A, 5.4:1 on ivory)
-    expect(css).toContain('--color-ink-900: #172119;');
-    expect(css).toContain('--color-brass-500: #C5DE3F;');
-    expect(css).toContain('--color-paper: #F6F1E7;');
-    expect(css).toContain('--color-ink-500: #5B655A;');
-    expect(css).toContain('--color-jade-700: #173F32;');
+    expect(css).toContain('--color-ink-900: #1e2321;');
+    expect(css).toContain('--color-brass-600: #17525a;');
+    expect(css).toContain('--color-paper: #f4f3ef;');
+    expect(css).toContain('--color-ink-500: #5f665f;');
+    expect(css).toContain('--color-jade-700: #103e45;');
 
     // Typography: Playfair Display for headlines/serif & Inter for body/UI sans-serif
-    expect(css).toContain('"Playfair Display Variable"');
-    expect(css).toContain('"Playfair Display"');
-    expect(css).toContain('"Inter Variable"');
-    expect(css).toContain('"Inter"');
+    expect(css).toContain('"Newsreader Variable"');
+    expect(css).toContain('"Newsreader"');
+    expect(css).toContain('"Hanken Grotesk Variable"');
+    expect(css).toContain('"Hanken Grotesk"');
     expect(css).not.toMatch(/Fraunces|Public Sans/i);
   });
 

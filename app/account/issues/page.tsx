@@ -318,7 +318,7 @@ export default function AccountIssuesPage() {
                 <p className="hm-body">In your stay and something is wrong? Report it here and HAMLET operations will follow up. For anything urgent, also email hello@hamlet.rest.</p>
               </div>
               <Link href="/stays" className="hm-btn hm-btn-lime">
-                Find a new stay <span aria-hidden="true">→</span>
+                Find a new stay
               </Link>
             </div>
             <AccountNav current="issues" />
@@ -457,7 +457,7 @@ export default function AccountIssuesPage() {
                       <p className="m-0 font-bold text-ink-900">{bookingLabel(bookingId)}</p>
                       <p className="m-0 mt-1">
                         Category: <strong>{category}</strong> · Urgency:{' '}
-                        <strong className="uppercase">{severity}</strong>
+                        <strong className="">{severity}</strong>
                       </p>
                       <p className="m-0 mt-1 font-semibold text-ink-900">{subject}</p>
                     </div>
@@ -514,7 +514,7 @@ export default function AccountIssuesPage() {
                     </div>
                     <p className="m-0 mt-1 text-xs text-ink-500">
                       {issue.reference} · {bookingLabel(issue.booking_id)} · {issue.category} ·{' '}
-                      <span className="uppercase font-semibold">{issue.severity}</span>
+                      <span className="font-semibold">{issue.severity}</span>
                     </p>
                     <p className="mt-2.5 mb-0 whitespace-pre-wrap text-xs leading-relaxed text-ink-700">
                       {issue.description}

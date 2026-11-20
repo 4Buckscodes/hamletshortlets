@@ -416,7 +416,7 @@ export default function PropertyDetail() {
               )}
             </div>
           </div>
-          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-400">
+          <span className="font-mono text-[11px] font-bold text-ink-400">
             Ref {property.id.toUpperCase()} · Listed by {property.submittedRole === 'Owner' ? 'owner' : property.submittedRole.toLowerCase()} ({property.ownerName})
           </span>
         </div>
@@ -524,7 +524,7 @@ export default function PropertyDetail() {
                 {upcomingDays.length > 0 && (
                   <div className="mt-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                      <p className="text-[10.5px] font-extrabold text-ink-400">
                         Next 21 days — tap an open date to set check-in
                       </p>
                       <div className="flex items-center gap-3 text-[10px] font-bold text-ink-500">
@@ -570,7 +570,7 @@ export default function PropertyDetail() {
                                   : 'border-emerald-200 bg-emerald-50/60 text-emerald-900 hover:border-emerald-500 hover:bg-emerald-100/70'
                             }`}
                           >
-                            <span className="block text-[9.5px] font-bold uppercase opacity-75">
+                            <span className="block text-[9.5px] font-bold opacity-75">
                               {day.weekday}
                             </span>
                             <span className="block text-[11px] font-extrabold tabular-nums">
@@ -584,7 +584,7 @@ export default function PropertyDetail() {
                 )}
                 {availabilitySummary.occupiedSpans.length > 0 && (
                   <div className="mt-3.5">
-                    <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                    <p className="text-[10.5px] font-extrabold text-ink-400">
                       Upcoming unavailable windows
                     </p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -628,7 +628,7 @@ export default function PropertyDetail() {
                   { label: 'Inspection', s: property.verification.inspection },
                 ].map(v => (
                   <div key={v.label} className="rounded-2xl border border-emerald-200/80 bg-white px-3.5 py-3">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-ink-500">
+                    <p className="text-[10px] font-extrabold text-ink-500">
                       {v.label}
                     </p>
                     <p
@@ -693,7 +693,7 @@ export default function PropertyDetail() {
             <div className="mt-7 rounded-3xl border border-ink-200 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-brass-700">
+                  <span className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold text-brass-700">
                     <Compass size={13} className="shrink-0" /> HAMLET Wayfinder · Location &amp; arrival
                   </span>
                   <h2 className="mt-1 font-display text-lg font-bold text-ink-900">
@@ -725,7 +725,7 @@ export default function PropertyDetail() {
 
               {property.publicLandmarks && property.publicLandmarks.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <p className="text-[10.5px] font-extrabold text-ink-400">
                     Nearby public landmarks
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -1041,24 +1041,24 @@ export default function PropertyDetail() {
                 </button>
               </div>
               <div className="mt-4 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-400">
+                <span className="text-[11px] font-bold text-ink-400">
                   Quote currency
                 </span>
                 <CurrencyToggle compact />
               </div>
               <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-2xl bg-paper p-3 text-center">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase text-ink-400">Dates</p>
+                  <p className="text-[10px] font-extrabold text-ink-400">Dates</p>
                   <p className="text-xs font-bold text-ink-900">
                     {checkIn.slice(5)} → {checkOut.slice(5)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase text-ink-400">Nights</p>
+                  <p className="text-[10px] font-extrabold text-ink-400">Nights</p>
                   <p className="text-xs font-bold text-ink-900">{nights}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase text-ink-400">Guests</p>
+                  <p className="text-[10px] font-extrabold text-ink-400">Guests</p>
                   <p className="text-xs font-bold text-ink-900">{guests}</p>
                 </div>
               </div>
@@ -1105,7 +1105,7 @@ export default function PropertyDetail() {
                   <Tag size={12} /> Closing agent / partner code (optional)
                 </span>
                 <input
-                  className="input font-mono text-xs uppercase"
+                  className="input font-mono text-xs "
                   placeholder="e.g. HML-ZAINAB-3C4D"
                   value={closingAgentCode}
                   onChange={e => setClosingAgentCode(e.target.value)}

@@ -1,61 +1,175 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-11-19T18:30:00Z",
-  "title": "Design System: HAMLET",
-  "extensions": {
-    "colorMeta": {
-      "forest": { "role": "neutral", "displayName": "Forest", "tonalRamp": ["#0b110d", "#101a14", "#172119", "#22302a", "#3a483f", "#5b655a", "#a9b2a4", "#eef0e6"] },
-      "ivory": { "role": "neutral", "displayName": "Ivory Paper", "tonalRamp": ["#5e5a4f", "#8a8577", "#b3ad9d", "#d9ddcf", "#ede9dc", "#f6f1e7", "#fffdf7", "#ffffff"] },
-      "blue": { "role": "primary", "displayName": "Action Blue", "tonalRamp": ["#0f1f66", "#1938c0", "#2e50e8", "#4f6cff", "#7f95ff", "#a9b8ff", "#d0d9ff", "#e4e9fd"] },
-      "lime": { "role": "secondary", "displayName": "Arrival Lime", "tonalRamp": ["#2c340c", "#4c5916", "#7c9020", "#a9c42f", "#d9f24b", "#e5f67d", "#f0faae", "#f8fdd9"] },
-      "coral": { "role": "secondary", "displayName": "Lagos Coral", "tonalRamp": ["#5c1a0c", "#8f2914", "#c93d1c", "#ff6948", "#ff7b5c", "#ffa48f", "#ffcbbe", "#fff0eb"] }
-    },
-    "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Band and hero titles; heavy Inter statement." },
-      "accent": { "displayName": "Accent phrase", "purpose": "One Playfair phrase per headline, coral." },
-      "title": { "displayName": "Place title", "purpose": "Names of real places: stay cards, booking cards, locations." },
-      "label": { "displayName": "Label", "purpose": "Numbered editorial labels and field captions; 11px floor." }
-    },
-    "shadows": [
-      { "name": "lift", "value": "0 18px 40px -28px rgba(23, 33, 25, 0.45)", "purpose": "Interactive card hover only." },
-      { "name": "press", "value": "0 10px 24px -14px rgba(23, 33, 25, 0.55)", "purpose": "Button hover." }
-    ],
-    "motion": [
-      { "name": "ease", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Reveals, arrows, photo zoom." },
-      { "name": "ease-soft", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "State transitions." },
-      { "name": "micro", "value": "180ms", "purpose": "Hover and press feedback." },
-      { "name": "ui", "value": "320ms", "purpose": "Card lift, link underline." },
-      { "name": "reveal", "value": "700ms", "purpose": "Scroll reveal, 26px rise, 80ms stagger." }
-    ],
-    "breakpoints": [
-      { "name": "phone", "value": "760px" },
-      { "name": "tablet", "value": "1023px" },
-      { "name": "container", "value": "1240px" }
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-19T18:30:00Z",
+ "title": "HAMLET",
+ "extensions": {
+  "colorMeta": {
+   "forest": {
+    "role": "neutral",
+    "displayName": "Forest",
+    "tonalRamp": [
+     "#0b110d",
+     "#101a14",
+     "#172119",
+     "#22302a",
+     "#3a483f",
+     "#5b655a",
+     "#a9b2a4",
+     "#eef0e6"
     ]
+   },
+   "ivory": {
+    "role": "neutral",
+    "displayName": "Ivory Paper",
+    "tonalRamp": [
+     "#5e5a4f",
+     "#8a8577",
+     "#b3ad9d",
+     "#d9ddcf",
+     "#ede9dc",
+     "#f6f1e7",
+     "#fffdf7",
+     "#ffffff"
+    ]
+   },
+   "blue": {
+    "role": "primary",
+    "displayName": "Action Blue",
+    "tonalRamp": [
+     "#0f1f66",
+     "#1938c0",
+     "#2e50e8",
+     "#4f6cff",
+     "#7f95ff",
+     "#a9b8ff",
+     "#d0d9ff",
+     "#e4e9fd"
+    ]
+   },
+   "lime": {
+    "role": "secondary",
+    "displayName": "Arrival Lime",
+    "tonalRamp": [
+     "#2c340c",
+     "#4c5916",
+     "#7c9020",
+     "#a9c42f",
+     "#d9f24b",
+     "#e5f67d",
+     "#f0faae",
+     "#f8fdd9"
+    ]
+   },
+   "coral": {
+    "role": "secondary",
+    "displayName": "Lagos Coral",
+    "tonalRamp": [
+     "#5c1a0c",
+     "#8f2914",
+     "#c93d1c",
+     "#ff6948",
+     "#ff7b5c",
+     "#ffa48f",
+     "#ffcbbe",
+     "#fff0eb"
+    ]
+   }
   },
-  "components": [
-    { "name": "Primary Button", "kind": "button", "refersTo": "button-primary", "description": "The one blue action per view.", "html": "<button class=\"ds-btn-primary\">Request to book <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>", "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#2e50e8;color:#fff;font:750 14px 'Inter Variable',Inter,system-ui,sans-serif;cursor:pointer;transition:transform 180ms cubic-bezier(.4,0,.2,1),background-color 180ms,box-shadow 320ms}.ds-btn-primary svg{transition:transform 320ms cubic-bezier(.2,.7,.2,1)}.ds-btn-primary:hover{background:#1938c0;transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(23,33,25,.55)}.ds-btn-primary:hover svg{transform:translateX(3px)}.ds-btn-primary:focus-visible{outline:3px solid #d9f24b;outline-offset:2px}.ds-btn-primary:active{transform:scale(.98)}" },
-    { "name": "Lime Button", "kind": "button", "refersTo": "button-lime", "description": "Primary action inside a forest band.", "html": "<div class=\"ds-band\"><a class=\"ds-btn-lime\" href=\"#\">Find a stay</a></div>", "css": ".ds-band{padding:24px;background:#172119}.ds-btn-lime{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border-radius:999px;background:#d9f24b;color:#172119;font:750 14px 'Inter Variable',Inter,system-ui,sans-serif;text-decoration:none;transition:transform 180ms}.ds-btn-lime:hover{transform:translateY(-2px)}.ds-btn-lime:focus-visible{outline:3px solid #fff;outline-offset:2px}" },
-    { "name": "Chip", "kind": "chip", "refersTo": "chip", "description": "Filter chip; selected fills forest.", "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">All Lagos</button><button class=\"ds-chip\">Island &amp; Lekki</button><button class=\"ds-chip\">Mainland</button></div>", "css": ".ds-chips{display:flex;gap:8px}.ds-chip{min-height:40px;padding:0 14px;border:1px solid #d9ddcf;border-radius:999px;background:#fffdf7;color:#172119;font:600 13px 'Inter Variable',Inter,system-ui,sans-serif;cursor:pointer;transition:border-color 180ms}.ds-chip:hover{border-color:#172119}.ds-chip-on{background:#172119;border-color:#172119;color:#f6f1e7}.ds-chip:focus-visible{outline:3px solid #d9f24b;outline-offset:2px}" },
-    { "name": "Field", "kind": "input", "refersTo": "input", "description": "Labelled field; empty dates read Add date.", "html": "<label class=\"ds-field\"><span>Guests</span><input class=\"ds-input\" placeholder=\"2 guests\"></label>", "css": ".ds-field{display:grid;gap:7px;font:700 13px 'Inter Variable',Inter,system-ui,sans-serif;color:#172119}.ds-input{min-height:48px;padding:0 14px;border:1px solid #8a9285;border-radius:10px;background:#fffdf7;font:500 15px 'Inter Variable',Inter,system-ui,sans-serif;color:#172119}.ds-input:focus-visible{outline:none;border-color:#172119;box-shadow:0 0 0 3px #d9f24b}" },
-    { "name": "Status Pill", "kind": "chip", "refersTo": "chip", "description": "Booking and listing state, ink on soft tint.", "html": "<span class=\"ds-status ds-ok\">Confirmed</span> <span class=\"ds-status ds-info\">Accepted — awaiting payment</span>", "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;font:700 12px 'Inter Variable',Inter,system-ui,sans-serif}.ds-status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.ds-ok{background:#e1f0e5;color:#256b43}.ds-info{background:#e4e9fd;color:#1938c0}" },
-    { "name": "Stay Card", "kind": "card", "refersTo": "card", "description": "Photo-led listing card; all-in price, fees included.", "html": "<a class=\"ds-stay\" href=\"#\"><span class=\"ds-photo\"><span class=\"ds-tag\">Verified · Yaba</span></span><span class=\"ds-title\">Spacious shortlet apartment</span><span class=\"ds-meta\">2 bedrooms · up to 4 guests</span><span class=\"ds-price\">₦48,000 <span>/ night · fees included</span></span></a>", "css": ".ds-stay{display:grid;gap:8px;width:260px;color:#172119;text-decoration:none;font-family:'Inter Variable',Inter,system-ui,sans-serif}.ds-photo{position:relative;aspect-ratio:4/3;border-radius:10px;background:linear-gradient(0deg,rgba(11,18,13,.78),transparent 55%),#8a7d6a}.ds-tag{position:absolute;top:12px;left:12px;padding:6px 10px;border-radius:999px;background:rgba(16,26,20,.62);color:#fff;font:800 11px/1 'Inter Variable',Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase}.ds-title{font:500 20px/1.15 'Playfair Display Variable','Playfair Display',Georgia,serif}.ds-meta{color:#5b655a;font-size:13px}.ds-price{font-weight:750;font-size:15px}.ds-price span{color:#5b655a;font-weight:500;font-size:13px}.ds-stay:hover .ds-title{text-decoration:underline;text-decoration-color:#ff6948}" }
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Band and hero titles; heavy Inter statement."
+   },
+   "accent": {
+    "displayName": "Accent phrase",
+    "purpose": "One Playfair phrase per headline, coral."
+   },
+   "title": {
+    "displayName": "Place title",
+    "purpose": "Names of real places: stay cards, booking cards, locations."
+   },
+   "label": {
+    "displayName": "Label",
+    "purpose": "Numbered editorial labels and field captions; 11px floor."
+   }
+  },
+  "shadows": [
+   {
+    "name": "lift",
+    "value": "0 18px 40px -28px rgba(23, 33, 25, 0.45)",
+    "purpose": "Interactive card hover only."
+   },
+   {
+    "name": "press",
+    "value": "0 10px 24px -14px rgba(23, 33, 25, 0.55)",
+    "purpose": "Button hover."
+   }
   ],
-  "narrative": {
-    "northStar": "The Lagos Arrival Edit",
-    "overview": "HAMLET reads like an editorial about arriving somewhere real. Every page opens on a forest band: the title, its context and the tabs, set in heavy Inter with one soft Playfair phrase that carries the feeling. Below it, the work happens on ivory paper: real interiors, plain facts, one clear action. The pacing is a magazine's (numbered sections, captioned photographs, generous air), but the job is practical: a guest on a phone, on mobile data, should see a real place, its all-in price and the way to request it within seconds.",
-    "keyCharacteristics": ["Dark opens, light works: forest band on top, ivory working area below.", "Two-voice headlines: a heavy Inter statement, then one Playfair phrase.", "Numbered editorial labels on public pages; plain labels in workspaces.", "Photography leads; captions sit on a dark gradient.", "One loud action per view, in blue.", "Mobile first: the hero, its action and the first listing fit the first screen."],
-    "rules": [
-      { "name": "The One Blue Rule", "body": "One blue button per view. A second action is ghost or a link; two blue buttons side by side is a bug.", "section": "colors" },
-      { "name": "The Lime Stays Dark Rule", "body": "Lime is a fill behind forest text or an accent on forest. Lime or coral text on ivory at body size is forbidden.", "section": "colors" },
-      { "name": "The Retired Colours Rule", "body": "The old navy (#0e1f3b) and gold (#c9a44a) never return, including in the logo, favicon, share artwork and footer.", "section": "colors" },
-      { "name": "The One Serif Phrase Rule", "body": "Each headline gets exactly one Playfair phrase. Two serif phrases in one heading dilute the voice.", "section": "typography" },
-      { "name": "The 11px Floor Rule", "body": "Nothing on any page is smaller than 11px. Form fields are 16px on phones so iOS never zooms.", "section": "typography" },
-      { "name": "The First Screen Rule", "body": "On a 390×844 phone and a 1366×768 laptop, the hero, its primary action and (on Stays) the first listing are visible without scrolling. Decorative band photos are skipped on phones and never downloaded.", "section": "layout" },
-      { "name": "The Results First Rule", "body": "On listing pages, results come before exploration (neighbourhood rails, guides).", "section": "layout" },
-      { "name": "The Flat-At-Rest Rule", "body": "No card has a shadow at rest. A shadow means \"this floats\" or \"you are touching this\".", "section": "elevation" }
-    ],
-    "dos": ["Do open every page with the forest band and set the title as one heavy statement plus one Playfair phrase.", "Do use exactly one blue action per view and make it reachable on the first phone screen.", "Do show \"fees included\" next to every guest price and itemise the refundable caution deposit separately.", "Do keep text at 11px or larger, contrast at 4.5:1 (3:1 at 24px+), touch targets at 44px and form fields at 16px on phones.", "Do use real listing photos and real states; show an honest empty state when there is nothing yet.", "Do reveal sections once on scroll (rise 26px, fade, 700ms, 80ms grid stagger) and stop all of it under reduced motion except the ticker and stamp."],
-    "donts": ["Don't use navy (#0e1f3b), gold (#c9a44a), stock illustrations or icons as hero art.", "Don't put lime or coral text on ivory at body size.", "Don't add shadows to cards at rest or stack cards inside cards.", "Don't show placeholder homes, invented reviews, ratings or availability.", "Don't add buttons for features that do not exist yet (share, save, map) as decoration.", "Don't let a phone page bury its first listing or booking action below decorative content."]
-  }
+  "motion": [
+   {
+    "name": "ease",
+    "value": "cubic-bezier(0.2, 0.7, 0.2, 1)",
+    "purpose": "Reveals, arrows, photo zoom."
+   },
+   {
+    "name": "ease-soft",
+    "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "purpose": "State transitions."
+   },
+   {
+    "name": "micro",
+    "value": "180ms",
+    "purpose": "Hover and press feedback."
+   },
+   {
+    "name": "ui",
+    "value": "320ms",
+    "purpose": "Card lift, link underline."
+   },
+   {
+    "name": "reveal",
+    "value": "700ms",
+    "purpose": "Scroll reveal, 26px rise, 80ms stagger."
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "phone",
+    "value": "760px"
+   },
+   {
+    "name": "tablet",
+    "value": "1023px"
+   },
+   {
+    "name": "container",
+    "value": "1240px"
+   }
+  ]
+ },
+ "components": [],
+ "narrative": {
+  "northStar": "The Quiet Residence",
+  "overview": "HAMLET reads like a calm, well-kept residence. Warm stone paper, thin hairlines, a regular-weight serif for headlines and one deep lagoon-teal accent for every action. Sections are flat and divided by space and lines, never by cards, shadows or gradients. A guest on a phone sees a real place, its all-in price and the way to request it within seconds.",
+  "keyCharacteristics": [
+   "One accent: lagoon teal on warm stone neutrals",
+   "Newsreader headlines in one voice, Hanken Grotesk body at 16px",
+   "Hairline-ruled lists and flat sections, no nested cards",
+   "Motion on hover and press only, plus one gentle scroll reveal"
+  ],
+  "rules": [
+   "Sentence-case labels; no all-caps eyebrows",
+   "Number sections only when the content is a sequence",
+   "No gradients, shadows, stamps, pulsing dots or looping motion",
+   "Everything stops under prefers-reduced-motion"
+  ],
+  "dos": [
+   "Keep one accent and plain language",
+   "Show verification and no-charge-until-accepted at the moment of hesitation"
+  ],
+  "donts": [
+   "Do not add arrows to buttons",
+   "Do not accent a single word in a headline"
+  ]
+ }
 }

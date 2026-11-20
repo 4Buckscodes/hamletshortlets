@@ -25,7 +25,7 @@ export default function PartnerAssignments() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Authority & commissions</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Authority & commissions</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Property assignments</h1>
       <p className="mt-1 max-w-2xl text-[12px] font-medium leading-relaxed text-ink-300">Explicit authorisation records for every property you may act on. Commissions are recorded <strong>only where specifically agreed in writing</strong> — never assumed, never auto-split, never auto-paid. Revocation removes your access immediately.</p>
 
@@ -37,7 +37,7 @@ export default function PartnerAssignments() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`chip border ${a.status === 'active' ? 'border-jade-500/40 bg-jade-500/10 text-jade-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>{a.status === 'active' ? <ShieldCheck size={11} /> : <Ban size={11} />}{a.status}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{a.partnerRole}</span>
+                  <span className="text-[10px] font-bold text-ink-500">{a.partnerRole}</span>
                 </div>
                 <h2 className="mt-1.5 font-display text-lg font-bold text-ink-50">{a.propertyTitle}</h2>
                 <p className="mt-1 max-w-lg text-[11.5px] font-medium leading-snug text-ink-300"><span className="text-ink-400">Scope:</span> {a.scope}</p>

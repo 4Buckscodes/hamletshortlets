@@ -24,7 +24,7 @@ export default function AdminAudit() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Accountability record</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Accountability record</p>
           <h1 className="mt-1.5 flex items-center gap-3 font-display text-2xl font-black text-ink-50 sm:text-3xl"><ScrollText size={26} className="shrink-0 text-brass-400" />Audit log</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every status change, permission grant/revocation, financial adjustment and webhook event — with actor, role, target and timestamp. Append-only in the pilot; production ships to immutable storage.</p>
         </div>
@@ -39,7 +39,7 @@ export default function AdminAudit() {
           {entries.map(a => (
             <li key={a.id} className="flex flex-wrap items-start gap-2.5 bg-ink-900/60 px-4 py-3.5 transition hover:bg-ink-850 sm:flex-nowrap sm:gap-3 sm:px-5">
               <span className="shrink-0 pt-0.5 text-[10px] font-semibold leading-snug text-ink-500 sm:w-36">{formatDateTime(a.at)}</span>
-              <span className={`chip border !px-2 !py-1 text-[9.5px] font-extrabold uppercase tracking-wide ${actionTone(a.action)} shrink-0`}>{a.action.replace(/_/g, ' ')}</span>
+              <span className={`chip border !px-2 !py-1 text-[9.5px] font-extrabold ${actionTone(a.action)} shrink-0`}>{a.action.replace(/_/g, ' ')}</span>
               <div className="w-full min-w-0 sm:w-auto sm:flex-1">
                 <p className="break-words text-[11.5px] font-semibold leading-snug text-ink-100">{a.detail}</p>
                 <p className="mt-0.5 break-words text-[10px] font-medium text-ink-500"><span className="font-bold text-ink-300">{a.actor}</span> ({a.actorRole}) → <span className="break-all font-mono">{a.target}</span></p>

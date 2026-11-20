@@ -39,8 +39,8 @@ Every listing is verified before it goes live (ownership/title evidence, partner
 
 ## Brand Commitments
 
-- Name: HAMLET (wordmark "HAMLET." with a lime full stop). Tagline: "Your stay, sorted."
-- Voice: warm, plain and direct; two-voice headlines (a bold statement, then a softer serif phrase); numbered editorial section labels ("01 / …").
+- Name: HAMLET (wordmark "HAMLET." with a lagoon-teal full stop). Tagline: "Your stay, sorted."
+- Voice: warm, plain and direct; one-voice serif headlines, sentence-case labels, no numbered section markers unless the content is a real sequence.
 - The approved homepage and the HAMLET design guideline canvas are the visual source of truth.
 
 ## Evidence on Hand
@@ -60,5 +60,5 @@ Every listing is verified before it goes live (ownership/title evidence, partner
 ## Accessibility & Inclusion
 
 - WCAG 2.2 AA: text contrast 4.5:1 (3:1 for large text), 11px type floor, 44px touch targets, 16px form fields on phones.
-- Respect reduced motion, except the slow area ticker and stamp sway, which stay on and pause on hover.
+- Respect reduced motion everywhere: the area ticker stops and scrolls by hand.
 - Light and dark themes follow the device, with a manual override.

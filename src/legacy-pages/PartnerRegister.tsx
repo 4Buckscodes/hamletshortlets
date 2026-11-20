@@ -223,11 +223,11 @@ export default function PartnerRegister() {
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2.5">
               <HamletMark size={32} light />
-              <span className="font-display text-xl font-bold tracking-[0.06em] text-white">
+              <span className="font-display text-xl font-bold text-white">
                 HAMLET<span className="text-brass-500">.</span>
               </span>
             </Link>
-            <span className="rounded-full border border-white/15 bg-white/8 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-brass-300">
+            <span className="rounded-full border border-white/15 bg-white/8 px-3 py-1 font-mono text-[10px] font-bold text-brass-300">
               Partner Network
             </span>
           </div>
@@ -241,7 +241,7 @@ export default function PartnerRegister() {
 
             {/* The economics, plainly */}
             <div className="mt-6">
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-300">
+              <p className="text-[10.5px] font-extrabold text-brass-300">
                 The economics, plainly
               </p>
               <div className="mt-2.5 grid grid-cols-2 gap-2.5">
@@ -292,7 +292,7 @@ export default function PartnerRegister() {
               className="w-full max-w-md rounded-3xl border border-ink-800 bg-ink-900 p-6 text-center sm:p-8"
             >
               <CheckCircle2 size={52} className="mx-auto text-emerald-400" />
-              <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
+              <p className="mt-4 text-[10px] font-extrabold text-brass-400">
                 {session.role === 'admin' ? 'Administrator active' : 'Partner workspace active'}
               </p>
               <h2 className="mt-1.5 font-display text-2xl font-bold text-paper">
@@ -374,7 +374,7 @@ export default function PartnerRegister() {
               className="w-full max-w-lg rounded-3xl border border-ink-800 bg-ink-900 p-6 sm:p-8"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-amber-300">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[10.5px] font-extrabold text-amber-300">
                   <Clock3 size={13} /> Identity verification pending
                 </span>
                 {backendConfigured && (
@@ -434,7 +434,7 @@ export default function PartnerRegister() {
                 )}
               </div>
 
-              <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400">
+              <p className="mt-4 text-[10px] font-extrabold text-brass-400">
                 {isCorrectionMode ? 'Update identity verification' : 'Join partner network'}
               </p>
               <h2 className="mt-1.5 font-display text-3xl font-bold text-white">
@@ -457,7 +457,7 @@ export default function PartnerRegister() {
                 >
                   <AlertTriangle size={17} className="mt-0.5 shrink-0 text-orange-400" />
                   <div>
-                    <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-300">
+                    <p className="text-[10.5px] font-extrabold text-orange-300">
                       Correction requested by HAMLET operations
                     </p>
                     <p className="mt-1 leading-relaxed">{existingApplication.reviewNote}</p>
@@ -649,7 +649,7 @@ export default function PartnerRegister() {
                     <Gift size={12} className="text-brass-400" /> Partner referral code (optional)
                   </span>
                   <input
-                    className="input-dark font-mono uppercase"
+                    className="input-dark font-mono "
                     value={referralCode}
                     onChange={e => setReferralCode(e.target.value)}
                     placeholder="e.g. HML-ADEWALE-1A2B"

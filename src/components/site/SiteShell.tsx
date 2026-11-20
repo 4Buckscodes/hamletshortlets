@@ -1,5 +1,6 @@
 'use client';
 
+import { HoverImage } from '@/components/ui/motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -21,16 +22,10 @@ import {
   Building2,
   ShieldCheck,
   ArrowRight,
-  ArrowUpRight,
-  MapPin,
-  BedDouble,
-  Bath,
-  Users,
   BadgeCheck,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Calendar,
   Sparkles,
   Send,
   LayoutDashboard,
@@ -850,159 +845,50 @@ export function StayListingCard({
     setPhotoIndex(prev => (prev + delta + usableImages.length) % usableImages.length);
   }
 
+  const facts = [
+    bedroomLabel,
+    typeof stay.bathrooms === 'number' && stay.bathrooms > 0 ? `${stay.bathrooms} ${stay.bathrooms === 1 ? 'bath' : 'baths'}` : null,
+    typeof stay.capacity === 'number' && stay.capacity > 0 ? `Up to ${stay.capacity} ${stay.capacity === 1 ? 'guest' : 'guests'}` : null,
+  ].filter(Boolean).join(', ');
+
   return (
-    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-[0_1px_2px_rgba(14,31,59,0.05),0_10px_28px_-14px_rgba(14,31,59,0.16)] transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-clay">
-        <Link
-          href={detailHref}
-          aria-label={`View ${stay.title} in ${locationText}`}
-          className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
-        >
+    <article className="hl-card" data-hamlet-reveal>
+      <div className="hl-photo">
+        <Link href={detailHref} aria-label={`View ${stay.title} in ${locationText}`} className="hl-photo-link">
           {activePhoto ? (
-            <img
-              src={activePhoto}
-              alt={`${stay.title} in ${locationText} — photo ${safeIdx + 1} of ${usableImages.length}`}
-              loading="lazy"
-              decoding="async"
-              onError={() =>
-                setFailedUrls(prev => ({
-                  ...prev,
-                  [activePhoto]: true,
-                }))
-              }
-              className="h-full w-full object-cover opacity-100 transition duration-500 group-hover:scale-105"
-            />
+            <HoverImage>
+              <img
+                src={activePhoto}
+                alt={`${stay.title} in ${locationText} — photo ${safeIdx + 1} of ${usableImages.length}`}
+                loading="lazy"
+                decoding="async"
+                onError={() => setFailedUrls(prev => ({ ...prev, [activePhoto]: true }))}
+              />
+            </HoverImage>
           ) : (
-            <div className="grid h-full w-full place-items-center bg-gradient-to-br from-clay via-paper to-clay px-4 text-center">
-              <div>
-                <span aria-hidden="true" className="block font-display text-3xl text-brass-700/80">
-                  ⌂
-                </span>
-                <span className="mt-1.5 block text-[11px] font-bold uppercase tracking-wider text-ink-600">
-                  Property photo not yet uploaded
-                </span>
-              </div>
-            </div>
+            <span className="hl-photo-empty">Photo coming soon</span>
           )}
         </Link>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/55 to-transparent" />
-
-        {corridor && (
-          <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
-            {corridor}
-          </span>
-        )}
-
-        <span
-          className={`pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
-            trust.verified
-              ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
-              : 'border border-ink-200 bg-white/95 text-ink-900'
-          }`}
-        >
-          {trust.verified ? (
-            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
-          ) : (
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
-          )}
-          <span>{trust.badge}</span>
+        <span className="hl-badge">
+          {trust.verified ? <BadgeCheck size={14} aria-hidden="true" /> : <CheckCircle2 size={14} aria-hidden="true" />}
+          {trust.badge}
         </span>
-
         {usableImages.length > 1 && (
           <>
-            <button
-              type="button"
-              onClick={e => stepPhoto(e, -1)}
-              aria-label={`Previous photo of ${stay.title}`}
-              className="absolute left-2.5 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ink-200/80 bg-white/95 text-ink-900 shadow-xs transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
-            >
-              <ChevronLeft className="h-4 w-4 shrink-0" />
-            </button>
-            <button
-              type="button"
-              onClick={e => stepPhoto(e, 1)}
-              aria-label={`Next photo of ${stay.title}`}
-              className="absolute right-2.5 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ink-200/80 bg-white/95 text-ink-900 shadow-xs transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
-            >
-              <ChevronRight className="h-4 w-4 shrink-0" />
-            </button>
-            <span className="pointer-events-none absolute bottom-2.5 right-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 font-mono text-[11px] font-bold text-white">
-              {safeIdx + 1} / {usableImages.length}
-            </span>
+            <button type="button" onClick={e => stepPhoto(e, -1)} aria-label={`Previous photo of ${stay.title}`} className="hl-step hl-step-prev"><ChevronLeft size={18} aria-hidden="true" /></button>
+            <button type="button" onClick={e => stepPhoto(e, 1)} aria-label={`Next photo of ${stay.title}`} className="hl-step hl-step-next"><ChevronRight size={18} aria-hidden="true" /></button>
+            <span className="hl-count">{safeIdx + 1} of {usableImages.length}</span>
           </>
         )}
       </div>
-
-      <Link
-        href={detailHref}
-        className="flex flex-1 flex-col justify-between p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brass-500"
-      >
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{locationText}</span>
-            <span className="text-ink-400">·</span>
-            <span className="truncate text-ink-600">{accommodationLabel}</span>
-          </div>
-
-          <h3 className="mt-1.5 line-clamp-2 font-display text-lg font-bold leading-snug text-ink-900 transition group-hover:text-jade-700">
-            {stay.title}
-          </h3>
-
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-ink-600">
-            <span className="inline-flex items-center gap-1">
-              <BedDouble className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-              {bedroomLabel}
-            </span>
-            {typeof stay.bathrooms === 'number' && stay.bathrooms > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <Bath className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-                {stay.bathrooms} {stay.bathrooms === 1 ? 'bath' : 'baths'}
-              </span>
-            )}
-            {typeof stay.capacity === 'number' && stay.capacity > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 shrink-0 text-ink-400" />
-                Up to {stay.capacity} {stay.capacity === 1 ? 'guest' : 'guests'}
-              </span>
-            )}
-          </div>
-
-          {visibleAmenities.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {visibleAmenities.map(amenity => (
-                <span
-                  key={amenity}
-                  className="max-w-full truncate rounded-full border border-ink-100 bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink-700"
-                >
-                  {amenity}
-                </span>
-              ))}
-              {extraAmenitiesCount > 0 && (
-                <span className="rounded-full border border-ink-100 bg-paper px-2 py-0.5 text-[11px] font-semibold text-ink-500">
-                  +{extraAmenitiesCount} more
-                </span>
-              )}
-            </div>
-          )}
-
-          <p className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-ink-500">
-            <Calendar className="h-3 w-3 shrink-0 text-brass-600" />
-            <span>
-              {stay.first_available_date
-                ? `From ${stay.first_available_date} · Partner confirms dates`
-                : 'Request to book · Partner confirms dates'}
-            </span>
-          </p>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
-          <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote />
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-extrabold text-ink-900 transition group-hover:translate-x-0.5">
-            View stay <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
-          </span>
-        </div>
+      <Link href={detailHref} className="hl-body">
+        <p className="hl-where">{locationText}{corridor ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
+        <h3 className="hl-title">{stay.title}</h3>
+        <p className="hl-facts">{facts}{visibleAmenities.length ? ` · ${visibleAmenities.join(', ')}${extraAmenitiesCount > 0 ? ` +${extraAmenitiesCount}` : ''}` : ''}</p>
+        <p className="hl-when">
+          {stay.first_available_date ? `From ${stay.first_available_date}. Partner confirms dates.` : 'Request to book. Partner confirms dates.'}
+        </p>
+        <div className="hl-price"><StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote /></div>
       </Link>
     </article>
   );

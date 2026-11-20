@@ -1080,7 +1080,7 @@ export function PropertyMediaManager({
           >
             <div className="flex items-center justify-between gap-2 pb-3">
               <div className="min-w-0">
-                <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-brass-700">
+                <p className="m-0 text-xs font-extrabold text-brass-700">
                   {previewLightboxIndex === 0
                     ? `Cover photo · 1 of ${imageUrls.length}`
                     : `Photograph ${previewLightboxIndex + 1} of ${imageUrls.length}`}

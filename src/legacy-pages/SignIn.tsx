@@ -288,7 +288,7 @@ export default function SignIn() {
         <div className="relative flex h-full flex-col justify-between p-12">
           <Link to="/" className="inline-flex items-center gap-3">
             <HamletMark size={40} light />
-            <span className="font-display text-3xl font-bold tracking-[0.06em] text-white">
+            <span className="font-display text-3xl font-bold text-white">
               HAMLET<span className="text-brass-500">.</span>
             </span>
           </Link>
@@ -328,7 +328,7 @@ export default function SignIn() {
         <div className="w-full max-w-md rounded-3xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8">
           <Link to="/" className="mb-6 inline-flex items-center gap-2 lg:hidden">
             <HamletMark size={32} />
-            <span className="font-display text-2xl font-bold tracking-[0.06em] text-ink-900">
+            <span className="font-display text-2xl font-bold text-ink-900">
               HAMLET<span className="text-brass-500">.</span>
             </span>
           </Link>
@@ -377,7 +377,7 @@ export default function SignIn() {
               />
               <div className="relative flex items-center py-0.5">
                 <div className="flex-grow border-t border-ink-200/80" />
-                <span className="mx-3 shrink-0 text-[10.5px] font-bold uppercase tracking-wider text-ink-400">
+                <span className="mx-3 shrink-0 text-[10.5px] font-bold text-ink-400">
                   {creatingAccount ? 'or sign up with email' : 'or continue with email'}
                 </span>
                 <div className="flex-grow border-t border-ink-200/80" />
@@ -440,7 +440,7 @@ export default function SignIn() {
 
           {activeMode === 'signin' && !backendConfigured && (
             <div className="mt-5">
-              <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-extrabold text-ink-400">
                 <ChevronDown size={12} /> Demo accounts (password: demo1234)
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">

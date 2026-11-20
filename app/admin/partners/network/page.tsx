@@ -132,7 +132,7 @@ export default function PartnerNetworkAdminPage() {
                       {new Date(m.joined_at).toLocaleDateString('en-NG')}
                     </p>
                   </div>
-                  <span className="text-xs font-bold uppercase">{m.status}</span>
+                  <span className="text-xs font-bold ">{m.status}</span>
                 </div>
                 <input
                   value={reason[m.user_id] || ''}

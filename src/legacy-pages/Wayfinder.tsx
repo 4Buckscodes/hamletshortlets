@@ -333,7 +333,7 @@ export default function Wayfinder() {
       <section className="bg-ink-950 text-paper">
         <div className="mx-auto max-w-3xl px-4 py-7 sm:px-6 sm:py-9">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/40 bg-brass-500/15 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-brass-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-brass-400/40 bg-brass-500/15 px-3 py-1 text-[10.5px] font-extrabold text-brass-300">
               <Compass size={12} className="shrink-0" /> HAMLET Wayfinder
             </span>
             <span className="rounded-md bg-white/10 px-2.5 py-1 font-mono text-[11px] font-bold text-ink-100">
@@ -367,17 +367,17 @@ export default function Wayfinder() {
 
           <div className="mt-4 grid grid-cols-2 gap-2.5 rounded-2xl border border-white/10 bg-white/5 p-3.5 text-[12px] sm:grid-cols-3">
             <div>
-              <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Check-in</span>
+              <span className="block text-[10px] font-extrabold text-ink-400">Check-in</span>
               <span className="mt-0.5 block font-bold text-white">{formatDate(view.checkIn)}</span>
               <span className="block text-[11px] text-brass-300">{guide?.checkInWindowLabel || 'From 2:00 PM'}</span>
             </div>
             <div>
-              <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Check-out</span>
+              <span className="block text-[10px] font-extrabold text-ink-400">Check-out</span>
               <span className="mt-0.5 block font-bold text-white">{formatDate(view.checkOut)}</span>
               <span className="block text-[11px] text-ink-300">{view.guestCount} guest{view.guestCount > 1 ? 's' : ''}</span>
             </div>
             <div className="col-span-2 sm:col-span-1">
-              <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Booking state</span>
+              <span className="block text-[10px] font-extrabold text-ink-400">Booking state</span>
               <span className="mt-0.5 inline-flex items-center gap-1 font-bold text-jade-300">
                 <CheckCircle2 size={13} className="shrink-0" />
                 {isCompletedStay ? 'Completed stay (archived guide)' : 'Confirmed reservation'}
@@ -453,7 +453,7 @@ export default function Wayfinder() {
         <section id="step-navigate" className="card overflow-hidden p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-jade-700">
                 Step 1 · Navigate to the property
               </span>
               <h2 className="mt-1 font-display text-xl font-black text-ink-900">
@@ -534,7 +534,7 @@ export default function Wayfinder() {
           {/* Optional extra verified waypoints (e.g. road turn-off, parking ramp) */}
           {guide && guide.waypoints.length > 0 && (
             <div className="mt-4 border-t border-ink-100 pt-4">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-ink-400">
+              <p className="text-[11px] font-extrabold text-ink-400">
                 Additional verified property waypoints
               </p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -546,7 +546,7 @@ export default function Wayfinder() {
                   return (
                     <div key={wp.id} className="flex flex-col justify-between rounded-2xl border border-ink-100 bg-white p-3.5">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-jade-700">
+                        <span className="text-[10px] font-extrabold text-jade-700">
                           {WAYPOINT_TYPE_LABELS[wp.pointType]}
                         </span>
                         <p className="mt-0.5 text-[13px] font-bold text-ink-900">{wp.label}</p>
@@ -576,7 +576,7 @@ export default function Wayfinder() {
         {/* STEP 2: Find the entrance */}
         {hasEntranceSection && guide && (
           <section id="step-entrance" className="card p-5 sm:p-6">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+            <span className="text-[11px] font-extrabold text-jade-700">
               Step 2 · Find the entrance
             </span>
             <h2 className="mt-1 font-display text-xl font-black text-ink-900">
@@ -591,7 +591,7 @@ export default function Wayfinder() {
 
             {guide.securityDeskInstructions && (
               <div className="mt-3 rounded-2xl border border-ink-100 bg-clay/50 p-3.5 text-[13px] font-medium text-ink-800">
-                <span className="block text-[10.5px] font-extrabold uppercase tracking-wider text-ink-500">
+                <span className="block text-[10.5px] font-extrabold text-ink-500">
                   At security / gatehouse
                 </span>
                 <p className="mt-1">{guide.securityDeskInstructions}</p>
@@ -612,7 +612,7 @@ export default function Wayfinder() {
         {/* STEP 3: Find the building */}
         {hasBuildingSection && guide && (
           <section id="step-building" className="card p-5 sm:p-6">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+            <span className="text-[11px] font-extrabold text-jade-700">
               Step 3 · Find the building
             </span>
             <h2 className="mt-1 flex items-center gap-2 font-display text-xl font-black text-ink-900">
@@ -651,7 +651,7 @@ export default function Wayfinder() {
         {/* STEP 4: Find your apartment door */}
         {guide && (
           <section id="step-door" className="card p-5 sm:p-6">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+            <span className="text-[11px] font-extrabold text-jade-700">
               Step 4 · Find your apartment door
             </span>
             <h2 className="mt-1 flex items-center gap-2 font-display text-xl font-black text-ink-900">
@@ -669,13 +669,13 @@ export default function Wayfinder() {
                   <div className="mt-3 grid grid-cols-2 gap-2.5">
                     {guide.floorLabel && (
                       <div className="rounded-xl border border-ink-100 bg-ink-50/70 px-3.5 py-2.5">
-                        <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Floor</span>
+                        <span className="block text-[10px] font-extrabold text-ink-400">Floor</span>
                         <span className="mt-0.5 block text-[13.5px] font-black text-ink-900">{guide.floorLabel}</span>
                       </div>
                     )}
                     {guide.apartmentIdentifier && (
                       <div className="rounded-xl border border-ink-100 bg-ink-50/70 px-3.5 py-2.5">
-                        <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Apartment / Door</span>
+                        <span className="block text-[10px] font-extrabold text-ink-400">Apartment / Door</span>
                         <span className="mt-0.5 block text-[13.5px] font-black text-ink-900">{guide.apartmentIdentifier}</span>
                       </div>
                     )}
@@ -714,7 +714,7 @@ export default function Wayfinder() {
         {/* Optional Partner-Ordered Step-by-Step Walkthrough */}
         {guide && guide.steps.length > 0 && (
           <section className="card p-5 sm:p-6">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+            <span className="text-[11px] font-extrabold text-jade-700">
               Quick arrival checklist
             </span>
             <h2 className="mt-1 font-display text-lg font-black text-ink-900">
@@ -728,7 +728,7 @@ export default function Wayfinder() {
                       {step.stepOrder}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-jade-700">
+                      <span className="text-[10px] font-extrabold text-jade-700">
                         {STEP_TYPE_LABELS[step.stepType]}
                       </span>
                       <h3 className="font-display text-[15px] font-bold text-ink-900">{step.heading}</h3>
@@ -759,7 +759,7 @@ export default function Wayfinder() {
         {/* STEP 5: Check-in & Protected Access Codes */}
         {hasCheckInSection && guide && (
           <section id="step-checkin" className="card p-5 sm:p-6">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-jade-700">
+            <span className="text-[11px] font-extrabold text-jade-700">
               Step 5 · Check in securely
             </span>
             <h2 className="mt-1 flex items-center gap-2 font-display text-xl font-black text-ink-900">
@@ -785,7 +785,7 @@ export default function Wayfinder() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Lock size={16} className="shrink-0 text-brass-400" />
-                    <span className="text-[12px] font-extrabold uppercase tracking-wider text-brass-300">
+                    <span className="text-[12px] font-extrabold text-brass-300">
                       Protected arrival & Wi-Fi codes
                     </span>
                   </div>
@@ -821,7 +821,7 @@ export default function Wayfinder() {
                       .map(item => (
                         <div key={item.key} className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-ink-900 px-3.5 py-2.5">
                           <div className="min-w-0">
-                            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                            <span className="block text-[10px] font-extrabold text-ink-400">
                               {item.key === 'wifi' && <Wifi size={11} className="mr-1 inline text-brass-300" />}
                               {item.label}
                             </span>
@@ -856,7 +856,7 @@ export default function Wayfinder() {
             {(guide.arrivalContactName || guide.arrivalContactPhone) && !isCompletedStay && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-ink-50/70 p-4">
                 <div>
-                  <span className="block text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <span className="block text-[10.5px] font-extrabold text-ink-400">
                     Authorised check-in contact
                   </span>
                   <p className="mt-0.5 text-[14px] font-bold text-ink-900">
@@ -933,7 +933,7 @@ export default function Wayfinder() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-amber-700">
+                  <p className="text-[10.5px] font-extrabold text-amber-700">
                     Arrival recovery · {view.bookingReference}
                   </p>
                   <h2 className="mt-0.5 font-display text-xl font-black text-ink-900">
@@ -1024,7 +1024,7 @@ export default function Wayfinder() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-jade-700">
+                  <p className="text-[10.5px] font-extrabold text-jade-700">
                     Wayfinder Support · {view.bookingReference}
                   </p>
                   <h2 className="mt-0.5 font-display text-xl font-black text-ink-900">

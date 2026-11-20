@@ -213,7 +213,7 @@ export default function PartnerProperties() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Listings</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Listings</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">My properties</h1>
           <p className="mt-1 max-w-lg text-[12px] font-medium text-ink-300">Only approved, non-suspended listings appear publicly. Documentation evidence is reviewed by HAMLET — checked boxes on submission are self-reported until reviewed.</p>
         </div>
@@ -261,7 +261,7 @@ export default function PartnerProperties() {
                     {avail.primaryBadgeLabel}
                     {avail.nextAvailableLabel && avail.primaryBadgeLabel !== avail.nextAvailableLabel ? ` · ${avail.nextAvailableLabel}` : ''}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{p.type} · {p.area}</span>
+                  <span className="text-[10px] font-bold text-ink-500">{p.type} · {p.area}</span>
                   <span
                     className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                       wfReadiness.tone === 'jade'
@@ -378,7 +378,7 @@ export default function PartnerProperties() {
             {calendarOpen && (
               <div className="border-t border-ink-800 bg-ink-950/75 px-5 py-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+                  <p className="text-[10.5px] font-extrabold text-brass-400">
                     Calendar & availability controls (live update — no re-submission required)
                   </p>
                   <button type="button" onClick={() => setOpenCalendarId(null)} className="text-[11px] font-bold text-ink-400 hover:text-white">Close</button>
@@ -428,7 +428,7 @@ export default function PartnerProperties() {
                 </div>
 
                 <div className="mt-4 border-t border-ink-800 pt-3">
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Add owner-blocked / external occupied dates</p>
+                  <p className="text-[10px] font-extrabold text-ink-400">Add owner-blocked / external occupied dates</p>
                   <div className="mt-2 grid gap-2 sm:grid-cols-5">
                     <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockStart} onChange={e => setBlockStart(e.target.value)} aria-label="Block start" />
                     <input type="date" className="input-dark [color-scheme:dark] text-[12px]" value={blockEnd} onChange={e => setBlockEnd(e.target.value)} aria-label="Block end" />
@@ -498,7 +498,7 @@ export default function PartnerProperties() {
 
             {openDocs === p.id && (
               <div className="border-t border-ink-800 bg-ink-850/60 px-5 py-4">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">Documentation evidence — reviewed by HAMLET</p>
+                <p className="text-[10px] font-extrabold text-ink-400">Documentation evidence — reviewed by HAMLET</p>
                 <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
                   {p.docs.map(d => (
                     <li key={d.label} className="flex items-center justify-between gap-2 rounded-xl border border-ink-800 bg-ink-900 px-3 py-2">
@@ -523,7 +523,7 @@ export default function PartnerProperties() {
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-4 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Address reviewer feedback</p>
+                  <p className="text-[10px] font-extrabold text-brass-400">Address reviewer feedback</p>
                   <h2 className="mt-1 font-display text-xl font-black text-ink-50">Edit & resubmit listing</h2>
                 </div>
                 <button disabled={saving} onClick={() => setEditing(null)} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>

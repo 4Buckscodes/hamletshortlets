@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { Search, ShieldCheck } from 'lucide-react';
 import { FocusedDrawer } from '@/components/forms/ProgressiveFormPrimitives';
 import type { PublicStayRecord } from '@/lib/next-supabase';
 import { StayListingCard } from '@/components/site/SiteShell';
@@ -9,6 +9,9 @@ import { LAGOS_AREAS } from '@/lib/areas';
 import { DateInput } from '@/components/ui/DateInput';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { m } from '@/components/ui/motion';
 
 function addDaysIso(iso: string, days: number) {
   const date = new Date(`${iso}T00:00:00Z`);
@@ -17,10 +20,18 @@ function addDaysIso(iso: string, days: number) {
 }
 
 const destinations = [
-  { name: 'Island energy', area: 'Lekki · Ikoyi · Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?side=island', number: '01' },
-  { name: 'Mainland rhythm', area: 'Yaba · Ikeja · Surulere', image: '/images/prop/duplex.jpg', href: '/stays?area=Lagos+Mainland', number: '02' },
-  { name: 'A little hideaway', area: 'Find your own corner of Lagos', image: '/images/prop/bed-1.jpg', href: '/stays', number: '03' },
+  { name: 'Island energy', area: 'Lekki, Ikoyi, Victoria Island', image: '/images/prop/penthouse.jpg', href: '/stays?side=island', note: 'Waterfront towers, restaurants and the business district close by.' },
+  { name: 'Mainland rhythm', area: 'Yaba, Ikeja, Surulere', image: '/images/prop/duplex.jpg', href: '/stays?area=Lagos+Mainland', note: 'Lively streets, easy access to the airport and the city\'s culture.' },
+  { name: 'A little hideaway', area: 'Find your own corner of Lagos', image: '/images/prop/bed-1.jpg', href: '/stays', note: 'Browse everything that is live and pick what suits the trip.' },
 ];
+
+const promises = [
+  { title: 'Verified before it goes live', body: 'Ownership, the partner\'s identity and the place itself are checked.' },
+  { title: 'Prices with fees included', body: 'Our service fee is already in the nightly price. Cleaning and the refundable deposit are shown separately before you request.' },
+  { title: 'Nothing to pay until accepted', body: 'Request first. Pay only once the partner says yes.' },
+];
+
+const EASE = [0.2, 0.7, 0.2, 1] as const;
 
 export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
   const featured = approvedStays.slice(0, 6);
@@ -33,61 +44,92 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const pillDates = checkIn && checkOut ? `${shortDate(checkIn)} – ${shortDate(checkOut)}` : 'Add dates';
   const searchForm = (variant: 'inline' | 'sheet') => (
-    <form action="/stays" method="get" className={`home-search-form home-search-form-${variant}`} role="search" aria-label="Search Lagos shortlets">
-      <label className="home-search-field home-destination"><span><MapPin size={14} /> DESTINATION</span><input name="area" type="text" list={`hamlet-destinations-${variant}`} placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" value={area} onChange={event => setArea(event.target.value)} autoComplete="off" /><datalist id={`hamlet-destinations-${variant}`}>{LAGOS_AREAS.map(name => <option key={name} value={name} />)}</datalist></label>
-      <label className="home-search-field"><span>CHECK IN</span><DateInput name="checkIn" aria-label="Check-in date" min={today} defaultValue={checkIn} onChange={event => { setCheckIn(event.target.value); setCheckOut(''); }} /></label>
-      <label className="home-search-field"><span>CHECK OUT</span><DateInput key={checkIn || 'none'} name="checkOut" aria-label="Check-out date" min={checkIn ? addDaysIso(checkIn, 1) : addDaysIso(today, 1)} max={checkIn ? addDaysIso(checkIn, 60) : undefined} defaultValue={checkOut} onChange={event => setCheckOut(event.target.value)} /></label>
-      <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" value={guests} onChange={event => setGuests(event.target.value)} aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10].map(count => <option key={count} value={count}>{count} {count===1?'guest':'guests'}</option>)}</select></label>
-      <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
+    <form action="/stays" method="get" className={`hp-search-form hp-search-form-${variant}`} role="search" aria-label="Search Lagos shortlets">
+      <label className="hp-field hp-field-wide"><span>Destination</span><input name="area" type="text" list={`hamlet-destinations-${variant}`} placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" value={area} onChange={event => setArea(event.target.value)} autoComplete="off" /><datalist id={`hamlet-destinations-${variant}`}>{LAGOS_AREAS.map(name => <option key={name} value={name} />)}</datalist></label>
+      <label className="hp-field"><span>Check in</span><DateInput name="checkIn" aria-label="Check-in date" min={today} defaultValue={checkIn} onChange={event => { setCheckIn(event.target.value); setCheckOut(''); }} /></label>
+      <label className="hp-field"><span>Check out</span><DateInput key={checkIn || 'none'} name="checkOut" aria-label="Check-out date" min={checkIn ? addDaysIso(checkIn, 1) : addDaysIso(today, 1)} max={checkIn ? addDaysIso(checkIn, 60) : undefined} defaultValue={checkOut} onChange={event => setCheckOut(event.target.value)} /></label>
+      <label className="hp-field"><span>Guests</span><select name="guests" value={guests} onChange={event => setGuests(event.target.value)} aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10].map(count => <option key={count} value={count}>{count} {count===1?'guest':'guests'}</option>)}</select></label>
+      <Button type="submit" className="hp-search-submit">Find my stay</Button>
     </form>
   );
   return (
-    <div className="home-page">
-      <section className="home-hero" aria-labelledby="home-title">
-        <div className="home-shell home-hero-grid">
-          <div className="home-hero-copy">
-            <p className="home-kicker"><span className="home-kicker-dot" /> NOT JUST A PLACE TO SLEEP. A WAY IN.</p>
-            <h1 id="home-title">Find your<br /><span>place to</span><br /><em>belong.</em></h1>
-            <div className="home-hero-cta"><Link href="/stays" className="hm-btn hm-btn-lime">Find a stay <ArrowRight size={16} aria-hidden="true" /></Link><a href="#find-your-stay" className="hm-btn hm-btn-ghost home-hero-ghost" onClick={event => { if (window.matchMedia('(max-width: 760px)').matches) { event.preventDefault(); setSearchOpen(true); } }}>Search dates</a></div><p className="home-hero-trust"><ShieldCheck size={15} aria-hidden="true" /> Verified stays · Nothing to pay until the partner accepts</p><div className="home-intro-row"><p>Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p><a href="#find-your-stay" className="home-scroll" aria-label="Scroll to find your stay"><ArrowDown size={18} /></a></div>
-            <div className="home-coordinate">LAGOS, NIGERIA <span>·</span> STARTING POINT</div>
+    <div className="hp">
+      <section className="hp-hero" aria-labelledby="home-title">
+        <div className="hp-shell hp-hero-grid">
+          <div className="hp-hero-copy">
+            <p className="hp-note">Verified shortlets in Lagos</p>
+            <h1 id="home-title">Find your place to belong.</h1>
+            <p className="hp-lede">Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p>
+            <div className="hp-actions">
+              <Button href="/stays">Find a stay</Button>
+              <a href="#find-your-stay" className="hm-btn hm-btn-ghost" onClick={event => { if (window.matchMedia('(max-width: 760px)').matches) { event.preventDefault(); setSearchOpen(true); } }}>Search dates</a>
+            </div>
+            <p className="hp-trust"><ShieldCheck size={16} aria-hidden="true" /> Nothing to pay until the partner accepts your request.</p>
           </div>
-          <div className="home-hero-art">
-            <div className="home-photo-frame"><picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture><span className="home-image-index">A GOOD PLACE TO LAND <b>— NIGERIA</b></span></div>
-            <div className="home-stamp" aria-hidden="true"><span>YOUR CITY</span><strong>YOUR<br />STAY</strong></div>
-            <span className="home-side-note">IN GOOD COMPANY, ALWAYS</span>
-          </div>
+          <figure className="hp-hero-art">
+            <div className="hp-hero-frame" data-hero-parallax>
+              <picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture>
+            </div>
+          </figure>
         </div>
-        <div className="home-hero-bottom home-shell"><span>MADE FOR WHEREVER LIFE TAKES YOU</span><span>SCROLL TO FIND YOUR PLACE <ArrowDown size={13} /></span></div>
       </section>
 
-      <section className="home-search" id="find-your-stay" aria-label="Search for a stay">
-        <div className="home-shell">
-          <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
-          <button type="button" className="home-search-pill" onClick={() => setSearchOpen(true)} aria-haspopup="dialog" aria-label="Search Lagos stays: choose area, dates and guests">
-            <span className="home-search-pill-text"><b>{area.trim() || 'Anywhere in Lagos'}</b><span>{pillDates} · {guests} {guests === '1' ? 'guest' : 'guests'}</span></span>
-            <span className="home-search-pill-icon" aria-hidden="true"><Search size={18} /></span>
+      <section className="hp-search" id="find-your-stay" aria-label="Search for a stay">
+        <div className="hp-shell">
+          <h2 className="hp-h2">Where to?</h2>
+          <button type="button" className="hp-pill" onClick={() => setSearchOpen(true)} aria-haspopup="dialog" aria-label="Search Lagos stays: choose area, dates and guests">
+            <span className="hp-pill-text"><b>{area.trim() || 'Anywhere in Lagos'}</b><span>{pillDates} · {guests} {guests === '1' ? 'guest' : 'guests'}</span></span>
+            <span className="hp-pill-icon" aria-hidden="true"><Search size={18} /></span>
           </button>
           {searchForm('inline')}
-          <div className="home-area-quick"><span>START WITH A VIBE · LAGOS</span>{['Lekki','Victoria Island','Ikoyi','Yaba'].map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
+          <div className="hp-quick"><span>Popular areas</span>{['Lekki','Victoria Island','Ikoyi','Yaba'].map(name => <Chip key={name} href={`/stays?area=${encodeURIComponent(name)}`}>{name}</Chip>)}</div>
         </div>
-      <FocusedDrawer open={searchOpen} onClose={() => setSearchOpen(false)} title="Find a stay" subtitle="Where, when and how many">
-            {searchForm('sheet')}
-          </FocusedDrawer>
-        </section>
+        <FocusedDrawer open={searchOpen} onClose={() => setSearchOpen(false)} title="Find a stay" subtitle="Where, when and how many">
+          {searchForm('sheet')}
+        </FocusedDrawer>
+      </section>
 
-
-      <section className="home-live-stays">
-        <div className="home-shell">
-          <div className="home-section-top"><div><p className="home-section-label">{featured.length ? '02 / Real places, live listings' : '02 / Verified stays'}</p><h2>Find somewhere<br /><em>that feels right.</em></h2></div><Link className="home-all-stays" href="/stays">View all stays <ArrowRight size={16}/></Link></div>
-          {featured.length ? <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">{featured.map(stay => <StayListingCard key={stay.id} stay={stay}/>)}</div> : <div className="hm-card hm-card-pad home-empty-card"><p className="hm-h3">New verified stays are on their way.</p><p className="hm-body">Every listing passes HAMLET&apos;s four checks before it appears here. Meanwhile, see what is live now or browse by area.</p><div className="hm-chip-row">{['Victoria Island','Lekki Phase 1','Ikoyi','Yaba','Ikeja GRA'].map(area => <Link key={area} className="hm-chip" href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div></div>}
+      <section className="hp-section" aria-labelledby="live-title">
+        <div className="hp-shell">
+          <div className="hp-head"><div><p className="hp-note">{featured.length ? 'Real places, live listings' : 'Verified stays'}</p><h2 className="hp-h2" id="live-title">Find somewhere that feels right.</h2></div><Link className="hm-link" href="/stays">View all stays</Link></div>
+          {featured.length ? <div className="hp-stays">{featured.map(stay => <StayListingCard key={stay.id} stay={stay}/>)}</div> : <div className="hp-empty" data-hamlet-reveal><p className="hp-empty-title">New verified stays are on their way.</p><p className="hm-body">Every listing passes HAMLET&apos;s four checks before it appears here. Meanwhile, browse by area and we will show what is live.</p><div className="hm-chip-row">{['Victoria Island','Lekki Phase 1','Ikoyi','Yaba','Ikeja GRA'].map(name => <Chip key={name} href={`/stays?area=${encodeURIComponent(name)}`}>{name}</Chip>)}</div></div>}
         </div>
       </section>
 
-      <section className="home-neighbourhoods home-neighbourhoods-compact home-shell" aria-label="Lagos neighbourhoods">
-        <div className="home-section-top"><div><p className="home-section-label">03 / PICK YOUR PACE</p><h2>Every place <em>has its feeling.</em></h2></div><p className="home-section-aside">From the energy of the city to a quieter escape, choose the setting that feels right.</p></div>
-        <div className="home-destination-grid">{destinations.map((place, index) => <Link className={`home-destination home-destination-${index + 1}`} key={place.number} href={place.href}><img src={place.image} alt="" loading="lazy" /><span className="home-destination-tint" /><span className="home-destination-meta">LAGOS / {place.number}</span><span className="home-destination-caption"><span><strong>{place.name}</strong><small>{place.area}</small></span><span className="home-destination-arrow"><ArrowUpRight size={19} /></span></span></Link>)}</div>
-              </section>
-      <section className="home-belief"><div className="home-shell home-belief-grid"><div><p className="home-section-label">04 / THE HAMLET FEELING</p><h2>Good stays.<br /><em>Zero guesswork.</em></h2></div><div className="home-belief-copy"><p>We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p><div className="home-belief-actions"><Link href="/stays" className="hm-btn hm-btn-lime">Find a stay <ArrowRight size={16} aria-hidden="true" /></Link><Link href="/how-it-works">Here&apos;s how we make it easier <ArrowUpRight size={16} /></Link></div></div><div className="home-belief-points"><div><ShieldCheck size={19} /><span><strong>Verified before it goes live</strong><small>Ownership, the partner&apos;s identity and the place itself are checked.</small></span></div><div><Sparkles size={19} /><span><strong>Prices with fees included</strong><small>Our service fee is already in the nightly price. Cleaning and the refundable deposit are shown separately before you request.</small></span></div><div><ArrowRight size={19} /><span><strong>Nothing to pay until accepted</strong><small>Request first. Pay only once the partner says yes.</small></span></div></div></div></section>
+      <section className="hp-section hp-section-ruled" aria-labelledby="pace-title">
+        <div className="hp-shell">
+          <div className="hp-head"><div><h2 className="hp-h2" id="pace-title">Every place has its feeling.</h2></div><p className="hm-body hp-head-aside">From the energy of the city to a quieter escape, choose the setting that feels right.</p></div>
+          <ul className="hp-places">
+            {destinations.map(place => (
+              <li key={place.name} data-hamlet-reveal>
+                <m.div className="hp-place" initial="rest" whileHover="hover" whileFocus="hover" animate="rest">
+                  <Link href={place.href} className="hp-place-link">
+                    <m.span className="hp-place-text" variants={{ rest: { x: 0 }, hover: { x: 6 } }} transition={{ duration: 0.3, ease: EASE }}>
+                      <strong>{place.name}</strong>
+                      <span>{place.area}</span>
+                      <small>{place.note}</small>
+                    </m.span>
+                    <span className="hp-place-photo"><m.img src={place.image} alt="" loading="lazy" variants={{ rest: { scale: 1 }, hover: { scale: 1.05 } }} transition={{ duration: 0.4, ease: EASE }} /></span>
+                  </Link>
+                </m.div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="hp-section hp-belief" aria-labelledby="belief-title">
+        <div className="hp-shell hp-belief-grid">
+          <div>
+            <h2 className="hp-h2" id="belief-title">Good stays. Zero guesswork.</h2>
+            <p className="hm-body">We put the real details up front, so you can spend less time second-guessing and more time getting excited about the trip.</p>
+            <div className="hp-actions"><Button href="/stays">Find a stay</Button><Link href="/how-it-works" className="hm-link">Here&apos;s how we make it easier</Link></div>
+          </div>
+          <dl className="hp-promises">
+            {promises.map(item => <div key={item.title} data-hamlet-reveal><dt>{item.title}</dt><dd>{item.body}</dd></div>)}
+          </dl>
+        </div>
+      </section>
     </div>
   );
 }

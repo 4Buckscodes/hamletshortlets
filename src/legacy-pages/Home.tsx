@@ -223,7 +223,7 @@ export default function Home() {
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-14 pt-24 sm:px-6 sm:pb-20 sm:pt-32">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-ink-950/70 px-3.5 py-1 text-[11px] font-bold tracking-wide text-brass-300 backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-ink-950/70 px-3.5 py-1 text-[11px] font-bold text-brass-300 backdrop-blur-md">
                 <ShieldCheck size={13} className="shrink-0 text-brass-400" />
                 <span>
                   {HAMLET_BRAND_NAME} · {HAMLET_USP}
@@ -247,7 +247,7 @@ export default function Home() {
                 role="tablist"
                 aria-label="Sample apartment rooms"
               >
-                <span className="px-2.5 text-[10.5px] font-bold uppercase tracking-wider text-brass-300">
+                <span className="px-2.5 text-[10.5px] font-bold text-brass-300">
                   Sample interior
                 </span>
                 {HERO_SLIDES.map((slide, index) => {
@@ -359,7 +359,7 @@ export default function Home() {
               <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-4">
                 <MapPin size={17} className="shrink-0 text-brass-600" />
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <span className="block text-[10px] font-extrabold text-ink-400">
                     Where
                   </span>
                   <select
@@ -390,7 +390,7 @@ export default function Home() {
               <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-3">
                 <Calendar size={17} className="shrink-0 text-brass-600" />
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <span className="block text-[10px] font-extrabold text-ink-400">
                     Check in
                   </span>
                   <input
@@ -412,7 +412,7 @@ export default function Home() {
               <label className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-ink-100 bg-paper/65 px-3.5 py-2.5 lg:col-span-3">
                 <Calendar size={17} className="shrink-0 text-brass-600" />
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <span className="block text-[10px] font-extrabold text-ink-400">
                     Check out
                   </span>
                   <input
@@ -429,7 +429,7 @@ export default function Home() {
                 <label className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-ink-100 bg-paper/65 px-3 py-2.5">
                   <Users size={16} className="shrink-0 text-brass-600" />
                   <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                    <span className="block text-[10px] font-extrabold text-ink-400">
                       Guests
                     </span>
                     <select
@@ -604,7 +604,7 @@ export default function Home() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/70 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold text-brass-300 backdrop-blur-md">
                       {card.corridor}
                     </span>
                     <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white drop-shadow-xs">

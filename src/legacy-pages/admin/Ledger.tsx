@@ -135,7 +135,7 @@ export default function AdminLedger() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Financial records & allocation reconciliation</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Financial records & allocation reconciliation</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Transaction ledger & settlement</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">
             Idempotent booking settlement ledger — records owner listed revenue (B), 20% domestic markup allocations (10% closing agent, 2.5% recurring referrer, 5%/7.5% HAMLET allocation, 2.5% internal payment reserve), actual Paystack fees, 10% FX buffers, and separate refundable caution deposit movements.
@@ -188,7 +188,7 @@ export default function AdminLedger() {
       <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
         {SUMMARY_TYPES.map(t => (
           <button key={t} onClick={() => setFilter(filter === t ? 'all' : t)} className={`rounded-2xl border p-3 text-left transition ${filter === t ? 'border-brass-500 bg-brass-500/15' : 'border-ink-800 bg-ink-900 hover:border-ink-700'}`}>
-            <span className={`chip border !px-2 !py-0.5 text-[9.5px] uppercase ${TYPE_META[t].cls}`}>{TYPE_META[t].label}</span>
+            <span className={`chip border !px-2 !py-0.5 text-[9.5px] ${TYPE_META[t].cls}`}>{TYPE_META[t].label}</span>
             <p className="mt-1.5 break-words font-display text-[15px] font-black tabular-nums text-ink-50">{formatNaira(totals.byType[t])}</p>
           </button>
         ))}
@@ -223,14 +223,14 @@ export default function AdminLedger() {
               <tr key={l.id} className={`transition hover:bg-ink-850 ${l.variance !== 0 ? 'bg-red-950/20' : ''}`}>
                 <td className="td whitespace-nowrap text-[10.5px] font-semibold text-ink-300">{formatDateTime(l.at)}</td>
                 <td className="td font-mono text-[10.5px] font-bold text-brass-300">{l.bookingRef}</td>
-                <td className="td"><span className={`chip border !px-2 !py-0.5 text-[9.5px] uppercase ${TYPE_META[l.type]?.cls ?? ''}`}>{TYPE_META[l.type]?.label ?? l.type}</span></td>
+                <td className="td"><span className={`chip border !px-2 !py-0.5 text-[9.5px] ${TYPE_META[l.type]?.cls ?? ''}`}>{TYPE_META[l.type]?.label ?? l.type}</span></td>
                 <td className="td max-w-[260px] text-[11px] leading-snug text-ink-200">{l.description}{l.note && <span className="block text-[10px] leading-snug text-ink-400">{l.note}</span>}</td>
                 <td className="td max-w-[120px] truncate font-mono text-[10px] text-ink-400">{l.providerRef ?? '—'}</td>
                 <td className="td text-right tabular-nums font-bold text-ink-50">{formatNaira(l.amount)}</td>
                 <td className={`td text-right tabular-nums font-bold ${l.variance !== 0 ? 'text-red-400' : 'text-jade-400'}`}>{l.variance === 0 ? '—' : formatNaira(l.variance)}</td>
                 <td className="td"><LedgerStatusPill status={l.status} /></td>
                 <td className="td">
-                  <span className="rounded-full border border-ink-700 bg-ink-800 px-2 py-0.5 text-[9.5px] font-bold uppercase text-ink-300">
+                  <span className="rounded-full border border-ink-700 bg-ink-800 px-2 py-0.5 text-[9.5px] font-bold text-ink-300">
                     {(l.payoutStatus ?? 'n/a').replace(/_/g, ' ')}
                   </span>
                 </td>
@@ -307,7 +307,7 @@ export default function AdminLedger() {
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-4 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Manual settlement / adjustment</p>
+                  <p className="text-[10px] font-extrabold text-brass-400">Manual settlement / adjustment</p>
                   <h2 className="mt-1 font-display text-lg font-black text-ink-50">Record ledger entry</h2>
                 </div>
                 <button onClick={() => setShowAdd(false)} disabled={adjSaving} className="shrink-0 rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>

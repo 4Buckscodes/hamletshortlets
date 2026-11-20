@@ -112,7 +112,7 @@ export default function AdminCommunicationsPage() {
                     <p className="mt-2 text-sm text-ink-700">{row.message}</p>
                     <p className="mt-2 text-xs text-ink-500">{row.event_type} · {new Date(row.created_at).toLocaleString('en-NG')} · Attempts: {row.delivery_attempts}{row.delivered_at ? ` · Accepted: ${new Date(row.delivered_at).toLocaleString('en-NG')}` : ''}</p>
                     {row.last_delivery_error && <p className="mt-2 text-xs text-red-700">Last delivery error: {row.last_delivery_error}</p>}
-                    {row.target_type === 'partner_application' && row.target_id && <Link className="mt-3 inline-block text-xs font-bold text-brass-800 underline" href="/admin/partners">Open partner queue →</Link>}
+                    {row.target_type === 'partner_application' && row.target_id && <Link className="mt-3 inline-block text-xs font-bold text-brass-800 underline" href="/admin/partners">Open partner queue</Link>}
                   </div>
                   {!row.read_at && <button type="button" onClick={() => void markRead(row.id)} className="secondary-button min-h-[38px] text-xs">Mark read</button>}
                 </div>

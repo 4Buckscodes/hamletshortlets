@@ -264,7 +264,7 @@ export default function SignInForm() {
                 value={lockedReferralCode}
                 readOnly
                 aria-readonly="true"
-                className="hm-input font-mono uppercase"
+                className="hm-input font-mono "
               />
             )}
           </FormField>

@@ -98,7 +98,7 @@ export default function PartnerBookings() {
           <div className="flex items-baseline justify-between gap-2 border-t border-ink-800 pt-2.5 sm:shrink-0 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             <div>
               <p className="font-display text-lg font-black tabular-nums text-brass-300 sm:text-right">{formatNaira(b.accommodationSubtotal + b.mandatoryTotal)}</p>
-              <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-500 sm:text-right">accommodation proceeds</p>
+              <p className="text-[9.5px] font-semibold text-ink-500 sm:text-right">accommodation proceeds</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {canReportIncident && (
@@ -110,18 +110,18 @@ export default function PartnerBookings() {
                     setReportDescription('');
                     setReportEvidence('');
                   }}
-                  className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-orange-300 hover:text-orange-200"
+                  className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold text-orange-300 hover:text-orange-200"
                 >
                   <Flag size={11} className="shrink-0" /> Report incident
                 </button>
               )}
               <Link
                 to={`/partner/bookings/${b.id}`}
-                className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-brass-300 hover:text-brass-200"
+                className="inline-flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold text-brass-300 hover:text-brass-200"
               >
                 {needsAction ? 'Review request' : 'Booking details'} <ArrowUpRight size={12} className="shrink-0" />
               </Link>
-              <button onClick={() => setExpanded(open ? null : b.id)} className="flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
+              <button onClick={() => setExpanded(open ? null : b.id)} className="flex shrink-0 items-center gap-1 text-[10.5px] font-extrabold text-ink-300 hover:text-white">Timeline {open ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
             </div>
           </div>
         </div>
@@ -165,22 +165,22 @@ export default function PartnerBookings() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Request-to-book</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Request-to-book</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Bookings & reported issues</h1>
       <p className="mt-1 flex max-w-lg items-start gap-2 text-[12px] font-medium text-ink-300"><AlertTriangle size={14} className="mt-0.5 shrink-0 text-brass-400" />You see permitted booking data for authorised properties only. Confirming availability is a commitment to honour the dates at the stated price.</p>
 
       {actionable.length > 0 && (
         <>
-          <h2 className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-amber-400">Action required — {actionable.length}</h2>
+          <h2 className="mt-6 text-[11px] font-extrabold text-amber-400">Action required — {actionable.length}</h2>
           <div className="mt-2 grid gap-4">{actionable.map(renderCard)}</div>
         </>
       )}
-      <h2 className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">History & upcoming — {rest.length}</h2>
+      <h2 className="mt-6 text-[11px] font-extrabold text-ink-400">History & upcoming — {rest.length}</h2>
       <div className="mt-2 grid gap-4">{rest.map(renderCard)}{rest.length === 0 && actionable.length === 0 && <p className="rounded-2xl border border-dashed border-ink-700 px-6 py-14 text-center text-[12.5px] font-semibold text-ink-400">No bookings yet. They appear here once guests request your approved properties.</p>}</div>
 
       {myIssues.length > 0 && (
         <section className="mt-10">
-          <h2 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-brass-400">
+          <h2 className="flex items-center gap-2 text-[11px] font-extrabold text-brass-400">
             <LifeBuoy size={14} /> Issues reported on my properties — {myIssues.length}
           </h2>
           <p className="mt-1 text-[11px] font-medium text-ink-400">
@@ -194,7 +194,7 @@ export default function PartnerBookings() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-[10.5px] font-bold text-brass-300">{issue.ref}</span>
                     <SeverityDot severity={issue.severity} />
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-ink-400">{issue.severity}</span>
+                    <span className="text-[10px] font-bold text-ink-400">{issue.severity}</span>
                     <IssueStatusPill status={issue.status} />
                     {issue.bookingRef && <span className="font-mono text-[10px] text-ink-400">Booking {issue.bookingRef}</span>}
                   </div>
@@ -244,7 +244,7 @@ export default function PartnerBookings() {
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-5 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Partner incident report</p>
+                  <p className="text-[10px] font-extrabold text-brass-400">Partner incident report</p>
                   <h2 className="mt-1 font-display text-xl font-black text-ink-50">Booking {reportingBooking.ref}</h2>
                 </div>
                 <button disabled={submittingReport} onClick={() => setReportingBooking(null)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>

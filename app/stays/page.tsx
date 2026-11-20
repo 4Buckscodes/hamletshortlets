@@ -96,7 +96,7 @@ export default async function StaysCataloguePage({
           className="hm-band-compact"
           headingId="stays-title"
           live={liveCount > 0}
-          kicker={liveCount > 0 ? `01 / Explore Lagos stays · ${liveCount} live now` : '01 / Explore Lagos stays'}
+          kicker={liveCount > 0 ? `Explore Lagos stays · ${liveCount} live now` : 'Explore Lagos stays'}
           title="Find a stay"
           accent="that feels like yours."
           intro="Every listing is reviewed before it goes live. The price you see already includes HAMLET’s service fee."

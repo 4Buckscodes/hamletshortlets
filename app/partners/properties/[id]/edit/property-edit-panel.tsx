@@ -180,7 +180,7 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
       <section className="rounded-3xl border border-ink-100 bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+            <span className="text-[11px] font-extrabold text-brass-700">
               {property.area} · {statusEntry(property.status).label}
             </span>
             <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">

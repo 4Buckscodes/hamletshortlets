@@ -179,7 +179,7 @@ export default function PartnerStartDashboard() {
           </section>
           <div className="hm-shell hm-section-tight space-y-10">
             <section>
-              <p className="hm-label">01 / How it works</p>
+              <p className="hm-label">How it works</p>
               <ol className="hm-steps">
                 {[
                   ['Create your partner account', 'Choose your role and open your workspace straight away.'],
@@ -198,7 +198,7 @@ export default function PartnerStartDashboard() {
               </ol>
             </section>
             <section className="hm-pay-box">
-              <p className="hm-label">02 / How earnings work</p>
+              <p className="hm-label">How earnings work</p>
               <ul>
                 <li><strong>Owners set their own nightly rate.</strong> Guests see it with HAMLET&apos;s 20% service fee already included, so nothing is taken from your rate for that fee.</li>
                 <li><strong>Closing agents</strong> earn 10% of the owner&apos;s agreed rate on bookings they close, paid from HAMLET&apos;s fee, not from the owner&apos;s rate.</li>
@@ -273,7 +273,7 @@ export default function PartnerStartDashboard() {
               <article className="rounded-3xl border border-ink-100 bg-white p-5">
                 <BadgeCheck className="h-5 w-5 text-brass-700" />
                 <h2 className="mt-3 font-bold text-ink-900">Network status</h2>
-                <p className="mt-2 text-xs font-extrabold uppercase">
+                <p className="mt-2 text-xs font-extrabold ">
                   {membership?.status === 'suspended'
                     ? 'Suspended'
                     : membership
@@ -387,7 +387,7 @@ export default function PartnerStartDashboard() {
                   type="submit"
                   className="primary-button mt-6 min-h-[48px] w-full"
                 >
-                  {saving ? 'Joining…' : 'Join partner network →'}
+                  {saving ? 'Joining…' : 'Join partner network'}
                 </button>
               </form>
             )}

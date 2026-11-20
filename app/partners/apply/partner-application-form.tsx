@@ -435,7 +435,7 @@ export default function PartnerApplicationForm() {
             href={`/signin?mode=signup&next=${encodeURIComponent(gateNext)}${lockedReferralCode ? `&ref=${encodeURIComponent(lockedReferralCode)}` : ''}`}
             className="primary-button"
           >
-            Create account & continue →
+            Create account & continue
           </Link>
           <Link
             href={`/signin?next=${encodeURIComponent(gateNext)}`}
@@ -466,7 +466,7 @@ export default function PartnerApplicationForm() {
             href={roleState === 'admin' ? '/admin' : '/partners'}
             className="primary-button"
           >
-            {roleState === 'admin' ? 'Open Admin Console →' : 'Open Partner Workspace →'}
+            {roleState === 'admin' ? 'Open Admin Console' : 'Open Partner Workspace →'}
           </Link>
           {roleState === 'partner' && (
             <Link href="/partners/properties/new" className="secondary-button">
@@ -642,7 +642,7 @@ export default function PartnerApplicationForm() {
                     }
                   }}
                   placeholder="Optional code"
-                  className={`${FIELD_INPUT_CLASS} font-mono uppercase ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
+                  className={`${FIELD_INPUT_CLASS} font-mono ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
                 />
               )}
             </FormField>
@@ -832,7 +832,7 @@ export default function PartnerApplicationForm() {
               href="/partners/properties/new"
               className="mt-3 inline-flex min-h-[42px] items-center rounded-full bg-ink-900 px-5 text-xs font-extrabold text-white"
             >
-              Upload your first property →
+              Upload your first property
             </Link>
           </div>
         )}

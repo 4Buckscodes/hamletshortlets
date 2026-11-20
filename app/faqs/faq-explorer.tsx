@@ -70,7 +70,7 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
               >
                 <div className="flex items-baseline gap-3">
                   {numLabel && (
-                    <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                    <span className="font-mono text-xs font-extrabold text-brass-600">
                       {numLabel}
                     </span>
                   )}

@@ -337,7 +337,7 @@ export default function AdminPropertiesPage() {
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                      <span className="text-[11px] font-extrabold text-brass-700">
                         {p.area} · {p.bedrooms} bd · up to {p.capacity} guests
                       </span>
                       <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
@@ -492,7 +492,7 @@ export default function AdminPropertiesPage() {
           {assignmentTarget && (
             <div className="space-y-5">
               <div>
-                <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-ink-500">
+                <p className="m-0 text-xs font-extrabold text-ink-500">
                   Current partner assignments
                 </p>
                 {targetAssignments.length > 0 ? (

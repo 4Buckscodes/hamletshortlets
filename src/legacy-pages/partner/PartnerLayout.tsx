@@ -32,7 +32,7 @@ export default function PartnerLayout({ children }: { children: ReactNode }) {
           <div role="alert" className="mx-4 mt-4 flex items-start gap-3 rounded-2xl border border-red-500/40 bg-red-950/50 px-5 py-4 text-[12px] font-semibold leading-relaxed text-red-200 sm:mx-6 lg:mx-8">
             <ShieldAlert size={18} className="mt-0.5 shrink-0 text-red-400" />
             <div>
-              <p className="font-extrabold uppercase tracking-wider text-red-300">Partner account suspended</p>
+              <p className="font-extrabold text-red-300">Partner account suspended</p>
               <p className="mt-0.5">
                 {state.session?.suspensionReason
                   ? `Reason: ${state.session.suspensionReason}`

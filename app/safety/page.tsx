@@ -74,7 +74,7 @@ export default function SafetyPage() {
 
         <div className="hm-shell hm-section-tight space-y-10">
           <section data-hamlet-reveal>
-            <p className="hm-label">01 / What we check</p>
+            <p className="hm-label">What we check</p>
             <h2 className="hm-h2" style={{ marginTop: 10 }}>
               Four checks, <em>before it goes live.</em>
             </h2>
@@ -95,7 +95,7 @@ export default function SafetyPage() {
           </section>
 
           <section data-hamlet-reveal>
-            <p className="hm-label">02 / Your money and your details</p>
+            <p className="hm-label">Your money and your details</p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="hm-card hm-card-pad">
                 <div className="flex items-center gap-2">

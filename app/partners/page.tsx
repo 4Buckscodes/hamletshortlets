@@ -276,7 +276,7 @@ export default function PartnerDashboardPage() {
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
               <Link href="/account" className="secondary-button">
                 Back to guest account
@@ -317,7 +317,7 @@ export default function PartnerDashboardPage() {
                   Booking requests awaiting response
                 </p>
                 <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-brass-700">
-                  {pendingBookingCount} →
+                  {pendingBookingCount}
                 </p>
               </Link>
             </div>
@@ -326,7 +326,7 @@ export default function PartnerDashboardPage() {
             <>{/* HAMLET Share Engine Banner */}
             <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-ink-950 p-5 text-white sm:flex-row sm:items-center sm:p-6">
               <div className="max-w-2xl">
-                <p className="m-0 text-[11px] font-extrabold uppercase tracking-widest text-brass-400">
+                <p className="m-0 text-[11px] font-extrabold text-brass-400">
                   HAMLET Share Engine
                 </p>
                 <h2 className="serif m-0 mt-1 text-xl font-medium text-white sm:text-2xl">
@@ -376,7 +376,7 @@ export default function PartnerDashboardPage() {
                     <div>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                          <span className="text-[11px] font-extrabold text-brass-700">
                             {p.area} · Lagos
                           </span>
                           <h3 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
@@ -406,7 +406,7 @@ export default function PartnerDashboardPage() {
                       {p.status === 'approved' && (
                         <div className="mt-4 rounded-2xl bg-paper/70 p-3.5">
                           <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-700">
+                            <span className="text-[11px] font-extrabold text-ink-700">
                               Instant distribution
                             </span>
                             {shareFlagsDeployed && (
@@ -480,7 +480,7 @@ export default function PartnerDashboardPage() {
                           href={`/stays/${encodeURIComponent(p.id)}`}
                           className="secondary-button min-h-[44px]"
                         >
-                          Public page →
+                          Public page
                         </Link>
                       )}
                     </div>
@@ -501,7 +501,7 @@ export default function PartnerDashboardPage() {
                     Add a new listing
                   </Link>
                   <Link href="/partners/marketing" className="secondary-button">
-                    Browse stays to share →
+                    Browse stays to share
                   </Link>
                 </div>
               </div>

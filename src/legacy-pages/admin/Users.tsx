@@ -115,7 +115,7 @@ export default function AdminUsers() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Identity & governance</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Identity & governance</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Clients, partners & admin access</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">
             Unified directory of HAMLET guest accounts, approved partners, and internal administrators. Public sign-ups never grant admin access — only pre-authorized or explicitly promoted accounts enter the Admin Console.
@@ -185,7 +185,7 @@ export default function AdminUsers() {
 
             {state.adminBootstrapEmails.length > 0 && (
               <div className="mt-4 border-t border-ink-800 pt-3">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">
+                <p className="text-[10px] font-extrabold text-ink-400">
                   Authorized admin emails ({state.adminBootstrapEmails.length})
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -253,7 +253,7 @@ export default function AdminUsers() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`chip border uppercase ${roleBadge[acc.role]}`}>
+                    <span className={`chip border ${roleBadge[acc.role]}`}>
                       {acc.role === 'guest' ? 'Client' : acc.role}
                     </span>
                     {acc.partnerRole && (

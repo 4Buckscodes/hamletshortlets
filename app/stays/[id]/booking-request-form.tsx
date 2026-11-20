@@ -307,7 +307,7 @@ export default function BookingRequestForm({
 
           <div className="grid gap-2 pt-1">
             <Link href="/account/bookings" className="hm-btn hm-btn-primary hm-btn-block">
-              Track in My Bookings →
+              Track in My Bookings
             </Link>
             <button
               type="button"

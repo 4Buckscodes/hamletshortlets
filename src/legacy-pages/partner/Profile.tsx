@@ -69,7 +69,7 @@ export default function PartnerProfile() {
 
   return (
     <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Your account</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Your account</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Profile, security & application</h1>
 
       {/* Identity card */}
@@ -137,17 +137,17 @@ export default function PartnerProfile() {
         <div className="mt-5 rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-display text-base font-black text-ink-50">Partner application</h3>
-            <span className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest text-ink-300 [&>svg]:shrink-0">{statusIcon}{application.status.replace('_', ' ')}</span>
+            <span className="flex items-center gap-2 text-[11px] font-extrabold text-ink-300 [&>svg]:shrink-0">{statusIcon}{application.status.replace('_', ' ')}</span>
           </div>
           <dl className="mt-4 grid gap-3 text-[12px] font-medium text-ink-100 sm:grid-cols-2">
-            <div><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Submitted</dt><dd className="mt-0.5">{formatDateTime(application.submittedAt)}</dd></div>
-            <div><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Role applied for</dt><dd className="mt-0.5">{application.role}</dd></div>
-            <div><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Areas</dt><dd className="mt-0.5">{application.areas.join(', ')}</dd></div>
-            <div><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Portfolio</dt><dd className="mt-0.5">{application.propertiesCount} propert{application.propertiesCount === 1 ? 'y' : 'ies'}</dd></div>
-            <div className="sm:col-span-2"><dt className="text-[9.5px] font-extrabold uppercase tracking-widest text-ink-500">Motivation</dt><dd className="mt-0.5 leading-relaxed text-ink-200">{application.motivation}</dd></div>
+            <div><dt className="text-[9.5px] font-extrabold text-ink-500">Submitted</dt><dd className="mt-0.5">{formatDateTime(application.submittedAt)}</dd></div>
+            <div><dt className="text-[9.5px] font-extrabold text-ink-500">Role applied for</dt><dd className="mt-0.5">{application.role}</dd></div>
+            <div><dt className="text-[9.5px] font-extrabold text-ink-500">Areas</dt><dd className="mt-0.5">{application.areas.join(', ')}</dd></div>
+            <div><dt className="text-[9.5px] font-extrabold text-ink-500">Portfolio</dt><dd className="mt-0.5">{application.propertiesCount} propert{application.propertiesCount === 1 ? 'y' : 'ies'}</dd></div>
+            <div className="sm:col-span-2"><dt className="text-[9.5px] font-extrabold text-ink-500">Motivation</dt><dd className="mt-0.5 leading-relaxed text-ink-200">{application.motivation}</dd></div>
           </dl>
           {application.reviewNote && (
-            <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[12px] font-medium text-amber-100"><span className="font-extrabold uppercase text-[10px] tracking-widest">Reviewer note:</span><br />{application.reviewNote}</p>
+            <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[12px] font-medium text-amber-100"><span className="font-extrabold text-[10px]">Reviewer note:</span><br />{application.reviewNote}</p>
           )}
           {application.status === 'approved' && <p className="mt-4 text-[12px] font-semibold text-jade-300">Approved — you may submit properties for review from the My Properties section.</p>}
         </div>

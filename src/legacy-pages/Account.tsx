@@ -79,7 +79,7 @@ function BookingStepper({ status }: { status: Booking['status'] }) {
                   {done && current > i ? '✓' : i + 1}
                 </div>
                 <span
-                  className={`mt-1 hidden text-[9px] font-extrabold uppercase tracking-wide sm:block ${
+                  className={`mt-1 hidden text-[9px] font-extrabold sm:block ${
                     done ? 'text-ink-900' : 'text-ink-400'
                   }`}
                 >
@@ -98,7 +98,7 @@ function BookingStepper({ status }: { status: Booking['status'] }) {
         })}
       </div>
       {!negative && current >= 0 && (
-        <p className="mt-1.5 text-[10px] font-extrabold uppercase tracking-wide text-ink-800 sm:hidden">
+        <p className="mt-1.5 text-[10px] font-extrabold text-ink-800 sm:hidden">
           Stage {current + 1} of {STAGES.length} · {STAGES[current]}
         </p>
       )}
@@ -731,7 +731,7 @@ export default function Account() {
           {/* Account Summary Metrics (Real Authorised Data Only) */}
           <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-300">
+              <p className="font-mono text-[10px] font-bold text-ink-300">
                 Bookings
               </p>
               <p className="mt-1 font-display text-2xl font-bold tabular-nums text-white">
@@ -739,7 +739,7 @@ export default function Account() {
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-300">
+              <p className="font-mono text-[10px] font-bold text-ink-300">
                 Saved stays
               </p>
               <p className="mt-1 font-display text-2xl font-bold tabular-nums text-white">
@@ -747,7 +747,7 @@ export default function Account() {
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-300">
+              <p className="font-mono text-[10px] font-bold text-ink-300">
                 Caution held
               </p>
               <p className="mt-1 font-display text-xl font-bold tabular-nums text-brass-300 sm:text-2xl">
@@ -755,7 +755,7 @@ export default function Account() {
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink-300">
+              <p className="font-mono text-[10px] font-bold text-ink-300">
                 Support issues
               </p>
               <p className="mt-1 font-display text-2xl font-bold tabular-nums text-white">
@@ -773,7 +773,7 @@ export default function Account() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Building2 size={17} className="shrink-0 text-brass-600" />
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
+                <span className="text-[11px] font-extrabold text-ink-500">
                   Partner application
                 </span>
                 <ApplicationStatusPill status={myPartnerApplication.status} />
@@ -994,14 +994,14 @@ export default function Account() {
                           <p className="font-display text-xl font-bold tabular-nums text-ink-900 sm:text-right">
                             {formatMoney(b.guestTotal)}
                           </p>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-right">
+                          <p className="text-[10px] font-semibold text-ink-400 sm:text-right">
                             stay total incl. 20% markup
                             {currency !== 'NGN' ? ` · ${formatNaira(b.guestTotal)}` : ''}
                           </p>
                         </div>
                         <button
                           onClick={() => setExpanded(open ? null : b.id)}
-                          className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-900 hover:text-brass-700"
+                          className="inline-flex shrink-0 items-center gap-1 text-[11px] font-extrabold text-ink-900 hover:text-brass-700"
                         >
                           Details{' '}
                           {open ? (
@@ -1075,7 +1075,7 @@ export default function Account() {
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.15em] text-emerald-800">
+                              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-emerald-800">
                                 <Compass size={13} className="shrink-0 text-emerald-700" /> HAMLET Wayfinder
                               </span>
                               {wayfinderReadiness && (
@@ -1217,7 +1217,7 @@ export default function Account() {
                         >
                           <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-2">
                             <div>
-                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
+                              <h3 className="text-[10.5px] font-extrabold text-ink-400">
                                 Price &amp; settlement breakdown
                               </h3>
                               <dl className="mt-2 space-y-1 text-xs font-medium text-ink-700">
@@ -1266,7 +1266,7 @@ export default function Account() {
                                 <div className="mt-3 rounded-2xl border border-ink-200 bg-paper p-3 text-[11.5px]">
                                   <p className="font-bold text-ink-900">
                                     Caution deposit status:{' '}
-                                    <span className="uppercase text-emerald-800">
+                                    <span className="text-emerald-800">
                                       {cautionRecord.status.replace(/_/g, ' ')}
                                     </span>
                                   </p>
@@ -1344,7 +1344,7 @@ export default function Account() {
                               </div>
                             </div>
                             <div>
-                              <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
+                              <h3 className="text-[10.5px] font-extrabold text-ink-400">
                                 Timeline
                               </h3>
                               <ol className="mt-2 space-y-0 border-l-2 border-ink-100 pl-4">
@@ -1363,7 +1363,7 @@ export default function Account() {
                           </div>
                           {canFeedback && (
                             <div className="border-t border-ink-100 bg-clay/50 p-4 sm:p-5">
-                              <h3 className="flex items-start gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500">
+                              <h3 className="flex items-start gap-2 text-[11px] font-extrabold text-ink-500">
                                 <MessageSquarePlus size={14} className="mt-0.5 shrink-0" /> Private stay feedback — reviewed by HAMLET operations only
                               </h3>
                               {existingFeedback ? (
@@ -1522,7 +1522,7 @@ export default function Account() {
                   )}
                   {issue.evidence.length > 0 && (
                     <div className="mt-3 rounded-2xl border border-ink-100 bg-paper p-3">
-                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+                      <p className="text-[10px] font-extrabold text-ink-500">
                         Recorded evidence ({issue.evidence.length})
                       </p>
                       <ul className="mt-1 space-y-1 text-[11.5px] font-medium text-ink-700">

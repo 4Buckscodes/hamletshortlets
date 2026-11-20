@@ -208,7 +208,7 @@ export default function AdminIssuesPage() {
           {selected && (
             <form onSubmit={submitTransition} className="space-y-4">
               <div className="rounded-2xl bg-paper p-4 text-sm text-ink-800">
-                <p className="m-0 text-xs font-bold uppercase tracking-wider text-ink-500">{(selected.category || 'General').replace(/_/g, ' ')} · reported by the guest</p>
+                <p className="m-0 text-xs font-bold text-ink-500">{(selected.category || 'General').replace(/_/g, ' ')} · reported by the guest</p>
                 <p className="m-0 mt-1.5 leading-relaxed">{selected.description || 'No description was provided.'}</p>
               </div>
               <FormField label="Next issue status">

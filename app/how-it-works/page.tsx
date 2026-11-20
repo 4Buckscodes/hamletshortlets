@@ -65,7 +65,7 @@ export default function HowItWorksPage() {
 
         <div className="hm-shell hm-section-tight space-y-10">
           <section data-hamlet-reveal>
-            <p className="hm-label">01 / Four steps</p>
+            <p className="hm-label">Four steps</p>
             <h2 className="hm-h2" style={{ marginTop: 10 }}>
               From request <em>to front door.</em>
             </h2>
@@ -84,7 +84,7 @@ export default function HowItWorksPage() {
           </section>
 
           <section data-hamlet-reveal className="hm-pay-box">
-            <p className="hm-label">02 / What you&apos;ll pay</p>
+            <p className="hm-label">What you&apos;ll pay</p>
             <ul>
               <li><strong>The nightly price already includes HAMLET&apos;s 20% service fee.</strong> No fee is added at checkout.</li>
               <li>Cleaning and turnover, when a stay has one, is shown as its own line before you request.</li>

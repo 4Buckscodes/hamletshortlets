@@ -177,7 +177,7 @@ export default function AdminProperties() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Verification & decoupled availability workflow</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Verification & decoupled availability workflow</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Property review & calendar visibility</h1>
       <p className="mt-1 max-w-3xl text-[12px] font-medium text-ink-300">Publication status (submitted → needs correction → approved / paused / rejected / suspended) is independent of calendar occupancy. Occupied homes with verified documents can be approved so guests can discover and book future open dates.</p>
 
@@ -236,7 +236,7 @@ export default function AdminProperties() {
                   {getDuplicateStatus(p) === 'address_only' && (
                     <span className="chip border border-amber-400/50 bg-amber-400/10 text-amber-300">Same address — verify distinct unit</span>
                   )}
-                  <span className="text-[9.5px] font-bold uppercase tracking-widest text-ink-500">{p.type} · {p.area} · submitted {formatDateTime(p.createdAt).split('·')[0]}</span>
+                  <span className="text-[9.5px] font-bold text-ink-500">{p.type} · {p.area} · submitted {formatDateTime(p.createdAt).split('·')[0]}</span>
                   <span
                     className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
                       wfReadiness.tone === 'jade'
@@ -256,7 +256,7 @@ export default function AdminProperties() {
                 <div className="mt-2 grid grid-cols-2 gap-2 text-[10.5px] font-semibold text-ink-300 sm:grid-cols-4">
                   {(['ownership', 'identity', 'authority', 'inspection'] as const).map(k => (
                     <div key={k} className="rounded-lg border border-ink-800 bg-ink-850 px-2.5 py-1.5">
-                      <span className="block text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{k}</span>
+                      <span className="block text-[9.5px] font-extrabold text-ink-400">{k}</span>
                       <span className={p.verification[k] === 'verified' ? 'text-jade-400' : p.verification[k] === 'missing' ? 'text-red-400' : 'text-amber-400'}>{p.verification[k] === 'verified' ? '✓ Verified' : p.verification[k] === 'pending_review' ? '◷ Pending' : p.verification[k] === 'missing' ? '✕ Missing' : '◔ Self-reported'}</span>
                     </div>
                   ))}
@@ -295,7 +295,7 @@ export default function AdminProperties() {
               </div>
             </div>
             <div className="border-t border-ink-800">
-              <button onClick={() => setOpen(open === p.id ? null : p.id)} className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400 hover:text-ink-100 sm:px-5"><span>Documentation evidence ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)</span><span className="shrink-0">{open === p.id ? '−' : '+'}</span></button>
+              <button onClick={() => setOpen(open === p.id ? null : p.id)} className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-[10.5px] font-extrabold text-ink-400 hover:text-ink-100 sm:px-5"><span>Documentation evidence ({p.docs.filter(d => d.status === 'verified').length}/{p.docs.length} verified)</span><span className="shrink-0">{open === p.id ? '−' : '+'}</span></button>
               {open === p.id && (
                 <ul className="grid gap-1.5 px-4 pb-4 sm:grid-cols-2 sm:px-5">
                   {p.docs.map(d => (
@@ -364,7 +364,7 @@ export default function AdminProperties() {
               <motion.div initial={{ scale: 0.96, y: 14 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-5 shadow-2xl sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">
+                    <p className="flex items-center gap-1.5 text-[10px] font-extrabold text-brass-400">
                       <Compass size={12} /> HAMLET Wayfinder · Location & Arrival Verification
                     </p>
                     <h2 className="mt-1 font-display text-xl font-black text-ink-50">{wayfinderModalProp.title}</h2>
@@ -391,7 +391,7 @@ export default function AdminProperties() {
                   <div className="mt-4 space-y-3 rounded-xl border border-ink-800 bg-ink-950/60 p-4 text-[12px] text-ink-200">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">Destination pin</span>
+                        <span className="text-[10px] font-extrabold text-ink-400">Destination pin</span>
                         <p className="font-mono text-[12.5px] font-bold text-ink-50">
                           {formatCoordinatePair(inspectLat, inspectLng) || 'Not set'} · {COORDINATE_POINT_TYPE_LABELS[inspectCoordType]}
                         </p>
@@ -409,17 +409,17 @@ export default function AdminProperties() {
                     </div>
                     <div className="grid gap-2 border-t border-ink-800 pt-3 sm:grid-cols-2">
                       <div>
-                        <span className="block text-[10px] font-extrabold uppercase text-ink-500">Entrance / Gate</span>
+                        <span className="block text-[10px] font-extrabold text-ink-500">Entrance / Gate</span>
                         <p>{(staged?.preferredEntranceLabel ?? g.preferredEntranceLabel) || '—'}</p>
                         <p className="mt-0.5 text-[11px] text-ink-400">{(staged?.entranceInstructions ?? g.entranceInstructions) || 'No entrance instructions'}</p>
                       </div>
                       <div>
-                        <span className="block text-[10px] font-extrabold uppercase text-ink-500">Building & Door</span>
+                        <span className="block text-[10px] font-extrabold text-ink-500">Building & Door</span>
                         <p>{(staged?.buildingOrBlock ?? g.buildingOrBlock) || '—'} · {(staged?.floorLabel ?? g.floorLabel) || '—'} · {(staged?.apartmentIdentifier ?? g.apartmentIdentifier) || '—'}</p>
                         <p className="mt-0.5 text-[11px] text-ink-400">{(staged?.routeToDoor ?? g.routeToDoor) || 'No door route'}</p>
                       </div>
                       <div className="sm:col-span-2">
-                        <span className="block text-[10px] font-extrabold uppercase text-ink-500">Check-in & Contact</span>
+                        <span className="block text-[10px] font-extrabold text-ink-500">Check-in & Contact</span>
                         <p>
                           {(staged?.arrivalContactName ?? g.arrivalContactName) || 'No contact name'} ({(staged?.arrivalContactPhone ?? g.arrivalContactPhone) || 'No phone'}) ·{' '}
                           {secrets ? 'Protected entry/Wi-Fi secrets stored' : 'No entry codes stored'}
@@ -458,7 +458,7 @@ export default function AdminProperties() {
                 </div>
 
                 <div className="mt-4 rounded-xl border border-ink-800 bg-ink-850 p-3.5">
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <p className="text-[10.5px] font-extrabold text-ink-400">
                     Evidence checklist (be strictly truthful — never mark physical testing unless actually performed on-site)
                   </p>
                   <div className="mt-2.5 grid gap-2 text-[11.5px] font-semibold text-ink-100 sm:grid-cols-2">

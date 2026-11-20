@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { MotionLink, MotionButton, liftable } from './motion';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cx } from './cx';
 
@@ -10,16 +10,16 @@ type ChipProps =
 export function Chip(props: ChipProps) {
   if (typeof props.href === 'string') {
     return (
-      <Link href={props.href} className={cx('hm-chip', props.className)} aria-current={props.active ? 'true' : undefined}>
+      <MotionLink href={props.href} {...liftable} className={cx('hm-chip', props.className)} aria-current={props.active ? 'true' : undefined}>
         {props.children}
-      </Link>
+      </MotionLink>
     );
   }
   const { pressed, children, className, type, ...rest } = props;
   return (
-    <button type={type ?? 'button'} className={cx('hm-chip', className)} aria-pressed={pressed === undefined ? undefined : pressed} {...rest}>
+    <MotionButton type={type ?? 'button'} {...liftable} className={cx('hm-chip', className)} aria-pressed={pressed === undefined ? undefined : pressed} {...(rest as object)}>
       {children}
-    </button>
+    </MotionButton>
   );
 }
 

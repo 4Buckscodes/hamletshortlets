@@ -160,7 +160,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingProperties}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  {counts.approvedProperties} live →
+                  {counts.approvedProperties} live
                 </p>
               </Link>
 
@@ -175,7 +175,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingPartners}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending review →
+                  Pending review
                 </p>
               </Link>
 
@@ -190,7 +190,7 @@ export default function AdminOverviewPage() {
                   {counts.activeBookings}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Active requests & stays →
+                  Active requests & stays
                 </p>
               </Link>
 
@@ -205,7 +205,7 @@ export default function AdminOverviewPage() {
                   {counts.openIssues}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Open reports →
+                  Open reports
                 </p>
               </Link>
 
@@ -220,7 +220,7 @@ export default function AdminOverviewPage() {
                   {counts.pendingLedger}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending reconciliation →
+                  Pending reconciliation
                 </p>
               </Link>
 
@@ -235,7 +235,7 @@ export default function AdminOverviewPage() {
                   Directory and audit log
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Directory & audit log →
+                  Directory & audit log
                 </p>
               </Link>
             </div>

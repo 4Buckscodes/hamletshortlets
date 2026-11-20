@@ -200,7 +200,7 @@ export function StepProgressHeader({
   return (
     <div className="mb-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-brass-700">
+        <span className="text-xs font-extrabold text-brass-700">
           Step {currentStep + 1} of {steps.length}
         </span>
         <span className="text-xs font-semibold text-ink-500">{pct}% complete</span>
@@ -418,7 +418,7 @@ export function OptionCardGroup({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold text-ink-900">{option.label}</span>
                 {option.badge && (
-                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[11px] font-extrabold text-brass-700">
                     {option.badge}
                   </span>
                 )}

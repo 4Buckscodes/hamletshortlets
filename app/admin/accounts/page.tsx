@@ -171,7 +171,7 @@ export default function AdminAccountsPage() {
                   </strong>{' '}
                   · <span className="text-xs text-ink-500">{u.email}</span>
                   <p className="m-0 mt-1 text-xs text-ink-500">
-                    Role: <strong className="uppercase text-ink-800">{u.role}</strong>
+                    Role: <strong className="text-ink-800">{u.role}</strong>
                     {u.company ? ` · ${u.company}` : ''} · Status:{' '}
                     <strong className="text-ink-900">{u.account_status}</strong>
                   </p>

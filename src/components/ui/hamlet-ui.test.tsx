@@ -70,10 +70,12 @@ describe('HAMLET UI kit — tokens and themes', () => {
   });
 
   it('keeps button text readable', () => {
-    expect(contrast('#ffffff', light['--hm-blue'])).toBeGreaterThanOrEqual(4.5);
-    expect(contrast('#172119', light['--hm-lime'])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(light['--hm-on-accent'], light['--hm-blue'])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(light['--hm-on-accent'], light['--hm-lime'])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(light['--hm-on-band'], light['--hm-band'])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(dark['--hm-on-band'], dark['--hm-band'])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(dark['--hm-on-accent'], dark['--hm-lime'])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(light['--hm-muted'], light['--hm-page'])).toBeGreaterThanOrEqual(4.5);
   });
 
   it('switches every animation off under reduced motion', () => {
@@ -114,7 +116,7 @@ describe('HAMLET UI kit — components', () => {
     const link = renderToStaticMarkup(<Button href="/stays" arrow>Find my stay</Button>);
     expect(link).toContain('href="/stays"');
     expect(link).toContain('class="hm-btn hm-btn-primary"');
-    expect(link).toContain('<svg');
+    expect(link).not.toContain('<svg');
     const button = renderToStaticMarkup(<Button variant="ghost" size="sm">Cancel</Button>);
     expect(button).toContain('type="button"');
     expect(button).toContain('hm-btn-ghost hm-btn-sm');
@@ -189,7 +191,7 @@ describe('HAMLET UI kit — components', () => {
     expect(html).toContain('href="#results"');
     expect(html).toContain('alt="Penthouse"');
     expect(html).toContain('alt="Bedroom"');
-    expect(html).toMatch(/class="hm-band-stamp" aria-hidden="true"/);
+    expect(html).not.toContain('hm-band-stamp');
   });
 
   it('AreaTicker links each area once for assistive tech and hides the loop copy', () => {

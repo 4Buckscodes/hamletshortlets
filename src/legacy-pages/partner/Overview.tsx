@@ -35,7 +35,7 @@ export default function PartnerOverview() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner workspace</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Partner workspace</p>
           <h1 className="mt-1.5 font-display text-2xl font-bold text-ink-50 sm:text-3xl">Welcome, {state.session!.name.split(' ')[0]}</h1>
           <p className="mt-1 text-[12px] font-medium text-ink-300">{state.session!.partnerRole} · {state.session!.company}</p>
         </div>
@@ -59,7 +59,7 @@ export default function PartnerOverview() {
           <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
             <c.Icon size={20} className={`shrink-0 ${c.tone}`} />
             <p className="mt-2.5 break-words font-display text-lg font-black leading-none tabular-nums text-ink-50 sm:text-2xl">{c.value}</p>
-            <p className="mt-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{c.label}</p>
+            <p className="mt-1.5 text-[10px] font-extrabold text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-semibold text-ink-500">{c.sub}</p>
           </div>
         ))}
@@ -70,7 +70,7 @@ export default function PartnerOverview() {
         <section className="rounded-2xl border border-ink-800 bg-ink-900 xl:col-span-3">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800 px-4 py-4 sm:px-5">
             <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50"><Clock3 size={17} className="shrink-0 text-brass-400" /> Requests needing your action</h2>
-            <Link to="/partner/bookings" className="shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">All bookings <ArrowRight size={11} className="inline shrink-0" /></Link>
+            <Link to="/partner/bookings" className="shrink-0 text-[11px] font-extrabold text-brass-400 hover:text-brass-300">All bookings <ArrowRight size={11} className="inline shrink-0" /></Link>
           </div>
           <div className="divide-y divide-ink-800">
             {pending.length === 0 && (
@@ -99,7 +99,7 @@ export default function PartnerOverview() {
         <section className="rounded-2xl border border-ink-800 bg-ink-900 xl:col-span-2">
           <div className="flex items-center justify-between gap-2 border-b border-ink-800 px-4 py-4 sm:px-5">
             <h2 className="font-display text-base font-black text-ink-50">My properties</h2>
-            <Link to="/partner/properties" className="shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">Manage <ArrowRight size={11} className="inline shrink-0" /></Link>
+            <Link to="/partner/properties" className="shrink-0 text-[11px] font-extrabold text-brass-400 hover:text-brass-300">Manage <ArrowRight size={11} className="inline shrink-0" /></Link>
           </div>
           <div className="divide-y divide-ink-800">
             {myProps.slice(0, 5).map(p => (
@@ -124,7 +124,7 @@ export default function PartnerOverview() {
       {/* Review-note callout if correction needed */}
       {myProps.some(p => p.status === 'needs_correction') && (
         <div className="mt-5 rounded-2xl border border-orange-500/40 bg-orange-500/10 px-5 py-4 text-[12px] font-semibold text-orange-200">
-          <p className="font-extrabold uppercase tracking-wide">Action needed</p>
+          <p className="font-extrabold">Action needed</p>
           {myProps.filter(p => p.status === 'needs_correction').map(p => (
             <p key={p.id} className="mt-1.5"><span className="font-bold text-orange-100">{p.title}:</span> {p.reviewNote} <Link to="/partner/properties" className="underline">Fix & resubmit →</Link></p>
           ))}

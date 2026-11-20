@@ -47,7 +47,7 @@ export default function AdminReferrals() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Attribution & International Pricing</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Attribution & International Pricing</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner referrals & FX rate governance</h1>
       <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">
         Audit single-level partner referral attributions, manage configurable 90-day 2.5% recurring earning windows, resolve attribution disputes with audit logging, and configure authoritative USD/GBP FX rates for the 10% international currency buffer.
@@ -59,7 +59,7 @@ export default function AdminReferrals() {
           <h2 className="flex items-center gap-2 font-display text-base font-black text-ink-50">
             <Globe size={18} className="text-brass-400" /> International FX Rates & 10% Buffer Configuration
           </h2>
-          <span className="rounded-full border border-sky-500/35 bg-sky-500/10 px-3 py-0.5 text-[10px] font-bold uppercase text-sky-300">
+          <span className="rounded-full border border-sky-500/35 bg-sky-500/10 px-3 py-0.5 text-[10px] font-bold text-sky-300">
             International stay price = (B × 1.20 / FX) × 1.10 · Caution deposit unbuffered
           </span>
         </div>
@@ -137,7 +137,7 @@ export default function AdminReferrals() {
 
       {/* Partner Referral Attribution & Dispute Governance (§4.4 & §11.4) */}
       <section className="mt-8">
-        <h2 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">
+        <h2 className="flex items-center gap-2 text-[11px] font-extrabold text-ink-400">
           <Gift size={14} className="text-brass-400" /> Partner referral relationships & 90-day windows ({state.partnerReferrals.length})
         </h2>
         <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
@@ -163,7 +163,7 @@ export default function AdminReferrals() {
                   </td>
                   <td className="td font-mono text-[11px] text-brass-300">{r.referralCode}</td>
                   <td className="td">
-                    <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink-200">
+                    <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold text-ink-200">
                       {r.status.replace(/_/g, ' ')}
                     </span>
                   </td>
@@ -247,7 +247,7 @@ export default function AdminReferrals() {
 
       {/* Referral Rewards History */}
       <section className="mt-8">
-        <h2 className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">
+        <h2 className="flex items-center gap-2 text-[11px] font-extrabold text-ink-400">
           <AlertTriangle size={14} className="text-brass-400" /> Referral activations & 2.5% recurring rewards ({state.partnerReferralRewards.length})
         </h2>
         <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
@@ -273,7 +273,7 @@ export default function AdminReferrals() {
                     {rw.payoutStatus === 'activated_no_payout' ? '₦0 (Activation booking #1)' : formatNaira(rw.rewardAmountNgn)}
                   </td>
                   <td className="td">
-                    <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink-200">
+                    <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold text-ink-200">
                       {rw.payoutStatus.replace(/_/g, ' ')}
                     </span>
                   </td>

@@ -502,7 +502,7 @@ function PartnerMarketingContent() {
             </p>
             <div className="mt-5">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
             </div>
           </section>
@@ -939,7 +939,7 @@ function PartnerMarketingContent() {
                             className="cursor-pointer rounded-2xl border border-ink-200 bg-white p-3 text-left text-ink-900 transition hover:border-ink-500"
                           >
                             <p className="m-0 text-xs font-extrabold">
-                              Card + embedded QR →
+                              Card + embedded QR
                             </p>
                             <p className="m-0 mt-0.5 text-[11px] text-ink-500">
                               Full photo flyer with QR
@@ -954,7 +954,7 @@ function PartnerMarketingContent() {
                 {/* Right Live Preview & Actions */}
                 <div className="rounded-3xl border border-ink-100 bg-paper p-4 sm:p-6 lg:col-span-6">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-ink-600">
+                    <span className="text-xs font-extrabold text-ink-600">
                       Live export preview
                     </span>
                     {previewLoading && (
@@ -1106,7 +1106,7 @@ function PartnerMarketingContent() {
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                          <p className="m-0 text-[11px] font-extrabold text-brass-700">
                             {stay.area || 'Lagos'} ·{' '}
                             {formatAccommodationLabel(
                               stay.property_type,

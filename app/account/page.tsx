@@ -130,7 +130,7 @@ export default function GuestAccountOverviewPage() {
                 </h1>
               </div>
               <Link href="/stays" className="hm-btn hm-btn-lime">
-                Find a new stay <span aria-hidden="true">→</span>
+                Find a new stay
               </Link>
             </div>
             <AccountNav current="overview" />
@@ -210,7 +210,7 @@ export default function GuestAccountOverviewPage() {
                     </p>
                   </div>
                   <Link href="/partners" className="hm-btn hm-btn-primary">
-                    Partner Workspace →
+                    Partner Workspace
                   </Link>
                 </div>
               )}
@@ -224,7 +224,7 @@ export default function GuestAccountOverviewPage() {
                     </p>
                   </div>
                   <Link href="/admin" className="hm-btn hm-btn-primary">
-                    Admin Console →
+                    Admin Console
                   </Link>
                 </div>
               )}

@@ -88,7 +88,7 @@ export default function HowItWorks() {
                   }`}
                 >
                   <span
-                    className={`font-mono text-xs font-extrabold tracking-widest ${
+                    className={`font-mono text-xs font-extrabold ${
                       selected ? 'text-brass-300' : 'text-brass-600'
                     }`}
                   >
@@ -96,7 +96,7 @@ export default function HowItWorks() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`text-[10.5px] font-bold uppercase tracking-wider ${
+                      className={`text-[10.5px] font-bold ${
                         selected ? 'text-ink-300' : 'text-ink-400'
                       }`}
                     >
@@ -117,7 +117,7 @@ export default function HowItWorks() {
                 <article className="card flex h-full flex-col justify-between p-6 sm:p-8">
                   <div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-brass-200/25 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-ink-900">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-brass-400/50 bg-brass-200/25 px-3 py-1 text-[11px] font-extrabold text-ink-900">
                         <StepIcon size={14} className="shrink-0 text-brass-700" />
                         {step.badge}
                       </span>

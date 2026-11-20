@@ -98,13 +98,6 @@ export function PageBand({ kicker, title, accent, intro, actions, children, arri
                   <img src={media.inset.src} alt={media.inset.alt} loading="lazy" />
                 </div>
               ) : null}
-              {media.stamp ? (
-                <span className="hm-band-stamp" aria-hidden="true">
-                  <span>{media.stamp[0]}</span>
-                  <b>{media.stamp[1]}</b>
-                  <span>{media.stamp[2]}</span>
-                </span>
-              ) : null}
             </div>
           ) : (
             aside

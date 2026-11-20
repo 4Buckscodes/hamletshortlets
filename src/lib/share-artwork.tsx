@@ -454,7 +454,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                   fontSize: 13,
                   fontWeight: 700,
                   letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
+                  textTransform: '',
                 }}
               >
                 LAGOS · ISLAND & MAINLAND
@@ -713,7 +713,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                     fontSize: 15,
                     fontWeight: 700,
                     letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    textTransform: '',
                     color: '#E5F477',
                   }}
                 >
@@ -775,7 +775,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                         fontSize: 12,
                         fontWeight: 700,
                         letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
+                        textTransform: '',
                         color: '#D9F24B',
                       }}
                     >
@@ -980,7 +980,7 @@ export async function renderMarketingCardBuffer(
                     fontSize: 13,
                     fontWeight: 700,
                     letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    textTransform: '',
                     color: accent,
                   }}
                 >
@@ -1051,7 +1051,7 @@ export async function renderMarketingCardBuffer(
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: '' }}>
                         Est. Partner Opportunity
                       </span>
                       <span style={{ fontSize: 22, fontWeight: 700, color: textPrimary }}>
@@ -1076,7 +1076,7 @@ export async function renderMarketingCardBuffer(
                 }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: '' }}>
                     {guestNightly !== null ? 'Approved Stay Rate' : 'Verified Listing'}
                   </span>
                   {guestNightly !== null && (
@@ -1226,7 +1226,7 @@ export async function renderMarketingCardBuffer(
                     fontSize: 17,
                     fontWeight: 700,
                     letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
+                    textTransform: '',
                     color: accent,
                   }}
                 >
@@ -1317,7 +1317,7 @@ export async function renderMarketingCardBuffer(
                         fontSize: 15,
                         fontWeight: 700,
                         letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
+                        textTransform: '',
                         color: accent,
                       }}
                     >
@@ -1351,7 +1351,7 @@ export async function renderMarketingCardBuffer(
                     fontSize: 15,
                     fontWeight: 700,
                     letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    textTransform: '',
                     color: accent,
                   }}
                 >
@@ -1453,7 +1453,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
               fontSize: 15,
               fontWeight: 700,
               letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+              textTransform: '',
               color: '#D9F24B',
             }}
           >

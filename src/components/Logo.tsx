@@ -71,7 +71,7 @@ export function HamletWordmark({ light = false }: { light?: boolean }) {
     <span className="inline-flex shrink-0 items-center gap-2">
       <HamletMark size={30} light={light} />
       <span
-        className={`font-display text-[20px] font-bold tracking-[0.06em] sm:text-[22px] ${
+        className={`font-display text-[20px] font-bold sm:text-[22px] ${
           light ? 'text-white' : 'text-ink-900'
         }`}
       >

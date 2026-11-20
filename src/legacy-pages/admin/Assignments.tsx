@@ -58,7 +58,7 @@ export default function AdminAssignments() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Explicit authorisation</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Explicit authorisation</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Property assignments & commissions</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Who may act on which property — scoped, dated, revocable. Commissions exist only where specifically agreed and are recorded here and in the ledger; never automated, never assumed.</p>
         </div>
