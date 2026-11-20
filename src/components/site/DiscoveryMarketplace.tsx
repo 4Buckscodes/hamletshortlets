@@ -372,7 +372,18 @@ export function DiscoveryMarketplace({
                   ))}
                 </select>
               </label>
-              <span className="hm-price-pop hm-only-wide">
+              <span
+                className="hm-price-pop hm-only-wide"
+                onKeyDown={event => {
+                  if (event.key === 'Escape' && priceOpen) {
+                    setPriceOpen(false);
+                    (event.currentTarget.querySelector('button') as HTMLButtonElement | null)?.focus();
+                  }
+                }}
+                onBlur={event => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPriceOpen(false);
+                }}
+              >
                 <Chip pressed={priceOpen || Boolean(filters.minPriceInput || filters.maxPriceInput)} onClick={() => setPriceOpen(open => !open)} aria-expanded={priceOpen}>
                   Price range
                 </Chip>
@@ -720,6 +731,7 @@ function StayResultCard({ stay, querySuffix, index }: { stay: PublicStayRecord; 
       price={<StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} />}
       priceSuffix="· fees included"
       revealIndex={index}
+      priority={index === 0}
     />
   );
 }

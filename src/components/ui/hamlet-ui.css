@@ -1131,3 +1131,14 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
   .hm-band-compact .hm-scroll-cue { display: none; }
   .hm-band-compact .hm-band-inner { padding-block: 22px 14px; gap: 14px; }
 }
+
+/* ---------- Final detector fixes: Stays first screen, tap targets, sign-in panel ---------- */
+.hm-scroll-cue, .hm-detail-back { min-height: 44px; }
+.hm-arrow { width: 44px; height: 44px; }
+.hm-auth-points span { color: rgba(246, 241, 231, 0.88) !important; }
+@media (max-width: 760px) {
+  /* The phone Stays design has no area ticker; dropping it brings the first listing onto the first screen. */
+  .hm-band-compact .hm-ticker { display: none; }
+  .hm-discovery-results .hm-section-head { margin-bottom: 10px; }
+  .hm-discovery-results .hm-h2 { font-size: 28px; }
+}

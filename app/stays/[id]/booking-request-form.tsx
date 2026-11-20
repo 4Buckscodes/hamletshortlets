@@ -65,6 +65,7 @@ export default function BookingRequestForm({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [dateError, setDateError] = useState(false);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [resumed, setResumed] = useState(false);
 
@@ -173,8 +174,14 @@ export default function BookingRequestForm({
     setError('');
     setMessage('');
 
-    if (!nights || nights < 1) {
+    if (!checkIn || !checkOut) {
       setError('Choose your check-in and check-out dates to send a request.');
+      setDateError(true);
+      return;
+    }
+    if (!nights || nights < 1) {
+      setError('Check-out must be at least one night after check-in.');
+      setDateError(true);
       return;
     }
     if (nights > 60) {
@@ -259,7 +266,7 @@ export default function BookingRequestForm({
     }
   }
 
-  const renderFormBody = () => {
+  const renderFormBody = (variant: 'card' | 'sheet') => {
     if (domesticNightly === null) {
       return (
         <div
@@ -325,6 +332,8 @@ export default function BookingRequestForm({
               <span className="hm-date-wrap" data-empty={checkIn ? 'false' : 'true'}>
                 <input
                   {...fieldProps}
+                  aria-invalid={dateError || undefined}
+                  aria-describedby={dateError && error ? `booking-error-${variant}` : fieldProps['aria-describedby']}
                   required
                   type="date"
                   min={minCheckIn}
@@ -334,6 +343,7 @@ export default function BookingRequestForm({
                     setCheckIn(next);
                     if (next && (!checkOut || checkOut <= next)) setCheckOut(addDays(next, 1));
                     setError('');
+                    setDateError(false);
                   }}
                   className="hm-input"
                 />
@@ -346,6 +356,8 @@ export default function BookingRequestForm({
               <span className="hm-date-wrap" data-empty={checkOut ? 'false' : 'true'}>
                 <input
                   {...fieldProps}
+                  aria-invalid={dateError || undefined}
+                  aria-describedby={dateError && error ? `booking-error-${variant}` : fieldProps['aria-describedby']}
                   required
                   type="date"
                   min={checkIn ? addDays(checkIn, 1) : addDays(minCheckIn, 1)}
@@ -353,6 +365,7 @@ export default function BookingRequestForm({
                   onChange={e => {
                     setCheckOut(e.target.value);
                     setError('');
+                    setDateError(false);
                   }}
                   className="hm-input"
                 />
@@ -441,7 +454,7 @@ export default function BookingRequestForm({
         )}
 
         {error && (
-          <p role="alert" className="hm-notice hm-notice-bad">
+          <p id={`booking-error-${variant}`} role="alert" className="hm-notice hm-notice-bad">
             {error}
           </p>
         )}
@@ -481,7 +494,7 @@ export default function BookingRequestForm({
           </p>
         </div>
 
-        {renderFormBody()}
+        {renderFormBody('card')}
       </div>
 
       {/* Mobile Sticky Bottom Action Bar (never obscures content due to pb-24 on detail main) */}
@@ -525,7 +538,7 @@ export default function BookingRequestForm({
         subtitle={propertyTitle}
         onClose={() => setMobileSheetOpen(false)}
       >
-        <div className="hm-booking-scope">{renderFormBody()}</div>
+        <div className="hm-booking-scope">{renderFormBody('sheet')}</div>
       </FocusedDrawer>
     </>
   );

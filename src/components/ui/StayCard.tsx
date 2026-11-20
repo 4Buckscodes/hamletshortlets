@@ -20,10 +20,12 @@ export interface StayCardProps {
   /** Position in a grid, used to stagger the reveal. Omit to disable the reveal. */
   revealIndex?: number;
   className?: string;
+  /** Load the photo eagerly with high priority (the first card on screen is often the page's main image). */
+  priority?: boolean;
 }
 
 /** Stay card: 4:3 photo with caption tag, Playfair title, one meta line, all-in guest price and a round arrow. */
-export function StayCard({ href, imageSrc, imageAlt, onImageError, tag, title, meta, price, priceSuffix = '/ night · fees included', revealIndex, className }: StayCardProps) {
+export function StayCard({ href, imageSrc, imageAlt, onImageError, tag, title, meta, price, priceSuffix = '/ night · fees included', revealIndex, className, priority = false }: StayCardProps) {
   const reveal = revealIndex === undefined ? null : revealProps(revealIndex, 'photo');
   return (
     <Link
@@ -33,7 +35,7 @@ export function StayCard({ href, imageSrc, imageAlt, onImageError, tag, title, m
     >
       <div className="hm-media">
         {imageSrc ? (
-          <img src={imageSrc} alt={imageAlt} loading="lazy" decoding="async" onError={onImageError} />
+          <img src={imageSrc} alt={imageAlt} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} decoding="async" onError={onImageError} />
         ) : (
           <span className="hm-media-placeholder">Photo coming soon</span>
         )}
