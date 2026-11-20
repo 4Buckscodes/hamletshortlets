@@ -24,11 +24,11 @@ export function GlobalMotion() {
         const below = fresh.filter(node => node.getBoundingClientRect().top > window.innerHeight * 0.92);
         fresh.forEach(node => seen.add(node));
         if (!below.length) return;
-        gsap.set(below, { autoAlpha: 0, y: 14 });
+        gsap.set(below, { opacity: 0, y: 14 });
         ScrollTrigger.batch(below, {
           start: 'top 92%',
           once: true,
-          onEnter: batch => gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.07, overwrite: true, clearProps: 'transform,opacity,visibility' }),
+          onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.07, overwrite: true, clearProps: "transform,opacity" }),
         });
       };
 

@@ -9,7 +9,7 @@
 .hp-h2 { margin: 0; font-family: var(--hm-serif); font-size: clamp(30px, 3.6vw, 46px); font-weight: 420; letter-spacing: -0.02em; line-height: 1.08; text-wrap: balance; }
 
 /* Hero: words first, one photograph. */
-.hp-hero { border-bottom: 1px solid var(--hm-line); }
+.hp-hero { border-bottom: 1px solid var(--hm-line); background: var(--hm-page); }
 .hp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: center; gap: clamp(32px, 5vw, 80px); padding-block: clamp(36px, 6vw, 88px); }
 .hp-hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
 .hp-hero-copy h1 { margin: 0; font-family: var(--hm-serif); font-size: clamp(46px, 6.2vw, 88px); font-weight: 400; letter-spacing: -0.03em; line-height: 0.98; text-wrap: balance; }

@@ -96,7 +96,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
         </div>
       </section>
 
-      <section className="hp-section hp-section-ruled" aria-labelledby="pace-title">
+      <section className="hp-section hp-section-ruled" aria-label="Lagos neighbourhoods">
         <div className="hp-shell">
           <div className="hp-head"><div><h2 className="hp-h2" id="pace-title">Every place has its feeling.</h2></div><p className="hm-body hp-head-aside">From the energy of the city to a quieter escape, choose the setting that feels right.</p></div>
           <ul className="hp-places">
