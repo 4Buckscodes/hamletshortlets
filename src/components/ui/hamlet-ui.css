@@ -1142,3 +1142,4 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
   .hm-discovery-results .hm-section-head { margin-bottom: 10px; }
   .hm-discovery-results .hm-h2 { font-size: 28px; }
 }
+.home-page .home-belief-actions .hm-btn-lime { color: #172119 !important; background: var(--hm-lime) !important; border-bottom: 0 !important; }
