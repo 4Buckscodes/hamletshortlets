@@ -702,6 +702,8 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
     expect(harness.getPeakConcurrentUploads()).toBeLessThanOrEqual(expectedMaxConcurrency);
 
     // Start fresh (clear draft) -> cleans up all 10 uncommitted storage objects!
+    // Clearing a draft now asks for confirmation; accept it.
+    page.once('dialog', dialog => void dialog.accept());
     await page.getByRole('button', { name: /Start fresh/i }).click();
     await expect.poll(() => harness.removedPaths.length).toBe(10);
 

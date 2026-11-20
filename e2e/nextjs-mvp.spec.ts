@@ -84,46 +84,48 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
   test('removes manual currency switcher controls and auto-detects NGN, GBP, and USD cleanly', async ({
     browser,
   }) => {
-    // 1. Default Lagos visitor -> NGN (₦) with zero manual currency toggle buttons
-    const lagosCtx = await browser.newContext({
-      locale: 'en-NG',
-      timezoneId: 'Africa/Lagos',
-    });
-    const lagosPage = await lagosCtx.newPage();
-    await lagosPage.goto('/stays');
-    await expect(
-      lagosPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(lagosPage.getByText(/₦ \(NGN\)/).first()).toBeVisible();
-    await lagosCtx.close();
+    // /stays no longer shows a "₦ (NGN)" label and this suite runs without
+    // listings, so read the detected currency from Horatio's pricing answer,
+    // which is built from the same currency context that formats stay prices.
+    const expectDetectedCurrency = async (
+      contextOptions: Parameters<typeof browser.newContext>[0],
+      currency: 'NGN' | 'GBP' | 'USD',
+    ) => {
+      const ctx = await browser.newContext(contextOptions);
+      const page = await ctx.newPage();
+      await page.goto('/stays');
+      await expect(page.locator('button[aria-label*="Display prices in"]')).toHaveCount(0);
 
-    // 2. UK visitor -> GBP (£) automatically via locale/timezone and /api/geo
-    const ukCtx = await browser.newContext({
-      locale: 'en-GB',
-      timezoneId: 'Europe/London',
-      extraHTTPHeaders: { 'x-vercel-ip-country': 'GB' },
-    });
-    const ukPage = await ukCtx.newPage();
-    await ukPage.goto('/stays');
-    await expect(
-      ukPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(ukPage.getByText(/£ \(GBP\)/).first()).toBeVisible();
-    await ukCtx.close();
+      const headerPill = page.getByRole('button', { name: /Ask Horatio — HAMLET assistant/i }).first();
+      if (await headerPill.isVisible()) {
+        await headerPill.click();
+      } else {
+        await page.getByRole('button', { name: /Open navigation menu/i }).click();
+        await page
+          .getByRole('navigation', { name: 'Mobile navigation' })
+          .getByRole('button', { name: /Ask Horatio/i })
+          .click();
+      }
+      await page.getByLabel('Ask Horatio a question').fill('What currency are prices shown in?');
+      await page.getByRole('button', { name: 'Send question' }).click();
+      await expect(page.getByText(`Prices display in ${currency}.`).last()).toBeVisible();
+      await ctx.close();
+    };
 
-    // 3. US visitor -> USD ($) automatically via locale/timezone and /api/geo
-    const usCtx = await browser.newContext({
-      locale: 'en-US',
-      timezoneId: 'America/New_York',
-      extraHTTPHeaders: { 'x-vercel-ip-country': 'US' },
-    });
-    const usPage = await usCtx.newPage();
-    await usPage.goto('/stays');
-    await expect(
-      usPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(usPage.getByText(/\$ \(USD\)/).first()).toBeVisible();
-    await usCtx.close();
+    // 1. Default Lagos visitor -> NGN with zero manual currency toggle buttons
+    await expectDetectedCurrency({ locale: 'en-NG', timezoneId: 'Africa/Lagos' }, 'NGN');
+
+    // 2. UK visitor -> GBP automatically via locale/timezone and /api/geo
+    await expectDetectedCurrency(
+      { locale: 'en-GB', timezoneId: 'Europe/London', extraHTTPHeaders: { 'x-vercel-ip-country': 'GB' } },
+      'GBP',
+    );
+
+    // 3. US visitor -> USD automatically via locale/timezone and /api/geo
+    await expectDetectedCurrency(
+      { locale: 'en-US', timezoneId: 'America/New_York', extraHTTPHeaders: { 'x-vercel-ip-country': 'US' } },
+      'USD',
+    );
   });
 
   test('supports homepage neighbourhood discovery, combined /stays filters, price validation, and Clear filters', async ({
