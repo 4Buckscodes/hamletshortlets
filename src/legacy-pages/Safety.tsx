@@ -89,7 +89,7 @@ export default function Safety() {
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {VERIFICATION_PILLARS.map(pillar => (
               <article key={pillar.num} className="card flex flex-col p-5">
-                <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                <span className="font-mono text-xs font-extrabold text-brass-600">
                   {pillar.num}
                 </span>
                 <h3 className="mt-2.5 font-display text-xl font-bold text-ink-900">{pillar.title}</h3>
@@ -163,7 +163,7 @@ export default function Safety() {
           <div>
             <div className="flex items-center gap-2 text-brass-300">
               <LifeBuoy size={16} className="shrink-0" />
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.2em]">
+              <span className="text-[11px] font-extrabold">
                 Need help during a stay?
               </span>
             </div>

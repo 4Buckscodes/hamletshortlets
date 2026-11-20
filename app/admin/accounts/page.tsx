@@ -33,6 +33,8 @@ export default function AdminAccountsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [query, setQuery] = useState('');
+  const visibleUsers = users.filter(u => !query.trim() || JSON.stringify(u).toLowerCase().includes(query.trim().toLowerCase()));
 
   const load = useCallback(async () => {
     if (!db) {
@@ -120,10 +122,10 @@ export default function AdminAccountsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">User & Partner Governance</p>
@@ -151,7 +153,14 @@ export default function AdminAccountsPage() {
           <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
         ) : (
           <div className="mt-6 space-y-3">
-            {users.map(u => (
+            <label className="hm-field" style={{ maxWidth: 420 }}>
+              <span className="hm-field-label">Search accounts</span>
+              <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name, email, reference…" className="hm-input" />
+            </label>
+            {visibleUsers.length === 0 && (
+              <p className="hm-meta">{users.length === 0 ? 'No accounts to show yet.' : 'No accounts match that search.'}</p>
+            )}
+            {visibleUsers.map(u => (
               <article
                 key={u.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ink-100 bg-white p-5"
@@ -162,7 +171,7 @@ export default function AdminAccountsPage() {
                   </strong>{' '}
                   · <span className="text-xs text-ink-500">{u.email}</span>
                   <p className="m-0 mt-1 text-xs text-ink-500">
-                    Role: <strong className="uppercase text-ink-800">{u.role}</strong>
+                    Role: <strong className="text-ink-800">{u.role}</strong>
                     {u.company ? ` · ${u.company}` : ''} · Status:{' '}
                     <strong className="text-ink-900">{u.account_status}</strong>
                   </p>
@@ -186,6 +195,7 @@ export default function AdminAccountsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={
             selected?.account_status === 'suspended'

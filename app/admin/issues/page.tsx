@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -120,10 +122,10 @@ export default function AdminIssuesPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Audited Issue Accountability</p>
@@ -164,7 +166,7 @@ export default function AdminIssuesPage() {
                     {issue.subject}
                   </h2>
                   <p className="m-0 mt-1 text-xs text-ink-500">
-                    {issue.category} · Status: <strong>{issue.status}</strong>
+                    {issue.category} · <StatusPill tone={statusEntry(issue.status).tone}>{statusEntry(issue.status).label}</StatusPill>
                     {issue.assignee_name ? ` · Assigned: ${issue.assignee_name}` : ''}
                   </p>
                   <p className="m-0 mt-2 whitespace-pre-wrap text-xs leading-relaxed text-ink-700">
@@ -197,13 +199,18 @@ export default function AdminIssuesPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.subject || 'Update issue'}
-          subtitle={selected ? `${selected.reference} · ${selected.severity}` : undefined}
+          subtitle={selected ? `${selected.reference} · ${selected.severity || 'unrated'} severity` : undefined}
           onClose={() => setSelected(null)}
         >
           {selected && (
             <form onSubmit={submitTransition} className="space-y-4">
+              <div className="rounded-2xl bg-paper p-4 text-sm text-ink-800">
+                <p className="m-0 text-xs font-bold text-ink-500">{(selected.category || 'General').replace(/_/g, ' ')} · reported by the guest</p>
+                <p className="m-0 mt-1.5 leading-relaxed">{selected.description || 'No description was provided.'}</p>
+              </div>
               <FormField label="Next issue status">
                 {fieldProps => (
                   <select
@@ -212,11 +219,11 @@ export default function AdminIssuesPage() {
                     onChange={e => setNextStatus(e.target.value)}
                     className={FIELD_INPUT_CLASS}
                   >
-                    <option value="assigned">assigned</option>
-                    <option value="investigating">investigating</option>
-                    <option value="escalated">escalated</option>
-                    <option value="resolved">resolved</option>
-                    <option value="closed">closed</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="investigating">Investigating</option>
+                    <option value="escalated">Escalated</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
                   </select>
                 )}
               </FormField>

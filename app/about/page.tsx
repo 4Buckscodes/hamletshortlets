@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
-  ArrowRight,
   BedDouble,
   Building2,
   KeyRound,
@@ -44,7 +43,7 @@ const FOUR_PILLARS = [
     Icon: Wifi,
     title: 'Power and Wi-Fi, explained',
     body: 'Backup power and internet setup listed per apartment.',
-    cta: 'Filter amenities',
+    cta: 'Explore stays',
     href: '/stays',
   },
   {
@@ -67,22 +66,22 @@ const FOUR_PILLARS = [
 
 export default function AboutPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-about-jsonld" data={ABOUT_PAGE_SCHEMA} />
 
-      <main className="flex-1">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
         {/* Midnight Navy Hero */}
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">
               {HAMLET_BRAND_NAME} · By {HAMLET_PARENT_COMPANY}
             </p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+            <h1 className="hm-display hm-content-title">
               Shortlet stays,{' '}
-              <span className="italic text-brass-300">with accountability.</span>
+              <em>with accountability.</em>
             </h1>
-            <p className="mt-3 max-w-xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+            <p className="hm-body hm-content-intro">
               Built by <strong className="text-white">{HAMLET_PARENT_COMPANY}</strong> for verified Lagos shortlets.
             </p>
           </div>
@@ -93,31 +92,17 @@ export default function AboutPage() {
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="max-w-2xl">
               <p className="eyebrow">Four pillars of a better stay</p>
-              <h2 className="mt-1.5 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
+              <h2 className="mt-1.5 font-display text-3xl text-ink-900 sm:text-4xl">
                 A good stay is about more than beautiful pictures.
               </h2>
             </div>
 
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {FOUR_PILLARS.map(({ num, Icon, title, body, cta, href }) => (
-                <article
-                  key={num}
-                  className="flex flex-col rounded-3xl border border-ink-100 bg-white p-6 shadow-2xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
-                      {num}
-                    </span>
-                    <Icon className="h-5 w-5 shrink-0 text-ink-900" strokeWidth={1.8} />
-                  </div>
-                  <h3 className="mt-3 font-display text-xl font-bold text-ink-900">{title}</h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">{body}</p>
-                  <Link
-                    href={href}
-                    className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-extrabold text-ink-900 transition hover:text-brass-700"
-                  >
-                    {cta} <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                  </Link>
+            <div className="hm-pillars">
+              {FOUR_PILLARS.map(({ num, title, body, cta, href }) => (
+                <article key={num} className="hm-pillar" data-hamlet-reveal>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
+                  <Link href={href} className="hm-link">{cta}</Link>
                 </article>
               ))}
             </div>
@@ -134,7 +119,7 @@ export default function AboutPage() {
                 </h2>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/stays" className="btn-brass !rounded-full !px-6">
+                <Link href="/stays" className="hm-btn hm-btn-lime">
                   <ShieldCheck className="h-4 w-4 shrink-0" /> Explore stays
                 </Link>
                 <Link

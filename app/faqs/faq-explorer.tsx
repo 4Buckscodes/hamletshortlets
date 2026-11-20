@@ -37,11 +37,8 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
               key={tab.id}
               type="button"
               onClick={() => setCategory(tab.id)}
-              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                category === tab.id
-                  ? 'bg-ink-900 text-white'
-                  : 'border border-ink-200 bg-white text-ink-600 hover:border-ink-400'
-              }`}
+              aria-pressed={category === tab.id}
+              className="hm-chip"
             >
               {tab.label}
             </button>
@@ -50,8 +47,9 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
       </div>
 
       <div className="space-y-2.5">
-        {visibleItems.map(item => {
+        {visibleItems.map((item, itemIndex) => {
           const isOpen = openQuestion === item.q;
+          const panelId = `faq-answer-${itemIndex}`;
           const numMatch = item.q.match(/^(\d+)\.\s*(.*)$/);
           const numLabel = numMatch ? numMatch[1]!.padStart(2, '0') : '';
           const cleanTitle = numMatch ? numMatch[2]! : item.q;
@@ -60,18 +58,19 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
             <div
               key={item.q}
               className={`overflow-hidden rounded-2xl border bg-white transition ${
-                isOpen ? 'border-ink-300 shadow-xs' : 'border-ink-100'
+                isOpen ? 'border-ink-300' : 'border-ink-100'
               }`}
             >
               <button
                 type="button"
                 onClick={() => setOpenQuestion(isOpen ? null : item.q)}
                 aria-expanded={isOpen}
+                aria-controls={panelId}
                 className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-paper/50"
               >
                 <div className="flex items-baseline gap-3">
                   {numLabel && (
-                    <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                    <span className="font-mono text-xs font-extrabold text-brass-600">
                       {numLabel}
                     </span>
                   )}
@@ -86,7 +85,7 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
                 )}
               </button>
               {isOpen && (
-                <div className="border-t border-ink-100 px-5 py-4 text-sm leading-relaxed text-ink-600 sm:pl-12">
+                <div id={panelId} className="border-t border-ink-100 px-5 py-4 text-sm leading-relaxed text-ink-600 sm:pl-12">
                   {item.a}
                 </div>
               )}
@@ -107,7 +106,7 @@ export function FaqExplorer({ items }: { items: readonly FaqEntry[] }) {
           >
             <Sparkles className="h-4 w-4 shrink-0 text-brass-600" /> Ask Horatio
           </button>
-          <Link href="/stays" className="btn-jade min-h-11 !rounded-full">
+          <Link href="/stays" className="hm-btn hm-btn-primary">
             Explore stays <ArrowRight className="h-4 w-4 shrink-0" />
           </Link>
         </div>

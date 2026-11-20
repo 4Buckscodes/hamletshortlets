@@ -185,12 +185,22 @@ export function StepProgressHeader({
   maxCompletedStep?: number;
 }) {
   const active = steps[currentStep] ?? steps[0];
+  // Move focus to the new step's heading when the step changes (not on first render).
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus({ preventScroll: false });
+  }, [currentStep]);
   const pct = Math.round(((currentStep + 1) / Math.max(1, steps.length)) * 100);
 
   return (
     <div className="mb-6 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-brass-700">
+        <span className="text-xs font-extrabold text-brass-700">
           Step {currentStep + 1} of {steps.length}
         </span>
         <span className="text-xs font-semibold text-ink-500">{pct}% complete</span>
@@ -223,7 +233,8 @@ export function StepProgressHeader({
                 disabled={!canClick}
                 onClick={() => canClick && onSelectStep?.(idx)}
                 aria-current={isCurrent ? 'step' : undefined}
-                className={`inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition ${
+                aria-label={`Step ${idx + 1}: ${step.title}${idx < currentStep ? ' (done)' : ''}`}
+                className={`inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition ${
                   isCurrent
                     ? 'border-ink-900 bg-ink-900 text-white'
                     : isDone
@@ -232,7 +243,7 @@ export function StepProgressHeader({
                 }`}
               >
                 <span
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-extrabold ${
+                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-extrabold ${
                     isCurrent
                       ? 'bg-brass-500 text-ink-950'
                       : isDone
@@ -250,7 +261,7 @@ export function StepProgressHeader({
       )}
 
       <div>
-        <h2 className="serif text-2xl font-medium text-ink-900 sm:text-[28px]">
+        <h2 ref={headingRef} tabIndex={-1} className="serif text-2xl font-medium text-ink-900 outline-none">
           {active.title}
         </h2>
         {active.description && (
@@ -299,8 +310,10 @@ export function DraftStatusBar({
       {onClearDraft && (
         <button
           type="button"
-          onClick={onClearDraft}
-          className="inline-flex min-h-[36px] cursor-pointer items-center gap-1 rounded-full px-2.5 font-bold text-ink-600 hover:bg-white hover:text-ink-900"
+          onClick={() => {
+            if (window.confirm('Clear everything you have entered and start again?')) onClearDraft();
+          }}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1 rounded-full px-2.5 font-bold text-ink-600 hover:bg-white hover:text-ink-900"
         >
           <RotateCcw className="h-3 w-3 shrink-0" />
           Start fresh
@@ -405,7 +418,7 @@ export function OptionCardGroup({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold text-ink-900">{option.label}</span>
                 {option.badge && (
-                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-700">
+                  <span className="rounded-full bg-brass-200/70 px-2 py-0.5 text-[11px] font-extrabold text-brass-700">
                     {option.badge}
                   </span>
                 )}
@@ -646,21 +659,66 @@ export function FocusedDrawer({
   subtitle,
   onClose,
   children,
+  error,
 }: {
   open: boolean;
   title: string;
   subtitle?: string;
   onClose: () => void;
   children: ReactNode;
+  /** Shown inside the drawer, so a failed action is never hidden behind the overlay. */
+  error?: string | null;
 }) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const focusables = () =>
+      panelRef.current
+        ? (Array.from(
+            panelRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+          ) as HTMLElement[])
+        : [];
+    // Focus the first field (or the close button) once the panel has rendered.
+    const raf = window.requestAnimationFrame(() => {
+      const items = focusables();
+      (items.find(node => /^(INPUT|SELECT|TEXTAREA)$/.test(node.tagName)) ?? items[0])?.focus();
+    });
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', onKey);
+      if (trigger && document.contains(trigger)) trigger.focus();
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open && error) errorRef.current?.focus();
+  }, [open, error]);
 
   if (!open) return null;
 
@@ -672,7 +730,7 @@ export function FocusedDrawer({
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/55 sm:items-stretch sm:justify-end"
     >
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-lg sm:rounded-none">
+      <div ref={panelRef} className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-lg sm:rounded-none">
         <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
           <div className="min-w-0">
             <h2 className="serif m-0 text-xl font-medium text-ink-900">{title}</h2>
@@ -687,11 +745,18 @@ export function FocusedDrawer({
             <X className="h-4 w-4 shrink-0" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5">
+          {error ? (
+            <p ref={errorRef} tabIndex={-1} role="alert" className="hm-notice hm-notice-bad" style={{ margin: '0 0 16px', outline: 'none' }}>
+              {error}
+            </p>
+          ) : null}
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
 export const FIELD_INPUT_CLASS =
-  'min-h-[48px] w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-ink-400 transition focus:border-ink-900 focus:outline-none';
+  'min-h-[48px] w-full rounded-xl border border-[var(--hm-field-line)] bg-white px-3.5 py-2.5 text-sm text-ink-900 transition focus:border-ink-900 focus:outline-none';

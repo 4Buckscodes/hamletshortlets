@@ -31,3 +31,6 @@ test-results
 *.sln
 *.sw?
 .vite-source-tags.js
+
+# Local Claude Code settings (machine-specific hooks)
+.claude/settings.local.json

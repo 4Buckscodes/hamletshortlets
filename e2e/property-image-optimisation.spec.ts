@@ -466,6 +466,7 @@ async function advanceWizardToPhotoStep(page: Page) {
   await expect(page.getByRole('heading', { name: /Submit a Lagos stay/i })).toBeVisible();
 
   await page.getByLabel('Listing title').fill('Bright 2-Bedroom Apartment in Ikoyi');
+  await page.getByLabel(/Lagos neighbourhood/i).selectOption({ index: 1 });
   await page
     .getByLabel(/Public street, estate or landmark summary/i)
     .fill('Off Bourdillon Road, Old Ikoyi, Lagos');
@@ -650,6 +651,7 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
     // Complete remaining steps (Step 3 -> 4 -> 5 -> 6 -> 7) and double-click submit
     await page.getByRole('button', { name: /Save & continue/i }).click(); // -> Step 4
     await page.getByRole('button', { name: /Save & continue/i }).click(); // -> Step 5
+    await page.getByLabel(/Owner agreed nightly rate/i).fill('150000');
     await page.getByRole('button', { name: /Save & continue/i }).click(); // -> Step 6
     await page.getByRole('button', { name: /Save & continue/i }).click(); // -> Step 7
 
@@ -702,11 +704,14 @@ test.describe('HAMLET Automatic Property Image Optimisation — Mobile & Desktop
     expect(harness.getPeakConcurrentUploads()).toBeLessThanOrEqual(expectedMaxConcurrency);
 
     // Start fresh (clear draft) -> cleans up all 10 uncommitted storage objects!
+    // Clearing a draft now asks for confirmation; accept it.
+    page.once('dialog', dialog => void dialog.accept());
     await page.getByRole('button', { name: /Start fresh/i }).click();
     await expect.poll(() => harness.removedPaths.length).toBe(10);
 
     // Navigate back to Step 3 and select all 20 photos at once
     await page.getByLabel('Listing title').fill('Spacious 4-Bedroom Terrace in Lekki Phase 1');
+    await page.getByLabel(/Lagos neighbourhood/i).selectOption({ index: 1 });
     await page
       .getByLabel(/Public street, estate or landmark summary/i)
       .fill('Off Admiralty Way, Lekki Phase 1, Lagos');

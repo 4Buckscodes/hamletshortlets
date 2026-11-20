@@ -133,7 +133,7 @@ export default function AdminIssues() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">The Watch · Live Operations &amp; Safety</p>
+          <p className="text-[10px] font-extrabold text-brass-400">The Watch · Live Operations &amp; Safety</p>
           <h1 className="mt-1.5 font-display text-2xl font-bold text-ink-50 sm:text-3xl">Issues &amp; accountability</h1>
           <p className="mt-1 max-w-xl text-[12px] font-medium text-ink-300">Report → assign → investigate → escalate → resolve → close. Every action, note and evidence artefact is recorded against the issue and audit-logged.</p>
         </div>
@@ -165,7 +165,7 @@ export default function AdminIssues() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-[10.5px] font-bold text-brass-300">{i.ref}</span>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-ink-500">{i.category}</span>
+                  <span className="text-[9px] font-extrabold text-ink-500">{i.category}</span>
                   {i.arrivalIssueType && (
                     <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] font-bold text-amber-300">
                       <Compass size={10} /> {ARRIVAL_ISSUE_TYPE_LABELS[i.arrivalIssueType]}
@@ -192,7 +192,7 @@ export default function AdminIssues() {
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0 }} className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-y-contain rounded-2xl border border-ink-800 bg-ink-900 p-5 shadow-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-brass-400">Operations desk</p>
+                  <p className="text-[10px] font-extrabold text-brass-400">Operations desk</p>
                   <h2 className="mt-1 font-display text-xl font-black text-ink-50">Log booking issue</h2>
                 </div>
                 <button disabled={creating} onClick={() => setShowLogModal(false)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label="Close"><X size={18} /></button>
@@ -314,7 +314,7 @@ export default function AdminIssues() {
                 <p className="mt-2 text-[10.5px] font-semibold text-ink-500">Reported {formatDateTime(activeIssue.createdAt)} by {activeIssue.reporter} ({activeIssue.reporterType})</p>
 
                 <div className="mt-4">
-                  <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-500"><Paperclip size={12} className="shrink-0" /> Evidence ({activeIssue.evidence.length})</p>
+                  <p className="flex items-center gap-1.5 text-[10px] font-extrabold text-ink-500"><Paperclip size={12} className="shrink-0" /> Evidence ({activeIssue.evidence.length})</p>
                   {activeIssue.evidence.length > 0 && (
                     <ul className="mt-1.5 space-y-1.5">{activeIssue.evidence.map((e, idx) => <li key={idx} className="flex items-center gap-2 rounded-lg border border-ink-800 bg-ink-850 px-3 py-2 text-[11.5px] font-medium text-ink-100"><FileText size={13} className="shrink-0 text-ink-500" /><span className="min-w-0 break-all">{e}</span></li>)}</ul>
                   )}
@@ -335,7 +335,7 @@ export default function AdminIssues() {
 
                 {activeIssue.resolution && <p className="mt-4 break-words rounded-xl border border-jade-500/30 bg-jade-500/10 px-4 py-3 text-[11.5px] font-medium text-jade-200"><strong>Resolution:</strong> {activeIssue.resolution}</p>}
 
-                <p className="mt-5 text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Timeline</p>
+                <p className="mt-5 text-[10px] font-extrabold text-ink-500">Timeline</p>
                 <ol className="mt-2 border-l-2 border-ink-800 pl-4">
                   {activeIssue.timeline.map((t, i) => (
                     <li key={i} className="relative pb-3 text-[11px] last:pb-0">

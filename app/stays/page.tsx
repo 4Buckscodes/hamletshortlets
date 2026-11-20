@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import {
   parseDiscoverySearchParams,
   validateStayDates,
@@ -13,6 +12,7 @@ import {
 } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteShell';
+import { AreaTicker, PageBand } from '@/components/ui';
 import { StaysExplorer } from './stays-explorer';
 
 export const dynamic = 'force-dynamic';
@@ -82,37 +82,47 @@ export default async function StaysCataloguePage({
 
   const staysPageSchema = buildPropertyListingPageSchema({ approvedStays });
 
+  const liveCount = approvedStays.length;
+  const heroPhoto = approvedStays.find(stay => (stay.image_urls ?? []).some(url => url.trim()));
+  const heroSrc = heroPhoto?.image_urls?.find(url => url.trim())?.trim();
+
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-stays-jsonld" data={staysPageSchema} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <header className="mb-8 flex flex-col gap-3 border-b border-ink-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-700">
-              Lagos Island &amp; Lagos Mainland
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
-              Explore verified shortlet stays across Lagos.
-            </h1>
-          </div>
-
-          <Link
-            href="/lagos"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-full border border-ink-200 bg-white px-4 text-xs font-bold text-ink-900 shadow-2xs transition hover:border-ink-900 sm:self-auto"
-          >
-            Lagos guide →
-          </Link>
-        </header>
-
-        <StaysExplorer
-          approvedStays={approvedStays}
-          initialFilters={initialFilters}
-          initialUnavailableIds={initialUnavailableIds}
-          availabilitySupported={availabilitySupported}
-          queryError={queryError}
+      <main className="hm-main" style={{ flex: 1 }}>
+        <PageBand
+          className="hm-band-compact"
+          headingId="stays-title"
+          live={liveCount > 0}
+          kicker={liveCount > 0 ? `Explore Lagos stays · ${liveCount} live now` : 'Explore Lagos stays'}
+          title="Find a stay"
+          accent="that feels like yours."
+          intro="Every listing is reviewed before it goes live. The price you see already includes HAMLET’s service fee."
+          scrollCue={{
+            href: '#places-worth-staying-in',
+            label: liveCount > 0 ? `Scroll to see ${liveCount} ${liveCount === 1 ? 'stay' : 'stays'}` : 'Scroll to explore',
+          }}
+          media={{
+            src: heroSrc || '/images/prop/penthouse.jpg',
+            alt: heroPhoto ? `${heroPhoto.title} in ${heroPhoto.area || 'Lagos'}` : 'Penthouse living room with a Lagos skyline view',
+            caption: ['A good place to land', heroPhoto?.area?.trim() || 'Lagos'],
+            inset: { src: '/images/prop/bed-1.jpg', alt: 'Calm bedroom in a Lagos shortlet' },
+            stamp: ['Verified', 'Your stay', 'Lagos'],
+          }}
+          footer={<AreaTicker />}
         />
+
+        <div className="hm-shell hm-section-tight">
+          <StaysExplorer
+            approvedStays={approvedStays}
+            initialFilters={initialFilters}
+            initialUnavailableIds={initialUnavailableIds}
+            availabilitySupported={availabilitySupported}
+            queryError={queryError}
+          />
+        </div>
       </main>
 
       <SiteFooter />

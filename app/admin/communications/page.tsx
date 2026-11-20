@@ -84,12 +84,12 @@ export default function AdminCommunicationsPage() {
   const unread = rows.filter(row => !row.read_at).length;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Elsinore · Operations</p>
+            <p className="eyebrow">HAMLET operations</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">Communications</h1>
             <p className="mt-2 text-sm text-ink-600">{unread} unread · Latest 200 operational events</p>
           </div>
@@ -106,13 +106,13 @@ export default function AdminCommunicationsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="m-0 text-sm font-bold text-ink-900">{row.title}</h2>
-                      {!row.read_at && <span className="rounded-full bg-brass-100 px-2 py-1 text-[10px] font-bold text-brass-800">NEW</span>}
-                      <span className="rounded-full bg-ink-50 px-2 py-1 text-[10px] font-semibold text-ink-600">{DELIVERY_LABELS[row.delivery_status]}</span>
+                      {!row.read_at && <span className="rounded-full bg-brass-100 px-2 py-1 text-[11px] font-bold text-brass-800">NEW</span>}
+                      <span className="rounded-full bg-ink-50 px-2 py-1 text-[11px] font-semibold text-ink-600">{DELIVERY_LABELS[row.delivery_status]}</span>
                     </div>
                     <p className="mt-2 text-sm text-ink-700">{row.message}</p>
                     <p className="mt-2 text-xs text-ink-500">{row.event_type} · {new Date(row.created_at).toLocaleString('en-NG')} · Attempts: {row.delivery_attempts}{row.delivered_at ? ` · Accepted: ${new Date(row.delivered_at).toLocaleString('en-NG')}` : ''}</p>
                     {row.last_delivery_error && <p className="mt-2 text-xs text-red-700">Last delivery error: {row.last_delivery_error}</p>}
-                    {row.target_type === 'partner_application' && row.target_id && <Link className="mt-3 inline-block text-xs font-bold text-brass-800 underline" href="/admin/partners">Open partner queue →</Link>}
+                    {row.target_type === 'partner_application' && row.target_id && <Link className="mt-3 inline-block text-xs font-bold text-brass-800 underline" href="/admin/partners">Open partner queue</Link>}
                   </div>
                   {!row.read_at && <button type="button" onClick={() => void markRead(row.id)} className="secondary-button min-h-[38px] text-xs">Mark read</button>}
                 </div>

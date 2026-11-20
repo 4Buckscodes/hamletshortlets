@@ -365,10 +365,12 @@ export function PropertyMediaManager({
         if (caught instanceof DOMException && caught.name === 'AbortError') {
           return;
         }
+        // Storage and network errors are technical; give the partner a plain next step.
+        const raw = caught instanceof Error ? caught.message : '';
         const errMessage =
-          caught instanceof Error
-            ? caught.message
-            : 'Could not optimise or upload this photograph. Tap Retry to try again.';
+          !raw || /bucket|fetch|network|storage|jwt|policy|row-level|\b4\d\d\b|\b5\d\d\b/i.test(raw)
+            ? 'This photo didn’t upload. Check your connection and tap Retry.'
+            : raw;
 
         updateJobs(prev =>
           prev.map(j =>
@@ -831,6 +833,7 @@ export function PropertyMediaManager({
           value={urlInput}
           onChange={e => setUrlInput(e.target.value)}
           placeholder="Or paste an existing https:// photo URL…"
+          aria-label="Photo link (https)"
           className={`${FIELD_INPUT_CLASS} flex-1`}
         />
         <button
@@ -871,18 +874,18 @@ export function PropertyMediaManager({
                   />
                   <div className="pointer-events-none absolute inset-x-2 top-2 flex items-center justify-between gap-1.5">
                     {isCover ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/90 px-2.5 py-1 text-[10px] font-bold text-white">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-ink-950/90 px-2.5 py-1 text-[11px] font-bold text-white">
                         <Star className="h-3 w-3 shrink-0 fill-brass-400 text-brass-400" />
                         Cover photo
                       </span>
                     ) : (
-                      <span className="rounded-full bg-ink-950/70 px-2 py-0.5 text-[10px] font-bold text-white">
+                      <span className="rounded-full bg-ink-950/70 px-2 py-0.5 text-[11px] font-bold text-white">
                         #{idx + 1}
                       </span>
                     )}
 
                     {meta && meta.optimisedBytes > 0 && (
-                      <span className="rounded-full bg-emerald-950/85 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+                      <span className="rounded-full bg-emerald-950/85 px-2 py-0.5 text-[11px] font-semibold text-emerald-100">
                         {formatBytes(meta.optimisedBytes)} WebP
                       </span>
                     )}
@@ -892,7 +895,7 @@ export function PropertyMediaManager({
                     type="button"
                     onClick={() => setPreviewLightboxIndex(idx)}
                     aria-label={`Preview photo ${idx + 1} full size`}
-                    className="absolute right-2 bottom-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-ink-950/75 text-white transition-colors hover:bg-ink-950"
+                    className="absolute right-2 bottom-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-ink-950/75 text-white transition-colors hover:bg-ink-950"
                   >
                     <Eye className="h-3.5 w-3.5 shrink-0" />
                   </button>
@@ -936,7 +939,7 @@ export function PropertyMediaManager({
                       disabled={idx === 0}
                       onClick={() => movePhoto(idx, -1)}
                       aria-label={`Move photo ${idx + 1} earlier`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
                     </button>
@@ -945,7 +948,7 @@ export function PropertyMediaManager({
                       disabled={idx === imageUrls.length - 1}
                       onClick={() => movePhoto(idx, 1)}
                       aria-label={`Move photo ${idx + 1} later`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </button>
@@ -953,7 +956,7 @@ export function PropertyMediaManager({
                       type="button"
                       onClick={() => removeUploadedPhoto(idx)}
                       aria-label={`Remove photo ${idx + 1}`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-red-700 hover:bg-red-50"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-3.5 w-3.5 shrink-0" />
                     </button>
@@ -1077,7 +1080,7 @@ export function PropertyMediaManager({
           >
             <div className="flex items-center justify-between gap-2 pb-3">
               <div className="min-w-0">
-                <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-brass-700">
+                <p className="m-0 text-xs font-extrabold text-brass-700">
                   {previewLightboxIndex === 0
                     ? `Cover photo · 1 of ${imageUrls.length}`
                     : `Photograph ${previewLightboxIndex + 1} of ${imageUrls.length}`}

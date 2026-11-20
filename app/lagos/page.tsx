@@ -7,6 +7,34 @@ import {
   buildPublicPageMetadata,
 } from '@/lib/structured-data';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { getPublicSupabase } from '@/lib/supabase-public';
+import { isMainlandArea } from '@/lib/areas';
+
+export const revalidate = 300;
+
+/** Live count of verified stays per area, so the guide never sends guests to empty results. */
+async function loadAreaCounts(): Promise<Record<string, number>> {
+  const db = getPublicSupabase();
+  if (!db) return {};
+  const { data } = await db.from('properties').select('area').eq('status', 'approved');
+  const counts: Record<string, number> = {};
+  for (const row of (data ?? []) as Array<{ area?: string | null }>) {
+    const key = (row.area || '').trim();
+    if (!key) continue;
+    counts[key.toLowerCase()] = (counts[key.toLowerCase()] || 0) + 1;
+    if (isMainlandArea(key)) counts['lagos mainland'] = (counts['lagos mainland'] || 0) + 1;
+  }
+  return counts;
+}
+
+function stayCount(href: string, counts: Record<string, number>) {
+  const area = new URLSearchParams(href.split('?')[1] || '').get('area');
+  return area ? counts[area.toLowerCase()] || 0 : 0;
+}
+
+function countLabel(count: number) {
+  return count > 0 ? `${count} verified ${count === 1 ? 'stay' : 'stays'}` : 'No stays here yet · see the corridor';
+}
 
 export const metadata: Metadata = buildPublicPageMetadata({
   title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
@@ -91,39 +119,36 @@ const MAINLAND_CHIPS = [
   { label: 'Ikeja GRA', href: '/stays?area=Ikeja+GRA' },
 ] as const;
 
-export default function LagosGuidePage() {
+export default async function LagosGuidePage() {
+  const counts = await loadAreaCounts();
   const schema = buildLagosNeighbourhoodGuideSchema([
     ...MAINLAND_GUIDES,
     ...ISLAND_GUIDES,
   ]);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-lagos-guide-jsonld" data={schema} />
 
-      <main className="flex-1">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
         {/* Full-bleed Lagos Hero */}
-        <section data-hamlet-reveal className="relative overflow-hidden bg-ink-950 text-paper">
-          <img
-            src="/images/lagos-hero.jpg"
-            alt="Lagos cityscape"
-            className="absolute inset-0 h-full w-full object-cover opacity-100"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/50 to-ink-950/15" />
-          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-            <p className="eyebrow-light">Lagos area guide</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+        <section className="hm-band hm-band-arrive hm-content-hero hm-content-hero-photo">
+          <img src="/images/lagos-hero.jpg" alt="Lagos cityscape" className="hm-content-hero-img" />
+          <span className="hm-content-hero-shade" aria-hidden="true" />
+          <div className="hm-shell hm-band-inner" style={{ position: 'relative' }}>
+            <p className="hm-label">Lagos area guide</p>
+            <h1 className="hm-display hm-content-title">
               Lagos Mainland &amp;{' '}
-              <span className="italic text-brass-300">Lagos Island.</span>
+              <em>Lagos Island.</em>
             </h1>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link href="/stays?area=Lagos+Mainland" className="btn-brass !rounded-full !px-6">
+            <div className="hm-band-actions">
+              <Link href="/stays?area=Lagos+Mainland" className="hm-btn hm-btn-lime">
                 Lagos Mainland <ArrowRight className="h-4 w-4 shrink-0" />
               </Link>
               <Link
                 href="/stays?side=island"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+                className="hm-btn hm-btn-ghost"
               >
                 Lagos Island
               </Link>
@@ -136,25 +161,25 @@ export default function LagosGuidePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Mainland</p>
+                <p className="eyebrow">Lagos Mainland</p>
                 <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
                   Lagos Mainland &amp; environs
                 </h2>
               </div>
               <Link
                 href="/stays?area=Lagos+Mainland"
-                className="btn-outline !rounded-full !px-5 !py-2 text-xs"
+                className="btn-outline !min-h-[44px] !rounded-full !px-5 !py-2 text-sm"
               >
                 Browse Mainland <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {MAINLAND_CHIPS.map(chip => (
+              {MAINLAND_CHIPS.filter(chip => chip.label.startsWith('All') || stayCount(chip.href, counts) > 0).map(chip => (
                 <Link
                   key={chip.label}
                   href={chip.href}
-                  className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-xs font-bold text-ink-700 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
+                  className="inline-flex min-h-[44px] items-center rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-bold text-ink-700 transition hover:border-ink-900 hover:bg-ink-900 hover:text-white"
                 >
                   {chip.label}
                 </Link>
@@ -165,8 +190,8 @@ export default function LagosGuidePage() {
               {MAINLAND_GUIDES.map(item => (
                 <Link
                   key={item.name}
-                  href={item.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  href={stayCount(item.href, counts) > 0 ? item.href : '/stays?area=Lagos+Mainland'}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-300"
                 >
                   <div className="relative h-44 overflow-hidden bg-clay">
                     <img
@@ -176,7 +201,7 @@ export default function LagosGuidePage() {
                       className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[11px] font-extrabold text-brass-300 backdrop-blur-md">
                       Mainland
                     </span>
                     <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white">
@@ -189,7 +214,7 @@ export default function LagosGuidePage() {
                       <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{item.body}</p>
                     </div>
                     <span className="mt-4 inline-flex items-center justify-between border-t border-ink-100 pt-3 text-xs font-extrabold text-ink-900">
-                      <span>Explore stays</span>
+                      <span>{countLabel(stayCount(item.href, counts))}</span>
                       <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-ink-900" />
                     </span>
                   </div>
@@ -204,14 +229,14 @@ export default function LagosGuidePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="eyebrow">Island &amp; Lekki</p>
+                <p className="eyebrow">Lagos Island &amp; Lekki</p>
                 <h2 className="mt-1 font-display text-3xl font-bold text-ink-900 sm:text-4xl">
                   Lagos Island &amp; Lekki corridor
                 </h2>
               </div>
               <Link
                 href="/stays?side=island"
-                className="btn-outline !rounded-full !px-5 !py-2 text-xs"
+                className="btn-outline !min-h-[44px] !rounded-full !px-5 !py-2 text-sm"
               >
                 Browse Island <ArrowRight className="h-3.5 w-3.5 shrink-0" />
               </Link>
@@ -221,8 +246,8 @@ export default function LagosGuidePage() {
               {ISLAND_GUIDES.map(item => (
                 <Link
                   key={item.name}
-                  href={item.href}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-2xs transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-md"
+                  href={stayCount(item.href, counts) > 0 ? item.href : '/stays?side=island'}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-ink-300"
                 >
                   <div className="relative h-44 overflow-hidden bg-clay">
                     <img
@@ -232,7 +257,7 @@ export default function LagosGuidePage() {
                       className="h-full w-full object-cover opacity-100 transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-ink-950/75 to-transparent" />
-                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-brass-300 backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-full bg-ink-950/75 px-2.5 py-0.5 text-[11px] font-extrabold text-brass-300 backdrop-blur-md">
                       Island
                     </span>
                     <h3 className="absolute bottom-2.5 left-3.5 right-3.5 font-display text-xl font-bold text-white">
@@ -245,7 +270,7 @@ export default function LagosGuidePage() {
                       <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{item.body}</p>
                     </div>
                     <span className="mt-4 inline-flex items-center justify-between border-t border-ink-100 pt-3 text-xs font-extrabold text-ink-900">
-                      <span>Explore stays</span>
+                      <span>{countLabel(stayCount(item.href, counts))}</span>
                       <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-400 transition group-hover:text-ink-900" />
                     </span>
                   </div>
@@ -264,7 +289,7 @@ export default function LagosGuidePage() {
                 Have a verified stay in Mainland or Island Lagos?
               </h2>
             </div>
-            <Link href="/partners/apply" className="btn-brass !rounded-full !px-6">
+            <Link href="/partners/apply" className="hm-btn hm-btn-lime">
               <Building2 className="h-4 w-4 shrink-0" /> Apply as a partner
             </Link>
           </div>

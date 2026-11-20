@@ -113,7 +113,7 @@ export function GuestInterestPanel({
           <Sparkles className="h-5 w-5 shrink-0" />
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+          <p className="text-[11px] font-extrabold text-brass-700">
             Early-access updates
           </p>
           <h3
@@ -220,7 +220,7 @@ export function GuestInterestPanel({
                 setConsent(event.target.checked);
                 if (error) setError('');
               }}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[#0E1F3B]"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#172119]"
             />
             <span>
               I consent to HAMLET contacting me by email when relevant verified stays open in Lagos.

@@ -1,47 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Playfair Display Variable", "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Inter Variable", monospace;
+  --font-display: "Newsreader Variable", "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Hanken Grotesk Variable", monospace;
 
   /* Midnight Navy & Slate Grey scale (primary #0E1F3B, secondary text #64748B) */
   --color-ink-950: #091528;
-  --color-ink-900: #0E1F3B;
-  --color-ink-850: #13284C;
-  --color-ink-800: #1B3560;
-  --color-ink-700: #2B4875;
-  --color-ink-600: #475569;
-  --color-ink-500: #64748B;
-  --color-ink-400: #8595AB;
-  --color-ink-300: #CBD5E1;
-  --color-ink-200: #DCE2EC;
-  --color-ink-100: #E8E4DA;
-  --color-ink-50:  #F4F6F9;
+  --color-ink-900: #0e1f3b;
+  --color-ink-850: #172a4a;
+  --color-ink-800: #243756;
+  --color-ink-700: #44516a;
+  --color-ink-600: #5a6578;
+  --color-ink-500: #5f6a7c;
+  --color-ink-400: #697385;
+  --color-ink-300: #cdcac1;
+  --color-ink-200: #dcd9d0;
+  --color-ink-100: #e8e6df;
+  --color-ink-50:  #f0efea;
 
   /* Champagne Gold accent (#C9A44A) */
-  --color-brass-200: #F5E8C4;
-  --color-brass-300: #E8D192;
-  --color-brass-400: #D8B968;
-  --color-brass-500: #C9A44A;
-  --color-brass-600: #AD8832;
-  --color-brass-700: #8A6A22;
+  --color-brass-200: #efe3c4;
+  --color-brass-300: #dcc58a;
+  --color-brass-400: #d4b268;
+  --color-brass-500: #b8923a;
+  --color-brass-600: #7a5c14;
+  --color-brass-700: #6b500f;
 
   /* Midnight Navy guest-facing primary ramp (anchored on #0E1F3B) */
-  --color-jade-50:  #F0F4FA;
-  --color-jade-100: #E0E8F5;
-  --color-jade-200: #C3D2EA;
-  --color-jade-300: #93B0DB;
-  --color-jade-400: #648EC9;
-  --color-jade-500: #2C528C;
-  --color-jade-600: #1B3B6F;
-  --color-jade-700: #0E1F3B;
-  --color-jade-800: #162D54;
-  --color-jade-900: #091528;
+  --color-jade-50:  #eaedf3;
+  --color-jade-100: #d5dbe8;
+  --color-jade-200: #aeb9d0;
+  --color-jade-300: #7e8fb2;
+  --color-jade-400: #4d6290;
+  --color-jade-500: #2a3f6b;
+  --color-jade-600: #16294a;
+  --color-jade-700: #0e1f3b;
+  --color-jade-800: #091528;
+  --color-jade-900: #060e1c;
 
   /* Warm Ivory & secondary warm surface (#F8F5EE) */
-  --color-paper: #F8F5EE;
-  --color-clay: #EFEADE;
+  --color-paper: #f4f3ef;
+  --color-clay: #eae8e1;
 
   /* Restrained Emerald — semantic verification & inspection accents */
   --color-emerald-50:  #ECFDF3;
@@ -110,8 +110,8 @@
   .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold [&>svg]:shrink-0; }
   .th { @apply px-4 py-3 text-left text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-ink-400; }
   .td { @apply px-4 py-3 align-middle text-sm; }
-  .eyebrow { @apply inline-flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-brass-600; }
-  .eyebrow-light { @apply inline-flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.22em] text-brass-300; }
+  .eyebrow { @apply inline-flex items-center gap-2 text-[13px] font-semibold text-brass-600; }
+  .eyebrow-light { @apply inline-flex items-center gap-2 text-[13px] font-semibold text-brass-300; }
 }
 
 ::selection { background: var(--color-brass-300); color: var(--color-ink-950); }

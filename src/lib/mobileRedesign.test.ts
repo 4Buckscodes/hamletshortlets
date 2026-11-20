@@ -84,25 +84,29 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     expect(homeSource).toContain('Apply as a partner');
   });
 
-  it('implements the Midnight Navy homepage header, full-screen Warm Ivory mobile drawer, and collapsible footer', () => {
+  it('implements the forest site header, full-screen forest mobile drawer and collapsible forest footer from the UI kit', () => {
     const siteShell = readRepoFile('src/components/site/SiteShell.tsx');
+    const kitCss = readRepoFile('src/components/ui/hamlet-ui.css');
 
-    // Midnight Navy homepage header + non-home paper header
-    expect(siteShell).toContain('bg-[#121F3C]');
-    expect(siteShell).toContain('lg:backdrop-blur-xl');
+    // One forest header on every page (no navy/paper variants)
+    expect(siteShell).toContain('className="hm-header"');
+    expect(siteShell).toContain('aria-label="Primary navigation"');
+    expect(siteShell).not.toMatch(/#121F3C|#0E1F3B|#C9A45C/);
+    expect(kitCss).toContain('.hm-header {');
 
-    // Full-screen mobile drawer in Warm Ivory (#F8F5EE) with gold-accented Horatio & guest/partner actions
-    expect(siteShell).toContain('fixed inset-0 z-50 bg-[#F8F5EE]');
-    expect(siteShell).toContain('h-dvh');
+    // Full-screen forest drawer with Horatio, guest and host links and account actions
+    expect(siteShell).toContain('className="hm-drawer"');
+    expect(kitCss).toMatch(/\.hm-drawer \{[^}]*position: fixed; inset: 0;/);
+    expect(kitCss).toContain('min-height: 100dvh');
     expect(siteShell).toContain('M4 8h16M4 16h16');
     expect(siteShell).toContain('Ask Horatio');
-    expect(siteShell).toContain('For Guests');
+    expect(siteShell).toContain('For guests');
     expect(siteShell).toContain("{ href: '/stays', label: 'Explore stays' }");
     expect(siteShell).toContain("{ href: '/lagos', label: 'Lagos guide' }");
     expect(siteShell).toContain("{ href: '/how-it-works', label: 'How it works' }");
     expect(siteShell).toContain("{ href: '/safety', label: 'Safety' }");
     expect(siteShell).toContain("{ href: '/faqs', label: 'FAQs' }");
-    expect(siteShell).toContain('For Hosts &amp; About');
+    expect(siteShell).toContain('For hosts &amp; about');
     expect(siteShell).toContain("{ href: '/partners/apply', label: 'Partner with us' }");
     expect(siteShell).toContain("{ href: '/about', label: 'About HAMLET' }");
     expect(siteShell).toContain('Create guest account');
@@ -110,7 +114,7 @@ describe('mobile-first editorial Lagos hospitality redesign', () => {
     // Collapsible mobile footer accordions + 4-column desktop footer
     expect(siteShell).toContain('footer-accordion-');
     expect(siteShell).toContain("isOpen ? '−' : '+'");
-    expect(siteShell).toContain('hidden gap-8 md:grid md:grid-cols-4');
+    expect(kitCss).toContain('grid-template-columns: 1.3fr 1fr 1fr 1fr');
     expect(siteShell).toContain('hello@hamlet.rest');
     expect(siteShell).toContain(
       'Bookings confirm only after partner acceptance and server-verified payment.',

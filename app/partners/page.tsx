@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
@@ -215,10 +217,10 @@ export default function PartnerDashboardPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-6 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Partner Workspace</p>
@@ -231,21 +233,17 @@ export default function PartnerDashboardPage() {
           {canUploadProperties && (
             <Link
               href="/partners/properties/new"
-              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-brass-400/70 bg-ink-900 px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(14,31,59,0.6)] transition hover:-translate-y-0.5 hover:border-brass-400 hover:bg-ink-800 sm:w-auto sm:shrink-0"
+              className="hm-btn hm-btn-lime hm-partner-add"
             >
-              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brass-500 text-ink-950">
-                <Plus className="h-4 w-4 stroke-[2.75]" />
-              </span>
+              <Plus size={16} strokeWidth={2.75} aria-hidden="true" />
               <span>Add a new listing</span>
             </Link>
           )}
+          {(['partner', 'admin'].includes(role)) && (
+            <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
+          )}
         </div>
 
-        {(['partner', 'admin'].includes(role)) && (
-          <div className="mt-5">
-            <PartnerNav current="overview" hideNewListingAction applicant={role === "partner_applicant"} />
-          </div>
-        )}
 
         {error && (
           <p
@@ -278,7 +276,7 @@ export default function PartnerDashboardPage() {
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
               <Link href="/account" className="secondary-button">
                 Back to guest account
@@ -319,7 +317,7 @@ export default function PartnerDashboardPage() {
                   Booking requests awaiting response
                 </p>
                 <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-brass-700">
-                  {pendingBookingCount} →
+                  {pendingBookingCount}
                 </p>
               </Link>
             </div>
@@ -328,7 +326,7 @@ export default function PartnerDashboardPage() {
             <>{/* HAMLET Share Engine Banner */}
             <section className="mt-6 flex flex-col justify-between gap-4 rounded-3xl border border-brass-300/60 bg-ink-950 p-5 text-white sm:flex-row sm:items-center sm:p-6">
               <div className="max-w-2xl">
-                <p className="m-0 text-[11px] font-extrabold uppercase tracking-widest text-brass-400">
+                <p className="m-0 text-[11px] font-extrabold text-brass-400">
                   HAMLET Share Engine
                 </p>
                 <h2 className="serif m-0 mt-1 text-xl font-medium text-white sm:text-2xl">
@@ -341,14 +339,14 @@ export default function PartnerDashboardPage() {
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   href="/partners/marketing"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-brass-500 px-4 text-xs font-extrabold text-ink-950 transition hover:bg-brass-400"
                 >
                   <Share2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Open Share & Studio</span>
                 </Link>
                 <Link
                   href="/partners/analytics"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white/20"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white/20"
                 >
                   <BarChart3 className="h-3.5 w-3.5 shrink-0" />
                   <span>My performance</span>
@@ -362,9 +360,9 @@ export default function PartnerDashboardPage() {
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Your properties ({properties.length})
               </h2>
-              <Link href="/partners/properties/new" className="primary-button">
+              <Link href="/partners/properties/new" className="hm-link">
                 <Plus className="h-4 w-4 shrink-0" />
-                Add a new listing
+                Add another listing
               </Link>
             </div>
 
@@ -378,16 +376,14 @@ export default function PartnerDashboardPage() {
                     <div>
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                          <span className="text-[11px] font-extrabold text-brass-700">
                             {p.area} · Lagos
                           </span>
                           <h3 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
                             {p.title}
                           </h3>
                         </div>
-                        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
-                          {STATUS_BADGE[p.status] || p.status}
-                        </span>
+                        <StatusPill tone={statusEntry(p.status).tone}>{STATUS_BADGE[p.status] || statusEntry(p.status).label}</StatusPill>
                       </div>
 
                       <p className="m-0 mt-2 text-xs text-ink-500">
@@ -399,7 +395,7 @@ export default function PartnerDashboardPage() {
                       </p>
 
                       {p.review_note && (
-                        <div className="mt-3 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                        <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-50 p-3 text-xs text-amber-950">
                           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" />
                           <span>
                             <strong>Review note:</strong> {p.review_note}
@@ -408,9 +404,9 @@ export default function PartnerDashboardPage() {
                       )}
 
                       {p.status === 'approved' && (
-                        <div className="mt-4 rounded-2xl border border-ink-100 bg-paper/70 p-3.5">
+                        <div className="mt-4 rounded-2xl bg-paper/70 p-3.5">
                           <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink-700">
+                            <span className="text-[11px] font-extrabold text-ink-700">
                               Instant distribution
                             </span>
                             {shareFlagsDeployed && (
@@ -444,7 +440,7 @@ export default function PartnerDashboardPage() {
                     <div className="mt-5 flex flex-wrap gap-2 border-t border-ink-100 pt-4">
                       <Link
                         href={`/partners/properties/${encodeURIComponent(p.id)}/edit`}
-                        className="secondary-button min-h-[42px]"
+                        className="secondary-button min-h-[44px]"
                       >
                         {['needs_correction', 'draft'].includes(p.status)
                           ? 'Edit & resubmit'
@@ -453,7 +449,7 @@ export default function PartnerDashboardPage() {
 
                       <Link
                         href={`/partners/availability?property=${encodeURIComponent(p.id)}`}
-                        className="secondary-button min-h-[42px]"
+                        className="secondary-button min-h-[44px]"
                       >
                         Calendar
                       </Link>
@@ -463,7 +459,7 @@ export default function PartnerDashboardPage() {
                           type="button"
                           disabled={busyId === p.id}
                           onClick={() => void togglePause(p)}
-                          className="secondary-button min-h-[42px]"
+                          className="secondary-button min-h-[44px]"
                         >
                           {p.status === 'approved' ? (
                             <>
@@ -482,9 +478,9 @@ export default function PartnerDashboardPage() {
                       {p.status === 'approved' && (
                         <Link
                           href={`/stays/${encodeURIComponent(p.id)}`}
-                          className="secondary-button min-h-[42px]"
+                          className="secondary-button min-h-[44px]"
                         >
-                          Public page →
+                          Public page
                         </Link>
                       )}
                     </div>
@@ -505,7 +501,7 @@ export default function PartnerDashboardPage() {
                     Add a new listing
                   </Link>
                   <Link href="/partners/marketing" className="secondary-button">
-                    Browse stays to share →
+                    Browse stays to share
                   </Link>
                 </div>
               </div>

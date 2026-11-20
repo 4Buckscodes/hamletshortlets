@@ -1,17 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import {
-  ArrowLeft,
-  BadgeCheck,
-  CheckCircle2,
-  BedDouble,
-  Bath,
-  Users,
-  MapPin,
-  ShieldCheck,
-  Clock,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bath, BedDouble, Check, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import {
   formatAccommodationLabel,
@@ -33,39 +23,13 @@ import {
   HAMLET_BRAND,
   HAMLET_CANONICAL_ORIGIN,
 } from '@/lib/structured-data';
-import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
+import { SiteHeader, SiteFooter, StayNightlyPrice } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
 type Props = { params: Promise<{ id: string }> };
-
-const PILLAR_LABELS: Array<{ key: string; label: string }> = [
-  { key: 'ownership', label: 'Ownership / title evidence' },
-  { key: 'identity', label: 'Partner identity check' },
-  { key: 'authority', label: 'Authority to list' },
-  { key: 'inspection', label: 'Physical property inspection' },
-];
-
-const STATUS_BADGE: Record<string, { text: string; cls: string }> = {
-  verified: {
-    text: 'Verified by HAMLET',
-    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  },
-  self_reported: {
-    text: 'Self-reported',
-    cls: 'border-ink-200 bg-paper text-ink-700',
-  },
-  pending_review: {
-    text: 'Pending review',
-    cls: 'border-brass-300 bg-brass-200/40 text-brass-700',
-  },
-  missing: {
-    text: 'Not yet provided',
-    cls: 'border-ink-200 bg-ink-50 text-ink-500',
-  },
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -163,209 +127,173 @@ export default async function PropertyDetailPage({ params }: Props) {
   const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
   const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
   const images = stay.image_urls ?? [];
-  const verification = stay.verification ?? {};
   const structuredData = buildPropertyDetailSchema({
     stay,
     publicLocationSummary: wayfinderMeta.public_location_summary,
   });
 
+  const place = stay.area || wayfinderMeta.city || 'Lagos';
+  const hasAmenities = Boolean(stay.amenities && stay.amenities.length > 0);
+  let section = 0;
+  const label = (text: string) => `${String(++section).padStart(2, '0')} / ${text}`;
+
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-property-detail-jsonld" data={structuredData} />
 
-      <main className="shell flex-1 py-6 pb-28 sm:py-10 lg:pb-14">
-        <div className="mb-4">
-          <Link
-            href="/stays"
-            className="inline-flex min-h-[42px] items-center gap-1.5 text-xs font-bold text-ink-600 hover:text-ink-900"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" /> All Lagos stays
-          </Link>
-        </div>
+      <main className="hm-main hm-detail-main" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive" aria-labelledby="stay-title">
+          <div className="hm-shell hm-band-inner hm-detail-band">
+            <Link href="/stays" className="hm-detail-back">
+              <ArrowLeft size={16} aria-hidden="true" /> All Lagos stays · {place}
+            </Link>
+            <div className="hm-band-row">
+              <div className="hm-band-copy">
+                <p className="hm-label">
+                  <MapPin size={14} aria-hidden="true" />
+                  {trust.verified ? 'Verified stay · ' : ''}{place}, Lagos
+                </p>
+                <h1 id="stay-title" className="hm-display hm-detail-title">
+                  {stay.title}
+                </h1>
+              </div>
+              <div className="hm-detail-band-action">
+                <StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote className="hm-detail-band-price" />
+                <a href="#request-to-book" className="hm-btn hm-btn-lime">
+                  Check dates <ArrowRight size={16} aria-hidden="true" />
+                </a>
+              </div>
+            </div>
+            <StayGallery title={stay.title} images={images} />
+          </div>
+        </section>
 
-        <PartnerPropertyDetailBar
-          stay={{
-            id: stay.id,
-            title: stay.title,
-            area: stay.area,
-            propertyType: stay.property_type,
-            bedrooms: stay.bedrooms,
-            capacity: stay.capacity,
-            guestNightlyNgn: stay.guest_nightly_ngn,
-          }}
-        />
+        <div className="hm-shell hm-section-tight">
+          <PartnerPropertyDetailBar
+            stay={{
+              id: stay.id,
+              title: stay.title,
+              area: stay.area,
+              propertyType: stay.property_type,
+              bedrooms: stay.bedrooms,
+              capacity: stay.capacity,
+              guestNightlyNgn: stay.guest_nightly_ngn,
+            }}
+          />
 
-        <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-brass-700">
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            {stay.area || wayfinderMeta.city || 'Lagos'}
-          </span>
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold normal-case ${
-              trust.verified
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                : 'border-ink-200 bg-white text-ink-800'
-            }`}
-          >
-            {trust.verified ? (
-              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
-            ) : (
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-700" />
-            )}
-            {trust.badge}
-          </span>
-        </div>
+          <div className="hm-detail-layout">
+            <div className="hm-detail-content">
+              <ul className="hm-detail-specs" aria-label="Key facts">
+                <li>
+                  <BedDouble size={16} aria-hidden="true" />
+                  {bedroomLabel}
+                </li>
+                {stay.bathrooms != null && (
+                  <li>
+                    <Bath size={16} aria-hidden="true" />
+                    {stay.bathrooms} {stay.bathrooms === 1 ? 'bathroom' : 'bathrooms'}
+                  </li>
+                )}
+                {stay.capacity != null && (
+                  <li>
+                    <Users size={16} aria-hidden="true" />
+                    Up to {stay.capacity} guests
+                  </li>
+                )}
+                <li>{accommodationLabel}</li>
+                {stay.bed_setup && <li>{stay.bed_setup}</li>}
+              </ul>
 
-        <h1 className="serif mt-2 text-3xl font-medium tracking-tight text-ink-900 sm:text-5xl">
-          {stay.title}
-        </h1>
+              <section className="hm-detail-block" aria-labelledby="stay-location">
+                <p className="hm-label">{label('Location')}</p>
+                <h2 id="stay-location" className="hm-h3">
+                  {place}
+                </h2>
+                <p className="hm-body">
+                  {wayfinderMeta.public_location_summary ||
+                    stay.public_address ||
+                    `Located in ${stay.area || 'Lagos'}.`}
+                </p>
+                {wayfinderMeta.public_landmarks && wayfinderMeta.public_landmarks.length > 0 && (
+                  <ul className="hm-detail-tags">
+                    {wayfinderMeta.public_landmarks.map(lm => (
+                      <li key={lm}>Near {lm}</li>
+                    ))}
+                  </ul>
+                )}
+                <p className="hm-meta">The exact address and arrival guidance are shared once your booking is confirmed and paid.</p>
+              </section>
 
-        <div className="mt-6">
-          <StayGallery title={stay.title} images={images} />
-        </div>
-
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">
-          <div className="space-y-8 lg:col-span-7">
-            {/* Key Specs */}
-            <div className="flex flex-wrap gap-3 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-ink-800">
-              <span>{accommodationLabel}</span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1.5">
-                <BedDouble className="h-4 w-4 shrink-0 text-brass-600" />
-                {bedroomLabel}
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1.5">
-                <Bath className="h-4 w-4 shrink-0 text-brass-600" />
-                {stay.bathrooms ?? 1} {stay.bathrooms === 1 ? 'bathroom' : 'bathrooms'}
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1.5">
-                <Users className="h-4 w-4 shrink-0 text-brass-600" />
-                Up to {stay.capacity ?? 2} guests
-              </span>
-              {stay.bed_setup && (
+              {hasAmenities && (
                 <>
-                  <span>·</span>
-                  <span className="text-ink-600">{stay.bed_setup}</span>
+                  <hr className="hm-rule" />
+                  <section className="hm-detail-block" aria-labelledby="stay-amenities">
+                    <p className="hm-label" id="stay-amenities">{label('Amenities')}</p>
+                    <ul className="hm-detail-amenities">
+                      {stay.amenities!.map(amenity => (
+                        <li key={amenity}>
+                          <Check size={16} aria-hidden="true" />
+                          {amenity}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
                 </>
               )}
-            </div>
 
-            {/* Location & Overview */}
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                Location
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                {wayfinderMeta.public_location_summary ||
-                  stay.public_address ||
-                  `Located in ${stay.area || 'Lagos'}. Exact check-in details unlock once confirmed.`}
-              </p>
-              {wayfinderMeta.public_landmarks && wayfinderMeta.public_landmarks.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {wayfinderMeta.public_landmarks.map(lm => (
-                    <span key={lm} className="pill text-xs font-medium text-ink-700">
-                      Near {lm}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="mt-4 flex items-center gap-2 text-xs text-ink-500">
-                <Clock className="h-4 w-4 shrink-0 text-brass-600" />
-                <span>Host confirms dates before payment opens.</span>
+              <hr className="hm-rule" />
+              <div className="hm-detail-pair">
+                <section className="hm-card hm-detail-mini" aria-labelledby="stay-rules">
+                  <p className="hm-label" id="stay-rules">{label('House rules')}</p>
+                  {stay.house_rules && stay.house_rules.length > 0 ? (
+                    <ul className="hm-detail-rules">
+                      {stay.house_rules.map(rule => (
+                        <li key={rule}>{rule}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="hm-meta">HAMLET standard rules apply: valid ID at check-in, guests within the stated capacity, no parties or events.</p>
+                  )}
+                </section>
+                <section className="hm-card hm-detail-mini" aria-labelledby="stay-caution">
+                  <p className="hm-label" id="stay-caution">{label('Caution terms')}</p>
+                  <p className="hm-meta">
+                    {Number(stay.refundable_deposit || 0) > 0
+                      ? 'A refundable caution deposit is held for this stay and returned after check-out inspection, under the partner’s caution terms.'
+                      : 'No caution deposit is required for this stay.'}
+                  </p>
+                </section>
               </div>
-            </section>
 
-            {/* Amenities */}
-            {stay.amenities && stay.amenities.length > 0 && (
-              <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-                <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                  Amenities
-                </h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {stay.amenities.map(amenity => (
-                    <span
-                      key={amenity}
-                      className="pill text-xs font-semibold text-ink-800"
-                    >
-                      {amenity}
-                    </span>
-                  ))}
+              <section className="hm-detail-verified-panel" aria-labelledby="stay-verification">
+                <span className="hm-detail-verified-icon" aria-hidden="true">
+                  <ShieldCheck size={26} />
+                </span>
+                <div>
+                  <h2 id="stay-verification" className="hm-h4">{trust.verified ? 'Verified by HAMLET' : trust.badge}</h2>
+                  <p className="hm-meta">
+                    {trust.verified
+                      ? 'Listing, photos and partner identity were reviewed before this stay went live. Payment is only taken after the partner accepts your request.'
+                      : 'HAMLET is still reviewing this listing. Payment is only taken after the partner accepts your request.'}
+                  </p>
                 </div>
               </section>
-            )}
+            </div>
 
-            {/* Honest 4-Pillar Verification Breakdown */}
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-              <div className="flex items-center gap-2.5">
-                <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-700" />
-                <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                  Verification status
-                </h2>
-              </div>
-
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                {PILLAR_LABELS.map(({ key, label }) => {
-                  const raw = verification[key] || 'pending_review';
-                  const badge = STATUS_BADGE[raw] || STATUS_BADGE.pending_review;
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between gap-2 rounded-2xl border border-ink-100 bg-paper/50 px-3.5 py-3"
-                    >
-                      <span className="text-xs font-bold text-ink-900">{label}</span>
-                      <span
-                        className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${badge.cls}`}
-                      >
-                        {badge.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* House Rules & Refundable Caution Terms */}
-            <section data-hamlet-reveal className="rounded-3xl border border-ink-100 bg-white p-6">
-              <h2 className="serif m-0 text-2xl font-medium text-ink-900">
-                House rules
-              </h2>
-              {stay.house_rules && stay.house_rules.length > 0 ? (
-                <ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-ink-600">
-                  {stay.house_rules.map(rule => (
-                    <li key={rule}>{rule}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2 text-sm text-ink-600">
-                  Valid ID at check-in, guests within stated capacity, and no unauthorized events.
-                </p>
-              )}
-              {Number(stay.refundable_deposit || 0) > 0 && (
-                <p className="mt-4 rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs leading-relaxed text-ink-600">
-                  <strong>Refundable caution deposit:</strong> Itemised separately without service fee or FX buffer; refunded after post-checkout inspection.
-                </p>
-              )}
-            </section>
+            <aside id="request-to-book" className="hm-detail-aside" aria-label="Request to book">
+              <BookingRequestForm
+                propertyId={stay.id}
+                propertyTitle={stay.title}
+                guestNightlyRate={Number(stay.guest_nightly_ngn || 0)}
+                cleaningFee={Number(stay.cleaning_fee || 0)}
+                deposit={Number(stay.refundable_deposit || 0)}
+                capacity={stay.capacity}
+                firstAvailableDate={stay.first_available_date}
+              />
+              <PropertyEnquiryCard propertyId={stay.id} propertyTitle={stay.title} />
+            </aside>
           </div>
-
-          <aside className="lg:sticky lg:top-24 lg:col-span-5">
-            <BookingRequestForm
-              propertyId={stay.id}
-              propertyTitle={stay.title}
-              guestNightlyRate={Number(stay.guest_nightly_ngn || 0)}
-              cleaningFee={Number(stay.cleaning_fee || 0)}
-              deposit={Number(stay.refundable_deposit || 0)}
-              capacity={stay.capacity}
-              firstAvailableDate={stay.first_available_date}
-            />
-            <PropertyEnquiryCard
-              propertyId={stay.id}
-              propertyTitle={stay.title}
-            />
-          </aside>
         </div>
       </main>
 

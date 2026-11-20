@@ -193,7 +193,7 @@ export default function Lagos() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/65 to-transparent" />
-                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
+                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold text-brass-300 backdrop-blur-md">
                       Mainland
                     </span>
                   </div>
@@ -247,7 +247,7 @@ export default function Lagos() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink-950/65 to-transparent" />
-                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-brass-300 backdrop-blur-md">
+                    <span className="absolute bottom-3 left-3 rounded-full bg-ink-950/80 px-2.5 py-0.5 text-[10px] font-extrabold text-brass-300 backdrop-blur-md">
                       Island
                     </span>
                   </div>

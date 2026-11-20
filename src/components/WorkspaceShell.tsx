@@ -49,9 +49,9 @@ export function WorkspaceShell({
       <div className="border-b border-ink-800 px-5 py-4">
         <Link to="/" className="flex items-center gap-2.5">
           <HamletMark size={28} light />
-          <span className="font-display text-xl font-bold tracking-[0.06em] text-white">HAMLET<span className="text-brass-500">.</span></span>
+          <span className="font-display text-xl font-bold text-white">HAMLET<span className="text-brass-500">.</span></span>
         </Link>
-        <p className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.18em] ${accent}`}>{title}</p>
+        <p className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${accent}`}>{title}</p>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {nav.map(item => (
@@ -67,7 +67,7 @@ export function WorkspaceShell({
             <span className="shrink-0">{item.icon}</span>
             <span className="flex-1">{item.label}</span>
             {item.badge !== undefined && item.badge > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[9.5px] font-black text-white">{item.badge}</span>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-black text-white">{item.badge}</span>
             )}
           </NavLink>
         ))}
@@ -79,7 +79,7 @@ export function WorkspaceShell({
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brass-500 font-display text-[12px] font-black text-ink-950">{initials}</span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[12px] font-bold text-ink-50">{s?.name}</p>
-            <p className="truncate text-[9.5px] font-semibold text-ink-400">{subtitle}</p>
+            <p className="truncate text-[11px] font-semibold text-ink-400">{subtitle}</p>
           </div>
           <button onClick={async () => {
             try {
@@ -112,7 +112,7 @@ export function WorkspaceShell({
             <button className="shrink-0 rounded-lg p-2 text-ink-300 hover:bg-ink-800 lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
               {open ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <p className="hidden truncate text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400 lg:block">HAMLET · {title} · Lagos operations</p>
+            <p className="hidden truncate text-[11px] font-extrabold text-ink-400 lg:block">HAMLET · {title} · Lagos operations</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -123,7 +123,7 @@ export function WorkspaceShell({
               <Sparkles size={12} className="text-brass-400" />
               <span>Horatio</span>
             </button>
-            <p className="truncate text-[10.5px] font-semibold text-ink-400">{formatLagosHeadlineDate()} · WAT</p>
+            <p className="truncate text-[11px] font-semibold text-ink-400">{formatLagosHeadlineDate()} · WAT</p>
           </div>
         </div>
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain dark-scroll">{children}</main>

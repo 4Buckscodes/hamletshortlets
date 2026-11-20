@@ -1,0 +1,175 @@
+{
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-19T18:30:00Z",
+ "title": "HAMLET",
+ "extensions": {
+  "colorMeta": {
+   "forest": {
+    "role": "neutral",
+    "displayName": "Forest",
+    "tonalRamp": [
+     "#0b110d",
+     "#101a14",
+     "#172119",
+     "#22302a",
+     "#3a483f",
+     "#5b655a",
+     "#a9b2a4",
+     "#eef0e6"
+    ]
+   },
+   "ivory": {
+    "role": "neutral",
+    "displayName": "Ivory Paper",
+    "tonalRamp": [
+     "#5e5a4f",
+     "#8a8577",
+     "#b3ad9d",
+     "#d9ddcf",
+     "#ede9dc",
+     "#f6f1e7",
+     "#fffdf7",
+     "#ffffff"
+    ]
+   },
+   "blue": {
+    "role": "primary",
+    "displayName": "Action Blue",
+    "tonalRamp": [
+     "#0f1f66",
+     "#1938c0",
+     "#2e50e8",
+     "#4f6cff",
+     "#7f95ff",
+     "#a9b8ff",
+     "#d0d9ff",
+     "#e4e9fd"
+    ]
+   },
+   "lime": {
+    "role": "secondary",
+    "displayName": "Arrival Lime",
+    "tonalRamp": [
+     "#2c340c",
+     "#4c5916",
+     "#7c9020",
+     "#a9c42f",
+     "#d9f24b",
+     "#e5f67d",
+     "#f0faae",
+     "#f8fdd9"
+    ]
+   },
+   "coral": {
+    "role": "secondary",
+    "displayName": "Lagos Coral",
+    "tonalRamp": [
+     "#5c1a0c",
+     "#8f2914",
+     "#c93d1c",
+     "#ff6948",
+     "#ff7b5c",
+     "#ffa48f",
+     "#ffcbbe",
+     "#fff0eb"
+    ]
+   }
+  },
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Band and hero titles; heavy Inter statement."
+   },
+   "accent": {
+    "displayName": "Accent phrase",
+    "purpose": "One Playfair phrase per headline, coral."
+   },
+   "title": {
+    "displayName": "Place title",
+    "purpose": "Names of real places: stay cards, booking cards, locations."
+   },
+   "label": {
+    "displayName": "Label",
+    "purpose": "Numbered editorial labels and field captions; 11px floor."
+   }
+  },
+  "shadows": [
+   {
+    "name": "lift",
+    "value": "0 18px 40px -28px rgba(23, 33, 25, 0.45)",
+    "purpose": "Interactive card hover only."
+   },
+   {
+    "name": "press",
+    "value": "0 10px 24px -14px rgba(23, 33, 25, 0.55)",
+    "purpose": "Button hover."
+   }
+  ],
+  "motion": [
+   {
+    "name": "ease",
+    "value": "cubic-bezier(0.2, 0.7, 0.2, 1)",
+    "purpose": "Reveals, arrows, photo zoom."
+   },
+   {
+    "name": "ease-soft",
+    "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "purpose": "State transitions."
+   },
+   {
+    "name": "micro",
+    "value": "180ms",
+    "purpose": "Hover and press feedback."
+   },
+   {
+    "name": "ui",
+    "value": "320ms",
+    "purpose": "Card lift, link underline."
+   },
+   {
+    "name": "reveal",
+    "value": "700ms",
+    "purpose": "Scroll reveal, 26px rise, 80ms stagger."
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "phone",
+    "value": "760px"
+   },
+   {
+    "name": "tablet",
+    "value": "1023px"
+   },
+   {
+    "name": "container",
+    "value": "1240px"
+   }
+  ]
+ },
+ "components": [],
+ "narrative": {
+  "northStar": "The Quiet Residence",
+  "overview": "HAMLET reads like a calm, well-kept residence. Warm stone paper, thin hairlines, a regular-weight serif for headlines and one deep lagoon-teal accent for every action. Sections are flat and divided by space and lines, never by cards, shadows or gradients. A guest on a phone sees a real place, its all-in price and the way to request it within seconds.",
+  "keyCharacteristics": [
+   "One accent: lagoon teal on warm stone neutrals",
+   "Newsreader headlines in one voice, Hanken Grotesk body at 16px",
+   "Hairline-ruled lists and flat sections, no nested cards",
+   "Motion on hover and press only, plus one gentle scroll reveal"
+  ],
+  "rules": [
+   "Sentence-case labels; no all-caps eyebrows",
+   "Number sections only when the content is a sequence",
+   "No gradients, shadows, stamps, pulsing dots or looping motion",
+   "Everything stops under prefers-reduced-motion"
+  ],
+  "dos": [
+   "Keep one accent and plain language",
+   "Show verification and no-charge-until-accepted at the moment of hesitation"
+  ],
+  "donts": [
+   "Do not add arrows to buttons",
+   "Do not accent a single word in a headline"
+  ]
+ }
+}

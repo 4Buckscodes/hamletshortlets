@@ -3,15 +3,13 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { HoratioListingAssistant } from './HoratioListingAssistant';
-import { LAGOS_AREAS } from '@/lib/areas';
+import { ISLAND_AND_LEKKI_AREAS, MAINLAND_AREAS } from '@/lib/areas';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
   calculateGuestPricing,
   DEFAULT_PROPERTY_MEDIA_POLICY,
-  estimatePaystackLocalFee,
   guestFacingNightlyNgn,
 } from '@/lib/pricing';
-import { useCurrency } from '@/lib/currency';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
   deletePropertyMediaObjects,
@@ -57,18 +55,18 @@ export interface PropertyWizardValues {
 const DEFAULT_VALUES: PropertyWizardValues = {
   title: '',
   propertyType: 'Apartment',
-  area: 'Victoria Island',
+  area: '',
   address: '',
-  bedrooms: 2,
-  bathrooms: 2,
-  capacity: 4,
-  bedSetup: '2 queen beds',
+  bedrooms: 1,
+  bathrooms: 1,
+  capacity: 2,
+  bedSetup: '',
   imageUrls: [],
-  amenities: ['24/7 Estate Power', 'Fibre Wi-Fi', 'Air Conditioning', 'Gated Security'],
-  houseRulesText: 'No smoking indoors\nNo unauthorised parties or events',
-  nightlyRate: 120000,
-  cleaningFee: 25000,
-  deposit: 100000,
+  amenities: [],
+  houseRulesText: '',
+  nightlyRate: 0,
+  cleaningFee: 0,
+  deposit: 0,
   firstAvailableDate: '',
   calendarResponsiblePerson: '',
   submittedRole: 'Property owner',
@@ -155,6 +153,11 @@ const AUTHORITY_ROLES = [
     label: 'Shortlet operator / lessee',
     description: 'I operate this unit under a valid shortlet lease or corporate agreement.',
   },
+  {
+    value: 'Closing agent',
+    label: 'Closing agent for the owner',
+    description: 'I have the owner’s written permission to list this property and close bookings for it.',
+  },
 ] as const;
 
 export function PropertyListingWizard({
@@ -173,7 +176,6 @@ export function PropertyListingWizard({
   onCompleted?: () => void;
 }) {
   const db = useMemo(() => getBrowserSupabase(), []);
-  const { formatPrice, formatCautionDeposit } = useCurrency();
 
   const mergedInitial = useMemo(
     () => ({ ...DEFAULT_VALUES, ...initialValues }),
@@ -215,8 +217,24 @@ export function PropertyListingWizard({
   const [duplicateWarning, setDuplicateWarning] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   const [message, setMessage] = useState('');
   const submittingRef = useRef(false);
+  const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const stepHeadingWrapRef = useRef<HTMLDivElement | null>(null);
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const firstStepRender = useRef(true);
+  // Each step change brings the new step's title into view and gives it focus.
+  useEffect(() => {
+    if (firstStepRender.current) {
+      firstStepRender.current = false;
+      return;
+    }
+    stepHeadingWrapRef.current?.scrollIntoView({ block: 'start' });
+    stepHeadingRef.current?.focus({ preventScroll: true });
+  }, [step]);
   const submittedCreateOnceRef = useRef(false);
 
   const handleChangeImageUrls = useCallback(
@@ -272,15 +290,14 @@ export function PropertyListingWizard({
     });
   }, [values.cleaningFee, values.deposit, values.nightlyRate]);
 
-  const samplePaystackFee = useMemo(
-    () => estimatePaystackLocalFee(samplePricing.guestTotal),
-    [samplePricing.guestTotal],
-  );
 
   function validateCurrentStep(targetStep: number, forDraft = false): string | null {
     if (targetStep === 0) {
       if (values.title.trim().length < 8) {
         return 'Enter a clear listing title with at least 8 characters.';
+      }
+      if (!values.area) {
+        return 'Choose the Lagos neighbourhood the property is in.';
       }
       if (values.address.trim().length < 10) {
         return 'Describe the public street, estate or landmark in at least 10 characters.';
@@ -304,7 +321,10 @@ export function PropertyListingWizard({
     }
     if (targetStep === 4) {
       if (!Number.isFinite(values.nightlyRate) || values.nightlyRate < 1000) {
-        return 'Enter a valid owner nightly base rate in NGN.';
+        return 'Enter your nightly rate in naira (at least ₦1,000).';
+      }
+      if (values.cleaningFee < 0 || values.deposit < 0) {
+        return 'Cleaning fee and caution deposit cannot be negative. Leave them at 0 if there is none.';
       }
     }
     if (targetStep === 6 && !forDraft) {
@@ -479,7 +499,15 @@ export function PropertyListingWizard({
 
 
 
-      <form onSubmit={handleFormSubmit} className="space-y-5">
+      <form onSubmit={handleFormSubmit} className="space-y-5" noValidate>
+        <div ref={stepHeadingWrapRef} style={{ scrollMarginTop: 96 }}>
+          <p className="hm-label">
+            Step {step + 1} of {WIZARD_STEPS.length}
+          </p>
+          <h2 ref={stepHeadingRef} tabIndex={-1} className="hm-h3" style={{ marginTop: 4, outline: 'none' }}>
+            {WIZARD_STEPS[step].title}
+          </h2>
+        </div>
         {/* STEP 1: BASICS & LOCATION */}
         {step === 0 && (
           <div className="space-y-4">
@@ -540,11 +568,23 @@ export function PropertyListingWizard({
                     }
                     className={FIELD_INPUT_CLASS}
                   >
-                    {LAGOS_AREAS.map(area => (
-                      <option key={area} value={area}>
-                        {area}
-                      </option>
-                    ))}
+                    <option value="" disabled>
+                      Choose neighbourhood
+                    </option>
+                    <optgroup label="Lagos Island & Lekki">
+                      {ISLAND_AND_LEKKI_AREAS.map(area => (
+                        <option key={area} value={area}>
+                          {area}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Lagos Mainland">
+                      {MAINLAND_AREAS.map(area => (
+                        <option key={area} value={area}>
+                          {area}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 )}
               </FormField>
@@ -685,7 +725,7 @@ export function PropertyListingWizard({
                     type="number"
                     inputMode="numeric"
                     min={1000}
-                    step={500}
+                    step={1}
                     value={values.nightlyRate}
                     onChange={e =>
                       setValues(prev => ({
@@ -705,7 +745,7 @@ export function PropertyListingWizard({
                     type="number"
                     inputMode="numeric"
                     min={0}
-                    step={500}
+                    step={1}
                     value={values.cleaningFee}
                     onChange={e =>
                       setValues(prev => ({
@@ -743,60 +783,43 @@ export function PropertyListingWizard({
               </FormField>
             </div>
 
-            {/* Live Central Pricing Preview */}
-            <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-xs">
-              <p className="m-0 font-extrabold uppercase tracking-wider text-brass-700">
-                Live pricing preview (sample 3-night stay)
-              </p>
-              <div className="mt-3 space-y-1.5 text-ink-700">
-                <div className="flex justify-between gap-2">
-                  <span>Owner accommodation rate (3 nights)</span>
-                  <strong className="font-mono text-ink-900">
-                    ₦{samplePricing.ownerAccommodationRateNgn.toLocaleString('en-NG')}
-                  </strong>
+            {/* Owner pricing preview: always in naira, answering "what do I receive" first. */}
+            <div className="rounded-2xl bg-paper p-4 text-sm">
+              <p className="hm-label">Example: a 3-night stay</p>
+              <dl className="mt-3 space-y-2 text-ink-700">
+                <div className="flex justify-between gap-3 font-bold text-ink-900">
+                  <dt>You receive (3 nights at your rate)</dt>
+                  <dd className="hm-money m-0">₦{samplePricing.ownerAccommodationRateNgn.toLocaleString('en-NG')}</dd>
                 </div>
-                <div className="flex justify-between gap-2">
-                  <span>HAMLET guest service fee (20% of owner rate)</span>
-                  <strong className="font-mono text-ink-900">
-                    ₦{samplePricing.guestServiceFeeNgn.toLocaleString('en-NG')}
-                  </strong>
+                <div className="flex justify-between gap-3">
+                  <dt>HAMLET&apos;s 20% guest service fee, added on top</dt>
+                  <dd className="hm-money m-0">₦{samplePricing.guestServiceFeeNgn.toLocaleString('en-NG')}</dd>
                 </div>
-                <div className="flex justify-between gap-2">
-                  <span>Displayed guest nightly stay rate (includes 20% fee)</span>
-                  <strong className="font-mono text-ink-900">
-                    {formatPrice(guestFacingNightlyNgn(values.nightlyRate || 0))} / night
-                  </strong>
+                <div className="flex justify-between gap-3">
+                  <dt>Guests see per night (fee included)</dt>
+                  <dd className="hm-money m-0">₦{guestFacingNightlyNgn(values.nightlyRate || 0).toLocaleString('en-NG')}</dd>
                 </div>
                 {samplePricing.mandatoryChargesTotal > 0 && (
-                  <div className="flex justify-between gap-2">
-                    <span>Mandatory cleaning / turnover charges</span>
-                    <span className="font-mono font-semibold text-ink-900">
-                      {formatPrice(samplePricing.mandatoryChargesTotal)}
-                    </span>
+                  <div className="flex justify-between gap-3">
+                    <dt>Cleaning and turnover, shown separately</dt>
+                    <dd className="hm-money m-0">₦{samplePricing.mandatoryChargesTotal.toLocaleString('en-NG')}</dd>
                   </div>
                 )}
-                <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
-                  <span>Guest-facing stay total (3 nights, fee included once)</span>
-                  <span className="font-mono">
-                    {formatPrice(samplePricing.guestFacingTotalNgn)}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-2 pt-1 text-ink-500">
-                  <span>Estimated local Paystack processing cost (provider reference, separate from 20% fee)</span>
-                  <span className="font-mono">{formatPrice(samplePaystackFee.estimatedFeeNgn)}</span>
+                <div className="flex justify-between gap-3 border-t border-ink-200 pt-2 font-bold text-ink-900">
+                  <dt>Guest pays for these 3 nights</dt>
+                  <dd className="hm-money m-0">₦{samplePricing.guestFacingTotalNgn.toLocaleString('en-NG')}</dd>
                 </div>
                 {samplePricing.refundableDeposit > 0 && (
-                  <div className="flex justify-between gap-2 text-ink-500">
-                    <span>Separate refundable caution deposit (excluded from stay price)</span>
-                    <span className="font-mono">
-                      {formatCautionDeposit(samplePricing.refundableDeposit)}
-                    </span>
+                  <div className="flex justify-between gap-3 text-ink-500">
+                    <dt>Refundable caution deposit, held separately</dt>
+                    <dd className="hm-money m-0">₦{samplePricing.refundableDeposit.toLocaleString('en-NG')}</dd>
                   </div>
                 )}
-              </div>
-              <p className="m-0 mt-3 border-t border-ink-200 pt-3 text-[11px] leading-relaxed text-ink-600">
-                {APPROVED_OWNER_SERVICES_POLICY_COPY}
-              </p>
+              </dl>
+              <details className="mt-3 border-t border-ink-200 pt-3 text-xs text-ink-600">
+                <summary className="cursor-pointer font-semibold text-ink-800">HAMLET owner services policy</summary>
+                <p className="m-0 mt-2 leading-relaxed">{APPROVED_OWNER_SERVICES_POLICY_COPY}</p>
+              </details>
             </div>
           </div>
         )}
@@ -926,8 +949,11 @@ export function PropertyListingWizard({
 
         {error && (
           <p
+            ref={errorRef}
+            tabIndex={-1}
             role="alert"
-            className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold text-red-800"
+            className="m-0 rounded-2xl bg-red-50 p-3.5 text-sm font-semibold text-red-800"
+            style={{ outline: 'none' }}
           >
             {error}
           </p>

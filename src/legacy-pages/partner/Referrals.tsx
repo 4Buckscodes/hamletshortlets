@@ -75,7 +75,7 @@ export default function PartnerReferrals() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner Growth & Attribution</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Partner Growth & Attribution</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner referrals & 90-day rewards</h1>
       <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">
         Invite trusted Lagos property owners, managers, and closing agents to join HAMLET using your canonical <span className="font-mono text-brass-300">https://www.hamlet.rest/</span> referral link.
@@ -85,7 +85,7 @@ export default function PartnerReferrals() {
       <div className="mt-6 grid gap-4 lg:grid-cols-12">
         <div className="rounded-2xl border border-brass-500/35 bg-ink-900 p-5 lg:col-span-7">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-wider text-brass-400">
+            <span className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold text-brass-400">
               <Gift size={14} /> Your Partner Onboarding Referral Link
             </span>
             <span className="rounded-lg border border-ink-700 bg-ink-950 px-2.5 py-1 font-mono text-[11.5px] font-bold text-brass-300">
@@ -122,7 +122,7 @@ export default function PartnerReferrals() {
 
           {/* Closing Agent Link (distinct attribution #3) */}
           <div className="mt-4 border-t border-ink-800 pt-3.5">
-            <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-ink-400">
+            <p className="text-[10.5px] font-extrabold text-ink-400">
               Your Closing Agent Guest Booking Link (10% closing commission)
             </p>
             <p className="mt-0.5 text-[11px] font-medium text-ink-400">
@@ -149,7 +149,7 @@ export default function PartnerReferrals() {
 
         {/* Commercial Rules Summary */}
         <div className="rounded-2xl border border-ink-800 bg-ink-900/80 p-5 lg:col-span-5">
-          <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-wider text-jade-300">
+          <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-jade-300">
             <ShieldCheck size={14} /> Referral commercial terms
           </p>
           <ul className="mt-3 space-y-2 text-[11.5px] font-medium leading-relaxed text-ink-200">
@@ -172,14 +172,14 @@ export default function PartnerReferrals() {
           <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4">
             <c.Icon size={18} className="text-brass-400" />
             <p className="mt-2.5 font-display text-xl font-black tabular-nums text-ink-50">{c.value}</p>
-            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">{c.label}</p>
+            <p className="mt-0.5 text-[10px] font-extrabold text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-medium text-ink-500">{c.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Referred Partners Table */}
-      <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Referred partners & window status</h2>
+      <h2 className="mt-8 text-[11px] font-extrabold text-ink-400">Referred partners & window status</h2>
       <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
           <thead className="bg-ink-900">
@@ -200,7 +200,7 @@ export default function PartnerReferrals() {
                 </td>
                 <td className="td text-[11.5px] text-ink-300">{formatDate(r.registeredAt)}</td>
                 <td className="td">
-                  <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                  <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
                     r.status === 'active'
                       ? 'border-jade-500/40 bg-jade-500/15 text-jade-300'
                       : r.status === 'verified'
@@ -230,7 +230,7 @@ export default function PartnerReferrals() {
       </div>
 
       {/* Rewards Ledger Table */}
-      <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Referral activation & 2.5% reward history</h2>
+      <h2 className="mt-8 text-[11px] font-extrabold text-ink-400">Referral activation & 2.5% reward history</h2>
       <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
           <thead className="bg-ink-900">
@@ -254,7 +254,7 @@ export default function PartnerReferrals() {
                   {rw.payoutStatus === 'activated_no_payout' ? '₦0 (Window activated)' : formatNaira(rw.rewardAmountNgn)}
                 </td>
                 <td className="td">
-                  <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink-200">
+                  <span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold text-ink-200">
                     {rw.payoutStatus.replace(/_/g, ' ')}
                   </span>
                 </td>

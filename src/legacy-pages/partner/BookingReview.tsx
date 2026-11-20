@@ -128,7 +128,7 @@ export default function PartnerBookingReview() {
           className="mx-auto mt-8 max-w-xl rounded-2xl border border-red-500/35 bg-ink-900 p-6 text-center sm:p-8"
         >
           <ShieldAlert size={40} className="mx-auto text-red-400" />
-          <p className="mt-3 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-red-300">
+          <p className="mt-3 text-[10.5px] font-extrabold text-red-300">
             Access restricted or booking unavailable
           </p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50">
@@ -222,7 +222,7 @@ export default function PartnerBookingReview() {
       {/* Header */}
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">
+          <p className="text-[10px] font-extrabold text-brass-400">
             Partner availability review
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-2.5">
@@ -237,7 +237,7 @@ export default function PartnerBookingReview() {
           </p>
         </div>
         <div className="rounded-2xl border border-brass-500/30 bg-brass-500/10 px-4 py-3 sm:text-right">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-brass-300">
+          <p className="text-[10px] font-extrabold text-brass-300">
             Accommodation proceeds
           </p>
           <p className="mt-0.5 font-display text-2xl font-black tabular-nums text-brass-200">
@@ -254,7 +254,7 @@ export default function PartnerBookingReview() {
         >
           <AlertTriangle size={18} className="mt-0.5 shrink-0 text-red-400" />
           <div className="min-w-0">
-            <p className="font-extrabold uppercase tracking-wider text-red-300">
+            <p className="font-extrabold text-red-300">
               Date conflict detected ({overlappingActiveBookings.length})
             </p>
             <p className="mt-0.5 leading-relaxed">
@@ -274,7 +274,7 @@ export default function PartnerBookingReview() {
           className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900 lg:col-span-6"
         >
           <div className="border-b border-ink-800 bg-ink-850/60 px-4 py-3 sm:px-5">
-            <p className="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-brass-400">
+            <p className="flex items-center gap-2 text-[10.5px] font-extrabold text-brass-400">
               <Building2 size={14} className="shrink-0" />
               <span id="property-section-heading">1. Property being requested</span>
             </p>
@@ -350,7 +350,7 @@ export default function PartnerBookingReview() {
 
             {/* Partner assignment / authority summary */}
             <div className="mt-4 rounded-xl border border-ink-800 bg-ink-950/60 p-3.5 text-[11.5px]">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+              <p className="text-[10px] font-extrabold text-ink-400">
                 Your partner authority on this listing
               </p>
               <p className="mt-1 font-bold text-ink-100">
@@ -364,7 +364,7 @@ export default function PartnerBookingReview() {
 
             {property && property.amenities.length > 0 && (
               <div className="mt-4">
-                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                <p className="flex items-center gap-1.5 text-[10px] font-extrabold text-ink-400">
                   <Sparkles size={12} className="shrink-0 text-brass-400" /> Key amenities
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -382,7 +382,7 @@ export default function PartnerBookingReview() {
 
             {property && property.houseRules.length > 0 && (
               <div className="mt-4">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                <p className="text-[10px] font-extrabold text-ink-400">
                   Disclosed house rules
                 </p>
                 <ul className="mt-1.5 space-y-1 text-[11.5px] font-medium text-ink-300">
@@ -404,7 +404,7 @@ export default function PartnerBookingReview() {
             className="overflow-hidden rounded-2xl border border-ink-800 bg-ink-900"
           >
             <div className="border-b border-ink-800 bg-ink-850/60 px-4 py-3 sm:px-5">
-              <p className="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-brass-400">
+              <p className="flex items-center gap-2 text-[10.5px] font-extrabold text-brass-400">
                 <FileText size={14} className="shrink-0" />
                 <span id="request-section-heading">2. Guest booking request details</span>
               </p>
@@ -413,7 +413,7 @@ export default function PartnerBookingReview() {
             <div className="p-4 sm:p-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border border-ink-800 bg-ink-950/60 p-3.5">
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <p className="text-[10px] font-extrabold text-ink-400">
                     Check-in → Check-out
                   </p>
                   <p className="mt-1 flex items-center gap-1.5 text-[13px] font-bold text-ink-50">
@@ -428,7 +428,7 @@ export default function PartnerBookingReview() {
                 </div>
 
                 <div className="rounded-xl border border-ink-800 bg-ink-950/60 p-3.5">
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                  <p className="text-[10px] font-extrabold text-ink-400">
                     Guest & party size
                   </p>
                   <p className="mt-1 flex items-center gap-1.5 text-[13px] font-bold text-ink-50">
@@ -444,7 +444,7 @@ export default function PartnerBookingReview() {
 
               {/* Guest note / special requests */}
               <div className="mt-4 rounded-xl border border-ink-800 bg-ink-950/50 p-3.5">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                <p className="text-[10px] font-extrabold text-ink-400">
                   Guest special requests / arrival note
                 </p>
                 <p className="mt-1 break-words text-[12px] font-medium text-ink-200">
@@ -456,7 +456,7 @@ export default function PartnerBookingReview() {
 
               {/* Financial breakdown */}
               <div className="mt-4 rounded-xl border border-ink-800 bg-ink-950/60 p-4">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+                <p className="text-[10px] font-extrabold text-ink-400">
                   Pricing & proceeds breakdown
                 </p>
                 <dl className="mt-2.5 space-y-1.5 text-[12px] font-medium text-ink-200">
@@ -503,7 +503,7 @@ export default function PartnerBookingReview() {
                   return (
                     <div className="mt-3 rounded-xl border border-ink-800 bg-ink-900 p-3 text-[11.5px] text-ink-200">
                       <p className="font-bold text-brass-300">
-                        Caution deposit: {formatNaira(caution.amountNgn)} · <span className="uppercase">{caution.status.replace(/_/g, ' ')}</span>
+                        Caution deposit: {formatNaira(caution.amountNgn)} · <span className="">{caution.status.replace(/_/g, ' ')}</span>
                       </p>
                       {caution.inspectionNotes && <p className="mt-1 text-ink-400">Inspection note: {caution.inspectionNotes}</p>}
                       {!isSuspended && ['confirmed', 'completed'].includes(booking.status) && ['received', 'inspection_pending'].includes(caution.status) && (
@@ -578,7 +578,7 @@ export default function PartnerBookingReview() {
             className="overflow-hidden rounded-2xl border border-brass-500/35 bg-ink-900"
           >
             <div className="border-b border-ink-800 bg-brass-500/10 px-4 py-3 sm:px-5">
-              <p className="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-brass-300">
+              <p className="flex items-center gap-2 text-[10.5px] font-extrabold text-brass-300">
                 <CheckCircle2 size={14} className="shrink-0" />
                 <span id="decision-section-heading">3. Availability decision</span>
               </p>
@@ -644,7 +644,7 @@ export default function PartnerBookingReview() {
 
                   {showDeclineBox && (
                     <div className="mt-4 rounded-xl border border-red-500/35 bg-red-950/30 p-4">
-                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-red-300">
+                      <p className="text-[11px] font-extrabold text-red-300">
                         Confirm property unavailable
                       </p>
                       <p className="mt-1 text-[11.5px] font-medium text-ink-300">
@@ -690,7 +690,7 @@ export default function PartnerBookingReview() {
               ) : (
                 <div className="rounded-xl border border-ink-800 bg-ink-950/70 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-300">
+                    <span className="text-[11px] font-extrabold text-brass-300">
                       {isSuspended ? 'Decisions paused' : 'Availability review already handled'}
                     </span>
                     <BookingStatusPill status={booking.status} />
@@ -711,7 +711,7 @@ export default function PartnerBookingReview() {
 
               {/* Activity & Audit Timeline */}
               <div className="mt-5 border-t border-ink-800 pt-4">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">
+                <p className="text-[10px] font-extrabold text-ink-400">
                   Recorded booking timeline
                 </p>
                 <ol className="mt-2.5 space-y-2.5">

@@ -39,7 +39,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
       await page.setViewportSize({ width, height: 844 });
 
       await page.goto('/');
-      await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i })).toBeVisible();
       const homeOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
       );
@@ -47,7 +47,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
       await page.goto('/stays');
       await expect(
-        page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+        page.getByRole('heading', { level: 1, name: /Find a stay/i }),
       ).toBeVisible();
       const staysOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth + 1,
@@ -84,71 +84,69 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
   test('removes manual currency switcher controls and auto-detects NGN, GBP, and USD cleanly', async ({
     browser,
   }) => {
-    // 1. Default Lagos visitor -> NGN (₦) with zero manual currency toggle buttons
-    const lagosCtx = await browser.newContext({
-      locale: 'en-NG',
-      timezoneId: 'Africa/Lagos',
-    });
-    const lagosPage = await lagosCtx.newPage();
-    await lagosPage.goto('/stays');
-    await expect(
-      lagosPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(lagosPage.getByText(/₦ \(NGN\)/).first()).toBeVisible();
-    await lagosCtx.close();
+    // /stays no longer shows a "₦ (NGN)" label and this suite runs without
+    // listings, so read the detected currency from Horatio's pricing answer,
+    // which is built from the same currency context that formats stay prices.
+    const expectDetectedCurrency = async (
+      contextOptions: Parameters<typeof browser.newContext>[0],
+      currency: 'NGN' | 'GBP' | 'USD',
+    ) => {
+      const ctx = await browser.newContext(contextOptions);
+      const page = await ctx.newPage();
+      await page.goto('/stays');
+      await expect(page.locator('button[aria-label*="Display prices in"]')).toHaveCount(0);
 
-    // 2. UK visitor -> GBP (£) automatically via locale/timezone and /api/geo
-    const ukCtx = await browser.newContext({
-      locale: 'en-GB',
-      timezoneId: 'Europe/London',
-      extraHTTPHeaders: { 'x-vercel-ip-country': 'GB' },
-    });
-    const ukPage = await ukCtx.newPage();
-    await ukPage.goto('/stays');
-    await expect(
-      ukPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(ukPage.getByText(/£ \(GBP\)/).first()).toBeVisible();
-    await ukCtx.close();
+      const headerPill = page.getByRole('button', { name: /Ask Horatio — HAMLET assistant/i }).first();
+      if (await headerPill.isVisible()) {
+        await headerPill.click();
+      } else {
+        await page.getByRole('button', { name: /Open navigation menu/i }).click();
+        await page
+          .getByRole('navigation', { name: 'Mobile navigation' })
+          .getByRole('button', { name: /Ask Horatio/i })
+          .click();
+      }
+      await page.getByLabel('Ask Horatio a question').fill('What currency are prices shown in?');
+      await page.getByRole('button', { name: 'Send question' }).click();
+      await expect(page.getByText(`Prices display in ${currency}.`).last()).toBeVisible();
+      await ctx.close();
+    };
 
-    // 3. US visitor -> USD ($) automatically via locale/timezone and /api/geo
-    const usCtx = await browser.newContext({
-      locale: 'en-US',
-      timezoneId: 'America/New_York',
-      extraHTTPHeaders: { 'x-vercel-ip-country': 'US' },
-    });
-    const usPage = await usCtx.newPage();
-    await usPage.goto('/stays');
-    await expect(
-      usPage.locator('button[aria-label*="Display prices in"]'),
-    ).toHaveCount(0);
-    await expect(usPage.getByText(/\$ \(USD\)/).first()).toBeVisible();
-    await usCtx.close();
+    // 1. Default Lagos visitor -> NGN with zero manual currency toggle buttons
+    await expectDetectedCurrency({ locale: 'en-NG', timezoneId: 'Africa/Lagos' }, 'NGN');
+
+    // 2. UK visitor -> GBP automatically via locale/timezone and /api/geo
+    await expectDetectedCurrency(
+      { locale: 'en-GB', timezoneId: 'Europe/London', extraHTTPHeaders: { 'x-vercel-ip-country': 'GB' } },
+      'GBP',
+    );
+
+    // 3. US visitor -> USD automatically via locale/timezone and /api/geo
+    await expectDetectedCurrency(
+      { locale: 'en-US', timezoneId: 'America/New_York', extraHTTPHeaders: { 'x-vercel-ip-country': 'US' } },
+      'USD',
+    );
   });
 
-  test('supports homepage neighbourhood rail discovery, combined /stays filters, price validation, and Clear filters', async ({
+  test('supports homepage neighbourhood discovery, combined /stays filters, price validation, and Clear filters', async ({
     page,
   }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /Find your next stay\./i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i })).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: /Explore Lagos neighbourhoods/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Verified stays', exact: true }),
+      page.getByRole('heading', { level: 2, name: /Find somewhere\s*that feels right/i }),
     ).toBeVisible();
 
-    const rail = page.getByRole('region', { name: 'Lagos neighbourhoods' });
-    await expect(rail.getByRole('button', { name: /Lekki Phase 1/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Ikate/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Victoria Island/i })).toBeVisible();
-    await expect(rail.getByRole('button', { name: /Yaba/i })).toBeVisible();
+    const neighbourhoods = page.getByRole('region', { name: 'Lagos neighbourhoods' });
+    await expect(neighbourhoods.getByRole('link', { name: /Island energy/i })).toBeVisible();
+    await expect(neighbourhoods.getByRole('link', { name: /Mainland rhythm/i })).toBeVisible();
 
-    await rail.getByRole('button', { name: /Ikate/i }).click();
-    await expect(page).toHaveURL(/area=Ikate/);
+    // Mood cards filter by the corridor in their caption (Yaba · Ikeja · Surulere).
+    await neighbourhoods.getByRole('link', { name: /Mainland rhythm/i }).click();
+    await expect(page).toHaveURL(/\/stays\?area=Lagos\+Mainland/);
     await expect(page.getByRole('button', { name: /Clear filters/i }).first()).toBeVisible();
     await page.getByRole('button', { name: /Clear filters/i }).first().click();
-    await expect(page).not.toHaveURL(/area=Ikate/);
+    await expect(page).not.toHaveURL(/area=/);
 
     // Navigate to /stays with combined filters & verify invalid min > max price validation
     await page.goto('/stays?area=Yaba&minPrice=300000&maxPrice=100000');
@@ -170,7 +168,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
 
     await page.goto('/stays');
     await expect(
-      page.getByRole('heading', { name: /Explore verified shortlet stays across Lagos\./i }),
+      page.getByRole('heading', { level: 1, name: /Find a stay/i }),
     ).toBeVisible();
     await expect(page.getByText(/Illustrative concept/i)).toHaveCount(0);
     await expect(page.getByText(/Lagos showcase concepts/i)).toHaveCount(0);
@@ -196,7 +194,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
   });
 
-  test('captures referral code from a referral link without adding a manual signup field', async ({
+  test('captures referral code from a referral link and shows it locked, not as a manual signup field', async ({
     page,
   }) => {
     await page.goto('/?ref=HML-LOCK123');
@@ -207,7 +205,9 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.getByLabel(/Email address/i)).toBeVisible();
     await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: /Create my account/i })).toBeVisible();
-    await expect(page.getByLabel(/Referral code/i)).toHaveCount(0);
+    const referralField = page.getByLabel(/Referral code/i);
+    await expect(referralField).toHaveValue('HML-LOCK123');
+    await expect(referralField).not.toBeEditable();
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('hamlet:referral-code')))
       .toBe('HML-LOCK123');
@@ -221,7 +221,7 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(page.locator('h1').first()).toBeVisible();
   });
 
-  test('renders mobile hero lagoon sheet, full-screen nav drawer, and accordion footer at 390x844', async ({
+  test('renders mobile hero search, full-screen nav drawer, and accordion footer at 390x844', async ({
     browser,
   }) => {
     const mobileCtx = await browser.newContext({
@@ -232,28 +232,29 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     const mobilePage = await mobileCtx.newPage();
     await mobilePage.goto('/');
 
-    // Mobile hero search pill + "Find a stay" sheet
-    const mobileSearchRegion = mobilePage.getByRole('search', {
+    // Mobile hero and homepage search form
+    await expect(
+      mobilePage.getByRole('heading', { level: 1, name: /Find your\s*place to\s*belong/i }),
+    ).toBeVisible();
+    const mobileSearchRegion = mobilePage.getByRole('region', { name: 'Search for a stay' });
+    await expect(mobileSearchRegion).toBeVisible();
+    await expect(mobileSearchRegion.getByRole('heading', { name: 'Where to?' })).toBeVisible();
+    // On phones the search is one small pill that pops up the form in a sheet.
+    await mobileSearchRegion.getByRole('button', { name: /Search Lagos stays/i }).click();
+    const mobileSearchSheet = mobilePage.getByRole('dialog', { name: 'Find a stay' });
+    await expect(mobileSearchSheet).toBeVisible();
+    const mobileSearchForm = mobileSearchSheet.getByRole('search', {
       name: /Search Lagos shortlets/i,
     });
-    await expect(mobileSearchRegion).toBeVisible();
-    await mobileSearchRegion.getByRole('button', { name: /Anywhere in Lagos/i }).click();
+    await expect(mobileSearchForm).toBeVisible();
+    await expect(mobileSearchForm.getByLabel('Enter a Lagos area')).toBeVisible();
+    await expect(mobileSearchForm.getByRole('button', { name: /Find my stay/i })).toBeVisible();
+    await mobilePage.keyboard.press('Escape');
+    await expect(mobileSearchSheet).toBeHidden();
 
-    const findStayDialog = mobilePage.getByRole('dialog', { name: /Find a stay/i });
-    await expect(findStayDialog).toBeVisible();
+    // Homepage trust section
     await expect(
-      findStayDialog.getByRole('tab', { name: 'Anywhere', exact: true }),
-    ).toHaveAttribute('aria-selected', 'true');
-    await findStayDialog.getByRole('tab', { name: 'Mainland', exact: true }).click();
-    await expect(
-      findStayDialog.getByRole('button', { name: 'Yaba', exact: true }),
-    ).toBeVisible();
-    await findStayDialog.getByRole('button', { name: /Close search/i }).click();
-    await expect(findStayDialog).toBeHidden();
-
-    // 4-pillar verification grid on homepage
-    await expect(
-      mobilePage.getByRole('heading', { name: /Verified before it’s bookable/i }),
+      mobilePage.getByRole('heading', { name: /Good stays\.\s*Zero guesswork\./i }),
     ).toBeVisible();
 
     // Mobile full-screen navigation drawer
@@ -280,6 +281,13 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
         name: /All Lagos stays/i,
       }),
     ).toBeVisible();
+
+    // Homepage search submits the chosen area to /stays
+    await mobileSearchRegion.getByRole('button', { name: /Search Lagos stays/i }).click();
+    const searchSheet = mobilePage.getByRole('dialog', { name: 'Find a stay' });
+    await searchSheet.getByLabel('Enter a Lagos area').fill('Yaba');
+    await searchSheet.getByRole('button', { name: /Find my stay/i }).click();
+    await expect(mobilePage).toHaveURL(/\/stays\?area=Yaba/);
 
     await mobileCtx.close();
   });

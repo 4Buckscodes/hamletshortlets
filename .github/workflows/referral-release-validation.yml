@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - fix/referral-reward-lifecycle-attribution
+      - feat/hamlet-v0-design-production-integration
     paths:
       - 'app/**'
       - 'components/**'
@@ -20,6 +21,7 @@ on:
     branches:
       - feat/locked-referrals-and-static-hero
       - fix/pr39-referral-regressions
+      - feat/hamlet-v0-design-production-integration
   workflow_dispatch:
 
 permissions:

@@ -1,5 +1,6 @@
 'use client';
 
+import { statusEntry } from '@/lib/statusLabels';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PauseCircle, PlayCircle, CalendarDays } from 'lucide-react';
@@ -179,8 +180,8 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
       <section className="rounded-3xl border border-ink-100 bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
-              {property.area} · Status: {property.status}
+            <span className="text-[11px] font-extrabold text-brass-700">
+              {property.area} · {statusEntry(property.status).label}
             </span>
             <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
               {property.title}
@@ -232,7 +233,7 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
 
         {!canResubmit && (
           <p className="m-0 mt-4 border-t border-ink-100 pt-3 text-xs leading-relaxed text-ink-600">
-            Listing details are locked while <strong>{property.status}</strong>. Pause bookings or update calendar above.
+            Details can&apos;t be edited while this listing is <strong>{statusEntry(property.status).label.toLowerCase()}</strong>, because changes must be re-verified. You can still pause bookings or update the calendar above. To change the price, photos or details, email hello@hamlet.rest with the listing name and HAMLET will reopen it for editing.
           </p>
         )}
       </section>

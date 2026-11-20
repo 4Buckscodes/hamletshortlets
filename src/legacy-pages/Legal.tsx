@@ -148,7 +148,7 @@ export default function Legal() {
           {c.sections.map((s, idx) => (
             <section key={s.h} className="card p-5 sm:p-7">
               <div className="flex items-baseline gap-3">
-                <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
+                <span className="font-mono text-xs font-extrabold text-brass-600">
                   {String(idx + 1).padStart(2, '0')}
                 </span>
                 <h2 className="font-display text-xl font-bold text-ink-900">{s.h}</h2>

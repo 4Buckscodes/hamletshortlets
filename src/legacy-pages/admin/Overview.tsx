@@ -49,7 +49,7 @@ export default function AdminOverview() {
       <div className="rounded-3xl border border-brass-500/25 bg-gradient-to-br from-brass-500/10 via-ink-900 to-ink-900 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.24em] text-brass-400"><Gauge size={13} className="shrink-0" /> Elsinore · Lagos launch scoreboard</p>
+            <p className="flex items-center gap-2 text-[10px] font-extrabold text-brass-400"><Gauge size={13} className="shrink-0" /> Elsinore · Lagos launch scoreboard</p>
             <h1 className="mt-1.5 font-display text-2xl font-bold text-paper sm:text-3xl">Launch operations, live</h1>
             <button
               type="button"
@@ -62,7 +62,7 @@ export default function AdminOverview() {
           <div className="flex items-center gap-5">
             <div className="text-right">
               <p className="font-display text-4xl font-black tabular-nums text-brass-400">{approved.length}<span className="text-xl text-ink-500">/50</span></p>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-400">approved supply target</p>
+              <p className="text-[10px] font-extrabold text-ink-400">approved supply target</p>
               <p className="text-[10px] font-semibold text-ink-500">
                 due 31 Oct 2026 · {pilotDaysRemaining > 0 ? `${pilotDaysRemaining} day${pilotDaysRemaining === 1 ? '' : 's'} left` : pilotDaysRemaining === 0 ? 'due today' : `${Math.abs(pilotDaysRemaining)}d past milestone`}
               </p>
@@ -86,7 +86,7 @@ export default function AdminOverview() {
           <div key={k.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
             <k.Icon size={19} className={`shrink-0 ${k.tone}`} />
             <p className="mt-2.5 break-words font-display text-base font-black leading-tight tabular-nums text-ink-50 sm:text-2xl">{k.value}</p>
-            <p className="mt-1 text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-ink-400">{k.label}</p>
+            <p className="mt-1 text-[9.5px] font-extrabold text-ink-400">{k.label}</p>
             <p className="mt-0.5 text-[10px] font-semibold leading-snug text-ink-500">{k.sub}</p>
           </div>
         ))}
@@ -133,7 +133,7 @@ export default function AdminOverview() {
           </div>
           {/* Deferred / launch dependencies tracker */}
           <div className="border-t border-ink-800 px-4 py-4 sm:px-5">
-            <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-ink-500"><Target size={12} className="shrink-0" /> Explicit sign-offs required before scale</p>
+            <p className="flex items-center gap-2 text-[10px] font-extrabold text-ink-500"><Target size={12} className="shrink-0" /> Explicit sign-offs required before scale</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {['Nigerian legal review', 'Payment provider onboarding', 'Written processing-fee policy', 'Privacy notice / DPIA', 'Operational SOP', 'Support escalation coverage', 'Production config & backups'].map(t => (
                 <span key={t} className="rounded-md border border-ink-700 bg-ink-850 px-2 py-1 text-[9.5px] font-bold text-ink-300">{t}</span>
@@ -160,13 +160,13 @@ export default function AdminOverview() {
           </dl>
           <Link to="/admin/ledger" className="btn-brass mt-4 w-full !py-3 text-[12px]">Open ledger & settlement <ArrowRight size={14} /></Link>
           <div className="mt-5">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Recent audit events</p>
+            <p className="text-[10px] font-extrabold text-ink-500">Recent audit events</p>
             <ol className="mt-2 space-y-1.5">
               {state.audit.slice(0, 4).map(a => (
                 <li key={a.id} className="break-words text-[10.5px] font-medium leading-snug text-ink-300"><span className="font-mono text-brass-400">{formatDateTime(a.at).split('·')[0].trim()}</span> · <span className="font-bold text-ink-100">{a.action.replace(/_/g, ' ')}</span> · {a.target}</li>
               ))}
             </ol>
-            <Link to="/admin/audit" className="mt-2 inline-block text-[10.5px] font-extrabold uppercase tracking-wide text-brass-400 hover:text-brass-300">Full audit log →</Link>
+            <Link to="/admin/audit" className="mt-2 inline-block text-[10.5px] font-extrabold text-brass-400 hover:text-brass-300">Full audit log →</Link>
           </div>
         </section>
       </div>
@@ -182,7 +182,7 @@ export default function AdminOverview() {
               Tracks entrance coordinate verification, door-to-door arrival guide coverage on live listings, and guest arrival support signals.
             </p>
           </div>
-          <Link to="/admin/properties" className="text-[11px] font-extrabold uppercase tracking-wider text-brass-400 hover:text-brass-300">
+          <Link to="/admin/properties" className="text-[11px] font-extrabold text-brass-400 hover:text-brass-300">
             Review incomplete guides →
           </Link>
         </div>
@@ -192,7 +192,7 @@ export default function AdminOverview() {
             <p className="font-display text-xl font-black tabular-nums text-jade-400">
               {approved.length === 0 ? '0%' : `${Math.round((approvedWithVerifiedCoords.length / approved.length) * 100)}%`}
             </p>
-            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+            <p className="mt-0.5 text-[10px] font-extrabold text-ink-400">
               Verified entrance pins
             </p>
             <p className="text-[10.5px] font-medium text-ink-500">
@@ -204,7 +204,7 @@ export default function AdminOverview() {
             <p className="font-display text-xl font-black tabular-nums text-brass-300">
               {approved.length === 0 ? '0%' : `${Math.round((approvedWithCompleteGuides.length / approved.length) * 100)}%`}
             </p>
-            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+            <p className="mt-0.5 text-[10px] font-extrabold text-ink-400">
               Complete door-to-door guides
             </p>
             <p className="text-[10.5px] font-medium text-ink-500">
@@ -216,7 +216,7 @@ export default function AdminOverview() {
             <p className="font-display text-xl font-black tabular-nums text-sky-400">
               {arrivalIssueReports.length}
             </p>
-            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+            <p className="mt-0.5 text-[10px] font-extrabold text-ink-400">
               Arrival issue reports
             </p>
             <p className="text-[10.5px] font-medium text-ink-500">
@@ -230,7 +230,7 @@ export default function AdminOverview() {
                 ? '—'
                 : `${Math.round((easyArrivalCount / easeFeedbackEvents.length) * 100)}%`}
             </p>
-            <p className="mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-ink-400">
+            <p className="mt-0.5 text-[10px] font-extrabold text-ink-400">
               Straight-to-door ease
             </p>
             <p className="text-[10.5px] font-medium text-ink-500">

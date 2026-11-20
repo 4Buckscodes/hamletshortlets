@@ -136,7 +136,7 @@ function HoratioDrawer({
         ).length;
 
         return {
-          text: `Elsinore live operational snapshot: ${pendingProps} listing(s) awaiting property review, ${actionBookings} booking request(s) needing confirmation, ${openWatchIssues} active incident(s) on The Watch, ${pendingApps} partner application(s) pending review, and ${flaggedLedger} ledger item(s) requiring reconciliation.`,
+          text: `Operations snapshot: ${pendingProps} listing(s) awaiting property review, ${actionBookings} booking request(s) needing confirmation, ${openWatchIssues} active incident(s) on The Watch, ${pendingApps} partner application(s) pending review, and ${flaggedLedger} ledger item(s) requiring reconciliation.`,
           links: [
             { label: `Property Review (${pendingProps})`, to: '/admin/properties' },
             { label: `The Watch · Issues (${openWatchIssues})`, to: '/admin/issues' },
@@ -352,7 +352,7 @@ function HoratioDrawer({
   const quickPrompts =
     role === 'admin'
       ? [
-          'Show Elsinore & The Watch queues',
+          'Show operations queues',
           'How do pricing & caution deposits work?',
           'Show approved Lagos Mainland stays',
         ]
@@ -390,10 +390,10 @@ function HoratioDrawer({
               <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brass-500 text-ink-950">
                 <Sparkles size={14} />
               </span>
-              <span className="font-display text-lg font-bold tracking-wide text-white">
+              <span className="font-display text-lg font-bold text-white">
                 Horatio
               </span>
-              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-widest text-brass-300">
+              <span className="rounded-full border border-brass-400/40 bg-brass-500/15 px-2 py-0.5 text-[11px] font-extrabold text-brass-300">
                 HAMLET Guide
               </span>
             </div>
@@ -414,7 +414,7 @@ function HoratioDrawer({
         {/* Body */}
         <div className="flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-4 sm:p-5">
           <div className="rounded-2xl border border-ink-200 bg-white p-4 shadow-2xs">
-            <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink-500">
+            <div className="flex items-center gap-2 text-[11px] font-extrabold text-ink-500">
               <ShieldCheck size={14} className="shrink-0 text-emerald-600" />
               <span>Quick questions</span>
             </div>
@@ -465,7 +465,7 @@ function HoratioDrawer({
                   </div>
                 )}
                 {msg.note && (
-                  <p className="border-t border-ink-100 pt-2 text-[10.5px] font-medium text-ink-500">
+                  <p className="border-t border-ink-100 pt-2 text-[11px] font-medium text-ink-500">
                     {msg.note}
                   </p>
                 )}
@@ -494,7 +494,7 @@ function HoratioDrawer({
               <Send size={15} />
             </button>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-ink-400">
+          <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-ink-400">
             <span className="inline-flex items-center gap-1">
               <Compass size={11} className="shrink-0" /> Suggestion & discovery only
             </span>

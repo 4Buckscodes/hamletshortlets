@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { LAGOS_AREAS } from '@/lib/areas';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import {
   ChipMultiSelect,
@@ -14,6 +16,7 @@ import {
   StepperCounter,
   useProgressiveDraft,
   FIELD_INPUT_CLASS,
+  OptionCardGroup,
 } from '@/components/forms/ProgressiveFormPrimitives';
 
 type ExistingApp = {
@@ -53,7 +56,7 @@ const INITIAL_DRAFT: PartnerApplyDraft = {
   phone: '',
   company: '',
   referralCode: '',
-  areas: ['Victoria Island'],
+  areas: [],
   propertiesCount: 1,
   authoritySummary: '',
   payoutBank: '',
@@ -142,9 +145,15 @@ export default function PartnerApplicationForm() {
   const [existing, setExisting] = useState<ExistingApp | null>(null);
   const [referralResolved, setReferralResolved] = useState<string>('');
   const [lockedReferralCode, setLockedReferralCode] = useState('');
+  const gateNext = `/partners/apply/form${lockedReferralCode ? `?ref=${encodeURIComponent(lockedReferralCode)}` : ''}`;
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  // Validation and submit errors take focus so keyboard and screen-reader users land on them.
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   const [message, setMessage] = useState('');
 
   const isInventoryRole = [
@@ -259,23 +268,31 @@ export default function PartnerApplicationForm() {
         setReferralResolved('');
         return;
       }
-      const { data } = await db.rpc('resolve_referral_code', { code_input: code });
+      const { data, error: lookupError } = await db.rpc('resolve_referral_code', { code_input: code });
       const row = Array.isArray(data) ? data[0] : data;
       if (row && typeof row === 'object' && 'partner_name' in row) {
         setReferralResolved(
           `Referral verified: invited by ${String((row as { partner_name?: string }).partner_name || 'HAMLET partner')}`,
         );
       } else {
-        setReferralResolved('Referral code not recognised — leave blank if you do not have one.');
+        // A failed lookup (e.g. offline) is not the same as an unknown code; only say "not recognised" for a real miss.
+        setReferralResolved(
+          lookupError
+            ? 'We’ll check this referral code when you submit.'
+            : lockedReferralCode
+              ? 'We couldn’t match this invite code. You can still continue; HAMLET will check it on review.'
+              : 'Referral code not recognised. Check it, or leave it blank if you do not have one.',
+        );
       }
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [db, values.referralCode]);
+  }, [db, values.referralCode, lockedReferralCode]);
 
   function validateStep(idx: number): string | null {
     if (idx === 1) {
       if (values.fullName.trim().length < 2) return 'Enter your full name.';
-      if (values.phone.trim().length < 7) return 'Enter a valid phone number.';
+      if (!/^\+?[0-9][0-9\s-]{6,18}$/.test(values.phone.trim()))
+        return 'Enter a valid phone number, e.g. +234 803 000 0000 or 0803 000 0000.';
       if (values.company.trim().length < 2)
         return 'Enter your business, trading or personal practice name.';
     }
@@ -385,10 +402,11 @@ export default function PartnerApplicationForm() {
 
       await load();
     } catch (caught) {
+      const raw = caught instanceof Error ? caught.message : '';
       setError(
-        caught instanceof Error
-          ? caught.message
-          : 'Could not submit your identity-verification details.',
+        !raw || /fetch|network|TypeError/i.test(raw)
+          ? 'We couldn’t reach HAMLET to submit your details. Check your connection and try again; your answers are saved on this device.'
+          : raw,
       );
     } finally {
       setBusy(false);
@@ -409,18 +427,18 @@ export default function PartnerApplicationForm() {
         <h2 className="serif m-0 text-2xl font-medium text-ink-900">
           Step 0 — Sign in or create your HAMLET account first
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-600">
+        <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-ink-600">
           This step is for identity and payout verification only. Your partner workspace is available immediately after network registration; you do not need to wait for this review to upload properties, share stays or view earnings.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
-            href="/signin?mode=signup&next=%2Fpartners%2Fapply"
+            href={`/signin?mode=signup&next=${encodeURIComponent(gateNext)}${lockedReferralCode ? `&ref=${encodeURIComponent(lockedReferralCode)}` : ''}`}
             className="primary-button"
           >
-            Create account & continue →
+            Create account & continue
           </Link>
           <Link
-            href="/signin?next=%2Fpartners%2Fapply"
+            href={`/signin?next=${encodeURIComponent(gateNext)}`}
             className="secondary-button"
           >
             Sign in to existing account
@@ -448,7 +466,7 @@ export default function PartnerApplicationForm() {
             href={roleState === 'admin' ? '/admin' : '/partners'}
             className="primary-button"
           >
-            {roleState === 'admin' ? 'Open Admin Console →' : 'Open Partner Workspace →'}
+            {roleState === 'admin' ? 'Open Admin Console' : 'Open Partner Workspace →'}
           </Link>
           {roleState === 'partner' && (
             <Link href="/partners/properties/new" className="secondary-button">
@@ -463,9 +481,17 @@ export default function PartnerApplicationForm() {
   if (existing && existing.status !== 'needs_correction') {
     return (
       <section className="rounded-3xl border border-ink-200 bg-white p-6 sm:p-8">
-        <span className="inline-flex rounded-full bg-paper px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brass-700">
-          Verification status: {existing.status}
-        </span>
+        {message && (
+          <div role="status" className="mb-5 flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-900">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <div>
+              <p className="m-0 font-bold">Received. Thank you.</p>
+              <p className="m-0 mt-1">{message} Meanwhile, you can add your first listing from your workspace.</p>
+              <Link href="/partners/properties/new" className="hm-link" style={{ marginTop: 8 }}>Add a listing</Link>
+            </div>
+          </div>
+        )}
+        <StatusPill tone={statusEntry(existing.status).tone}>Verification: {statusEntry(existing.status).label}</StatusPill>
         <h2 className="serif mt-3 text-2xl font-medium text-ink-900">
           {existing.company} · {existing.role}
         </h2>
@@ -511,18 +537,27 @@ export default function PartnerApplicationForm() {
         maxCompletedStep={existing ? APPLY_STEPS.length - 1 : step}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {step === 0 && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-brass-200 bg-paper p-4 text-sm leading-relaxed text-ink-800">
+            <div className="text-sm leading-relaxed text-ink-800">
               <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
-              <p className="m-0 mt-1 text-xs text-ink-600">
-                Active partners can close bookings across HAMLET and introduce new partners from one account.
+              <p className="m-0 mt-1 text-ink-600">
+                Active partners can close bookings across HAMLET and introduce new partners from one account. Choose the role that best describes you; you can update it later.
               </p>
             </div>
-            <div className="rounded-2xl border border-ink-200 bg-paper p-4 text-sm text-ink-700">
-              Your partner workspace is active. You can complete or update your partner role and profile details from inside the workspace whenever they are needed.
-            </div>
+            <OptionCardGroup
+              ariaLabel="Your role on HAMLET"
+              columns={1}
+              value={values.role}
+              onChange={next => setValues(prev => ({ ...prev, role: next }))}
+              options={[
+                { value: 'Property owner', label: 'Property owner', description: 'You own the home and set its nightly rate. Guests see it with HAMLET’s 20% service fee included.' },
+                { value: 'Authorised manager', label: 'Authorised manager', description: 'You manage a home with the owner’s written authority to list it.' },
+                { value: 'Multi-property operator', label: 'Multi-property operator', description: 'You run several units across Lagos.' },
+                { value: 'Closing agent', label: 'Closing agent', description: 'You bring guests to verified stays and earn 10% of the owner’s agreed rate on bookings you close, paid from HAMLET’s fee.' },
+              ]}
+            />
           </div>
         )}
 
@@ -535,6 +570,7 @@ export default function PartnerApplicationForm() {
                   required
                   minLength={2}
                   maxLength={120}
+                  autoComplete="name"
                   value={values.fullName}
                   onChange={e =>
                     setValues(prev => ({ ...prev, fullName: e.target.value }))
@@ -551,6 +587,7 @@ export default function PartnerApplicationForm() {
                   required
                   type="tel"
                   inputMode="tel"
+                  autoComplete="tel"
                   minLength={7}
                   maxLength={32}
                   value={values.phone}
@@ -576,6 +613,7 @@ export default function PartnerApplicationForm() {
                   required
                   minLength={2}
                   maxLength={160}
+                  autoComplete="organization"
                   value={values.company}
                   onChange={e =>
                     setValues(prev => ({ ...prev, company: e.target.value }))
@@ -604,7 +642,7 @@ export default function PartnerApplicationForm() {
                     }
                   }}
                   placeholder="Optional code"
-                  className={`${FIELD_INPUT_CLASS} font-mono uppercase ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
+                  className={`${FIELD_INPUT_CLASS} font-mono ${lockedReferralCode ? 'cursor-not-allowed bg-paper/80' : ''}`}
                 />
               )}
             </FormField>
@@ -774,8 +812,11 @@ export default function PartnerApplicationForm() {
 
         {error && (
           <p
+            id="apply-form-error"
+            ref={errorRef}
+            tabIndex={-1}
             role="alert"
-            className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold text-red-800"
+            className="m-0 rounded-2xl bg-red-50 p-3.5 text-sm font-semibold text-red-800 outline-none"
           >
             {error}
           </p>
@@ -791,7 +832,7 @@ export default function PartnerApplicationForm() {
               href="/partners/properties/new"
               className="mt-3 inline-flex min-h-[42px] items-center rounded-full bg-ink-900 px-5 text-xs font-extrabold text-white"
             >
-              Upload your first property →
+              Upload your first property
             </Link>
           </div>
         )}

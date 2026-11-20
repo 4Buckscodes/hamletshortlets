@@ -200,7 +200,7 @@ export default function Stays() {
         <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-brass-600">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold text-brass-600">
                 <Link to="/lagos" className="hover:underline">
                   Lagos
                 </Link>
@@ -325,7 +325,7 @@ export default function Stays() {
               <button
                 type="button"
                 onClick={() => setParams({}, { replace: true })}
-                className="text-[11px] font-extrabold uppercase tracking-wide text-jade-700 hover:text-jade-800"
+                className="text-[11px] font-extrabold text-jade-700 hover:text-jade-800"
               >
                 Clear all
               </button>
@@ -508,7 +508,7 @@ export default function Stays() {
         <div className="lg:col-span-9">
           {isMainlandActive && (
             <div className="mb-5 rounded-2xl border border-ink-200 bg-white p-4 shadow-2xs">
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-brass-700">
+              <p className="text-[10.5px] font-extrabold text-brass-700">
                 Lagos Mainland
               </p>
               <div className="mt-2.5 flex flex-wrap gap-1.5">

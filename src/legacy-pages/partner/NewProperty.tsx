@@ -240,7 +240,7 @@ export default function NewProperty() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
       <button onClick={() => navigate('/partner/properties')} className="flex items-center gap-1.5 text-[11.5px] font-bold text-ink-400 hover:text-ink-100"><ChevronLeft size={14} /> My properties</button>
-      <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">New listing</p>
+      <p className="mt-4 text-[10px] font-extrabold text-brass-400">New listing</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">List a property</h1>
 
       {/* Stepper */}
@@ -249,7 +249,7 @@ export default function NewProperty() {
           const done = i < step, active = i === step;
           return (
             <li key={label} className="flex shrink-0 items-center gap-1">
-              <button onClick={() => i < step && setStep(i)} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[10.5px] font-extrabold uppercase tracking-wide transition ${active ? 'bg-brass-500 text-ink-950' : done ? 'bg-ink-800 text-jade-300' : 'text-ink-500'}`}>
+              <button onClick={() => i < step && setStep(i)} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[10.5px] font-extrabold transition ${active ? 'bg-brass-500 text-ink-950' : done ? 'bg-ink-800 text-jade-300' : 'text-ink-500'}`}>
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${active ? 'bg-ink-950 text-brass-400' : done ? 'bg-jade-600 text-white' : 'bg-ink-800'}`}>{done ? <Check size={11} strokeWidth={4} /> : i + 1}</span>
                 <span className={active ? 'inline' : 'hidden md:inline'}>{label}</span>
               </button>
@@ -281,7 +281,7 @@ export default function NewProperty() {
               </div>
             )}
             <div className="rounded-xl border border-ink-800 bg-ink-950/60 p-4">
-              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-brass-400">
                 <Compass size={12} /> Optional · HAMLET Wayfinder location basics
               </p>
               <p className="mt-1 text-[11px] font-medium text-ink-400">
@@ -392,7 +392,7 @@ export default function NewProperty() {
               <label><span className="label-dark">Refundable caution deposit (₦)</span><input type="number" min={0} step={10000} className="input-dark" value={deposit} onChange={e => setDeposit(Number(e.target.value))} /></label>
             </div>
             <div className="rounded-2xl border border-brass-500/30 bg-brass-500/5 p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-brass-400">Single-source pricing preview</p>
+              <p className="text-[10px] font-extrabold text-brass-400">Single-source pricing preview</p>
               {(() => {
                 const nightlyPreview = calculateGuestPricing({ accommodationSubtotal: nightlyRate });
                 return (
@@ -409,7 +409,7 @@ export default function NewProperty() {
 
             {/* Calendar & Occupancy Onboarding (§3.3) */}
             <div className="rounded-2xl border border-ink-700 bg-ink-950/60 p-4">
-              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-jade-300">
+              <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-jade-300">
                 <CalendarClock size={14} /> Current occupancy & calendar availability
               </p>
               <p className="mt-1 text-[11px] font-medium text-ink-400">
@@ -528,7 +528,7 @@ export default function NewProperty() {
                 ['Role', role], ['Submitter', `${state.session?.name} (${role})`],
               ].map(([k, v]) => (
                 <div key={k as string} className="rounded-xl border border-ink-800 bg-ink-850 px-4 py-3">
-                  <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{k}</p>
+                  <p className="text-[9.5px] font-extrabold text-ink-400">{k}</p>
                   <p className="mt-0.5 break-words">{v}</p>
                 </div>
               ))}

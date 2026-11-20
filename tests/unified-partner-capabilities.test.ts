@@ -12,7 +12,7 @@ describe('unified partner capability onboarding', () => {
   });
 
   it('explains that one account supports closing bookings and introducing partners', () => {
-    expect(applicationForm).toContain('does not lock your account to that role');
+    expect(applicationForm).toContain('close bookings across HAMLET and introduce new partners from one account');
     expect(applicationForm).toContain('introduce new partners');
     expect(partnerStart).toContain('same account to close eligible bookings and introduce partners');
   });

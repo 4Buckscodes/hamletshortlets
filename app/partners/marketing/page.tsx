@@ -460,10 +460,10 @@ function PartnerMarketingContent() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">HAMLET Share Engine</p>
@@ -502,7 +502,7 @@ function PartnerMarketingContent() {
             </p>
             <div className="mt-5">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
             </div>
           </section>
@@ -698,7 +698,7 @@ function PartnerMarketingContent() {
                                   {spec.label}
                                 </p>
                                 <p
-                                  className={`m-0 mt-0.5 font-mono text-[10px] ${
+                                  className={`m-0 mt-0.5 font-mono text-[11px] ${
                                     active ? 'text-brass-400' : 'text-ink-500'
                                   }`}
                                 >
@@ -732,7 +732,7 @@ function PartnerMarketingContent() {
                                 <p className="m-0 text-xs font-extrabold">
                                   {t.label}
                                 </p>
-                                <p className="m-0 mt-0.5 text-[10px] text-ink-500">
+                                <p className="m-0 mt-0.5 text-[11px] text-ink-500">
                                   {t.summary}
                                 </p>
                               </button>
@@ -897,7 +897,7 @@ function PartnerMarketingContent() {
                               Branded HAMLET QR
                             </p>
                             <p
-                              className={`m-0 mt-0.5 text-[10px] ${
+                              className={`m-0 mt-0.5 text-[11px] ${
                                 qrVariant === 'branded'
                                   ? 'text-brass-400'
                                   : 'text-ink-500'
@@ -920,7 +920,7 @@ function PartnerMarketingContent() {
                               Standalone QR
                             </p>
                             <p
-                              className={`m-0 mt-0.5 text-[10px] ${
+                              className={`m-0 mt-0.5 text-[11px] ${
                                 qrVariant === 'standalone'
                                   ? 'text-brass-400'
                                   : 'text-ink-500'
@@ -939,9 +939,9 @@ function PartnerMarketingContent() {
                             className="cursor-pointer rounded-2xl border border-ink-200 bg-white p-3 text-left text-ink-900 transition hover:border-ink-500"
                           >
                             <p className="m-0 text-xs font-extrabold">
-                              Card + embedded QR →
+                              Card + embedded QR
                             </p>
-                            <p className="m-0 mt-0.5 text-[10px] text-ink-500">
+                            <p className="m-0 mt-0.5 text-[11px] text-ink-500">
                               Full photo flyer with QR
                             </p>
                           </button>
@@ -954,7 +954,7 @@ function PartnerMarketingContent() {
                 {/* Right Live Preview & Actions */}
                 <div className="rounded-3xl border border-ink-100 bg-paper p-4 sm:p-6 lg:col-span-6">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-ink-600">
+                    <span className="text-xs font-extrabold text-ink-600">
                       Live export preview
                     </span>
                     {previewLoading && (
@@ -1106,7 +1106,7 @@ function PartnerMarketingContent() {
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                          <p className="m-0 text-[11px] font-extrabold text-brass-700">
                             {stay.area || 'Lagos'} ·{' '}
                             {formatAccommodationLabel(
                               stay.property_type,
@@ -1180,9 +1180,9 @@ export default function PartnerMarketingPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-dvh flex-col bg-paper">
+        <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
-          <main className="shell flex-1 py-10">
+          <main className="hm-main hm-workspace">
             <p className="text-sm text-ink-600">Loading Marketing Studio…</p>
           </main>
           <SiteFooter />

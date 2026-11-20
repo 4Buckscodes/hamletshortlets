@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import {
   getBrowserSupabase,
   triggerBookingNotificationDispatchBestEffort,
@@ -43,6 +45,8 @@ export default function AdminBookingsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [query, setQuery] = useState('');
+  const visibleItems = items.filter(b => !query.trim() || JSON.stringify(b).toLowerCase().includes(query.trim().toLowerCase()));
 
   const load = useCallback(async () => {
     if (!db) {
@@ -134,10 +138,10 @@ export default function AdminBookingsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Booking & Hold Oversight</p>
@@ -165,7 +169,12 @@ export default function AdminBookingsPage() {
           <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
         ) : items.length > 0 ? (
           <div className="mt-6 space-y-3.5">
-            {items.map(b => (
+            <label className="hm-field" style={{ maxWidth: 420 }}>
+              <span className="hm-field-label">Search bookings</span>
+              <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name, email, reference…" className="hm-input" />
+            </label>
+            {visibleItems.length === 0 && <p className="hm-meta">No bookings match that search.</p>}
+            {visibleItems.map(b => (
               <article
                 key={b.id}
                 className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-100 bg-white p-5"
@@ -182,9 +191,7 @@ export default function AdminBookingsPage() {
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
-                    {b.status}
-                  </span>
+                  <StatusPill tone={statusEntry(b.status).tone}>{statusEntry(b.status).label}</StatusPill>
                   <button
                     type="button"
                     onClick={() => {
@@ -209,11 +216,12 @@ export default function AdminBookingsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.reference || 'Manage booking'}
           subtitle={
             selected
-              ? `${selected.profiles?.full_name || 'Guest'} · Current: ${selected.status}`
+              ? `${selected.profiles?.full_name || 'Guest'} · Current: ${statusEntry(selected.status).label}`
               : undefined
           }
           onClose={() => setSelected(null)}

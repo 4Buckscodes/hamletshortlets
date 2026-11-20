@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase, PARTNER_PROPERTY_SELECT } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -49,6 +51,22 @@ type PartnerOption = {
 
 const PILLARS = ['ownership', 'identity', 'authority', 'inspection'] as const;
 const OUTCOMES = ['verified', 'pending_review', 'self_reported', 'missing'] as const;
+const OUTCOME_LABEL: Record<(typeof OUTCOMES)[number], string> = {
+  verified: 'Verified by HAMLET',
+  pending_review: 'Pending review',
+  self_reported: 'Self-reported by partner',
+  missing: 'Not yet provided',
+};
+const STATUS_LABEL: Record<string, string> = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  pending_review: 'Under review',
+  needs_correction: 'Correction requested',
+  approved: 'Live on marketplace',
+  paused: 'Paused by partner',
+  suspended: 'Suspended',
+  rejected: 'Not approved',
+};
 
 export default function AdminPropertiesPage() {
   const db = useMemo(() => getBrowserSupabase(), []);
@@ -66,6 +84,7 @@ export default function AdminPropertiesPage() {
     authority: 'pending_review',
     inspection: 'pending_review',
   });
+  const allPillarsVerified = Object.values(pillars).every(value => value === 'verified');
   const [reviewNote, setReviewNote] = useState('');
 
   const [assignmentTarget, setAssignmentTarget] = useState<PropertyRow | null>(null);
@@ -139,25 +158,29 @@ export default function AdminPropertiesPage() {
 
   function openReview(prop: PropertyRow) {
     setSelected(prop);
-    setDecision(prop.status === 'approved' ? 'needs_correction' : 'approved');
+    // No default decision: the reviewer chooses after checking each pillar.
+    setDecision('');
     setPillars({
       ownership: prop.verification?.ownership || 'pending_review',
       identity: prop.verification?.identity || 'pending_review',
       authority: prop.verification?.authority || 'pending_review',
       inspection: prop.verification?.inspection || 'pending_review',
     });
-    setReviewNote(
-      prop.review_note ||
-        (prop.status !== 'approved'
-          ? 'Four-pillar review verified by HAMLET operations.'
-          : ''),
-    );
+    setReviewNote(prop.review_note || '');
     setError('');
   }
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!db || !selected) return;
+    if (!decision) {
+      setError('Choose a publication decision.');
+      return;
+    }
+    if (decision === 'approved' && !allPillarsVerified) {
+      setError('All four pillars must be marked verified before a listing can go live.');
+      return;
+    }
     if (reviewNote.trim().length < 10) {
       setError(
         'Provide a documented reviewer note of at least 10 characters for the audit log.',
@@ -246,10 +269,10 @@ export default function AdminPropertiesPage() {
     : [];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Four-Pillar Listing Verification</p>
@@ -265,11 +288,8 @@ export default function AdminPropertiesPage() {
             <button
               type="button"
               onClick={() => setFilter('queue')}
-              className={
-                filter === 'queue'
-                  ? 'primary-button min-h-[40px]'
-                  : 'secondary-button min-h-[40px]'
-              }
+              className="hm-chip"
+              aria-pressed={filter === 'queue'}
             >
               Review queue (
               {
@@ -284,11 +304,8 @@ export default function AdminPropertiesPage() {
             <button
               type="button"
               onClick={() => setFilter('all')}
-              className={
-                filter === 'all'
-                  ? 'primary-button min-h-[40px]'
-                  : 'secondary-button min-h-[40px]'
-              }
+              className="hm-chip"
+              aria-pressed={filter === 'all'}
             >
               All properties ({items.length})
             </button>
@@ -320,16 +337,14 @@ export default function AdminPropertiesPage() {
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                      <span className="text-[11px] font-extrabold text-brass-700">
                         {p.area} · {p.bedrooms} bd · up to {p.capacity} guests
                       </span>
                       <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
                         {p.title}
                       </h2>
                     </div>
-                    <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-900">
-                      {p.status}
-                    </span>
+                    <StatusPill tone={statusEntry(p.status).tone}>{statusEntry(p.status).label}</StatusPill>
                   </div>
                   <p className="m-0 mt-2 text-xs text-ink-500">
                     {p.public_address} · Base B: ₦
@@ -350,9 +365,9 @@ export default function AdminPropertiesPage() {
                   <button
                     type="button"
                     onClick={() => openReview(p)}
-                    className="primary-button min-h-[42px]"
+                    className="secondary-button min-h-[44px]"
                   >
-                    Open review drawer
+                    Review listing
                   </button>
                 </div>
               </article>
@@ -366,10 +381,11 @@ export default function AdminPropertiesPage() {
 
         {/* 4-Pillar Review Drawer */}
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.title || 'Review property'}
           subtitle={
-            selected ? `${selected.area} · Current: ${selected.status}` : undefined
+            selected ? `${selected.area} · Current: ${STATUS_LABEL[selected.status] || selected.status}` : undefined
           }
           onClose={() => setSelected(null)}
         >
@@ -408,7 +424,7 @@ export default function AdminPropertiesPage() {
                       >
                         {OUTCOMES.map(out => (
                           <option key={out} value={out}>
-                            {out.replace(/_/g, ' ')}
+                            {OUTCOME_LABEL[out]}
                           </option>
                         ))}
                       </select>
@@ -425,7 +441,10 @@ export default function AdminPropertiesPage() {
                     onChange={e => setDecision(e.target.value)}
                     className={FIELD_INPUT_CLASS}
                   >
-                    <option value="approved">Approve & publish live</option>
+                    <option value="" disabled>Choose a decision…</option>
+                    <option value="approved" disabled={!allPillarsVerified}>
+                      {allPillarsVerified ? 'Approve & publish live' : 'Approve & publish live (all four pillars must be verified)'}
+                    </option>
                     <option value="needs_correction">Request partner correction</option>
                     <option value="rejected">Reject submission</option>
                     <option value="suspended">Suspend listing</option>
@@ -465,6 +484,7 @@ export default function AdminPropertiesPage() {
 
         {/* Partner Assignment Drawer */}
         <FocusedDrawer
+          error={error}
           open={Boolean(assignmentTarget)}
           title={assignmentTarget ? `Assignments · ${assignmentTarget.title}` : 'Assignments'}
           onClose={() => setAssignmentTarget(null)}
@@ -472,7 +492,7 @@ export default function AdminPropertiesPage() {
           {assignmentTarget && (
             <div className="space-y-5">
               <div>
-                <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-ink-500">
+                <p className="m-0 text-xs font-extrabold text-ink-500">
                   Current partner assignments
                 </p>
                 {targetAssignments.length > 0 ? (

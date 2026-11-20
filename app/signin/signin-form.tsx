@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import {
@@ -11,10 +12,22 @@ import {
 } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { GoogleContinueButton } from '@/components/auth/GoogleContinueButton';
-import { FormField, FIELD_INPUT_CLASS } from '@/components/forms/ProgressiveFormPrimitives';
+import { FormField } from '@/components/forms/ProgressiveFormPrimitives';
 
 const OAUTH_CONTEXT_STORAGE_KEY = 'hamlet:oauth-context';
 type Mode = 'signin' | 'signup' | 'reset';
+
+/** Plain-language auth errors; never show raw network or provider text. */
+function friendlyAuthError(caught: unknown, bookingIntent: boolean) {
+  const raw = caught instanceof Error ? caught.message : '';
+  const saved = bookingIntent ? ' Your stay and dates are still saved.' : '';
+  if (!raw || /fetch|network|load failed|timeout/i.test(raw)) return `We couldn’t reach HAMLET. Check your connection and try again.${saved}`;
+  if (/invalid login|invalid credentials|invalid email or password/i.test(raw)) return 'That email and password don’t match. Try again, or reset your password.';
+  if (/rate limit|too many/i.test(raw)) return 'Too many attempts. Please wait a minute and try again.';
+  if (/already registered|already exists/i.test(raw)) return 'An account with this email already exists. Sign in instead.';
+  if (/email not confirmed/i.test(raw)) return 'Please confirm your email first; check your inbox for the link from HAMLET.';
+  return `We couldn’t complete that. Please try again.${saved}`;
+}
 
 export default function SignInForm() {
   const client = useMemo(() => getBrowserSupabase(), []);
@@ -32,8 +45,9 @@ export default function SignInForm() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'signup') setMode('signup');
       const requestedRedirect = readRequestedRedirectFromSearch(window.location.search);
+      // Most guests reaching sign-in from a booking are new: open on Create account.
+      if (params.get('mode') === 'signup' || (params.get('mode') !== 'signin' && requestedRedirect?.startsWith('/stays/'))) setMode('signup');
       setRequestedNext(requestedRedirect?.startsWith('/partners') ? '/partners' : requestedRedirect);
       const referralCode = params.get('ref') || window.localStorage.getItem('hamlet:referral-code');
       if (referralCode?.trim()) setLockedReferralCode(referralCode.trim().toUpperCase());
@@ -45,10 +59,11 @@ export default function SignInForm() {
   }, []);
 
   const isPartnerSignup = Boolean(requestedNext?.startsWith('/partners'));
+  const bookingIntent = Boolean(requestedNext?.startsWith('/stays/'));
   const contextHint = requestedNext?.startsWith('/partners')
     ? 'Create your account and open your partner workspace straight away.'
     : requestedNext?.startsWith('/stays/')
-      ? 'Your selected stay and dates are saved — you will return after signing in.'
+      ? 'Your stay, dates and guests are saved. You will come straight back to send the request.'
       : null;
 
   async function resolveRoleAndNavigate(userId: string, isSignup: boolean) {
@@ -149,7 +164,11 @@ export default function SignInForm() {
           await resolveRoleAndNavigate(data.user.id, true);
           return;
         }
-        setMessage('Account created. Confirm your email, then sign in to continue to your workspace.');
+        setMessage(
+          bookingIntent
+            ? 'Account created. Confirm your email, then sign in here: your stay, dates and guests are still saved and your request will be ready to send.'
+            : 'Account created. Confirm your email, then sign in to continue.',
+        );
         setMode('signin');
         return;
       }
@@ -161,7 +180,7 @@ export default function SignInForm() {
       if (authError) throw authError;
       if (data.user) await resolveRoleAndNavigate(data.user.id, false);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'We could not complete that request. Please try again.');
+      setError(friendlyAuthError(caught, bookingIntent));
     } finally {
       setBusy(false);
     }
@@ -170,61 +189,105 @@ export default function SignInForm() {
   return (
     <div>
       {contextHint && (
-        <div className="mb-4 flex items-center gap-2 rounded-2xl border border-brass-300 bg-brass-200/35 px-3.5 py-2.5 text-xs font-semibold text-ink-800">
-          <ArrowRight className="h-3.5 w-3.5 shrink-0 text-brass-700" />
+        <div className="hm-notice" style={{ marginBottom: 18, fontWeight: 650 }}>
+          <ArrowRight size={16} aria-hidden="true" />
           <span>{contextHint}</span>
         </div>
       )}
 
-      <div role="tablist" aria-label="Authentication mode" className="mb-6 flex gap-1.5 rounded-full bg-paper p-1.5">
-        <button type="button" role="tab" aria-selected={mode === 'signin'} onClick={() => { setMode('signin'); setError(''); setMessage(''); }} className={`min-h-[44px] flex-1 rounded-full text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-ink-900 shadow-xs' : 'text-ink-600 hover:text-ink-900'}`}>Sign in</button>
-        <button type="button" role="tab" aria-selected={mode === 'signup'} onClick={() => { setMode('signup'); setError(''); setMessage(''); }} className={`min-h-[44px] flex-1 rounded-full text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-ink-900 shadow-xs' : 'text-ink-600 hover:text-ink-900'}`}>Create account</button>
+      <div role="tablist" aria-label="Authentication mode" className="hm-segmented">
+        <button type="button" role="tab" aria-selected={mode === 'signin'} onClick={() => { setMode('signin'); setError(''); setMessage(''); }}>Sign in</button>
+        <button type="button" role="tab" aria-selected={mode === 'signup'} onClick={() => { setMode('signup'); setError(''); setMessage(''); }}>Create account</button>
+      </div>
+
+      <div className="hm-auth-heading">
+        <h2 className="hm-h2">
+          {bookingIntent && mode !== 'reset' ? (
+            <>
+              Almost there. {mode === 'signup' ? 'Create an account' : 'Sign in'} <em>to send your request.</em>
+            </>
+          ) : mode === 'signup' ? (
+            <>
+              Create your <em>account.</em>
+            </>
+          ) : mode === 'reset' ? (
+            <>
+              Reset your <em>password.</em>
+            </>
+          ) : (
+            <>
+              Good to see you <em>again.</em>
+            </>
+          )}
+        </h2>
+        <p className="hm-meta">
+          {mode === 'signup'
+            ? 'Book verified stays or open your partner workspace.'
+            : mode === 'reset'
+              ? 'We’ll email you a secure link to set a new password.'
+              : 'Sign in to manage your bookings or your partner workspace.'}
+        </p>
       </div>
 
       {(mode === 'signin' || (mode === 'signup' && !isPartnerSignup)) && (
-        <div className="mb-5 space-y-4">
+        <div className="hm-auth-oauth">
           <GoogleContinueButton mode={mode === 'signup' ? 'signup' : 'signin'} busy={oauthBusy} disabled={busy} onClick={() => void handleGoogleAuth()} />
-          <div className="relative flex items-center py-0.5">
-            <div className="flex-grow border-t border-ink-200/80" />
-            <span className="mx-3 shrink-0 text-[11px] font-bold uppercase tracking-wider text-ink-400">or continue with email</span>
-            <div className="flex-grow border-t border-ink-200/80" />
+          <div className="hm-auth-divider">
+            <span>or with email</span>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="hm-auth-fields">
         <FormField label="Email address">
-          {fieldProps => <input {...fieldProps} required type="email" inputMode="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className={FIELD_INPUT_CLASS} />}
+          {fieldProps => <input {...fieldProps} required type="email" inputMode="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="hm-input" />}
         </FormField>
 
         {mode !== 'reset' && (
           <FormField label="Password">
             {fieldProps => (
               <div className="relative">
-                <input {...fieldProps} required minLength={8} type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className={`${FIELD_INPUT_CLASS} pr-12`} />
-                <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-500 hover:text-ink-900">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <input {...fieldProps} required minLength={8} type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className="hm-input" style={{ paddingRight: 52 }} />
+                <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="hm-auth-eye">
+                  {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                 </button>
               </div>
             )}
           </FormField>
         )}
 
+        {mode === 'signup' && lockedReferralCode && (
+          <FormField label="Referral code" hint="Applied from invite link.">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                value={lockedReferralCode}
+                readOnly
+                aria-readonly="true"
+                className="hm-input font-mono "
+              />
+            )}
+          </FormField>
+        )}
+
         {mode === 'signin' && (
           <div className="flex justify-end">
-            <button type="button" onClick={() => { setMode('reset'); setError(''); setMessage(''); }} className="border-0 bg-transparent p-0 text-xs font-semibold text-brass-700 hover:text-ink-900">Forgot password?</button>
+            <button type="button" onClick={() => { setMode('reset'); setError(''); setMessage(''); }} className="hm-link" style={{ fontSize: 13, paddingBottom: 2 }}>Forgot password?</button>
           </div>
         )}
 
-        {error && <p role="alert" className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold leading-relaxed text-red-800">{error}</p>}
-        {message && <p role="status" className="m-0 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-semibold leading-relaxed text-emerald-800">{message}</p>}
+        {error && <p role="alert" className="hm-notice hm-notice-bad">{error}</p>}
+        {message && <p role="status" className="hm-notice hm-notice-ok">{message}</p>}
 
-        <div className="space-y-2 pt-1">
-          <button type="submit" disabled={busy || oauthBusy} className="primary-button min-h-[48px] w-full">
-            {busy ? (mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in to HAMLET'}
+        <div className="hm-auth-actions">
+          <button type="submit" disabled={busy || oauthBusy} className="hm-btn hm-btn-primary hm-btn-block">
+            {busy ? (mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in'}
           </button>
-          {mode === 'reset' && <button type="button" onClick={() => { setMode('signin'); setError(''); }} className="secondary-button min-h-[44px] w-full">Back to sign in</button>}
+          {mode === 'reset' && <button type="button" onClick={() => { setMode('signin'); setError(''); }} className="hm-btn hm-btn-ghost hm-btn-block">Back to sign in</button>}
         </div>
+        <p className="hm-field-hint" style={{ margin: 0, textAlign: 'center' }}>
+          By continuing you agree to HAMLET’s <Link href="/legal" className="hm-link" style={{ fontSize: 'inherit' }}>terms and privacy notice (NDPR)</Link>.
+        </p>
       </form>
     </div>
   );

@@ -54,155 +54,103 @@ const VERIFICATION_PILLARS = [
   },
 ] as const;
 
-const HONEST_STATUSES = [
-  {
-    label: 'Verified by HAMLET',
-    code: 'verified',
-    cls: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    desc: 'Reviewed and confirmed by HAMLET.',
-  },
-  {
-    label: 'Self-reported',
-    code: 'self_reported',
-    cls: 'border-ink-200 bg-white text-ink-800',
-    desc: 'Declared by partner; awaiting review.',
-  },
-  {
-    label: 'Pending review',
-    code: 'pending_review',
-    cls: 'border-brass-300 bg-brass-200/40 text-brass-700',
-    desc: 'Submitted and in the review queue.',
-  },
-  {
-    label: 'Not yet provided',
-    code: 'missing',
-    cls: 'border-ink-200 bg-ink-50 text-ink-500',
-    desc: 'Evidence not yet supplied.',
-  },
-] as const;
 
 export default function SafetyPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-safety-jsonld" data={SAFETY_PAGE_SCHEMA} />
 
-      <main className="flex-1">
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">Safety &amp; protection</p>
-            <h1 className="mt-2.5 max-w-2xl font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">Safety &amp; protection</p>
+            <h1 className="hm-display hm-content-title">
               Four-pillar{' '}
-              <span className="italic text-brass-300">verification.</span>
+              <em>verification.</em>
             </h1>
           </div>
         </section>
 
-        <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-6 sm:py-14">
+        <div className="hm-shell hm-section-tight space-y-10">
           <section data-hamlet-reveal>
-            <p className="eyebrow">Recorded per listing</p>
-            <h2 className="mt-1 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
-              What we check
+            <p className="hm-label">What we check</p>
+            <h2 className="hm-h2" style={{ marginTop: 10 }}>
+              Four checks, <em>before it goes live.</em>
             </h2>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {VERIFICATION_PILLARS.map(pillar => (
-                <article key={pillar.num} className="card flex flex-col p-6">
-                  <span className="font-mono text-xs font-extrabold tracking-widest text-brass-600">
-                    {pillar.num}
-                  </span>
-                  <h3 className="mt-2.5 font-display text-xl font-bold text-ink-900">
-                    {pillar.title}
-                  </h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
-                    {pillar.body}
-                  </p>
+                <article key={pillar.num} className="hm-card hm-card-pad flex flex-col gap-2">
+                  <h3 className="hm-h3">{pillar.title}</h3>
+                  <p className="hm-body">{pillar.body}</p>
                 </article>
               ))}
             </div>
+            <p className="hm-notice" style={{ marginTop: 18 }}>
+              <BadgeCheck size={18} aria-hidden="true" />
+              <span>
+                Only listings that pass all four checks go live on HAMLET. The exact address and arrival guide unlock only after a confirmed, paid booking.
+              </span>
+            </p>
           </section>
 
-          <section data-hamlet-reveal className="rounded-3xl border border-ink-200 bg-white p-6">
-            <p className="eyebrow">Honest status labelling</p>
-            <h2 className="mt-1 font-display text-xl font-bold text-ink-900 sm:text-2xl">
-              Verified vs. self-reported badges
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {HONEST_STATUSES.map(item => (
-                <div
-                  key={item.code}
-                  className="rounded-2xl border border-ink-100 bg-paper/75 p-4"
-                >
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold ${item.cls}`}
-                  >
-                    {item.code === 'verified' && (
-                      <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                    {item.label}
-                  </span>
-                  <p className="mt-2.5 text-xs font-medium leading-relaxed text-ink-700">
-                    {item.desc}
-                  </p>
+          <section data-hamlet-reveal>
+            <p className="hm-label">Your money and your details</p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="hm-card hm-card-pad">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 shrink-0 text-brass-700" aria-hidden="true" />
+                  <h2 className="hm-h3">Payments</h2>
                 </div>
-              ))}
+                <ul className="mt-3.5 space-y-2.5">
+                  {[
+                    'Nothing to pay until the partner accepts your request',
+                    'You pay inside your HAMLET account; the stay is confirmed only after Paystack verifies payment',
+                    'The refundable caution deposit is held separately and reviewed after check-out',
+                  ].map(line => (
+                    <li key={line} className="hm-body flex items-start gap-2.5">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="hm-card hm-card-pad">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 shrink-0 text-brass-700" aria-hidden="true" />
+                  <h2 className="hm-h3">Privacy &amp; access</h2>
+                </div>
+                <ul className="mt-3.5 space-y-2.5">
+                  {[
+                    'Card details are handled by Paystack and never stored on HAMLET',
+                    'Gate pins and door codes unlock only after confirmation',
+                    'Identity and booking data are handled under Nigeria’s NDPR',
+                  ].map(line => (
+                    <li key={line} className="hm-body flex items-start gap-2.5">
+                      <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </section>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <section data-hamlet-reveal className="card p-6">
-              <div className="flex items-center gap-2 text-ink-900">
-                <CreditCard className="h-5 w-5 shrink-0 text-brass-600" />
-                <h2 className="font-display text-xl font-bold">Payments</h2>
-              </div>
-              <ul className="mt-3.5 space-y-2.5 text-sm text-ink-700">
-                {[
-                  'Pay inside your HAMLET account after dates are confirmed',
-                  'Confirmed only after verified Paystack payment',
-                  'Caution deposits tracked separately and reviewed post-checkout',
-                ].map(line => (
-                  <li key={line} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section data-hamlet-reveal className="card p-6">
-              <div className="flex items-center gap-2 text-ink-900">
-                <Lock className="h-5 w-5 shrink-0 text-brass-600" />
-                <h2 className="font-display text-xl font-bold">Privacy &amp; access</h2>
-              </div>
-              <ul className="mt-3.5 space-y-2.5 text-sm text-ink-700">
-                {[
-                  'Card details handled by Paystack — never stored on HAMLET',
-                  'Gate pins and door codes unlock only after confirmation',
-                  'NDPR-aligned privacy controls for identity and booking data',
-                ].map(line => (
-                  <li key={line} className="flex items-start gap-2.5">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          <section data-hamlet-reveal className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink-950 p-6 text-paper sm:flex-row sm:items-center sm:p-8">
+          <section data-hamlet-reveal className="hm-card hm-card-band hm-card-pad flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <div className="flex items-center gap-2 text-brass-300">
-                <LifeBuoy className="h-4 w-4 shrink-0" />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.2em]">
-                  Need help during a stay?
-                </span>
-              </div>
-              <h2 className="mt-1.5 font-display text-2xl font-bold text-white">
-                Report issues directly from your booking record.
+              <p className="hm-label">Ready when you are</p>
+              <h2 className="hm-h2" style={{ marginTop: 8, color: 'var(--hm-on-band)' }}>
+                Every stay here <em>passed all four.</em>
               </h2>
             </div>
-            <Link href="/account/issues" className="btn-brass shrink-0 !rounded-full !px-6">
-              Report an issue <ArrowRight className="h-4 w-4 shrink-0" />
-            </Link>
+            <div className="flex flex-col items-start gap-3 sm:items-end">
+              <Link href="/stays" className="hm-btn hm-btn-lime">
+                Find a verified stay <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+              </Link>
+              <Link href="/account/issues" className="hm-link" style={{ color: 'var(--hm-on-band)' }}>
+                <LifeBuoy className="h-4 w-4 shrink-0" aria-hidden="true" /> Already booked? Report an issue
+              </Link>
+            </div>
           </section>
         </div>
       </main>

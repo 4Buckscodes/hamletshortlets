@@ -8,6 +8,7 @@ import {
   buildNextSignInPath,
   extractOAuthDisplayName,
   formatOAuthErrorMessage,
+  isRejectedReferralCodeError,
   readRequestedRedirectFromSearch,
   resolveOAuthPostAuthRedirect,
 } from '@/lib/authRedirect';
@@ -158,12 +159,26 @@ export default function AuthCallbackPage() {
           });
           if (profileUpdateError) throw profileUpdateError;
 
-          const { error: membershipError } = await client.rpc('join_partner_network', {
+          const membershipArgs = {
             next_role: stored.partnerRole,
             next_company: stored.partnerCompany || googleName,
             next_phone: stored.partnerPhone,
-            referral_code_input: window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null,
+          };
+          const partnerReferralCode =
+            window.localStorage.getItem(REFERRAL_STORAGE_KEY)?.trim().toUpperCase() || null;
+          let { error: membershipError } = await client.rpc('join_partner_network', {
+            ...membershipArgs,
+            referral_code_input: partnerReferralCode,
           });
+          if (membershipError && partnerReferralCode && isRejectedReferralCodeError(membershipError)) {
+            // A stale, invalid or self-referral code must not block partner signup:
+            // drop it and join without referral attribution.
+            window.localStorage.removeItem(REFERRAL_STORAGE_KEY);
+            ({ error: membershipError } = await client.rpc('join_partner_network', {
+              ...membershipArgs,
+              referral_code_input: null,
+            }));
+          }
           if (membershipError) throw membershipError;
         }
 
@@ -261,12 +276,12 @@ export default function AuthCallbackPage() {
   }, [client]);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex flex-1 items-center justify-center py-12 sm:py-16">
+      <main className="hm-main hm-content hm-callback" style={{ flex: 1 }}>
         <div className="w-full max-w-md">
-          <section className="rounded-3xl border border-ink-200 bg-white p-6 shadow-md sm:p-8">
+          <section className="hm-card hm-card-pad" style={{ boxShadow: 'var(--hm-shadow-lift)' }}>
             <p className="eyebrow">Your stay, sorted.</p>
 
             {error ? (
@@ -284,10 +299,10 @@ export default function AuthCallbackPage() {
                   {error}
                 </p>
                 <div className="mt-5 flex flex-col gap-2.5">
-                  <Link href={fallbackSignInHref} className="primary-button min-h-[48px] w-full">
+                  <Link href={fallbackSignInHref} className="hm-btn hm-btn-primary min-h-[48px] w-full">
                     Return to sign in <ArrowRight className="h-4 w-4 shrink-0" />
                   </Link>
-                  <Link href="/stays" className="secondary-button min-h-[44px] w-full">
+                  <Link href="/stays" className="hm-btn hm-btn-ghost min-h-[44px] w-full">
                     Explore Lagos stays
                   </Link>
                 </div>

@@ -9,18 +9,18 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
   it('defines Midnight Navy, Champagne Gold, Warm Ivory, and Slate Grey tokens in index.css', () => {
     const css = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
 
-    // Primary Midnight Navy (#0E1F3B), Champagne Gold (#C9A44A), Warm Ivory (#F8F5EE), Slate Grey (#64748B)
-    expect(css).toContain('--color-ink-900: #0E1F3B;');
-    expect(css).toContain('--color-brass-500: #C9A44A;');
-    expect(css).toContain('--color-paper: #F8F5EE;');
-    expect(css).toContain('--color-ink-500: #64748B;');
-    expect(css).toContain('--color-jade-700: #0E1F3B;');
+    // Approved V0 palette: Midnight navy (#0E1F3B), Champagne gold (#B8923A), warm stone (#F4F3EF)
+    expect(css).toContain('--color-ink-900: #0e1f3b;');
+    expect(css).toContain('--color-brass-500: #b8923a;');
+    expect(css).toContain('--color-paper: #f4f3ef;');
+    expect(css).toContain('--color-ink-500: #5f6a7c;');
+    expect(css).toContain('--color-jade-700: #0e1f3b;');
 
     // Typography: Playfair Display for headlines/serif & Inter for body/UI sans-serif
-    expect(css).toContain('"Playfair Display Variable"');
-    expect(css).toContain('"Playfair Display"');
-    expect(css).toContain('"Inter Variable"');
-    expect(css).toContain('"Inter"');
+    expect(css).toContain('"Newsreader Variable"');
+    expect(css).toContain('"Newsreader"');
+    expect(css).toContain('"Hanken Grotesk Variable"');
+    expect(css).toContain('"Hanken Grotesk"');
     expect(css).not.toMatch(/Fraunces|Public Sans/i);
   });
 
@@ -31,7 +31,7 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
     expect(mainSrc).not.toMatch(/fraunces|public-sans/i);
   });
 
-  it('uses the HAMLET serif H monogram with Champagne Gold crossbar in Logo.tsx and favicon.svg', () => {
+  it('uses the HAMLET serif H monogram with a lime crossbar on forest in Logo.tsx and favicon.svg', () => {
     const logoSrc = readFileSync(join(ROOT, 'src/components/Logo.tsx'), 'utf8');
     const faviconSvg = readFileSync(join(ROOT, 'public/favicon.svg'), 'utf8');
     const manifest = JSON.parse(readFileSync(join(ROOT, 'public/site.webmanifest'), 'utf8')) as {
@@ -41,15 +41,18 @@ describe('HAMLET Brand Identity (Palette, Typography & Monogram Logo)', () => {
     const indexHtml = readFileSync(join(ROOT, 'index.html'), 'utf8');
 
     expect(logoSrc).toContain('#0E1F3B');
-    expect(logoSrc).toContain('#FFFFFF');
-    expect(logoSrc).toContain('#C9A44A');
-    expect(logoSrc).toContain('linearGradient');
+    expect(logoSrc).toContain('#B8923A');
+    expect(logoSrc).not.toContain('Gradient');
 
     expect(faviconSvg).toContain('#0E1F3B');
-    expect(faviconSvg).toContain('#FFFFFF');
-    expect(faviconSvg).toContain('#C9A44A');
+    expect(faviconSvg).toContain('#D4B268');
+    expect(faviconSvg).not.toContain('Gradient');
+    for (const retired of [/#D9F24B/i, /#172119/i, /#C9A44A/i]) {
+      expect(logoSrc).not.toMatch(retired);
+      expect(faviconSvg).not.toMatch(retired);
+    }
 
-    expect(manifest.background_color).toBe('#F8F5EE');
+    expect(manifest.background_color).toBe('#F4F3EF');
     expect(manifest.theme_color).toBe('#0E1F3B');
     expect(indexHtml).toContain('<meta name="theme-color" content="#0E1F3B" />');
   });

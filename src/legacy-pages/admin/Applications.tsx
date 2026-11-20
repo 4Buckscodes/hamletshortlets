@@ -78,7 +78,7 @@ export default function AdminApplications() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Partner network</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Partner network</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Partner identity verification</h1>
       <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Partner registration and workspace access are automatic. This queue is only for identity verification before payout; verification does not change the account’s guest role or restrict workspace access.</p>
 
@@ -109,7 +109,7 @@ export default function AdminApplications() {
               <span>Areas: {a.areas.join(', ')}</span>
               <span>Properties: {a.propertiesCount}</span>
             </div>
-            {a.reviewNote && <p className="mt-3 break-words rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold uppercase text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
+            {a.reviewNote && <p className="mt-3 break-words rounded-xl border border-ink-800 bg-ink-850 px-3 py-2 text-[10.5px] font-medium text-ink-300"><span className="font-extrabold text-[9px] text-ink-500">Reviewer note: </span>{a.reviewNote}</p>}
             {(a.status === 'pending' || a.status === 'needs_correction') && (
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink-800 pt-4 [&>button>svg]:shrink-0">
                 <button onClick={() => { setNoteFor({ id: a.id, action: 'approve' }); setNote(''); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-4 py-2.5 text-[11.5px] font-bold text-white hover:bg-jade-500"><CheckCircle2 size={14} /> Verify identity</button>
@@ -136,7 +136,7 @@ export default function AdminApplications() {
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400"><ShieldAlert size={13} className="shrink-0" /> Partner account governance</p>
+            <p className="flex items-center gap-1.5 text-[10px] font-extrabold text-brass-400"><ShieldAlert size={13} className="shrink-0" /> Partner account governance</p>
             <h2 className="mt-1 font-display text-xl font-black text-ink-50">Verified partner directory ({partnerAccounts.length})</h2>
             <p className="mt-0.5 text-[11.5px] font-medium text-ink-400">Suspend partners immediately for misrepresentation, safety violations, or off-platform payment solicitation. Every suspension or reinstatement is audit-logged.</p>
           </div>
@@ -205,7 +205,7 @@ export default function AdminApplications() {
 
         {govTarget && (
           <div className="mt-4 rounded-2xl border border-brass-500/35 bg-ink-900 p-5">
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brass-300">
+            <p className="text-[10.5px] font-extrabold text-brass-300">
               {govTarget.nextStatus === 'suspended'
                 ? `Suspend partner: ${govTarget.partner.name}`
                 : `Reinstate partner: ${govTarget.partner.name}`}

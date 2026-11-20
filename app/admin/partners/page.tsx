@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -113,10 +115,10 @@ export default function AdminPartnersPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Partner Onboarding Review</p>
@@ -152,16 +154,14 @@ export default function AdminPartnersPage() {
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                      <span className="text-[11px] font-extrabold text-brass-700">
                         {app.role}
                       </span>
                       <h2 className="serif m-0 mt-1 text-2xl font-medium text-ink-900">
                         {app.company}
                       </h2>
                     </div>
-                    <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-900">
-                      {app.status}
-                    </span>
+                    <StatusPill tone={statusEntry(app.status).tone}>{statusEntry(app.status).label}</StatusPill>
                   </div>
                   <p className="m-0 mt-2 text-xs text-ink-600">
                     {app.full_name} · {app.email} · {app.phone}
@@ -195,6 +195,7 @@ export default function AdminPartnersPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.company || 'Review partner application'}
           subtitle={selected ? `${selected.full_name} · ${selected.role}` : undefined}

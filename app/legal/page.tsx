@@ -25,19 +25,19 @@ const LEGAL_PAGE_SCHEMA = buildInformationalPageSchema({
 
 export default function LegalPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-legal-jsonld" data={LEGAL_PAGE_SCHEMA} />
 
-      <main className="flex-1">
-        <section data-hamlet-reveal className="border-b border-ink-800 bg-ink-950 text-paper">
-          <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-            <p className="eyebrow-light">Legal &amp; Policies · Abundance Abodes</p>
-            <h1 className="mt-2.5 font-display text-4xl font-bold leading-[1.06] text-white sm:text-5xl">
+      <main className="hm-main hm-content" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive hm-content-hero">
+          <div className="hm-shell hm-band-inner">
+            <p className="hm-label">Legal &amp; Policies · Abundance Abodes</p>
+            <h1 className="hm-display hm-content-title">
               Marketplace terms, privacy &amp;{' '}
-              <span className="italic text-brass-300">NDPR disclosures.</span>
+              <em>NDPR disclosures.</em>
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-ink-200 sm:text-base">
+            <p className="hm-body hm-content-intro">
               Effective October 2026 · Operated by Abundance Abodes (Lagos, Nigeria).
             </p>
           </div>

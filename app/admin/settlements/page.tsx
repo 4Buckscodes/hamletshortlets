@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -176,10 +178,10 @@ export default function AdminSettlementsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Ledger, Settlements & Caution Deposits</p>
@@ -225,7 +227,7 @@ export default function AdminSettlementsPage() {
                         <strong className="font-mono text-ink-900">
                           {item.booking_reference}
                         </strong>{' '}
-                        · <span className="capitalize">{item.entry_type.replace(/_/g, ' ')}</span>
+                        · <span className="capitalize">{(item.entry_type || 'ledger entry').replace(/_/g, ' ')}</span>
                         <p className="m-0 mt-0.5 text-ink-500">
                           {item.description || 'Ledger entry'}
                           {item.provider_reference
@@ -237,9 +239,7 @@ export default function AdminSettlementsPage() {
                         <strong className="font-mono text-sm text-ink-900">
                           ₦{Number(item.amount || 0).toLocaleString('en-NG')}
                         </strong>
-                        <span className="rounded-full bg-paper px-2.5 py-1 font-bold text-ink-700">
-                          {item.payout_status || item.status}
-                        </span>
+                        <StatusPill tone={statusEntry(item.payout_status || item.status).tone}>{statusEntry(item.payout_status || item.status).label}</StatusPill>
                         <button
                           type="button"
                           onClick={() => {
@@ -279,7 +279,7 @@ export default function AdminSettlementsPage() {
                         </strong>{' '}
                         · Deposit: ₦{Number(c.deposit_amount_ngn || 0).toLocaleString('en-NG')}
                         <p className="m-0 mt-0.5 text-ink-500">
-                          Status: <strong>{c.status}</strong> · Deducted: ₦
+                          Status: <strong>{statusEntry(c.status).label}</strong> · Deducted: ₦
                           {Number(c.deducted_amount_ngn || 0).toLocaleString('en-NG')}
                         </p>
                       </div>
@@ -308,6 +308,7 @@ export default function AdminSettlementsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selectedEntry)}
           title="Update payout reconciliation status"
           subtitle={selectedEntry?.booking_reference}
@@ -357,6 +358,7 @@ export default function AdminSettlementsPage() {
         </FocusedDrawer>
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selectedCaution)}
           title="Caution deposit inspection"
           subtitle={selectedCaution?.booking_reference}

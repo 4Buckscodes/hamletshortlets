@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, CalendarDays, ShieldCheck } from 'lucide-react';
-import { lagosIsoDateOffset, nightsBetween } from '@/lib/pricing';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { formatNaira, lagosIsoDateOffset, nightsBetween } from '@/lib/pricing';
 import { useCurrency } from '@/lib/currency';
 import { buildNextSignInPath } from '@/lib/authRedirect';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -12,14 +12,7 @@ import {
   readPropertyShareTokenHint,
   readVisitorSessionKey,
 } from '@/lib/share-engine';
-import {
-  FocusedDrawer,
-  FormField,
-  StepFooterActions,
-  StepProgressHeader,
-  StepperCounter,
-  FIELD_INPUT_CLASS,
-} from '@/components/forms/ProgressiveFormPrimitives';
+import { FocusedDrawer, FormField } from '@/components/forms/ProgressiveFormPrimitives';
 
 type Props = {
   propertyId: string;
@@ -31,18 +24,18 @@ type Props = {
   firstAvailableDate?: string | null;
 };
 
-const BOOKING_STEPS = [
-  {
-    id: 'dates',
-    title: 'Dates & guests',
-    shortLabel: '1. Dates & guests',
-  },
-  {
-    id: 'confirm',
-    title: 'Review & request',
-    shortLabel: '2. Request',
-  },
-] as const;
+function formatDay(iso: string) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  return Number.isNaN(date.getTime())
+    ? iso
+    : date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+function addDays(iso: string, days: number) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
 export default function BookingRequestForm({
   propertyId,
@@ -61,7 +54,6 @@ export default function BookingRequestForm({
     return firstAvailableDate && firstAvailableDate > today ? firstAvailableDate : today;
   }, [firstAvailableDate]);
 
-  const [step, setStep] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
@@ -73,26 +65,53 @@ export default function BookingRequestForm({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [dateError, setDateError] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [resumed, setResumed] = useState(false);
 
-  // Hydrate booking intent from URL query params (?checkIn=...&checkOut=...&guests=...&step=2)
+  useEffect(() => {
+    if (!db) return;
+    let active = true;
+    void db.auth.getSession().then(({ data }) => {
+      if (active) setSignedIn(Boolean(data.session));
+    });
+    return () => {
+      active = false;
+    };
+  }, [db]);
+
+  // Hydrate booking intent from URL query params (?checkIn=...&checkOut=...&guests=...)
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
       const qIn = params.get('checkIn');
       const qOut = params.get('checkOut');
       const qGuests = Number(params.get('guests'));
-      const qStep = params.get('step');
       if (qIn && /^\d{4}-\d{2}-\d{2}$/.test(qIn)) setCheckIn(qIn);
+      if (params.get('resume') === '1') {
+        try {
+          const note = window.sessionStorage.getItem(`hamlet:booking-note:${propertyId}`);
+          if (note) setRequests(note);
+        } catch {
+          // ignore
+        }
+      }
       if (qOut && /^\d{4}-\d{2}-\d{2}$/.test(qOut)) setCheckOut(qOut);
       if (Number.isInteger(qGuests) && qGuests >= 1 && qGuests <= maxGuests) {
         setGuests(qGuests);
       }
-      if (qStep === '2' && qIn && qOut && qOut > qIn) {
-        setStep(1);
+      // Back from sign-in with a booking intent: bring the request straight back into view.
+      if (params.get('resume') === '1' && qIn && qOut && qOut > qIn) {
+        setResumed(true);
+        if (window.matchMedia('(max-width: 1023px)').matches) {
+          setMobileSheetOpen(true);
+        } else {
+          document.querySelector('.hm-detail-aside')?.scrollIntoView({ block: 'start' });
+        }
       }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [maxGuests]);
+  }, [maxGuests, propertyId]);
 
   const nights =
     checkIn && checkOut && checkOut > checkIn ? nightsBetween(checkIn, checkOut) : 0;
@@ -112,7 +131,7 @@ export default function BookingRequestForm({
       setCheckingCalendar(false);
       if (!rpcErr && Array.isArray(data) && (data as string[]).includes(propertyId)) {
         setCalendarConflict(
-          'Those dates have a recorded calendar block or active booking hold. Please pick different dates.',
+          'Those dates aren’t available for this stay. Please pick different dates.',
         );
       }
     }, 0);
@@ -130,12 +149,18 @@ export default function BookingRequestForm({
   const guestAccommodationTotal = domesticNightly === null ? 0 : domesticNightly * Math.max(1, nights);
   const guestStayTotal = guestAccommodationTotal + Math.max(0, Math.round(cleaningFee));
 
-  function buildIntentReturnUrl(targetStep: number) {
+  function buildIntentReturnUrl() {
     const qs = new URLSearchParams();
     if (checkIn) qs.set('checkIn', checkIn);
     if (checkOut) qs.set('checkOut', checkOut);
     qs.set('guests', String(guests));
-    if (targetStep === 1) qs.set('step', '2');
+    qs.set('resume', '1');
+    // Keep the guest's arrival note across sign-in (this tab only).
+    try {
+      if (requests.trim()) window.sessionStorage.setItem(`hamlet:booking-note:${propertyId}`, requests);
+    } catch {
+      // Storage can be unavailable; the note is optional.
+    }
     const activeShareToken =
       (typeof window !== 'undefined'
         ? extractShareTokenFromSearchParams(new URLSearchParams(window.location.search))
@@ -149,8 +174,14 @@ export default function BookingRequestForm({
     setError('');
     setMessage('');
 
+    if (!checkIn || !checkOut) {
+      setError('Choose your check-in and check-out dates to send a request.');
+      setDateError(true);
+      return;
+    }
     if (!nights || nights < 1) {
-      setError('Choose a check-in date and a later check-out date.');
+      setError('Check-out must be at least one night after check-in.');
+      setDateError(true);
       return;
     }
     if (nights > 60) {
@@ -158,7 +189,7 @@ export default function BookingRequestForm({
       return;
     }
     if (checkIn < minCheckIn) {
-      setError(`Check-in must be on or after ${minCheckIn}.`);
+      setError(`The earliest check-in for this stay is ${formatDay(minCheckIn)}.`);
       return;
     }
     if (guests > maxGuests) {
@@ -167,11 +198,6 @@ export default function BookingRequestForm({
     }
     if (calendarConflict) {
       setError(calendarConflict);
-      return;
-    }
-
-    if (step === 0) {
-      setStep(1);
       return;
     }
 
@@ -186,7 +212,7 @@ export default function BookingRequestForm({
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) {
         window.location.assign(
-          buildNextSignInPath({ next: buildIntentReturnUrl(1) }),
+          buildNextSignInPath({ next: buildIntentReturnUrl() }),
         );
         return;
       }
@@ -218,11 +244,11 @@ export default function BookingRequestForm({
       if (!response.ok) {
         if (response.status === 401) {
           window.location.assign(
-            buildNextSignInPath({ next: buildIntentReturnUrl(1) }),
+            buildNextSignInPath({ next: buildIntentReturnUrl() }),
           );
           return;
         }
-        throw new Error(result.error || 'We could not submit the booking request.');
+        throw new Error(result.error || 'We couldn’t send your request. Nothing has been charged; please try again.');
       }
       setCreatedReference(result.booking?.reference || null);
       setMessage(
@@ -233,22 +259,23 @@ export default function BookingRequestForm({
       setError(
         caught instanceof Error
           ? caught.message
-          : 'We could not submit the request. Please try again.',
+          : 'We couldn’t send your request. Check your connection and try again; nothing has been charged.',
       );
     } finally {
       setBusy(false);
     }
   }
 
-  const renderFormBody = () => {
+  const renderFormBody = (variant: 'card' | 'sheet') => {
     if (domesticNightly === null) {
       return (
         <div
           role="status"
-          className="rounded-2xl border border-ink-200 bg-paper p-4 text-xs leading-relaxed text-ink-700"
+          className="hm-notice"
+          style={{ flexDirection: 'column', gap: 4 }}
         >
-          <p className="m-0 font-bold text-ink-950">Price currently unavailable</p>
-          <p className="m-0 mt-1">
+          <p className="m-0 font-bold">Price currently unavailable</p>
+          <p className="m-0">
             Contact <strong>hello@hamlet.rest</strong> for rate confirmation.
           </p>
         </div>
@@ -259,37 +286,36 @@ export default function BookingRequestForm({
       return (
         <div
           role="status"
-          className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5"
+          className="hm-booking-success"
         >
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+            <CheckCircle2 size={20} aria-hidden="true" className="hm-booking-success-icon" />
             <div>
-              <h3 className="m-0 text-base font-bold text-ink-900">
+              <h3 className="hm-h3" style={{ fontSize: 20 }}>
                 Booking request sent
               </h3>
               {createdReference && (
-                <p className="m-0 mt-1 font-mono text-xs font-extrabold text-emerald-800">
+                <p className="hm-booking-ref">
                   Reference: {createdReference}
                 </p>
               )}
-              <p className="m-0 mt-2 text-xs leading-relaxed text-ink-700">
+              <p className="hm-meta" style={{ marginTop: 8 }}>
                 {message}
               </p>
             </div>
           </div>
 
           <div className="grid gap-2 pt-1">
-            <Link href="/account/bookings" className="primary-button w-full text-center">
-              Track in My Bookings →
+            <Link href="/account/bookings" className="hm-btn hm-btn-primary hm-btn-block">
+              Track in My Bookings
             </Link>
             <button
               type="button"
               onClick={() => {
                 setCreatedReference(null);
                 setMessage('');
-                setStep(0);
               }}
-              className="secondary-button w-full"
+              className="hm-btn hm-btn-ghost hm-btn-block"
             >
               Start another date check
             </button>
@@ -299,218 +325,185 @@ export default function BookingRequestForm({
     }
 
     return (
-      <form onSubmit={handleStepSubmit} className="space-y-4">
-        <StepProgressHeader
-          steps={BOOKING_STEPS}
-          currentStep={step}
-          onSelectStep={idx => setStep(idx)}
-          maxCompletedStep={nights >= 1 && !calendarConflict ? 1 : 0}
-        />
-
-        {step === 0 ? (
-          <div className="space-y-3.5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormField label="Check-in">
-                {fieldProps => (
-                  <input
-                    {...fieldProps}
-                    required
-                    type="date"
-                    min={minCheckIn}
-                    value={checkIn}
-                    onChange={e => {
-                      setCheckIn(e.target.value);
-                      setError('');
-                    }}
-                    className={FIELD_INPUT_CLASS}
-                  />
-                )}
-              </FormField>
-
-              <FormField label="Check-out">
-                {fieldProps => (
-                  <input
-                    {...fieldProps}
-                    required
-                    type="date"
-                    min={checkIn || minCheckIn}
-                    value={checkOut}
-                    onChange={e => {
-                      setCheckOut(e.target.value);
-                      setError('');
-                    }}
-                    className={FIELD_INPUT_CLASS}
-                  />
-                )}
-              </FormField>
-            </div>
-
-            <StepperCounter
-              label="Guests"
-              hint={`Up to ${maxGuests} ${maxGuests === 1 ? 'guest' : 'guests'}`}
-              value={guests}
-              min={1}
-              max={maxGuests}
-              onChange={setGuests}
-            />
-
-            {checkingCalendar && (
-              <p className="m-0 text-xs text-ink-500">Checking recorded calendar dates…</p>
-            )}
-            {calendarConflict && (
-              <p
-                role="alert"
-                className="m-0 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"
-              >
-                {calendarConflict}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3.5">
-            <div className="rounded-2xl border border-ink-100 bg-paper p-3.5 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-bold text-ink-900">
-                  <CalendarDays className="mr-1.5 inline h-3.5 w-3.5 text-brass-700" />
-                  {checkIn} → {checkOut} ({nights} {nights === 1 ? 'night' : 'nights'})
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setStep(0)}
-                  className="cursor-pointer font-bold text-ink-700 underline"
-                >
-                  Change
-                </button>
-              </div>
-              <p className="m-0 mt-1 text-ink-600">
-                {guests} {guests === 1 ? 'guest' : 'guests'} · {propertyTitle}
-              </p>
-            </div>
-
-            <FormField
-              label="Arrival window or special requests"
-              optional
-            >
-              {fieldProps => (
-                <textarea
+      <form onSubmit={handleStepSubmit} className="hm-booking-form" noValidate>
+        <div className="hm-booking-dates">
+          <FormField label="Check-in">
+            {fieldProps => (
+              <span className="hm-date-wrap" data-empty={checkIn ? 'false' : 'true'}>
+                <input
                   {...fieldProps}
-                  rows={3}
-                  maxLength={1000}
-                  value={requests}
-                  onChange={e => setRequests(e.target.value)}
-                  placeholder="e.g. Arriving around 4 PM from MMIA…"
-                  className={`${FIELD_INPUT_CLASS} resize-y`}
+                  aria-invalid={dateError || undefined}
+                  aria-describedby={dateError && error ? `booking-error-${variant}` : fieldProps['aria-describedby']}
+                  required
+                  type="date"
+                  min={minCheckIn}
+                  value={checkIn}
+                  onChange={e => {
+                    const next = e.target.value;
+                    setCheckIn(next);
+                    if (next && (!checkOut || checkOut <= next)) setCheckOut(addDays(next, 1));
+                    setError('');
+                    setDateError(false);
+                  }}
+                  className="hm-input"
                 />
-              )}
-            </FormField>
-
-            <div className="flex items-start gap-2.5 rounded-2xl border border-ink-100 bg-paper/70 p-3 text-xs leading-relaxed text-ink-600">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-              <span>
-                No charge now. A 48-hour Paystack payment window opens after host confirmation.
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
               </span>
-            </div>
-          </div>
+            )}
+          </FormField>
+          <FormField label="Check-out">
+            {fieldProps => (
+              <span className="hm-date-wrap" data-empty={checkOut ? 'false' : 'true'}>
+                <input
+                  {...fieldProps}
+                  aria-invalid={dateError || undefined}
+                  aria-describedby={dateError && error ? `booking-error-${variant}` : fieldProps['aria-describedby']}
+                  required
+                  type="date"
+                  min={checkIn ? addDays(checkIn, 1) : addDays(minCheckIn, 1)}
+                  value={checkOut}
+                  onChange={e => {
+                    setCheckOut(e.target.value);
+                    setError('');
+                    setDateError(false);
+                  }}
+                  className="hm-input"
+                />
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
+              </span>
+            )}
+          </FormField>
+        </div>
+
+        <FormField label="Guests">
+          {fieldProps => (
+            <select {...fieldProps} value={guests} onChange={e => setGuests(Number(e.target.value) || 1)} className="hm-input">
+              {Array.from({ length: maxGuests }, (_, i) => i + 1).map(count => (
+                <option key={count} value={count}>
+                  {count} {count === 1 ? 'guest' : 'guests'}
+                </option>
+              ))}
+            </select>
+          )}
+        </FormField>
+
+        <FormField label="Arrival window or special requests" optional>
+          {fieldProps => (
+            <textarea
+              {...fieldProps}
+              rows={2}
+              maxLength={1000}
+              value={requests}
+              onChange={e => setRequests(e.target.value)}
+              placeholder="e.g. Arriving around 9pm from the airport"
+              className="hm-input"
+              style={{ resize: 'vertical' }}
+            />
+          )}
+        </FormField>
+
+        {checkingCalendar && <p className="hm-meta">Checking the dates…</p>}
+        {calendarConflict && (
+          <p role="alert" className="hm-notice hm-notice-bad">
+            {calendarConflict}
+          </p>
         )}
 
         {/* Authoritative Price Breakdown (`src/lib/pricing.ts`) */}
-        {nights > 0 && domesticNightly !== null && (
-          <div className="space-y-2 rounded-2xl border border-ink-200 bg-paper/60 p-4 text-xs">
-            <div className="flex justify-between gap-2 text-ink-700">
-              <span>
-                Stay ({formatPrice(domesticNightly, { roundWhole: true })} × {nights}{' '}
-                {nights === 1 ? 'night' : 'nights'})
-              </span>
-              <span className="font-mono font-semibold">
-                {formatPrice(guestAccommodationTotal)}
-              </span>
-            </div>
-            {cleaningFee > 0 && (
-              <div className="flex justify-between gap-2 text-ink-700">
-                <span>Cleaning & turnover (mandatory)</span>
-                <span className="font-mono font-semibold">{formatPrice(cleaningFee)}</span>
+        {domesticNightly !== null && (
+          <div className="hm-booking-breakdown" aria-live="polite">
+            {nights > 0 ? (
+              <>
+                <div className="hm-booking-line">
+                  <span>
+                    {nights} {nights === 1 ? 'night' : 'nights'} · fees included
+                  </span>
+                  <span className="hm-money">{formatPrice(guestAccommodationTotal)}</span>
+                </div>
+                {cleaningFee > 0 && (
+                  <div className="hm-booking-line">
+                    <span>Cleaning & turnover</span>
+                    <span className="hm-money">{formatPrice(cleaningFee)}</span>
+                  </div>
+                )}
+                <div className="hm-booking-total">
+                  <span>Total to pay once accepted</span>
+                  <span className="hm-money">{formatPrice(guestStayTotal)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="hm-booking-line">
+                <span>Add dates to see your total</span>
               </div>
             )}
-            <div className="flex justify-between gap-2 border-t border-ink-200 pt-2 text-sm font-extrabold text-ink-900">
-              <span>Total stay price</span>
-              <span className="font-mono">{formatPrice(guestStayTotal)}</span>
-            </div>
             {deposit > 0 && (
-              <div className="flex justify-between gap-2 pt-1 text-ink-600">
-                <span>Refundable caution deposit</span>
-                <span className="font-mono font-semibold">
-                  {formatCautionDeposit(deposit)}
+              <div className="hm-booking-line hm-booking-line-muted">
+                <span>
+                  Refundable caution deposit
+                  <small>Held separately and returned after check-out</small>
                 </span>
+                <span className="hm-money">{formatCautionDeposit(deposit)}</span>
               </div>
             )}
-            {currency !== 'NGN' && (
-              <p className="m-0 pt-1 text-[11px] leading-relaxed text-ink-500">
-                {currency} quote includes a single 10% FX buffer (30-min validity). Caution deposits are unbuffered.
+            {currency !== 'NGN' && nights > 0 && (
+              <p className="hm-field-hint" style={{ margin: 0 }}>
+                Shown in {currency} at today’s rate, including a 10% exchange buffer. In naira the stay is {formatNaira(guestStayTotal)}.
               </p>
             )}
           </div>
         )}
 
         {error && (
-          <p
-            role="alert"
-            className="m-0 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-800"
-          >
+          <p id={`booking-error-${variant}`} role="alert" className="hm-notice hm-notice-bad">
             {error}
           </p>
         )}
 
-        <StepFooterActions
-          canGoBack={step > 0}
-          onBack={() => setStep(0)}
-          isLastStep={step === 1}
-          nextLabel="Review request"
-          submitLabel="Request to book"
-          busy={busy}
-          busyLabel="Sending request…"
-        />
+        <button type="submit" className="hm-btn hm-btn-primary hm-btn-block" disabled={busy}>
+          {busy ? 'Sending request…' : 'Request to book'}
+          {!busy && <ArrowRight size={16} aria-hidden="true" />}
+        </button>
+        <p className="hm-field-hint" style={{ margin: 0, textAlign: 'center' }}>
+          {resumed && signedIn
+            ? 'Signed in. Your dates are saved; tap Request to book to send it.'
+            : signedIn === false
+              ? 'You won’t be charged yet. Next, sign in or create a free account; your dates are kept and your request is ready to send.'
+              : 'You won’t be charged yet. The partner reviews your request first.'}
+        </p>
       </form>
     );
   };
 
   return (
     <>
-      <div className="rounded-3xl border border-ink-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="mb-4 flex items-baseline justify-between gap-2 border-b border-ink-100 pb-4">
-          <div>
-            <p className="m-0 text-xs font-semibold text-ink-500">All-in stay rate</p>
-            <p className="m-0 mt-0.5 font-mono text-2xl font-extrabold text-ink-900">
-              {domesticNightly !== null ? (
-                <>
-                  {formatPrice(domesticNightly, { roundWhole: true })}{' '}
-                  <span className="font-sans text-xs font-normal text-ink-500">
-                    / night{currency !== 'NGN' ? ` (${currency})` : ''}
-                  </span>
-                </>
-              ) : (
-                <span className="font-sans text-base font-bold text-ink-600">
-                  Price unavailable
+      <div className="hm-card hm-booking hm-booking-scope">
+        <div className="hm-booking-head">
+          <p className="hm-booking-rate">
+            {domesticNightly !== null ? (
+              <>
+                {formatPrice(domesticNightly, { roundWhole: true })}{' '}
+                <span className="hm-meta" style={{ display: 'inline' }}>
+                  / night · fees included
                 </span>
-              )}
-            </p>
-          </div>
-          {deposit > 0 && (
-            <span className="rounded-full bg-paper px-3 py-1 text-[11px] font-bold text-ink-700">
-              Caution: {formatCautionDeposit(deposit, { roundWhole: true })}
-            </span>
-          )}
+              </>
+            ) : (
+              <span className="hm-meta" style={{ fontWeight: 700 }}>
+                Price unavailable
+              </span>
+            )}
+          </p>
         </div>
 
-        {renderFormBody()}
+        {renderFormBody('card')}
       </div>
 
       {/* Mobile Sticky Bottom Action Bar (never obscures content due to pb-24 on detail main) */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ink-200 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+      <div className="hm-booking-bar">
+        <div className="hm-booking-bar-inner">
           <div className="min-w-0">
-            <p className="m-0 font-mono text-base font-extrabold text-ink-900">
+            <p className="hm-booking-bar-price">
               {domesticNightly === null ? (
-                <span className="font-sans text-sm font-bold text-ink-600">
+                <span className="hm-meta" style={{ fontWeight: 700 }}>
                   Price unavailable
                 </span>
               ) : (
@@ -518,23 +511,23 @@ export default function BookingRequestForm({
                   {nights > 0
                     ? formatPrice(guestStayTotal)
                     : formatPrice(domesticNightly, { roundWhole: true })}
-                  <span className="ml-1 font-sans text-xs font-normal text-ink-500">
-                    {nights > 0 ? `total (${nights}n)` : '/ night'}
+                  <span className="hm-meta" style={{ display: 'inline', marginLeft: 4 }}>
+                    {nights > 0 ? `total · ${nights} ${nights === 1 ? 'night' : 'nights'}` : '/ night · fees included'}
                   </span>
                 </>
               )}
             </p>
-            <p className="m-0 truncate text-[11px] text-ink-500">
-              Partner confirms before payment
+            <p className="hm-meta" style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              No charge until accepted
             </p>
           </div>
           <button
             type="button"
             disabled={domesticNightly === null}
             onClick={() => setMobileSheetOpen(true)}
-            className="primary-button min-h-[46px] shrink-0 px-5 disabled:cursor-not-allowed disabled:opacity-50"
+            className="hm-btn hm-btn-primary"
           >
-            {nights > 0 ? 'Request stay' : 'Check dates'}
+            {nights > 0 ? 'Request to book' : 'Check dates'}
           </button>
         </div>
       </div>
@@ -545,7 +538,7 @@ export default function BookingRequestForm({
         subtitle={propertyTitle}
         onClose={() => setMobileSheetOpen(false)}
       >
-        {renderFormBody()}
+        <div className="hm-booking-scope">{renderFormBody('sheet')}</div>
       </FocusedDrawer>
     </>
   );

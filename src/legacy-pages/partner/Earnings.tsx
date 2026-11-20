@@ -65,7 +65,7 @@ export default function PartnerEarnings() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Proceeds, commissions & settlement</p>
+      <p className="text-[10px] font-extrabold text-brass-400">Proceeds, commissions & settlement</p>
       <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Earnings & settlement</h1>
 
       <div className="mt-3 flex items-start gap-3 rounded-2xl border border-brass-500/30 bg-brass-500/5 px-4 py-3.5 text-[12px] font-semibold leading-relaxed text-brass-200">
@@ -85,7 +85,7 @@ export default function PartnerEarnings() {
           <div key={c.label} className="rounded-2xl border border-ink-800 bg-ink-900 p-4 sm:p-5">
             <c.Icon size={20} className="shrink-0 text-brass-400" />
             <p className="mt-3 break-words font-display text-xl font-black tabular-nums text-ink-50 sm:text-2xl">{c.value}</p>
-            <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink-400">{c.label}</p>
+            <p className="mt-1 text-[10px] font-extrabold text-ink-400">{c.label}</p>
             <p className="mt-0.5 text-[10.5px] font-medium text-ink-500">{c.sub}</p>
           </div>
         ))}
@@ -97,7 +97,7 @@ export default function PartnerEarnings() {
         </Link>
       </div>
 
-      <h2 className="mt-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Property owner / manager booking proceeds</h2>
+      <h2 className="mt-6 text-[11px] font-extrabold text-ink-400">Property owner / manager booking proceeds</h2>
       <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[720px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">Booking</th><th className="th">Stay</th><th className="th">Owner Rate (B)</th><th className="th">Mandatory</th><th className="th">Owner Settlement</th><th className="th">Status</th></tr></thead>
@@ -119,7 +119,7 @@ export default function PartnerEarnings() {
 
       {myClosedBookings.length > 0 && (
         <>
-          <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Closing agent bookings (10% of owner listed price)</h2>
+          <h2 className="mt-8 text-[11px] font-extrabold text-ink-400">Closing agent bookings (10% of owner listed price)</h2>
           <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
             <table className="w-full min-w-[680px] text-left">
               <thead className="bg-ink-900"><tr><th className="th">Booking</th><th className="th">Property</th><th className="th">Owner Listed Rate (B)</th><th className="th">Agent Commission (10%)</th><th className="th">Booking Status</th></tr></thead>
@@ -139,7 +139,7 @@ export default function PartnerEarnings() {
         </>
       )}
 
-      <h2 className="mt-8 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">Ledger & payout lines (read-only)</h2>
+      <h2 className="mt-8 text-[11px] font-extrabold text-ink-400">Ledger & payout lines (read-only)</h2>
       <div className="mt-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-ink-800">
         <table className="w-full min-w-[760px] text-left">
           <thead className="bg-ink-900"><tr><th className="th">When</th><th className="th">Booking</th><th className="th">Type</th><th className="th">Description</th><th className="th">Amount</th><th className="th">Payout Status</th></tr></thead>
@@ -148,10 +148,10 @@ export default function PartnerEarnings() {
               <tr key={l.id} className="transition hover:bg-ink-850">
                 <td className="td whitespace-nowrap text-[11px] font-semibold text-ink-300">{formatDate(l.at)}</td>
                 <td className="td font-mono text-[10.5px] text-brass-300">{l.bookingRef}</td>
-                <td className="td"><span className="rounded-md bg-ink-800 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase text-ink-200">{l.type.replace(/_/g, ' ')}</span></td>
+                <td className="td"><span className="rounded-md bg-ink-800 px-2 py-0.5 font-mono text-[9.5px] font-bold text-ink-200">{l.type.replace(/_/g, ' ')}</span></td>
                 <td className="td max-w-[260px] text-[11px] leading-snug text-ink-200">{l.description}{l.note && <span className="block text-[10px] text-ink-400">{l.note}</span>}</td>
                 <td className="td font-semibold tabular-nums text-ink-100">{formatNaira(l.amount)}</td>
-                <td className="td"><span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold uppercase text-ink-200">{(l.payoutStatus ?? l.status).replace(/_/g, ' ')}</span></td>
+                <td className="td"><span className="rounded-full border border-ink-700 bg-ink-800 px-2.5 py-0.5 text-[10px] font-bold text-ink-200">{(l.payoutStatus ?? l.status).replace(/_/g, ' ')}</span></td>
               </tr>
             ))}
             {myLedger.length === 0 && <tr><td colSpan={6} className="td py-10 text-center text-ink-500">No ledger lines yet — they appear after payment verification.</td></tr>}

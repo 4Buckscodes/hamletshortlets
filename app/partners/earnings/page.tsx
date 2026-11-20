@@ -152,10 +152,10 @@ export default function PartnerEarningsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Earnings & Referrals</p>
@@ -234,7 +234,7 @@ export default function PartnerEarningsPage() {
             {referralCode && (
               <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-200 bg-white p-6">
                 <div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                  <span className="text-[11px] font-extrabold text-brass-700">
                     Your Partner Referral Code (2.5% · 90-day window)
                   </span>
                   <p className="m-0 mt-1 font-mono text-2xl font-extrabold text-ink-900">

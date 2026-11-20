@@ -348,7 +348,7 @@ export function WayfinderEditorModal({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-jade-700">
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-jade-700">
               <Compass size={13} /> HAMLET Wayfinder · Door-to-Door Arrival Setup
             </p>
             <h2 className="mt-1 font-display text-xl font-black text-ink-900">{property.title}</h2>
@@ -788,7 +788,7 @@ export function WayfinderEditorModal({
             </div>
 
             <div className="mt-4 rounded-xl border border-ink-200 bg-white p-3.5">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-ink-500">
+              <p className="text-[11px] font-extrabold text-ink-500">
                 Protected entry & Wi-Fi secrets (never shown publicly or outside the active check-in window)
               </p>
               <div className="mt-2.5 grid gap-3 sm:grid-cols-3">

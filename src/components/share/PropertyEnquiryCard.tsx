@@ -99,8 +99,8 @@ export function PropertyEnquiryCard({
   return (
     <div className="mt-4 rounded-3xl border border-ink-200 bg-white p-5">
       {!open ? (
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 flex-1 basis-52">
             <p className="m-0 text-sm font-bold text-ink-900">
               Have a question before requesting dates?
             </p>
@@ -111,7 +111,8 @@ export function PropertyEnquiryCard({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="secondary-button min-h-[42px] shrink-0 text-xs"
+            className="hm-btn hm-btn-ghost hm-btn-sm shrink-0"
+            style={{ minHeight: 44 }}
           >
             <MessageSquare className="h-3.5 w-3.5 shrink-0" />
             <span>Ask question</span>
@@ -208,7 +209,7 @@ export function PropertyEnquiryCard({
           <button
             type="submit"
             disabled={busy}
-            className="primary-button min-h-[44px] w-full text-xs"
+            className="hm-btn hm-btn-ghost hm-btn-block"
           >
             {busy ? 'Sending…' : 'Send enquiry'}
           </button>

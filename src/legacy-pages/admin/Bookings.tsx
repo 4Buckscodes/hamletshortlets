@@ -191,7 +191,7 @@ export default function AdminBookings() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-brass-400">Lifecycle control</p>
+          <p className="text-[10px] font-extrabold text-brass-400">Lifecycle control</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Booking operations</h1>
           <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every booking is request-to-book: requested → checking → accepted (awaiting payment, 48h deadline) → confirmed only after webhook-verified payment → completed / cancelled / expired / refunded / disputed. Overlaps on confirmed dates are prevented.</p>
         </div>
@@ -249,7 +249,7 @@ export default function AdminBookings() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center justify-end gap-2">
-                  <button onClick={() => setOpen(expand ? null : b.id)} className="flex items-center gap-1 text-[10.5px] font-extrabold uppercase tracking-wide text-ink-300 hover:text-white">Timeline & actions {expand ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
+                  <button onClick={() => setOpen(expand ? null : b.id)} className="flex items-center gap-1 text-[10.5px] font-extrabold text-ink-300 hover:text-white">Timeline & actions {expand ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}</button>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ export default function AdminBookings() {
 
               {activePrompt && (
                 <div className="border-t border-brass-500/30 bg-ink-950/70 px-5 py-4">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-brass-300">
+                  <p className="text-[11px] font-extrabold text-brass-300">
                     {activePrompt.kind === 'refund'
                       ? 'Record verified guest refund (writes to ledger & audit log)'
                       : activePrompt.kind === 'cancel'
@@ -349,7 +349,7 @@ export default function AdminBookings() {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-ink-800">
                     <div className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2">
                       <div>
-                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">20% markup allocation, FX quote & 5-role attribution</p>
+                        <p className="text-[9.5px] font-extrabold text-ink-500">20% markup allocation, FX quote & 5-role attribution</p>
                         <dl className="mt-1.5 space-y-1 text-[11.5px] font-medium text-ink-200">
                           <div className="flex justify-between gap-3"><dt>Owner listed accommodation (B)</dt><dd className="shrink-0 tabular-nums">{formatNaira(b.accommodationSubtotal)}</dd></div>
                           <div className="flex justify-between gap-3"><dt>20% domestic accommodation markup</dt><dd className="shrink-0 tabular-nums text-brass-300">{formatNaira(b.hamletGuestFee)}</dd></div>
@@ -367,7 +367,7 @@ export default function AdminBookings() {
                         </dl>
 
                         <div className="mt-3 rounded-xl border border-ink-800 bg-ink-950/60 p-3 text-[11px] text-ink-300">
-                          <p className="text-[9.5px] font-extrabold uppercase tracking-wider text-ink-500">5 Independent Attributions</p>
+                          <p className="text-[9.5px] font-extrabold text-ink-500">5 Independent Attributions</p>
                           <p className="mt-1">1. Property introducer: <span className="font-mono text-ink-100">{b.propertyIntroducerId ?? '—'}</span></p>
                           <p>2. Authorised manager: <span className="font-mono text-ink-100">{b.propertyManagerId ?? '—'}</span></p>
                           <p>3. Closing agent: <span className="font-mono text-brass-300">{b.closingAgentName ?? b.closingAgentCode ?? b.closingAgentId ?? 'Direct (no closing agent)'}</span></p>
@@ -383,7 +383,7 @@ export default function AdminBookings() {
                           return (
                             <div className="mt-3 rounded-xl border border-ink-800 bg-ink-950/70 p-3 text-[11px] text-ink-200">
                               <p className="font-bold text-brass-300">
-                                Caution Deposit ({formatNaira(cd.amountNgn)}): <span className="uppercase">{cd.status.replace(/_/g, ' ')}</span>
+                                Caution Deposit ({formatNaira(cd.amountNgn)}): <span className="">{cd.status.replace(/_/g, ' ')}</span>
                               </p>
                               {cd.inspectionNotes && <p className="mt-1 text-ink-400">Inspection: {cd.inspectionNotes}</p>}
                               {!['refund_completed', 'partially_refunded', 'forfeited'].includes(cd.status) && cd.amountNgn > 0 && (
@@ -460,7 +460,7 @@ export default function AdminBookings() {
                         {b.cancelReason && <p className="mt-2 break-words text-[11px] font-semibold text-red-300">Cancellation reason: {b.cancelReason}</p>}
                       </div>
                       <div>
-                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-500">Timeline</p>
+                        <p className="text-[9.5px] font-extrabold text-ink-500">Timeline</p>
                         <ol className="mt-1.5 space-y-2">
                           {b.timeline.map((t, i) => (
                             <li key={i} className="border-l-2 border-ink-800 pl-3 text-[10.5px] leading-snug text-ink-300">
@@ -474,7 +474,7 @@ export default function AdminBookings() {
                     {/* Email Notification Outbox & Delivery Log */}
                     <div className="border-t border-ink-800 bg-ink-950/50 p-4 sm:p-5">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="flex items-center gap-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-ink-400">
+                        <p className="flex items-center gap-1.5 text-[9.5px] font-extrabold text-ink-400">
                           <Mail size={12} className="shrink-0 text-brass-400" /> Email notification outbox ({bookingNotifications.length})
                         </p>
                         {backendConfigured && hasRetryableNotifications && (
@@ -516,11 +516,11 @@ export default function AdminBookings() {
                               className="rounded-xl border border-ink-800 bg-ink-900 p-3 text-[11px]"
                             >
                               <div className="flex flex-wrap items-center justify-between gap-1.5">
-                                <span className="font-mono text-[10px] font-bold uppercase text-brass-300">
+                                <span className="font-mono text-[10px] font-bold text-brass-300">
                                   {notif.recipientType} · {notif.eventType.replace(/^booking_/, '').replace(/_/g, ' ')}
                                 </span>
                                 <span
-                                  className={`rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase ${
+                                  className={`rounded-full px-2 py-0.5 text-[9.5px] font-extrabold ${
                                     notif.deliveryStatus === 'sent'
                                       ? 'bg-jade-950 text-jade-300'
                                       : notif.deliveryStatus === 'failed'

@@ -5,7 +5,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, LifeBuoy, Building2, ShieldCheck } from 'lucide-react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
-import { FormField, FIELD_INPUT_CLASS } from '@/components/forms/ProgressiveFormPrimitives';
+import { FormField } from '@/components/forms/ProgressiveFormPrimitives';
 import { AccountNav } from './account-nav';
 
 interface ProfileSummary {
@@ -114,19 +114,29 @@ export default function GuestAccountOverviewPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow">Your HAMLET Account</p>
-            <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">
-              {fullName ? `Welcome, ${fullName.split(' ')[0]}.` : 'Your account'}
-            </h1>
+      <main className="hm-main" style={{ flex: 1 }}>
+        <section className="hm-band hm-band-arrive" aria-labelledby="account-title">
+          <div className="hm-shell hm-band-inner">
+            <div className="hm-band-row">
+              <div className="hm-band-copy">
+                <p className="hm-label">Guest account</p>
+                <h1 id="account-title" className="hm-display" style={{ fontSize: 'clamp(40px, 5.4vw, 72px)' }}>
+                  {fullName ? `Welcome, ${fullName.split(' ')[0]}.` : 'Your account,'}
+                  <br />
+                  <em>{fullName ? 'Good to see you.' : 'all in one place.'}</em>
+                </h1>
+              </div>
+              <Link href="/stays" className="hm-btn hm-btn-lime">
+                Find a new stay
+              </Link>
+            </div>
+            <AccountNav current="overview" />
           </div>
-          <AccountNav current="overview" />
-        </div>
+        </section>
+        <div className="hm-shell hm-section-tight hm-account">
 
         {loading ? (
           <p role="status" className="mt-8 text-sm text-ink-600">
@@ -135,27 +145,40 @@ export default function GuestAccountOverviewPage() {
         ) : (
           <div className="mt-8 grid gap-6 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-7">
+              {awaitingPaymentCount > 0 && (
+                <div className="hm-card hm-card-pad" style={{ display: 'grid', gap: 10, borderColor: 'var(--hm-info)' }}>
+                  <p className="hm-label">Next step</p>
+                  <h2 className="hm-h3">
+                    {awaitingPaymentCount === 1 ? 'A partner accepted your request.' : `${awaitingPaymentCount} requests were accepted.`}
+                  </h2>
+                  <p className="hm-body">Pay within 48 hours of acceptance to keep the dates. Your booking shows the exact deadline and total.</p>
+                  <Link href="/account/bookings" className="hm-btn hm-btn-primary" style={{ justifySelf: 'start' }}>
+                    Review and pay
+                  </Link>
+                </div>
+              )}
+
               {/* Quick Summary Cards */}
               <div className="grid gap-3.5 sm:grid-cols-3">
                 <Link
                   href="/account/bookings"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
-                  <CalendarDays className="h-5 w-5 text-brass-600" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <CalendarDays className="h-5 w-5 text-ink-800" aria-hidden="true" />
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {bookingCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
-                    Booking requests
+                    All bookings
                   </p>
                 </Link>
 
                 <Link
                   href="/account/bookings"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
                   <ShieldCheck className="h-5 w-5 text-emerald-700" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {awaitingPaymentCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
@@ -165,10 +188,10 @@ export default function GuestAccountOverviewPage() {
 
                 <Link
                   href="/account/issues"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
                   <LifeBuoy className="h-5 w-5 text-ink-800" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {openIssueCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
@@ -186,8 +209,8 @@ export default function GuestAccountOverviewPage() {
                       Partner Account
                     </p>
                   </div>
-                  <Link href="/partners" className="primary-button">
-                    Partner Workspace →
+                  <Link href="/partners" className="hm-btn hm-btn-primary">
+                    Partner Workspace
                   </Link>
                 </div>
               )}
@@ -200,8 +223,8 @@ export default function GuestAccountOverviewPage() {
                       Administrator Account
                     </p>
                   </div>
-                  <Link href="/admin" className="primary-button">
-                    Admin Console →
+                  <Link href="/admin" className="hm-btn hm-btn-primary">
+                    Admin Console
                   </Link>
                 </div>
               )}
@@ -211,7 +234,7 @@ export default function GuestAccountOverviewPage() {
                   <p className="m-0 text-sm font-bold text-ink-900">
                     Own, manage, or refer shortlets in Lagos?
                   </p>
-                  <Link href="/partners/apply" className="secondary-button">
+                  <Link href="/partners/apply" className="hm-btn hm-btn-ghost">
                     Become a partner
                   </Link>
                 </div>
@@ -219,7 +242,7 @@ export default function GuestAccountOverviewPage() {
             </div>
 
             {/* Compact Contact Profile Card */}
-            <section className="rounded-3xl border border-ink-100 bg-white p-6 lg:col-span-5">
+            <section className="hm-card p-6 lg:col-span-5">
               <h2 className="serif m-0 mb-5 text-2xl font-medium text-ink-900">
                 Contact details
               </h2>
@@ -231,7 +254,7 @@ export default function GuestAccountOverviewPage() {
                       {...fieldProps}
                       disabled
                       value={email}
-                      className={`${FIELD_INPUT_CLASS} bg-paper text-ink-500`}
+                      className={`hm-input bg-paper text-ink-500`}
                     />
                   )}
                 </FormField>
@@ -245,7 +268,7 @@ export default function GuestAccountOverviewPage() {
                       maxLength={120}
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
-                      className={FIELD_INPUT_CLASS}
+                      className="hm-input"
                     />
                   )}
                 </FormField>
@@ -260,7 +283,7 @@ export default function GuestAccountOverviewPage() {
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       placeholder="+234…"
-                      className={FIELD_INPUT_CLASS}
+                      className="hm-input"
                     />
                   )}
                 </FormField>
@@ -273,7 +296,7 @@ export default function GuestAccountOverviewPage() {
                         maxLength={160}
                         value={company}
                         onChange={e => setCompany(e.target.value)}
-                        className={FIELD_INPUT_CLASS}
+                        className="hm-input"
                       />
                     )}
                   </FormField>
@@ -293,7 +316,7 @@ export default function GuestAccountOverviewPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="primary-button min-h-[48px] w-full"
+                  className="hm-btn hm-btn-primary min-h-[48px] w-full"
                 >
                   {saving ? 'Saving changes…' : 'Save profile details'}
                 </button>
@@ -301,6 +324,7 @@ export default function GuestAccountOverviewPage() {
             </section>
           </div>
         )}
+        </div>
       </main>
 
       <SiteFooter />

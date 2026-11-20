@@ -136,10 +136,10 @@ export default function PartnerMarketingAnalyticsPage() {
       : 0;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Partner Distribution Analytics</p>
@@ -171,7 +171,7 @@ export default function PartnerMarketingAnalyticsPage() {
             </h2>
             <div className="mt-4">
               <Link href="/partners/apply" className="primary-button">
-                Join partner network →
+                Join partner network
               </Link>
             </div>
           </section>
@@ -315,7 +315,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   href="/partners/earnings"
                   className="text-xs font-bold text-brass-700 underline underline-offset-2 hover:text-ink-950"
                 >
-                  Open full payout ledger →
+                  Open full payout ledger
                 </Link>
               </div>
 
@@ -392,7 +392,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   </p>
                   <div className="mt-4">
                     <Link href="/partners/marketing" className="primary-button text-xs">
-                      Open Share & Studio →
+                      Open Share & Studio
                     </Link>
                   </div>
                 </div>
@@ -407,33 +407,33 @@ export default function PartnerMarketingAnalyticsPage() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="m-0 text-[11px] font-extrabold uppercase tracking-wider text-brass-700">
+                            <p className="m-0 text-[11px] font-extrabold text-brass-700">
                               {row.area || 'Lagos'}
                             </p>
                             <h3 className="m-0 mt-0.5 text-sm font-bold text-ink-950">
                               {row.title}
                             </h3>
                           </div>
-                          <span className="rounded-full bg-paper px-2.5 py-0.5 text-[10px] font-bold text-ink-700">
+                          <span className="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-bold text-ink-700">
                             {row.shares} shares
                           </span>
                         </div>
 
                         <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-xs">
                           <div>
-                            <dt className="text-[10px] text-ink-500">Visits</dt>
+                            <dt className="text-[11px] text-ink-500">Visits</dt>
                             <dd className="m-0 font-mono font-bold text-ink-900">
                               {row.visits} ({row.unique_visitors}u)
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-[10px] text-ink-500">Requests</dt>
+                            <dt className="text-[11px] text-ink-500">Requests</dt>
                             <dd className="m-0 font-mono font-bold text-ink-900">
                               {row.booking_requests} ({row.enquiries} enq)
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-[10px] text-ink-500">Confirmed</dt>
+                            <dt className="text-[11px] text-ink-500">Confirmed</dt>
                             <dd className="m-0 font-mono font-bold text-emerald-800">
                               {row.confirmed_bookings} ({row.completed_bookings} done)
                             </dd>
@@ -466,7 +466,7 @@ export default function PartnerMarketingAnalyticsPage() {
                   <div className="mt-4 hidden overflow-hidden rounded-3xl border border-ink-100 bg-white md:block">
                     <table className="w-full border-collapse text-left text-xs">
                       <thead>
-                        <tr className="border-b border-ink-100 bg-paper/70 text-[11px] font-extrabold uppercase tracking-wider text-ink-600">
+                        <tr className="border-b border-ink-100 bg-paper/70 text-[11px] font-extrabold text-ink-600">
                           <th className="px-5 py-3.5">Property</th>
                           <th className="px-3 py-3.5">Shares</th>
                           <th className="px-3 py-3.5">Visits (Unique)</th>

@@ -95,6 +95,7 @@ export default function AdminOverviewPage() {
 
   async function sweepOverdueHolds() {
     if (!db) return;
+    if (!window.confirm('Release every awaiting-payment hold that is past its 48-hour deadline? Guests on those holds lose the dates.')) return;
     setSweeping(true);
     setError('');
     setNotice('');
@@ -111,10 +112,10 @@ export default function AdminOverviewPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
 
-      <main className="shell flex-1 py-8 sm:py-12">
+      <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">HAMLET Operations Console</p>
@@ -150,91 +151,91 @@ export default function AdminOverviewPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Link
                 href="/admin/properties"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className={`hm-admin-tile ${counts.pendingProperties > 0 ? 'hm-admin-tile-attention' : ''}`}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
-                  Property Review Queue
+                <span className="hm-label">
+                  Listings to review
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.pendingProperties}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  {counts.approvedProperties} live →
+                  {counts.approvedProperties} live
                 </p>
               </Link>
 
               <Link
                 href="/admin/partners"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className={`hm-admin-tile ${counts.pendingPartners > 0 ? 'hm-admin-tile-attention' : ''}`}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
-                  Partner Applications
+                <span className="hm-label">
+                  Partner applications
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.pendingPartners}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending review →
+                  Pending review
                 </p>
               </Link>
 
               <Link
                 href="/admin/bookings"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className={`hm-admin-tile `}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
+                <span className="hm-label">
                   Active Bookings & Holds
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.activeBookings}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Active requests & stays →
+                  Active requests & stays
                 </p>
               </Link>
 
               <Link
                 href="/admin/issues"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className={`hm-admin-tile ${counts.openIssues > 0 ? 'hm-admin-tile-attention' : ''}`}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
-                  Open Support Issues
+                <span className="hm-label">
+                  Open support issues
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.openIssues}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Open reports →
+                  Open reports
                 </p>
               </Link>
 
               <Link
                 href="/admin/settlements"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className={`hm-admin-tile ${counts.pendingLedger > 0 ? 'hm-admin-tile-attention' : ''}`}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
-                  Ledger & Caution Queue
+                <span className="hm-label">
+                  Ledger & deposits
                 </span>
-                <p className="m-0 mt-2 font-mono text-3xl font-extrabold text-ink-900">
+                <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.pendingLedger}
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Pending reconciliation →
+                  Pending reconciliation
                 </p>
               </Link>
 
               <Link
                 href="/admin/audit"
-                className="rounded-3xl border border-ink-100 bg-white p-6 transition hover:border-ink-900"
+                className="hm-admin-tile"
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-brass-700">
-                  Governance & Directory
+                <span className="hm-label">
+                  Accounts & audit
                 </span>
-                <p className="m-0 mt-2 serif text-2xl font-medium text-ink-900">
-                  Accounts & Audit Log
+                <p className="m-0 mt-2 text-xl font-bold text-ink-900">
+                  Directory and audit log
                 </p>
                 <p className="m-0 mt-1 text-xs text-ink-500">
-                  Directory & audit log →
+                  Directory & audit log
                 </p>
               </Link>
             </div>
@@ -252,7 +253,7 @@ export default function AdminOverviewPage() {
                 type="button"
                 disabled={sweeping}
                 onClick={() => void sweepOverdueHolds()}
-                className="secondary-button min-h-[42px]"
+                className="secondary-button min-h-[44px]"
               >
                 {sweeping ? 'Sweeping…' : 'Sweep overdue holds'}
               </button>

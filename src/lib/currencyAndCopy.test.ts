@@ -120,12 +120,14 @@ describe('Automatic guest currency detection & conversion (NGN ₦ / USD $ / GBP
 
     for (const rel of [
       'src/components/site/SiteShell.tsx',
-      'src/components/site/DiscoveryMarketplace.tsx',
       'app/stays/[id]/booking-request-form.tsx',
     ]) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
       expect(content, `${rel} should format prices via useCurrency`).toContain('useCurrency');
     }
+    // Stay results format prices through the shared StayNightlyPrice (SiteShell), which uses useCurrency.
+    const discoverySrc = readFileSync(join(ROOT, 'src/components/site/DiscoveryMarketplace.tsx'), 'utf8');
+    expect(discoverySrc).toContain('StayNightlyPrice');
   });
 });
 

@@ -151,7 +151,7 @@ export function GuestNavbar() {
                     >
                       <LayoutDashboard size={15} className="shrink-0" />
                       {s.role === 'admin'
-                        ? 'Admin console (Elsinore)'
+                        ? 'Admin console'
                         : s.role === 'partner'
                           ? 'Open partner workspace'
                           : 'My bookings'}
@@ -312,7 +312,7 @@ export function Footer() {
           </div>
 
           <div className="md:col-span-3">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+            <p className="text-[11px] font-extrabold text-brass-400">
               Lagos stays
             </p>
             <ul className="mt-3 space-y-2 text-[13px] font-medium">
@@ -325,7 +325,7 @@ export function Footer() {
           </div>
 
           <div className="md:col-span-2">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+            <p className="text-[11px] font-extrabold text-brass-400">
               Guests
             </p>
             <ul className="mt-3 space-y-2 text-[13px] font-medium">
@@ -338,7 +338,7 @@ export function Footer() {
           </div>
 
           <div className="md:col-span-3">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-brass-400">
+            <p className="text-[11px] font-extrabold text-brass-400">
               Partners
             </p>
             <ul className="mt-3 space-y-2 text-[13px] font-medium">

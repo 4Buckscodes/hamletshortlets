@@ -253,7 +253,7 @@ export function PartnerPropertyDetailBar({
           <Share2 className="h-4 w-4 shrink-0" />
         </span>
         <div>
-          <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-brass-700">
+          <p className="m-0 text-xs font-extrabold text-brass-700">
             HAMLET Partner Share
           </p>
           <p className="m-0 text-xs text-ink-600">
