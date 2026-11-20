@@ -7,7 +7,7 @@ import { asServiceRole, asUser, createMigratedTestDb, createTestUser, resetTestD
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATION = readFileSync(
-  path.resolve(__dirname, '../migrations/20261120100000_network_partner_booking_permissions.sql'),
+  path.resolve(__dirname, '../migrations/20261120052908_network_partner_booking_permissions.sql'),
   'utf8',
 );
 

@@ -16,7 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CATCH_UP_MIGRATION = readFileSync(
   path.resolve(
     __dirname,
-    '../migrations/20261119100000_network_partner_referral_and_attribution_catch_up.sql',
+    '../migrations/20261120035547_network_partner_referral_and_attribution_catch_up.sql',
   ),
   'utf8',
 );
