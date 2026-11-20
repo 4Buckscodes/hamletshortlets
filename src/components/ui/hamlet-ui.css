@@ -1095,3 +1095,10 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-content .hm-chip[aria-pressed="tr
 .hm-accept-summary dt { color: var(--hm-muted); }
 .hm-accept-summary dd { margin: 0; color: var(--hm-text); font-weight: 750; }
 .hm-accept-summary p { margin: 6px 0 0; color: var(--hm-text); font-size: 13px; line-height: 1.55; }
+/* Admin overview: tiles flat at rest; any queue with work waiting is marked so the eye goes there first. */
+.hm-admin-tile { display: block; padding: 24px; border: 1px solid var(--hm-line); border-radius: var(--hm-r-card); background: var(--hm-surface); color: var(--hm-text); text-decoration: none; transition: border-color var(--hm-t-ui); }
+.hm-admin-tile:hover { border-color: var(--hm-text); }
+.hm-admin-tile-attention { border-color: var(--hm-warn); background: var(--hm-warn-soft); }
+.hm-admin-tile-attention .hm-label::after { content: " · needs attention"; color: var(--hm-warn); }
+/* Money and references in workspaces use tabular Inter, not monospace (DESIGN: Price). */
+.hm-workspace .font-mono, .hm-content .font-mono { font-family: var(--hm-sans) !important; font-variant-numeric: tabular-nums; }

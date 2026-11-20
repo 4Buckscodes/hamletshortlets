@@ -310,8 +310,10 @@ export function DraftStatusBar({
       {onClearDraft && (
         <button
           type="button"
-          onClick={onClearDraft}
-          className="inline-flex min-h-[36px] cursor-pointer items-center gap-1 rounded-full px-2.5 font-bold text-ink-600 hover:bg-white hover:text-ink-900"
+          onClick={() => {
+            if (window.confirm('Clear everything you have entered and start again?')) onClearDraft();
+          }}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1 rounded-full px-2.5 font-bold text-ink-600 hover:bg-white hover:text-ink-900"
         >
           <RotateCcw className="h-3 w-3 shrink-0" />
           Start fresh

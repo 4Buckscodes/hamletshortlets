@@ -45,6 +45,8 @@ export default function AdminBookingsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [query, setQuery] = useState('');
+  const visibleItems = items.filter(b => !query.trim() || JSON.stringify(b).toLowerCase().includes(query.trim().toLowerCase()));
 
   const load = useCallback(async () => {
     if (!db) {
@@ -167,7 +169,12 @@ export default function AdminBookingsPage() {
           <p className="mt-8 text-sm text-red-800">Administrator access required.</p>
         ) : items.length > 0 ? (
           <div className="mt-6 space-y-3.5">
-            {items.map(b => (
+            <label className="hm-field" style={{ maxWidth: 420 }}>
+              <span className="hm-field-label">Search bookings</span>
+              <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name, email, reference…" className="hm-input" />
+            </label>
+            {visibleItems.length === 0 && <p className="hm-meta">No bookings match that search.</p>}
+            {visibleItems.map(b => (
               <article
                 key={b.id}
                 className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-ink-100 bg-white p-5"

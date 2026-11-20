@@ -288,11 +288,8 @@ export default function AdminPropertiesPage() {
             <button
               type="button"
               onClick={() => setFilter('queue')}
-              className={
-                filter === 'queue'
-                  ? 'primary-button min-h-[40px]'
-                  : 'secondary-button min-h-[40px]'
-              }
+              className="hm-chip"
+              aria-pressed={filter === 'queue'}
             >
               Review queue (
               {
@@ -307,11 +304,8 @@ export default function AdminPropertiesPage() {
             <button
               type="button"
               onClick={() => setFilter('all')}
-              className={
-                filter === 'all'
-                  ? 'primary-button min-h-[40px]'
-                  : 'secondary-button min-h-[40px]'
-              }
+              className="hm-chip"
+              aria-pressed={filter === 'all'}
             >
               All properties ({items.length})
             </button>
@@ -371,9 +365,9 @@ export default function AdminPropertiesPage() {
                   <button
                     type="button"
                     onClick={() => openReview(p)}
-                    className="primary-button min-h-[42px]"
+                    className="secondary-button min-h-[44px]"
                   >
-                    Open review drawer
+                    Review listing
                   </button>
                 </div>
               </article>

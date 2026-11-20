@@ -89,7 +89,7 @@ export default function AdminCommunicationsPage() {
       <main className="hm-main hm-workspace">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Elsinore · Operations</p>
+            <p className="eyebrow">HAMLET operations</p>
             <h1 className="serif mt-2 text-3xl font-medium text-ink-900 sm:text-5xl">Communications</h1>
             <p className="mt-2 text-sm text-ink-600">{unread} unread · Latest 200 operational events</p>
           </div>

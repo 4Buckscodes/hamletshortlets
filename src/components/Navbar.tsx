@@ -151,7 +151,7 @@ export function GuestNavbar() {
                     >
                       <LayoutDashboard size={15} className="shrink-0" />
                       {s.role === 'admin'
-                        ? 'Admin console (Elsinore)'
+                        ? 'Admin console'
                         : s.role === 'partner'
                           ? 'Open partner workspace'
                           : 'My bookings'}

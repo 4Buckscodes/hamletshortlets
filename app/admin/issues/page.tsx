@@ -202,11 +202,15 @@ export default function AdminIssuesPage() {
           error={error}
           open={Boolean(selected)}
           title={selected?.subject || 'Update issue'}
-          subtitle={selected ? `${selected.reference} · ${selected.severity}` : undefined}
+          subtitle={selected ? `${selected.reference} · ${selected.severity || 'unrated'} severity` : undefined}
           onClose={() => setSelected(null)}
         >
           {selected && (
             <form onSubmit={submitTransition} className="space-y-4">
+              <div className="rounded-2xl bg-paper p-4 text-sm text-ink-800">
+                <p className="m-0 text-xs font-bold uppercase tracking-wider text-ink-500">{(selected.category || 'General').replace(/_/g, ' ')} · reported by the guest</p>
+                <p className="m-0 mt-1.5 leading-relaxed">{selected.description || 'No description was provided.'}</p>
+              </div>
               <FormField label="Next issue status">
                 {fieldProps => (
                   <select
@@ -215,11 +219,11 @@ export default function AdminIssuesPage() {
                     onChange={e => setNextStatus(e.target.value)}
                     className={FIELD_INPUT_CLASS}
                   >
-                    <option value="assigned">assigned</option>
-                    <option value="investigating">investigating</option>
-                    <option value="escalated">escalated</option>
-                    <option value="resolved">resolved</option>
-                    <option value="closed">closed</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="investigating">Investigating</option>
+                    <option value="escalated">Escalated</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
                   </select>
                 )}
               </FormField>

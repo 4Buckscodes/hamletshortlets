@@ -360,9 +360,9 @@ export default function PartnerDashboardPage() {
               <h2 className="serif m-0 text-2xl font-medium text-ink-900">
                 Your properties ({properties.length})
               </h2>
-              <Link href="/partners/properties/new" className="primary-button">
+              <Link href="/partners/properties/new" className="hm-link">
                 <Plus className="h-4 w-4 shrink-0" />
-                Add a new listing
+                Add another listing
               </Link>
             </div>
 

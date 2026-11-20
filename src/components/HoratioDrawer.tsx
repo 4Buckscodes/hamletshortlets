@@ -136,7 +136,7 @@ function HoratioDrawer({
         ).length;
 
         return {
-          text: `Elsinore live operational snapshot: ${pendingProps} listing(s) awaiting property review, ${actionBookings} booking request(s) needing confirmation, ${openWatchIssues} active incident(s) on The Watch, ${pendingApps} partner application(s) pending review, and ${flaggedLedger} ledger item(s) requiring reconciliation.`,
+          text: `Operations snapshot: ${pendingProps} listing(s) awaiting property review, ${actionBookings} booking request(s) needing confirmation, ${openWatchIssues} active incident(s) on The Watch, ${pendingApps} partner application(s) pending review, and ${flaggedLedger} ledger item(s) requiring reconciliation.`,
           links: [
             { label: `Property Review (${pendingProps})`, to: '/admin/properties' },
             { label: `The Watch · Issues (${openWatchIssues})`, to: '/admin/issues' },
@@ -352,7 +352,7 @@ function HoratioDrawer({
   const quickPrompts =
     role === 'admin'
       ? [
-          'Show Elsinore & The Watch queues',
+          'Show operations queues',
           'How do pricing & caution deposits work?',
           'Show approved Lagos Mainland stays',
         ]
