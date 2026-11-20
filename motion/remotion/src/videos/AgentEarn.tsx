@@ -22,7 +22,7 @@ const CoinHook = () => {
     <AbsoluteFill>
       <Stage fog={[14, 34]}>
         <Cam pos={[0, 0.6, 9]} look={[0, 0.2, 0]} fov={36} />
-        <Coin r={1.25} position={[0, -0.2 + (1 - settle) * 3.5 + Math.sin(t * 2) * 0.05, 0]} rotation={[0.12, (1 - settle) * Math.PI * 3 + Math.sin(t * 1.3) * 0.35, (1 - settle) * 0.4]} />
+        <Coin r={1.25} position={[0, -0.2 + Math.sin(t * 2) * 0.05, -(1 - settle) * 9]} rotation={[0.12, (1 - settle) * Math.PI * 3 + Math.sin(t * 1.3) * 0.35, (1 - settle) * 0.4]} />
         {[...Array(14)].map((_, i) => {
           const x = ((i * 53) % 13) - 6.5, z = -4 - (i % 5) * 1.2;
           const y = 8 - ((t * (2.4 + (i % 3) * 0.6) + i * 1.7) % 14);
