@@ -466,6 +466,7 @@ async function advanceWizardToPhotoStep(page: Page) {
   await expect(page.getByRole('heading', { name: /Submit a Lagos stay/i })).toBeVisible();
 
   await page.getByLabel('Listing title').fill('Bright 2-Bedroom Apartment in Ikoyi');
+  await page.getByLabel(/Lagos neighbourhood/i).selectOption({ index: 1 });
   await page
     .getByLabel(/Public street, estate or landmark summary/i)
     .fill('Off Bourdillon Road, Old Ikoyi, Lagos');
