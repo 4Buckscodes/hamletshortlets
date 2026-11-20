@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const FPS=30, out=process.argv[2]||'hamlet-owner-invite.mp4', only=process.argv[3]; // only = comma list of seconds for stills
 const dir=resolve(process.argv[4]||'/tmp/hamlet-frames');
 const b=await chromium.launch();const p=await b.newPage({viewport:{width:1080,height:1920}});
-await p.goto('file://'+resolve('owner-invite.html'));await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(400);
+await p.goto('file://'+resolve(process.env.SRC||'owner-invite.html'));await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(400);
 rmSync(dir,{recursive:true,force:true});mkdirSync(dir,{recursive:true});
 if(only){for(const s of only.split(',')){await p.evaluate(t=>render(t),+s);await p.screenshot({path:`${dir}/still-${s}.png`});}}
 else{const D=await p.evaluate(()=>DURATION);const n=Math.round(D*FPS);

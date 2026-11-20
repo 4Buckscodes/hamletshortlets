@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>HAMLET – Owner's day (motion)</title>
+<style>
+@font-face{font-family:Newsreader;src:url(assets/newsreader-latin-wght.woff2);font-weight:200 800}
+@font-face{font-family:Hanken;src:url(assets/hanken-grotesk-latin-wght.woff2);font-weight:100 900}
+:root{--ink:#0e1f3b;--deep:#091528;--paper:#f4f3ef;--sand:#eae8e1;--line:#dcd9d0;--gold:#b8923a;--gold2:#d4b268;--muted:#5a6578}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--paper)}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Hanken,system-ui,sans-serif;color:var(--ink)}
+.scene{position:absolute;inset:0;opacity:0}
+.scene svg{position:absolute;inset:0;width:1080px;height:1920px}
+.cap{position:absolute;left:70px;right:70px;text-align:center;opacity:0}
+.cap span{display:inline-block;background:var(--paper);color:var(--ink);font-family:Newsreader,Georgia,serif;font-weight:480;font-size:66px;line-height:1.12;letter-spacing:-.02em;padding:26px 40px 30px;border-radius:12px}
+.serif{font-family:Newsreader,Georgia,serif;font-weight:420;letter-spacing:-.025em}
+.w{display:inline-block}.mask{overflow:hidden;display:block;padding-bottom:.12em;margin-bottom:-.12em}
+.btn{position:absolute;background:var(--paper);color:var(--ink);border-radius:10px;font-weight:600;font-size:40px;padding:34px 56px;white-space:nowrap}
+.lockup{position:absolute;display:flex;align-items:center;gap:22px}
+.lockup span{font-family:Newsreader,serif;font-size:64px;font-weight:480;letter-spacing:.02em}
+</style></head><body><div id="stage">
+
+<!-- S1: Lagos morning -->
+<div class="scene" id="S1"><svg viewBox="0 0 1080 1920">
+ <rect width="1080" height="1920" fill="#f1e7cf"/>
+ <circle id="sun" cx="540" cy="1100" r="210" fill="#d4b268"/>
+ <g id="clouds" fill="#faf9f6"><rect x="120" y="360" width="260" height="46" rx="23"/><rect x="190" y="326" width="150" height="60" rx="30"/><rect x="700" y="520" width="280" height="46" rx="23"/><rect x="770" y="486" width="150" height="60" rx="30"/></g>
+ <g fill="#0e1f3b" id="sky1"></g>
+ <rect y="1250" width="1080" height="250" fill="#16223a"/>
+ <g id="boat"><path d="M0 40 L180 40 L150 0 L40 0Z" fill="#b8923a"/><rect x="60" y="-40" width="6" height="40" fill="#0e1f3b"/><path d="M66 -40 L130 -8 L66 -8Z" fill="#faf9f6"/></g>
+ <rect y="1500" width="1080" height="420" fill="#091528"/>
+ <rect y="1690" width="1080" height="8" fill="#d4b268" opacity=".8" stroke-dasharray="90 60"/>
+ <g id="danfo">
+  <rect x="0" y="0" width="420" height="190" rx="22" fill="#f2b705"/>
+  <rect x="0" y="92" width="420" height="22" fill="#091528"/>
+  <rect x="270" y="20" width="120" height="60" rx="8" fill="#faf9f6"/><rect x="140" y="20" width="110" height="60" rx="8" fill="#faf9f6"/><rect x="20" y="20" width="100" height="60" rx="8" fill="#faf9f6"/>
+  <rect x="330" y="130" width="70" height="30" rx="6" fill="#faf9f6"/>
+  <circle cx="90" cy="195" r="42" fill="#091528"/><circle cx="90" cy="195" r="18" fill="#c9c6bb"/>
+  <circle cx="330" cy="195" r="42" fill="#091528"/><circle cx="330" cy="195" r="18" fill="#c9c6bb"/>
+ </g>
+</svg>
+<div class="cap" id="c1a" style="top:300px"><span>Lagos. Early morning.</span></div>
+<div class="cap" id="c1b" style="top:300px"><span>Your flat is empty again.</span></div>
+</div>
+
+<!-- S2: the flat -->
+<div class="scene" id="S2"><svg viewBox="0 0 1080 1920">
+ <defs><pattern id="ank" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="#b8923a"/><circle cx="30" cy="30" r="22" fill="#0e1f3b"/><circle cx="30" cy="30" r="12" fill="#d4b268"/><circle cx="30" cy="30" r="5" fill="#0e1f3b"/><circle cx="0" cy="0" r="9" fill="#0e1f3b"/><circle cx="60" cy="60" r="9" fill="#0e1f3b"/></pattern></defs>
+ <rect width="1080" height="1920" fill="#eae8e1"/>
+ <rect y="1420" width="1080" height="500" fill="#dcd9d0"/>
+ <rect y="1414" width="1080" height="10" fill="#c9c6bb"/>
+ <!-- window -->
+ <rect x="560" y="330" width="420" height="520" fill="#faf9f6"/><rect x="580" y="350" width="380" height="480" fill="#f1e7cf"/><g id="winCity" fill="#0e1f3b"></g><rect x="768" y="350" width="8" height="480" fill="#faf9f6"/>
+ <!-- wall calendar (empty) -->
+ <g id="cal2"><rect x="110" y="330" width="360" height="400" rx="6" fill="#faf9f6" stroke="#dcd9d0" stroke-width="4"/><rect x="110" y="330" width="360" height="70" fill="#0e1f3b"/><g id="cal2cells" fill="none" stroke="#dcd9d0" stroke-width="3"></g></g>
+ <!-- sofa -->
+ <g><rect x="70" y="1080" width="560" height="320" rx="24" fill="#0e1f3b"/><rect x="40" y="1190" width="110" height="230" rx="22" fill="#16223a"/><rect x="550" y="1190" width="110" height="230" rx="22" fill="#16223a"/><rect x="130" y="1250" width="420" height="120" rx="14" fill="#1d2f52"/>
+  <rect x="150" y="1130" width="130" height="130" rx="14" fill="url(#ank)" transform="rotate(-8 215 1195)"/></g>
+ <rect x="130" y="1400" width="10" height="24" fill="#0e1f3b"/><rect x="560" y="1400" width="10" height="24" fill="#0e1f3b"/>
+ <!-- lamp -->
+ <rect x="745" y="1090" width="8" height="330" fill="#b8923a"/><path d="M700 1090 L800 1090 L780 1000 L720 1000Z" fill="#d4b268"/><ellipse cx="749" cy="1424" rx="60" ry="10" fill="#b8923a"/>
+ <!-- plant -->
+ <g transform="translate(880,1424)"><rect x="-40" y="-90" width="80" height="90" rx="10" fill="#b8923a"/><path d="M0 -90 C -80 -170 -90 -240 -60 -290 C -20 -230 0 -170 0 -90Z M0 -90 C 70 -180 100 -230 70 -300 C 30 -240 6 -170 0 -90Z" fill="#256b43"/></g>
+ <!-- owner -->
+ <g id="owner" transform="translate(300,1424)">
+  <rect x="-40" y="-330" width="30" height="330" rx="10" fill="#091528"/><rect x="12" y="-330" width="30" height="330" rx="10" fill="#091528"/>
+  <rect x="-58" y="-340" width="116" height="30" rx="8" fill="#091528"/>
+  <rect x="-70" y="-640" width="140" height="330" rx="40" fill="#b8923a"/><rect x="-6" y="-640" width="12" height="260" fill="#d4b268"/>
+  <rect x="-18" y="-690" width="36" height="60" fill="#6b4226"/>
+  <circle cx="0" cy="-740" r="62" fill="#6b4226"/><path d="M-62 -745 C-62 -815 62 -815 62 -745 C40 -780 -40 -780 -62 -745Z" fill="#1a1411"/>
+  <circle cx="-22" cy="-738" r="5" fill="#1a1411"/><circle cx="22" cy="-738" r="5" fill="#1a1411"/>
+  <path id="mouth" d="M-18 -708 Q0 -696 18 -708" stroke="#1a1411" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <g id="armL" transform="translate(-60,-600)"><rect x="-24" y="0" width="48" height="190" rx="24" fill="#b8923a" transform="rotate(8)"/></g>
+  <g id="armR" transform="translate(60,-600)"><rect x="-24" y="0" width="48" height="150" rx="24" fill="#b8923a" transform="rotate(-50)"/>
+   <g transform="translate(-95,95) rotate(-20)"><rect x="-38" y="-62" width="76" height="124" rx="12" fill="#091528"/><rect id="scr" x="-30" y="-54" width="60" height="108" rx="6" fill="#16223a"/></g></g>
+ </g>
+ <g id="rings" fill="none" stroke="#b8923a" stroke-width="6"><circle cx="205" cy="1000" r="40"/><circle cx="205" cy="1000" r="40"/></g>
+</svg>
+<div class="cap" id="c2a" style="top:1560px"><span>No bookings. No income.</span></div>
+<div class="cap" id="c2b" style="top:1560px"><span>Then, your phone buzzes.</span></div>
+</div>
+
+<!-- S3: the request -->
+<div class="scene" id="S3" style="background:#0e1f3b"><svg viewBox="0 0 1080 1920">
+ <rect width="1080" height="1920" fill="#0e1f3b"/>
+ <g id="phone">
+  <rect x="190" y="230" width="700" height="1200" rx="70" fill="#091528" stroke="#2a3b5a" stroke-width="6"/>
+  <rect x="220" y="260" width="640" height="1140" rx="48" fill="#f4f3ef"/>
+  <rect x="440" y="276" width="200" height="30" rx="15" fill="#091528"/>
+  <text x="270" y="400" font-family="Hanken" font-weight="600" font-size="30" fill="#5a6578">Partner workspace</text>
+  <g id="reqCard"><rect x="260" y="450" width="560" height="620" rx="12" fill="#faf9f6" stroke="#dcd9d0" stroke-width="3"/>
+   <rect x="260" y="450" width="560" height="14" fill="#b8923a"/>
+   <text x="300" y="540" font-family="Newsreader" font-size="54" fill="#0e1f3b" font-weight="480">New request</text>
+   <line x1="300" y1="580" x2="780" y2="580" stroke="#dcd9d0" stroke-width="3"/>
+   <text x="300" y="650" font-family="Hanken" font-size="34" fill="#5a6578">Stay</text><text x="780" y="650" text-anchor="end" font-family="Hanken" font-size="34" fill="#0e1f3b" font-weight="600">3 nights</text>
+   <text x="300" y="720" font-family="Hanken" font-size="34" fill="#5a6578">Area</text><text x="780" y="720" text-anchor="end" font-family="Hanken" font-size="34" fill="#0e1f3b" font-weight="600">Lekki Phase 1</text>
+   <text x="300" y="790" font-family="Hanken" font-size="34" fill="#5a6578">Guests</text><text x="780" y="790" text-anchor="end" font-family="Hanken" font-size="34" fill="#0e1f3b" font-weight="600">2</text>
+   <g id="accBtn"><rect id="accRect" x="300" y="860" width="480" height="110" rx="10" fill="#0e1f3b"/><text id="accTxt" x="540" y="930" text-anchor="middle" font-family="Hanken" font-weight="600" font-size="40" fill="#fff">Accept</text>
+    <path id="accTick" d="M380 915 L420 955 L490 880" stroke="#d4b268" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0"/></g>
+   <text id="payNote" x="540" y="1030" text-anchor="middle" font-family="Hanken" font-size="30" fill="#5a6578">Guest pays after you accept</text>
+  </g>
+  <g id="finger" opacity="0"><circle id="ripple" cx="0" cy="0" r="30" fill="none" stroke="#b8923a" stroke-width="6"/><rect x="-26" y="10" width="52" height="170" rx="26" fill="#6b4226"/><rect x="-26" y="90" width="120" height="90" rx="24" fill="#6b4226"/></g>
+ </g>
+</svg>
+<div class="cap" id="c3a" style="top:1530px"><span>A guest sends a request.</span></div>
+<div class="cap" id="c3b" style="top:1530px"><span>They pay only after you accept.</span></div>
+</div>
+
+<!-- S4: verified + nights fill -->
+<div class="scene" id="S4"><svg viewBox="0 0 1080 1920">
+ <rect width="1080" height="1920" fill="#f4f3ef"/>
+ <rect y="1330" width="1080" height="590" fill="#eae8e1"/><rect y="1326" width="1080" height="8" fill="#dcd9d0"/>
+ <g id="house" transform="translate(540,1330)">
+  <rect x="-300" y="-520" width="600" height="520" fill="#faf9f6" stroke="#0e1f3b" stroke-width="8"/>
+  <path d="M-340 -520 L0 -740 L340 -520Z" fill="#0e1f3b"/>
+  <rect x="-60" y="-300" width="120" height="300" rx="6" fill="#b8923a"/>
+  <rect x="-250" y="-440" width="130" height="130" fill="#f1e7cf" stroke="#0e1f3b" stroke-width="6"/><rect x="120" y="-440" width="130" height="130" fill="#f1e7cf" stroke="#0e1f3b" stroke-width="6"/>
+  <g id="badge" transform="translate(0,-600)"><circle r="92" fill="#f4f3ef" stroke="#b8923a" stroke-width="10"/><path id="chk" d="M-42 4 L-12 36 L46 -30" stroke="#0e1f3b" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="160" stroke-dashoffset="160"/></g>
+ </g>
+ <g id="cal4"><rect x="150" y="60" width="780" height="40" fill="none"/></g>
+</svg>
+<div class="cap" id="c4a" style="top:150px"><span>Every listing is verified<br>before it goes live.</span></div>
+<div class="cap" id="c4b" style="top:150px"><span>Your nights start filling up.</span></div>
+<div id="calBox" style="position:absolute;left:150px;top:400px;width:780px;opacity:0"></div>
+</div>
+
+<!-- S5: CTA -->
+<div class="scene" id="S5" style="background:#0e1f3b">
+ <div class="serif" id="eHead" style="position:absolute;left:96px;top:420px;width:890px;font-size:158px;line-height:.98;color:#f4f3ef"></div>
+ <div id="eSub" style="position:absolute;left:96px;top:880px;width:860px;font-size:48px;line-height:1.4;color:#a5aebf">Join as a partner. Your workspace opens straight away. No wahala.</div>
+ <div class="btn" id="eBtn" style="left:96px;top:1240px">Become a partner</div>
+ <div id="eUrl" style="position:absolute;left:96px;top:1420px;font-size:44px;color:#d4b268;font-weight:500">hamlet.rest/partner/register</div>
+ <div class="lockup" id="eLogo" style="left:96px;top:1700px"></div>
+ <div id="eTag" style="position:absolute;right:96px;top:1722px;font-size:36px;color:#a5aebf">Your stay, sorted.</div>
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out:t=>1-Math.pow(1-t,4),inOut:t=>t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2,soft:t=>1-Math.pow(1-t,3),back:t=>{const c=1.7;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)}};
+const seg=(t,a,d,e=E.out)=>e(clamp((t-a)/d));
+const NS='http://www.w3.org/2000/svg';
+const LOGO=(stem,bar,s)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64" fill="none"><path d="M6.5 7H26.5V9.2C22.4 9.3 21 11.5 21 16.6V47.4C21 52.5 22.4 54.7 26.5 54.8V57H6.5V54.8C10.6 54.7 12 52.5 12 47.4V16.6C12 11.5 10.6 9.3 6.5 9.2V7Z" fill="${stem}"/><path d="M37.5 7H57.5V9.2C53.4 9.3 52 11.5 52 16.6V47.4C52 52.5 53.4 54.7 57.5 54.8V57H37.5V54.8C41.6 54.7 43 52.5 43 47.4V16.6C43 11.5 41.6 9.3 37.5 9.2V7Z" fill="${stem}"/><path d="M12 21.4C13.2 26.2 16.5 28.8 21 28.8H43C47.5 28.8 50.8 26.2 52 21.4V42.2C50.8 37.4 47.5 34.8 43 34.8H21C16.5 34.8 13.2 37.4 12 42.2V21.4Z" fill="${bar}"/></svg>`;
+$('eLogo').innerHTML=LOGO('#f4f3ef','#d4b268',84)+'<span style="color:#f4f3ef">HAMLET.</span>';
+function words(el,text){el.innerHTML=text.split('\n').map(l=>`<span class="mask">${l.split(' ').map(w=>`<span class="w">${w}</span>`).join(' ')}</span>`).join('');return [...el.querySelectorAll('.w')]}
+const eW=words($('eHead'),'List your\nLagos stay.');
+// skyline builder
+function skyline(g,baseY,seed,tall){let x=-20,s=seed;const r=()=>{s=(s*9301+49297)%233280;return s/233280};let h='';while(x<1100){const w=60+r()*90,hh=(tall?180:90)+r()*(tall?420:200);h+=`<rect x="${x}" y="${baseY-hh}" width="${w}" height="${hh}"/>`;x+=w+4}g.innerHTML=h}
+skyline($('sky1'),1250,7,true);
+// Lekki-Ikoyi style cable bridge (adds to sky1)
+$('sky1').insertAdjacentHTML('beforeend',`<g stroke="#0e1f3b" stroke-width="4" fill="#0e1f3b"><rect x="300" y="880" width="26" height="370"/><rect x="700" y="880" width="26" height="370"/><rect x="0" y="1210" width="1080" height="22"/>${[...Array(9)].map((_,i)=>`<line x1="313" y1="${900+i*6}" x2="${313-40-i*34}" y2="1210"/><line x1="313" y1="${900+i*6}" x2="${313+40+i*34}" y2="1210"/><line x1="713" y1="${900+i*6}" x2="${713-40-i*34}" y2="1210"/><line x1="713" y1="${900+i*6}" x2="${713+40+i*34}" y2="1210"/>`).join('')}</g>`);
+skyline($('winCity'),830,19,false);$('winCity').setAttribute('transform','translate(560,0) scale(.38) translate(0,0)');
+$('winCity').setAttribute('transform','translate(580,508) scale(.35) translate(0,0)');
+// calendars
+function cells(g,x,y,w,h,cols,rows){let s='';for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)s+=`<rect x="${x+c*w}" y="${y+r*h}" width="${w}" height="${h}"/>`;g.innerHTML=s}
+cells($('cal2cells'),120,420,48.5,60,7,5);
+// big calendar for S4
+let cal='<div style="font-family:Newsreader;font-size:60px;font-weight:480;margin-bottom:26px">Lekki Phase 1 · November</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px">';
+const booked=[16,17,18];
+for(let d=1;d<=30;d++){const b=booked.includes(d);cal+=`<div class="day" data-b="${b?booked.indexOf(d):''}" style="height:92px;border:2px solid #dcd9d0;background:#faf9f6;border-radius:6px;display:flex;align-items:center;justify-content:center;font:600 32px Hanken;color:#5a6578;position:relative"><span style="position:relative;z-index:1">${d}</span><i style="position:absolute;inset:0;background:#b8923a;border-radius:4px;opacity:0;transform:scaleX(0);transform-origin:left"></i></div>`}
+$('calBox').innerHTML=cal+'</div>';
+const dayEls=[...document.querySelectorAll('#calBox .day')].filter(d=>d.dataset.b!=='');
+// helpers
+function fade(el,t,a,b,d=.45){const i=seg(t,a,d,E.soft),o=1-seg(t,b-d,d,E.soft);const p=Math.min(i,o);el.style.opacity=p;el.style.transform=`translateY(${(1-i)*30}px)`}
+function show(el,t,a){const p=seg(t,a,.7);el.style.opacity=p;el.style.transform=`translateY(${(1-p)*24}px)`}
+const T={S1:[0,4.8],S2:[4.4,9.4],S3:[9.0,14.4],S4:[14.0,19.0],S5:[18.6,24.0]};window.DURATION=24;
+const P=Object.fromEntries(Object.keys(T).map(k=>[k,$(k)]));
+function render(t){
+ for(const k in P){const [a,b]=T[k];P[k].style.opacity=(t>=a&&t<b)?1:0;P[k].style.zIndex=k.charCodeAt(1)}
+ // wipe transitions (diagonal-free horizontal slide)
+ ['S2','S3','S4','S5'].forEach(k=>{const l=t-T[k][0];P[k].style.clipPath=`inset(0 ${(1-seg(l,0,.8,E.inOut))*100}% 0 0)`});
+ // S1
+ {const l=t-T.S1[0];
+  $('sun').setAttribute('cy',1160-seg(l,0,4.8,E.soft)*470);
+  $('clouds').setAttribute('transform',`translate(${l*28},0)`);
+  $('boat').setAttribute('transform',`translate(${-200+l*95},1300)`);
+  $('danfo').setAttribute('transform',`translate(${-480+seg(l,0.2,4.6,t=>t)*1700},1510)`);
+  fade($('c1a'),l,.4,2.4);fade($('c1b'),l,2.5,4.8);}
+ // S2
+ {const l=t-T.S2[0];
+  const breathe=Math.sin(l*2)*4;$('owner').setAttribute('transform',`translate(300,${1424+breathe*.0})`);
+  const buzz=l>2.6&&l<4.8?Math.sin(l*70)*4:0;
+  $('armR').setAttribute('transform',`translate(${60+buzz},-600)`);
+  $('scr').setAttribute('fill',l>2.7?'#d4b268':'#16223a');
+  $('mouth').setAttribute('d',l>2.7?'M-20 -712 Q0 -684 20 -712':'M-18 -706 Q0 -714 18 -706');
+  const rg=document.querySelectorAll('#rings circle');
+  rg.forEach((c,i)=>{const p=clamp((l-2.7-i*.35)/1.2);c.setAttribute('r',40+p*80);c.setAttribute('opacity',l>2.7?1-p:0)});
+  $('rings').setAttribute('transform','translate(0,0)');
+  fade($('c2a'),l,.5,2.5);fade($('c2b'),l,2.7,5.0);
+  document.querySelectorAll('#cal2cells rect').forEach(()=>{});}
+ // S3
+ {const l=t-T.S3[0];
+  const pp=seg(l,.2,.9,E.back);$('phone').setAttribute('transform',`translate(0,${(1-pp)*900})`);
+  const rc=seg(l,1.0,.7,E.soft);$('reqCard').setAttribute('opacity',rc);$('reqCard').setAttribute('transform',`translate(0,${(1-rc)*40})`);
+  // finger taps accept at l=3.0
+  const fp=seg(l,2.0,.9,E.inOut);const fx=700-fp*(700-560),fy=1300-fp*(1300-900);
+  const press=l>3.1&&l<3.4;
+  $('finger').setAttribute('opacity',l>2.0&&l<4.2?1:0);$('finger').setAttribute('transform',`translate(${fx},${fy+(press?10:0)})`);
+  const rp=clamp((l-3.1)/.6);$('ripple').setAttribute('r',30+rp*70);$('ripple').setAttribute('opacity',l>3.1?1-rp:0);
+  const acc=l>3.2;$('accRect').setAttribute('fill',acc?'#256b43':'#0e1f3b');$('accTxt').setAttribute('opacity',acc?0:1);$('accTick').setAttribute('opacity',acc?1:0);
+  $('payNote').textContent=acc?'Accepted. Guest has 48 hours to pay.':'Guest pays after you accept';
+  $('payNote').setAttribute('fill',acc?'#256b43':'#5a6578');
+  fade($('c3a'),l,.8,3.0);fade($('c3b'),l,3.2,5.4);}
+ // S4
+ {const l=t-T.S4[0];
+  $('house').setAttribute('transform',`translate(540,${1330+(1-seg(l,.1,.9,E.out))*500})`);
+  $('chk').setAttribute('stroke-dashoffset',160*(1-seg(l,1.0,.7,E.inOut)));
+  const b=seg(l,.9,.5,E.back);$('badge').setAttribute('transform',`translate(0,-600) scale(${b})`);
+  fade($('c4a'),l,.4,2.6);
+  const cp=seg(l,2.6,.6);$('calBox').style.opacity=cp;$('calBox').style.transform=`translateY(${(1-cp)*30}px)`;
+  $('house').style.opacity=1-seg(l,2.6,.5);
+  fade($('c4b'),l,2.8,5.0);
+  dayEls.forEach((d,i)=>{const p=seg(l,3.3+i*.35,.5,E.out);const bar=d.querySelector('i');bar.style.opacity=1;bar.style.transform=`scaleX(${p})`;d.firstChild.style.color=p>.5?'#fff':'#5a6578'});}
+ // S5
+ {const l=t-T.S5[0];
+  eW.forEach((w,i)=>{const p=seg(l,.9+i*.14,1.0);w.style.transform=`translateY(${(1-p)*110}%)`;w.style.opacity=p>0?1:0});
+  show($('eSub'),l,1.9);show($('eBtn'),l,2.5);show($('eUrl'),l,2.8);show($('eLogo'),l,3.3);show($('eTag'),l,3.5);}
+}
+window.render=render;render(0);
+</script></body></html>
