@@ -10,7 +10,7 @@ const REVEAL_SELECTOR = '[data-hamlet-reveal]';
  * The one scroll-triggered motion on the site: content below the fold settles in with a short
  * fade and a small rise, in batches so a row of stays arrives together. Content that is already
  * on screen is never hidden, and nothing moves for visitors who ask for reduced motion.
- * The hero photo also drifts a few pixels slower than the page.
+ * The hero photo also moves a few pixels slower than the page inside its frame.
  */
 export function GlobalMotion() {
   useEffect(() => {
@@ -35,12 +35,13 @@ export function GlobalMotion() {
       arm(document);
 
       const parallax = document.querySelector<HTMLElement>('[data-hero-parallax]');
-      if (parallax && window.matchMedia('(min-width: 761px)').matches) {
-        gsap.to(parallax, {
-          yPercent: 6,
-          ease: 'none',
-          scrollTrigger: { trigger: parallax.parentElement ?? parallax, start: 'top top', end: 'bottom top', scrub: true },
-        });
+      const heroImg = parallax?.querySelector('img');
+      if (parallax && heroImg && window.matchMedia('(min-width: 901px)').matches) {
+        gsap.fromTo(
+          heroImg,
+          { yPercent: -3, scale: 1.08 },
+          { yPercent: 3, scale: 1.08, ease: 'none', scrollTrigger: { trigger: parallax, start: 'top 80%', end: 'bottom top', scrub: true } },
+        );
       }
 
       // Client navigation and streamed content add sections after mount.
