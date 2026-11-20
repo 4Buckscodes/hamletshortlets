@@ -9,8 +9,8 @@ import subprocess, glob, os, wave, numpy as np
 SR=44100
 CUES={1:(0.5,'Lagos. Early morning.'),2:(2.6,'Your flat is empty again.'),3:(4.9,'No bookings. No income.'),
  4:(7.2,'Then your phone buzzes.'),5:(9.8,'A guest sends a request.'),6:(12.3,'They pay only after you accept.'),
- 7:(14.4,'Every listing is verified before it goes live.'),8:(17.1,'Your nights start filling up.'),
- 9:(19.5,'List your Lagos stay on HAMLET. Join as a partner. No wahala.')}
+ 7:(14.2,'Every listing is verified before it goes live.'),8:(17.3,'Your nights start filling up.'),
+ 9:(19.4,'List your Lagos stay on HAMLET. No wahala.')}
 def load(p):
     tmp='/tmp/_vo.wav'; subprocess.run(['ffmpeg','-y','-loglevel','error','-i',p,'-ac','1','-ar',str(SR),'-af','loudnorm=I=-16:TP=-2,silenceremove=1:0:-50dB',tmp],check=True)
     with wave.open(tmp) as w: return np.frombuffer(w.readframes(w.getnframes()),'<i2').astype(float)/32768
