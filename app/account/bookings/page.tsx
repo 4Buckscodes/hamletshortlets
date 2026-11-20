@@ -22,7 +22,9 @@ import {
   FocusedDrawer,
   FormField,
 } from '@/components/forms/ProgressiveFormPrimitives';
-import { Chip, ChipRow, StatusPill, type StatusTone } from '@/components/ui';
+import { Chip, ChipRow, StatusPill } from '@/components/ui';
+import { statusEntry } from '@/lib/statusLabels';
+import { formatNaira } from '@/lib/pricing';
 import { AccountNav } from '../account-nav';
 
 type Booking = {
@@ -44,39 +46,11 @@ type Booking = {
   properties?: { title?: string; area?: string; image_urls?: string[] | null } | null;
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  requested: 'Awaiting partner response',
-  checking: 'Availability being checked',
-  awaiting_payment: 'Accepted — awaiting payment',
-  confirmed: 'Confirmed (payment verified)',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-  expired: 'Payment hold expired',
-  refunded: 'Refunded',
-  disputed: 'Under operations review',
-  declined: 'Declined by partner',
-  no_show: 'Recorded no-show',
-};
-
-const STATUS_TONE: Record<string, StatusTone> = {
-  requested: 'warn',
-  checking: 'warn',
-  awaiting_payment: 'info',
-  confirmed: 'ok',
-  completed: 'neutral',
-  cancelled: 'neutral',
-  expired: 'neutral',
-  refunded: 'neutral',
-  disputed: 'bad',
-  declined: 'bad',
-  no_show: 'bad',
-};
-
 type BookingFilter = 'all' | 'upcoming' | 'requests' | 'past' | 'cancelled';
 const BOOKING_FILTERS: Array<{ id: BookingFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'upcoming', label: 'Upcoming' },
-  { id: 'requests', label: 'Requests' },
+  { id: 'requests', label: 'Action needed' },
   { id: 'past', label: 'Past' },
   { id: 'cancelled', label: 'Cancelled' },
 ];
@@ -88,6 +62,25 @@ function bookingGroup(b: { status: string; check_out: string }, today: string): 
   return 'past';
 }
 
+function formatStayDates(checkIn: string, checkOut: string) {
+  const fmt = (iso: string) => {
+    const date = new Date(`${iso}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  };
+  return `${fmt(checkIn)} → ${fmt(checkOut)}`;
+}
+
+/** "41 hours left · pay by Sat 21 Nov, 22:16 Lagos time (21:16 your time)" */
+function deadlineLabel(deadline: string) {
+  const when = new Date(deadline);
+  if (Number.isNaN(when.getTime())) return 'Pay within 48 hours of acceptance to keep these dates.';
+  const hours = Math.max(0, Math.round((when.getTime() - Date.now()) / 3600000));
+  const lagos = when.toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
+  const local = when.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  const left = hours <= 0 ? 'Payment window has closed' : hours < 1 ? 'Less than an hour left' : `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
+  return `${left} · pay by ${lagos} Lagos time (${local} your time)`;
+}
+
 function nightsLabel(checkIn: string, checkOut: string) {
   const n = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86400000);
   return Number.isFinite(n) && n > 0 ? ` · ${n} ${n === 1 ? 'night' : 'nights'}` : '';
@@ -95,7 +88,7 @@ function nightsLabel(checkIn: string, checkOut: string) {
 
 export default function GuestBookingsPage() {
   const db = useMemo(() => getBrowserSupabase(), []);
-  const { formatPrice, formatCautionDeposit } = useCurrency();
+  const { formatPrice } = useCurrency();
   const [items, setItems] = useState<Booking[]>([]);
   const [filter, setFilter] = useState<BookingFilter>('all');
   const [loading, setLoading] = useState(true);
@@ -121,7 +114,8 @@ export default function GuestBookingsPage() {
 
   // Post-stay feedback drawer state
   const [feedbackBooking, setFeedbackBooking] = useState<Booking | null>(null);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
+  const [drawerError, setDrawerError] = useState('');
   const [feedbackComment, setFeedbackComment] = useState('');
 
   const load = useCallback(async () => {
@@ -170,7 +164,13 @@ export default function GuestBookingsPage() {
   }, [load]);
 
   async function cancelBooking(booking: Booking) {
-    if (!db || !window.confirm(`Cancel booking request ${booking.reference}?`)) return;
+    if (
+      !db ||
+      !window.confirm(
+        `Cancel ${booking.reference}? The dates are released for other guests. Nothing has been charged, so there is nothing to refund.`,
+      )
+    )
+      return;
     setError('');
     setNotice('');
     setBusyId(booking.id);
@@ -260,6 +260,7 @@ export default function GuestBookingsPage() {
   }
 
   async function openWayfinder(booking: Booking) {
+    setDrawerError('');
     if (!db) return;
     setWayfinderBooking(booking);
     setWayfinderState({ loading: true, deployed: false, ready: false });
@@ -296,6 +297,10 @@ export default function GuestBookingsPage() {
   async function submitFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!db || !feedbackBooking) return;
+    if (!rating) {
+      setDrawerError('Choose a rating from 1 to 5.');
+      return;
+    }
     setBusyId(feedbackBooking.id);
     setError('');
     setNotice('');
@@ -304,14 +309,15 @@ export default function GuestBookingsPage() {
         target_booking_id: feedbackBooking.id,
         feedback_rating: rating,
         feedback_category: 'overall_stay',
-        feedback_comment: feedbackComment.trim() || 'Smooth stay.',
+        feedback_comment: feedbackComment.trim() || null,
       });
       if (rpcError) throw new Error(rpcError.message);
       setNotice(`Thank you — your feedback for ${feedbackBooking.reference} has been recorded.`);
       setFeedbackBooking(null);
       setFeedbackComment('');
+      setRating(0);
     } catch (caught) {
-      setError(
+      setDrawerError(
         caught instanceof Error ? caught.message : 'Could not save stay feedback.',
       );
     } finally {
@@ -408,13 +414,13 @@ export default function GuestBookingsPage() {
                   ) : null}
                 </div>
                 <div className="hm-booking-item-body">
-                  <StatusPill tone={STATUS_TONE[b.status] || 'neutral'}>{STATUS_LABEL[b.status] || b.status}</StatusPill>
+                  <StatusPill tone={statusEntry(b.status).tone}>{statusEntry(b.status).label}</StatusPill>
                   <h2 className="hm-h3" style={{ fontSize: 22 }}>
                     {b.properties?.title || 'HAMLET stay'}
                     {b.properties?.area ? `, ${b.properties.area}` : ''}
                   </h2>
                   <p className="hm-meta">
-                    {b.check_in} → {b.check_out}
+                    {formatStayDates(b.check_in, b.check_out)}
                     {nightsLabel(b.check_in, b.check_out)} · {b.guest_count} {b.guest_count === 1 ? 'guest' : 'guests'}
                   </p>
                 <div className="hm-booking-item-facts">
@@ -431,27 +437,27 @@ export default function GuestBookingsPage() {
                         : formatPrice(Number(b.guest_total || 0))}
                     </strong>
                     {b.quote_currency && b.quote_currency !== 'NGN' && (
-                      <span className="ml-1 text-[11px] font-medium text-ink-500">
-                        Locked {b.quote_currency} quote
+                      <span className="ml-1 text-[12px] font-medium text-ink-500">
+                        {isQuoteExpired(b.quote_expires_at)
+                          ? `· ${b.quote_currency} rate refreshes when you pay`
+                          : `· ${b.quote_currency} rate valid for 30 minutes from the quote`}
                       </span>
                     )}
+                  </span>
+                  <span>
+                    Charged in naira: <strong className="text-ink-900">{formatNaira(Number(b.guest_total || 0))}</strong>
                   </span>
                   {Number(b.refundable_deposit) > 0 && (
                     <span>
                       Refundable caution deposit:{' '}
                       <strong className="font-mono text-ink-900">
-                        {formatCautionDeposit(Number(b.refundable_deposit))}
+                        {formatNaira(Number(b.refundable_deposit))}
                       </strong>
                     </span>
                   )}
                   {b.status === 'awaiting_payment' && b.payment_deadline && (
-                    <span className="font-semibold text-brass-700">
-                      48h payment hold until{' '}
-                      {new Date(b.payment_deadline).toLocaleString('en-NG', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                        timeZone: 'Africa/Lagos',
-                      })}
+                    <span className="hm-notice hm-notice-warn" style={{ flexBasis: '100%', margin: '4px 0 0' }}>
+                      {deadlineLabel(b.payment_deadline)}
                     </span>
                   )}
                   <span>Ref. <span className="font-mono">{b.reference}</span></span>
@@ -483,14 +489,17 @@ export default function GuestBookingsPage() {
                       className="hm-btn hm-btn-ghost min-h-[46px]"
                     >
                       <Compass className="h-4 w-4 shrink-0" />
-                      Arrival & Wayfinder guide
+                      Arrival guide
                     </button>
                   )}
 
                   {b.status === 'completed' && (
                     <button
                       type="button"
-                      onClick={() => setFeedbackBooking(b)}
+                      onClick={() => {
+                        setDrawerError('');
+                        setFeedbackBooking(b);
+                      }}
                       className="hm-btn hm-btn-ghost min-h-[46px]"
                     >
                       <MessageSquarePlus className="h-4 w-4 shrink-0" />
@@ -534,9 +543,9 @@ export default function GuestBookingsPage() {
 
         {/* Safe Wayfinder Arrival Drawer (honestly gated if migration is not yet deployed) */}
         <FocusedDrawer
-          error={error}
+          error={drawerError}
           open={Boolean(wayfinderBooking)}
-          title="Arrival & Wayfinder guide"
+          title="Arrival guide"
           subtitle={wayfinderBooking?.reference}
           onClose={() => setWayfinderBooking(null)}
         >
@@ -545,20 +554,20 @@ export default function GuestBookingsPage() {
           ) : !wayfinderState?.deployed ? (
             <div className="space-y-3 rounded-2xl border border-ink-200 bg-paper p-4 text-sm leading-relaxed text-ink-700">
               <p className="m-0 font-bold text-ink-900">
-                Door-to-door Wayfinder guides are not yet enabled on this environment
+                Your arrival guide isn&apos;t available yet
               </p>
               <p className="m-0 text-xs text-ink-600">
-                Your stay remains confirmed ({wayfinderBooking?.reference}). Please use your confirmed booking email or contact HAMLET support if you need arrival assistance.
+                Your stay is confirmed ({wayfinderBooking?.reference}). If check-in is close and you still need directions, report an issue from this booking and HAMLET will help.
               </p>
             </div>
           ) : !wayfinderState.ready ? (
             <div className="space-y-3 rounded-2xl border border-ink-200 bg-paper p-4 text-sm leading-relaxed text-ink-700">
               <p className="m-0 font-bold text-ink-900">
-                No verified Wayfinder guide published for this property yet
+                The arrival guide for this stay isn&apos;t ready yet
               </p>
               <p className="m-0 text-xs text-ink-600">
                 {wayfinderState.summary ||
-                  'Arrival details are shared directly by the verified property partner ahead of check-in.'}
+                  'It will appear here once it is ready. If check-in is close and it is still missing, report an issue from this booking.'}
               </p>
             </div>
           ) : (
@@ -584,7 +593,7 @@ export default function GuestBookingsPage() {
 
         {/* Post-Stay Feedback Drawer */}
         <FocusedDrawer
-          error={error}
+          error={drawerError}
           open={Boolean(feedbackBooking)}
           title="Share post-stay feedback"
           subtitle={feedbackBooking?.reference}
@@ -599,6 +608,9 @@ export default function GuestBookingsPage() {
                   onChange={e => setRating(Number(e.target.value))}
                   className="hm-input"
                 >
+                  <option value={0} disabled>
+                    Choose a rating
+                  </option>
                   {[5, 4, 3, 2, 1].map(r => (
                     <option key={r} value={r}>
                       {r} / 5

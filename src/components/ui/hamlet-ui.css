@@ -1103,3 +1103,10 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-content .hm-chip[aria-pressed="tr
 /* Money and references in workspaces use tabular Inter, not monospace (DESIGN: Price). */
 .hm-workspace .font-mono, .hm-content .font-mono { font-family: var(--hm-sans) !important; font-variant-numeric: tabular-nums; }
 .hm-card-band .hm-label { color: var(--hm-lime); }
+
+/* ---------- Account pages (critique fixes) ---------- */
+.hm-account .font-mono { font-family: var(--hm-sans) !important; font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) { .hm-main .hm-band h1.hm-display { font-size: clamp(38px, 10.5vw, 46px) !important; } }
+/* Dark mode: white on the hover blue keeps 4.5:1. */
+html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
+.hm-account input:disabled { background: var(--hm-sand); color: var(--hm-muted); cursor: not-allowed; }
