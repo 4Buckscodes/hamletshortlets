@@ -540,6 +540,12 @@ export default function PartnerApplicationForm() {
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {step === 0 && (
           <div className="space-y-4">
+            <div className="text-sm leading-relaxed text-ink-800">
+              <p className="m-0 font-bold text-ink-900">One partner account. Multiple ways to earn.</p>
+              <p className="m-0 mt-1 text-ink-600">
+                Active partners can close bookings across HAMLET and introduce new partners from one account. Choose the role that best describes you; you can update it later.
+              </p>
+            </div>
             <OptionCardGroup
               ariaLabel="Your role on HAMLET"
               columns={1}

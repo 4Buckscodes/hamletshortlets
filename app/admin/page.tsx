@@ -181,7 +181,7 @@ export default function AdminOverviewPage() {
 
               <Link
                 href="/admin/bookings"
-                className={`hm-admin-tile ${counts.activeBookings > 0 ? 'hm-admin-tile-attention' : ''}`}
+                className={`hm-admin-tile `}
               >
                 <span className="hm-label">
                   Active Bookings & Holds
@@ -214,7 +214,7 @@ export default function AdminOverviewPage() {
                 className={`hm-admin-tile ${counts.pendingLedger > 0 ? 'hm-admin-tile-attention' : ''}`}
               >
                 <span className="hm-label">
-                  Ledger & caution deposits
+                  Ledger & deposits
                 </span>
                 <p className="hm-money m-0 mt-2 text-3xl font-extrabold text-ink-900">
                   {counts.pendingLedger}
