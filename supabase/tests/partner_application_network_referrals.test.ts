@@ -157,7 +157,7 @@ describe('Partner applications accept referral codes owned by network members', 
     expect(inserted.rows[0]).toEqual({ referred_by_partner_id: memberId, referred_by_code: code });
 
     if (referralRecordedOnInsert) {
-      // Both the legacy validator and the 20261119100000 catch-up record the direct
+      // Both the legacy validator and the 20261120035547 catch-up record the direct
       // referral at submission time ("joining is enough").
       const referral = await db.query<{ referrer_partner_id: string; status: string }>(
         `select referrer_partner_id::text, status from public.partner_referrals where referred_partner_id = $1`,
