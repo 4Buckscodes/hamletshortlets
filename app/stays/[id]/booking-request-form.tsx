@@ -87,6 +87,14 @@ export default function BookingRequestForm({
       const qOut = params.get('checkOut');
       const qGuests = Number(params.get('guests'));
       if (qIn && /^\d{4}-\d{2}-\d{2}$/.test(qIn)) setCheckIn(qIn);
+      if (params.get('resume') === '1') {
+        try {
+          const note = window.sessionStorage.getItem(`hamlet:booking-note:${propertyId}`);
+          if (note) setRequests(note);
+        } catch {
+          // ignore
+        }
+      }
       if (qOut && /^\d{4}-\d{2}-\d{2}$/.test(qOut)) setCheckOut(qOut);
       if (Number.isInteger(qGuests) && qGuests >= 1 && qGuests <= maxGuests) {
         setGuests(qGuests);
@@ -102,7 +110,7 @@ export default function BookingRequestForm({
       }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [maxGuests]);
+  }, [maxGuests, propertyId]);
 
   const nights =
     checkIn && checkOut && checkOut > checkIn ? nightsBetween(checkIn, checkOut) : 0;
@@ -122,7 +130,7 @@ export default function BookingRequestForm({
       setCheckingCalendar(false);
       if (!rpcErr && Array.isArray(data) && (data as string[]).includes(propertyId)) {
         setCalendarConflict(
-          'Those dates have a recorded calendar block or active booking hold. Please pick different dates.',
+          'Those dates aren’t available for this stay. Please pick different dates.',
         );
       }
     }, 0);
@@ -146,6 +154,12 @@ export default function BookingRequestForm({
     if (checkOut) qs.set('checkOut', checkOut);
     qs.set('guests', String(guests));
     qs.set('resume', '1');
+    // Keep the guest's arrival note across sign-in (this tab only).
+    try {
+      if (requests.trim()) window.sessionStorage.setItem(`hamlet:booking-note:${propertyId}`, requests);
+    } catch {
+      // Storage can be unavailable; the note is optional.
+    }
     const activeShareToken =
       (typeof window !== 'undefined'
         ? extractShareTokenFromSearchParams(new URLSearchParams(window.location.search))
@@ -375,7 +389,7 @@ export default function BookingRequestForm({
           )}
         </FormField>
 
-        {checkingCalendar && <p className="hm-meta">Checking recorded calendar dates…</p>}
+        {checkingCalendar && <p className="hm-meta">Checking the dates…</p>}
         {calendarConflict && (
           <p role="alert" className="hm-notice hm-notice-bad">
             {calendarConflict}
@@ -440,7 +454,7 @@ export default function BookingRequestForm({
           {resumed && signedIn
             ? 'Signed in. Your dates are saved; tap Request to book to send it.'
             : signedIn === false
-              ? 'You won’t be charged yet. Next, sign in or create an account (about 30 seconds) and your request is ready to send.'
+              ? 'You won’t be charged yet. Next, sign in or create a free account; your dates are kept and your request is ready to send.'
               : 'You won’t be charged yet. The partner reviews your request first.'}
         </p>
       </form>
@@ -491,7 +505,7 @@ export default function BookingRequestForm({
               )}
             </p>
             <p className="hm-meta" style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              No charge until the partner accepts
+              No charge until accepted
             </p>
           </div>
           <button

@@ -209,7 +209,7 @@ export function PropertyEnquiryCard({
           <button
             type="submit"
             disabled={busy}
-            className="primary-button min-h-[44px] w-full text-xs"
+            className="hm-btn hm-btn-ghost hm-btn-block"
           >
             {busy ? 'Sending…' : 'Send enquiry'}
           </button>

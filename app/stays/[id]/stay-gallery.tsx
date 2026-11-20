@@ -79,7 +79,7 @@ export function StayGallery({ title, images }: { title: string; images: string[]
                 className="hm-media hm-gallery-thumb"
               >
                 <img src={url} alt="" loading="lazy" decoding="async" onError={() => markFailed(url)} />
-                {overflow ? <span className="hm-gallery-more">+{overflow} photos</span> : null}
+                {overflow ? <span className="hm-gallery-more">+{overflow} {overflow === 1 ? 'photo' : 'photos'}</span> : null}
               </button>
             );
           })}

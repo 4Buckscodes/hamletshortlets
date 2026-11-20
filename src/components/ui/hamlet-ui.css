@@ -578,7 +578,7 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-detail-verified { border-color: v
 }
 
 /* ---------- Booking card ---------- */
-.hm-booking { display: flex; flex-direction: column; gap: 18px; padding: 24px; box-shadow: var(--hm-shadow-lift); }
+.hm-booking { display: flex; flex-direction: column; gap: 18px; padding: 24px; }
 @media (max-width: 760px) { .hm-booking { padding: 18px; } }
 .hm-booking-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--hm-line-soft); }
 .hm-booking-rate { margin: 4px 0 0; font-size: 30px; font-weight: 850; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
@@ -838,8 +838,6 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { backgr
   /* Stays: results first, the neighbourhood rail after them; skip decorative band media. */
   .hm-main .hm-band-media { display: none; }
   .hm-discovery { gap: 32px !important; }
-  .hm-discovery-results { order: 1; }
-  .hm-discovery-rail { order: 2; }
   .hm-footer a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 .hm-media picture, .home-photo-frame picture { display: contents; }
@@ -861,8 +859,6 @@ html[data-hm-dark="on"][data-theme="dark"] :is(.bg-ink-100, .bg-ink-50) { backgr
 .hm-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hm-only-wide { display: inline-flex; }
 @media (max-width: 1023px) { .hm-only-wide { display: none !important; } }
-.hm-discovery-results { order: 1; }
-.hm-discovery-rail { order: 2; }
 .hm-stays-strip { position: relative; z-index: 2; display: grid; gap: 16px; margin-top: -48px; padding-block: 28px 24px; background: var(--hm-sand); color: var(--hm-text); }
 .hm-stays-strip::before { content: ""; position: absolute; inset: 0 -100vmax; z-index: -1; border-bottom: 1px solid var(--hm-line); background: var(--hm-sand); }
 .hm-main:has(.hm-stays-strip) { overflow-x: clip; }
@@ -1127,4 +1123,11 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
   .home-page .home-hero-bottom, .home-page .home-image-index, .home-page .home-scroll { display: none !important; }
   .home-page .home-search-heading { flex-direction: column; align-items: flex-start !important; gap: 6px; }
   .home-page .home-search-heading h2 { text-align: left !important; }
+}
+
+/* ---------- Stays (critique fixes) ---------- */
+@media (max-width: 760px) {
+  .hm-section-head .hm-rail-controls { display: none !important; }
+  .hm-band-compact .hm-scroll-cue { display: none; }
+  .hm-band-compact .hm-band-inner { padding-block: 22px 14px; gap: 14px; }
 }

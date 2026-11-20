@@ -378,6 +378,7 @@ export function DiscoveryMarketplace({
                 </Chip>
                 {priceOpen && (
                   <span className="hm-price-panel">
+                    <span className="hm-meta" style={{ gridColumn: '1 / -1' }}>Price range per night in naira (₦). Cards may show your own currency.</span>
                     <label className="hm-field">
                       <span className="hm-field-label">Min ₦ / night</span>
                       <input type="text" inputMode="numeric" value={filters.minPriceInput} onChange={e => updateFilters({ minPriceInput: sanitisePrice(e.target.value) })} placeholder="No min" className="hm-input" aria-invalid={!priceValidation.valid || undefined} />
@@ -410,62 +411,6 @@ export function DiscoveryMarketplace({
           </div>
         </section>
       )}
-
-      {/* Neighbourhood rail: image toggles that filter the results below. */}
-      <section className="hm-discovery-rail" aria-labelledby="neighbourhood-rail-heading" style={{ display: 'grid', gap: 18 }}>
-        <SectionHeader
-          id="neighbourhood-rail-heading"
-          label="Island & Lagos Mainland corridors"
-          title="Explore Lagos"
-          accent="neighbourhoods."
-          aside={
-            <div className="hm-rail-controls">
-              <button type="button" className="hm-arrow" onClick={() => scrollNeighbourhoodRail(-1)} aria-label="Scroll neighbourhoods left">
-                <ChevronLeft size={16} aria-hidden="true" />
-              </button>
-              <button type="button" className="hm-arrow" onClick={() => scrollNeighbourhoodRail(1)} aria-label="Scroll neighbourhoods right">
-                <ChevronRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-          }
-          className="hm-section-head-tight"
-        />
-
-        <div ref={railRef} role="region" aria-label="Lagos neighbourhoods" className="hm-rail">
-          <button
-            type="button"
-            aria-pressed={!filters.area && filters.side === 'all'}
-            onClick={() => updateFilters({ area: '', side: 'all' })}
-            className="hm-rail-item hm-rail-item-all"
-          >
-            <span className="hm-rail-item-text">
-              <small>Every corridor</small>
-              <b>All Lagos</b>
-              <span>Island &amp; Mainland</span>
-            </span>
-          </button>
-
-          {DISCOVERY_NEIGHBOURHOODS.map(hood => {
-            const selected = filters.area.trim().toLowerCase() === hood.name.toLowerCase();
-            return (
-              <button
-                key={hood.name}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => updateFilters({ area: selected ? '' : hood.name, side: 'all' })}
-                className="hm-rail-item"
-              >
-                <img src={hood.image} alt={hood.alt} loading="lazy" decoding="async" />
-                <span className="hm-rail-item-text">
-                  <small>Lagos {hood.corridor}</small>
-                  <b>{hood.name}</b>
-                  <span>{hood.subtitle}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
 
       {/* Results: filters, live summary and the stay grid. */}
       <section className="hm-discovery-results" id="places-worth-staying-in" aria-labelledby="discovery-results-heading" style={{ display: 'grid', gap: 22, scrollMarginTop: 96 }}>
@@ -604,6 +549,62 @@ export function DiscoveryMarketplace({
       </section>
 
       {/* Mobile / tablet filter drawer */}
+      {/* Neighbourhood rail: image toggles that filter the results below. */}
+      <section className="hm-discovery-rail" aria-labelledby="neighbourhood-rail-heading" style={{ display: 'grid', gap: 18 }}>
+        <SectionHeader
+          id="neighbourhood-rail-heading"
+          label="Island & Lagos Mainland corridors"
+          title="Explore Lagos"
+          accent="neighbourhoods."
+          aside={
+            <div className="hm-rail-controls">
+              <button type="button" className="hm-arrow" onClick={() => scrollNeighbourhoodRail(-1)} aria-label="Scroll neighbourhoods left">
+                <ChevronLeft size={16} aria-hidden="true" />
+              </button>
+              <button type="button" className="hm-arrow" onClick={() => scrollNeighbourhoodRail(1)} aria-label="Scroll neighbourhoods right">
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+          }
+          className="hm-section-head-tight"
+        />
+
+        <div ref={railRef} role="region" aria-label="Lagos neighbourhoods" className="hm-rail">
+          <button
+            type="button"
+            aria-pressed={!filters.area && filters.side === 'all'}
+            onClick={() => updateFilters({ area: '', side: 'all' })}
+            className="hm-rail-item hm-rail-item-all"
+          >
+            <span className="hm-rail-item-text">
+              <small>Every corridor</small>
+              <b>All Lagos</b>
+              <span>Island &amp; Mainland</span>
+            </span>
+          </button>
+
+          {DISCOVERY_NEIGHBOURHOODS.map(hood => {
+            const selected = filters.area.trim().toLowerCase() === hood.name.toLowerCase();
+            return (
+              <button
+                key={hood.name}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => updateFilters({ area: selected ? '' : hood.name, side: 'all' })}
+                className="hm-rail-item"
+              >
+                <img src={hood.image} alt={hood.alt} loading="lazy" decoding="async" />
+                <span className="hm-rail-item-text">
+                  <small>Lagos {hood.corridor}</small>
+                  <b>{hood.name}</b>
+                  <span>{hood.subtitle}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <FocusedDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Filter Lagos stays">
         <div style={{ display: 'grid', gap: 16 }}>
           <label className="hm-field">
@@ -629,7 +630,7 @@ export function DiscoveryMarketplace({
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label className="hm-field">
-              <span className="hm-field-label">Min price (₦)</span>
+              <span className="hm-field-label">Min price per night (₦, naira)</span>
               <input type="text" inputMode="numeric" value={filters.minPriceInput} onChange={e => updateFilters({ minPriceInput: sanitisePrice(e.target.value) })} placeholder="No min" className="hm-input" />
             </label>
             <label className="hm-field">

@@ -17,6 +17,18 @@ import { FormField } from '@/components/forms/ProgressiveFormPrimitives';
 const OAUTH_CONTEXT_STORAGE_KEY = 'hamlet:oauth-context';
 type Mode = 'signin' | 'signup' | 'reset';
 
+/** Plain-language auth errors; never show raw network or provider text. */
+function friendlyAuthError(caught: unknown, bookingIntent: boolean) {
+  const raw = caught instanceof Error ? caught.message : '';
+  const saved = bookingIntent ? ' Your stay and dates are still saved.' : '';
+  if (!raw || /fetch|network|load failed|timeout/i.test(raw)) return `We couldn’t reach HAMLET. Check your connection and try again.${saved}`;
+  if (/invalid login|invalid credentials|invalid email or password/i.test(raw)) return 'That email and password don’t match. Try again, or reset your password.';
+  if (/rate limit|too many/i.test(raw)) return 'Too many attempts. Please wait a minute and try again.';
+  if (/already registered|already exists/i.test(raw)) return 'An account with this email already exists. Sign in instead.';
+  if (/email not confirmed/i.test(raw)) return 'Please confirm your email first; check your inbox for the link from HAMLET.';
+  return `We couldn’t complete that. Please try again.${saved}`;
+}
+
 export default function SignInForm() {
   const client = useMemo(() => getBrowserSupabase(), []);
   const [mode, setMode] = useState<Mode>('signin');
@@ -152,7 +164,11 @@ export default function SignInForm() {
           await resolveRoleAndNavigate(data.user.id, true);
           return;
         }
-        setMessage('Account created. Confirm your email, then sign in to continue to your workspace.');
+        setMessage(
+          bookingIntent
+            ? 'Account created. Confirm your email, then sign in here: your stay, dates and guests are still saved and your request will be ready to send.'
+            : 'Account created. Confirm your email, then sign in to continue.',
+        );
         setMode('signin');
         return;
       }
@@ -164,7 +180,7 @@ export default function SignInForm() {
       if (authError) throw authError;
       if (data.user) await resolveRoleAndNavigate(data.user.id, false);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'We could not complete that request. Please try again.');
+      setError(friendlyAuthError(caught, bookingIntent));
     } finally {
       setBusy(false);
     }
@@ -188,7 +204,7 @@ export default function SignInForm() {
         <h2 className="hm-h2">
           {bookingIntent && mode !== 'reset' ? (
             <>
-              Almost there. <em>{mode === 'signup' ? 'Create an account' : 'Sign in'}</em> to send your request.
+              Almost there. {mode === 'signup' ? 'Create an account' : 'Sign in'} <em>to send your request.</em>
             </>
           ) : mode === 'signup' ? (
             <>

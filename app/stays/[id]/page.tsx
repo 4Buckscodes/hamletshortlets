@@ -189,14 +189,18 @@ export default async function PropertyDetailPage({ params }: Props) {
                   <BedDouble size={16} aria-hidden="true" />
                   {bedroomLabel}
                 </li>
-                <li>
-                  <Bath size={16} aria-hidden="true" />
-                  {stay.bathrooms ?? 1} {stay.bathrooms === 1 ? 'bathroom' : 'bathrooms'}
-                </li>
-                <li>
-                  <Users size={16} aria-hidden="true" />
-                  Up to {stay.capacity ?? 2} guests
-                </li>
+                {stay.bathrooms != null && (
+                  <li>
+                    <Bath size={16} aria-hidden="true" />
+                    {stay.bathrooms} {stay.bathrooms === 1 ? 'bathroom' : 'bathrooms'}
+                  </li>
+                )}
+                {stay.capacity != null && (
+                  <li>
+                    <Users size={16} aria-hidden="true" />
+                    Up to {stay.capacity} guests
+                  </li>
+                )}
                 <li>{accommodationLabel}</li>
                 {stay.bed_setup && <li>{stay.bed_setup}</li>}
               </ul>
@@ -249,7 +253,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                       ))}
                     </ul>
                   ) : (
-                    <p className="hm-meta">Valid ID at check-in · Guests within stated capacity · No parties or events</p>
+                    <p className="hm-meta">HAMLET standard rules apply: valid ID at check-in, guests within the stated capacity, no parties or events.</p>
                   )}
                 </section>
                 <section className="hm-card hm-detail-mini" aria-labelledby="stay-caution">
