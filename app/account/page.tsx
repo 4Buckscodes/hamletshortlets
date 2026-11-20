@@ -145,27 +145,40 @@ export default function GuestAccountOverviewPage() {
         ) : (
           <div className="mt-8 grid gap-6 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-7">
+              {awaitingPaymentCount > 0 && (
+                <div className="hm-card hm-card-pad" style={{ display: 'grid', gap: 10, borderColor: 'var(--hm-info)' }}>
+                  <p className="hm-label">Next step</p>
+                  <h2 className="hm-h3">
+                    {awaitingPaymentCount === 1 ? 'A partner accepted your request.' : `${awaitingPaymentCount} requests were accepted.`}
+                  </h2>
+                  <p className="hm-body">Pay within 48 hours of acceptance to keep the dates. Your booking shows the exact deadline and total.</p>
+                  <Link href="/account/bookings" className="hm-btn hm-btn-primary" style={{ justifySelf: 'start' }}>
+                    Review and pay
+                  </Link>
+                </div>
+              )}
+
               {/* Quick Summary Cards */}
               <div className="grid gap-3.5 sm:grid-cols-3">
                 <Link
                   href="/account/bookings"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
-                  <CalendarDays className="h-5 w-5 text-brass-600" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <CalendarDays className="h-5 w-5 text-ink-800" aria-hidden="true" />
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {bookingCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
-                    Booking requests
+                    All bookings
                   </p>
                 </Link>
 
                 <Link
                   href="/account/bookings"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
                   <ShieldCheck className="h-5 w-5 text-emerald-700" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {awaitingPaymentCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
@@ -175,10 +188,10 @@ export default function GuestAccountOverviewPage() {
 
                 <Link
                   href="/account/issues"
-                  className="rounded-2xl border border-ink-100 bg-white p-4 transition hover:border-ink-900"
+                  className="hm-admin-tile"
                 >
                   <LifeBuoy className="h-5 w-5 text-ink-800" />
-                  <p className="m-0 mt-3 font-mono text-2xl font-extrabold text-ink-900">
+                  <p className="m-0 mt-3 hm-money text-2xl font-extrabold text-ink-900">
                     {openIssueCount}
                   </p>
                   <p className="m-0 mt-0.5 text-xs font-semibold text-ink-500">
