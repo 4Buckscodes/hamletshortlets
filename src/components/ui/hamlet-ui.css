@@ -10,8 +10,8 @@
 
 /* ---------- Tokens (light) ---------- */
 :root {
-  --hm-forest: #1e2321;
-  --hm-forest-deep: #151a18;
+  --hm-forest: #0e1f3b;
+  --hm-forest-deep: #091528;
   --hm-band: #eae8e1;
   --hm-band-raised: #e1ded5;
   --hm-page: #f4f3ef;
@@ -20,23 +20,25 @@
   --hm-line: #dcd9d0;
   --hm-line-soft: #e8e6df;
   --hm-field-line: #8a867b;
-  --hm-text: #1e2321;
-  --hm-muted: #5b625d;
-  --hm-on-band: #1e2321;
-  --hm-on-band-muted: #5b625d;
+  --hm-text: #0e1f3b;
+  --hm-muted: #5a6578;
+  --hm-on-band: #0e1f3b;
+  --hm-on-band-muted: #5a6578;
   --hm-band-line: #d3d0c6;
-  --hm-lime: #17525a;
+  --hm-lime: #0e1f3b;
   --hm-on-accent: #ffffff;
-  --hm-ink-panel: #1e2321;
-  --hm-label: #17525a;
-  --hm-coral: #17525a;
-  --hm-accent: #17525a;
-  --hm-blue: #17525a;
-  --hm-blue-deep: #103e45;
+  --hm-ink-panel: #0e1f3b;
+  --hm-gold: #b8923a;
+  --hm-gold-ink: #7a5c14;
+  --hm-label: #0e1f3b;
+  --hm-coral: #0e1f3b;
+  --hm-accent: #0e1f3b;
+  --hm-blue: #0e1f3b;
+  --hm-blue-deep: #091528;
   --hm-ok: #256b43;      --hm-ok-soft: #e1eee4;
   --hm-warn: #8a5a00;    --hm-warn-soft: #f4e9cf;
   --hm-bad: #a8261c;     --hm-bad-soft: #f5e0dc;
-  --hm-info: #17525a;    --hm-info-soft: #dde9ea;
+  --hm-info: #0e1f3b;    --hm-info-soft: #dde3ee;
   --hm-neutral-soft: #eae8e1;
   --hm-photo-filter: none;
   --hm-shadow-lift: none;
@@ -57,33 +59,35 @@
  * ThemeScript always resolves html[data-theme] from the saved choice or the device setting. */
 html[data-hm-dark="on"][data-theme="dark"] {
   color-scheme: dark;
-  --hm-forest: #e9e6de;
-  --hm-band: #19201d;
-  --hm-band-raised: #222a26;
-  --hm-page: #121816;
-  --hm-surface: #181f1c;
-  --hm-sand: #1d2521;
-  --hm-line: #2c3631;
-  --hm-line-soft: #232c28;
-  --hm-field-line: #66726b;
+  --hm-forest: #ece9e1;
+  --hm-band: #111b2e;
+  --hm-band-raised: #182540;
+  --hm-page: #0b1322;
+  --hm-surface: #111b2e;
+  --hm-sand: #16223a;
+  --hm-line: #243350;
+  --hm-line-soft: #1c2a44;
+  --hm-field-line: #5a6a8a;
   --hm-text: #ece9e1;
-  --hm-muted: #a7afa9;
+  --hm-muted: #a5aebf;
   --hm-on-band: #ece9e1;
-  --hm-on-band-muted: #a7afa9;
-  --hm-band-line: #2c3631;
-  --hm-lime: #7fc3ca;
-  --hm-on-accent: #0f1a1b;
-  --hm-ink-panel: #222a26;
-  --hm-label: #7fc3ca;
-  --hm-coral: #7fc3ca;
-  --hm-accent: #7fc3ca;
-  --hm-blue: #7fc3ca;
-  --hm-blue-deep: #a1d6db;
+  --hm-on-band-muted: #a5aebf;
+  --hm-band-line: #243350;
+  --hm-lime: #d4b268;
+  --hm-on-accent: #0c1424;
+  --hm-ink-panel: #16223a;
+  --hm-gold: #d4b268;
+  --hm-gold-ink: #d4b268;
+  --hm-label: #d4b268;
+  --hm-coral: #d4b268;
+  --hm-accent: #d4b268;
+  --hm-blue: #d4b268;
+  --hm-blue-deep: #e3c783;
   --hm-ok: #86d9a1;      --hm-ok-soft: #14301f;
   --hm-warn: #f2c366;    --hm-warn-soft: #352810;
   --hm-bad: #ff9a8a;     --hm-bad-soft: #3b1814;
-  --hm-info: #a1d6db;    --hm-info-soft: #16292c;
-  --hm-neutral-soft: #1d2521;
+  --hm-info: #aeb9d0;    --hm-info-soft: #1c2a44;
+  --hm-neutral-soft: #16223a;
   --hm-photo-filter: brightness(0.9);
   --hm-shadow-lift: none;
 }
@@ -409,8 +413,8 @@ textarea.hm-input { min-height: 110px; padding: 12px 14px; resize: vertical; }
 /* ---------- Site header ---------- */
 .hm-header { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--hm-band-line); background: var(--hm-band); color: var(--hm-on-band); font-family: var(--hm-sans); transition: box-shadow var(--hm-t-ui), background-color var(--hm-t-ui); }
 .hm-header-inner { display: flex; min-height: 68px; align-items: center; justify-content: space-between; gap: 20px; }
-.hm-wordmark { display: inline-flex; min-height: 44px; flex: none; align-items: center; color: var(--hm-on-band); font-family: var(--hm-serif); font-size: 26px; font-weight: 700; letter-spacing: 0.02em; text-decoration: none; }
-.hm-wordmark span { color: var(--hm-lime); }
+.hm-wordmark { display: inline-flex; min-height: 44px; flex: none; align-items: center; gap: 10px; color: var(--hm-on-band); font-family: var(--hm-serif); font-size: 24px; font-weight: 560; letter-spacing: 0.06em; text-decoration: none; }
+.hm-wordmark svg { flex: none; }
 .hm-header-nav { display: flex; align-items: center; gap: 2px; margin-right: auto; }
 .hm-header-nav a { display: inline-flex; min-height: 38px; align-items: center; padding: 0 14px; border-radius: 999px; color: var(--hm-on-band-muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color var(--hm-t-micro), color var(--hm-t-micro); }
 .hm-header-nav a:hover { background: color-mix(in srgb, var(--hm-on-band) 10%, transparent); color: var(--hm-on-band); }
@@ -1002,8 +1006,8 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 /* ---------- Ink panels: the few dark blocks left on content and workspace pages ---------- */
 .hm-content .rounded-3xl.bg-ink-950, .hm-workspace :where(.bg-ink-950, .bg-ink-900).rounded-3xl, main.shell .bg-ink-950 { border-radius: var(--hm-r-card); background: var(--hm-ink-panel) !important; color: #f4f3ef; }
 .hm-content .rounded-3xl.bg-ink-950 :is(h2, h3), .hm-workspace :is(.bg-ink-950, .bg-ink-900) :is(h2, h3, h2.serif, h3.serif) { color: #f4f3ef; }
-.hm-content .rounded-3xl.bg-ink-950 .eyebrow-light, .hm-workspace :is(.bg-ink-950, .bg-ink-900) .eyebrow, main.shell .bg-ink-950 .eyebrow { color: #8ccdd3; }
-.hm-content .bg-ink-950 .hm-btn-lime, .hm-workspace .bg-ink-950 .hm-btn-lime, .hm-workspace .bg-ink-900 .hm-btn-lime { background: #8ccdd3; color: #0f1a1b; }
+.hm-content .rounded-3xl.bg-ink-950 .eyebrow-light, .hm-workspace :is(.bg-ink-950, .bg-ink-900) .eyebrow, main.shell .bg-ink-950 .eyebrow { color: #d4b268; }
+.hm-content .bg-ink-950 .hm-btn-lime, .hm-workspace .bg-ink-950 .hm-btn-lime, .hm-workspace .bg-ink-900 .hm-btn-lime { background: #d4b268; color: #0c1424; }
 .hm-content :is(h1, h2, h3, h4).font-display, .hm-workspace :is(h1, h2, h3, h4).font-display { font-weight: 450 !important; letter-spacing: -0.015em; }
 
 /* About: four principles as a ruled list instead of four identical cards. */
@@ -1019,3 +1023,7 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 .hm-ticker-spark { display: none; }
 .hm-ticker-item { padding-inline: 22px; border-right: 1px solid var(--hm-band-line); transition: color var(--hm-t-micro) var(--hm-ease-soft); }
 .hm-ticker .hm-ticker-toggle { display: none; }
+
+/* Gold is a small second voice: marks and one-line accents only, never body text on light grounds. */
+.hl-badge svg, .hp-trust svg, .hp-place-text span, .hm-ticker-spark { color: var(--hm-gold-ink); }
+.hl-where { color: var(--hm-text); }

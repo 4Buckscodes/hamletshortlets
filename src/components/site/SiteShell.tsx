@@ -1,5 +1,6 @@
 'use client';
 
+import { HamletMark } from '@/components/Logo';
 import { HoverImage } from '@/components/ui/motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -536,7 +537,7 @@ export function SiteHeader() {
     <header className="hm-header">
       <div className="hm-shell hm-header-inner">
         <Link href="/" aria-label="HAMLET.REST home" className="hm-wordmark">
-          HAMLET<span>.</span>
+          <HamletMark size={30} />HAMLET
         </Link>
 
         <nav aria-label="Primary navigation" className="hm-header-nav">
@@ -601,7 +602,7 @@ export function SiteHeader() {
           <nav id="hamlet-mobile-drawer" aria-label="Mobile navigation" className="hm-drawer-inner">
             <div className="hm-drawer-top">
               <Link href="/" onClick={() => setDrawerOpen(false)} aria-label="HAMLET.REST home" className="hm-wordmark">
-                HAMLET<span>.</span>
+                <HamletMark size={30} />HAMLET
               </Link>
               <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation menu" className="hm-header-icon">
                 <X size={18} aria-hidden="true" />
@@ -722,7 +723,7 @@ export function SiteFooter() {
         <div className="hm-footer-grid">
           <div className="hm-footer-brand">
             <Link href="/" aria-label="HAMLET.REST home" className="hm-wordmark">
-              HAMLET<span>.</span>
+              <HamletMark size={30} />HAMLET
             </Link>
             <p>Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.</p>
             <p>

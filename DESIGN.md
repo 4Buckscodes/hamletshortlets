@@ -2,30 +2,32 @@
 name: HAMLET
 description: Verified Lagos shortlets. Your stay, sorted.
 colors:
-  ink: "#1e2321"
-  ink-deep: "#151a18"
+  ink: "#0e1f3b"
+  ink-deep: "#091528"
   paper: "#f4f3ef"
   surface: "#faf9f6"
   sand: "#eae8e1"
   line: "#dcd9d0"
   line-soft: "#e8e6df"
   field-line: "#8a867b"
-  muted: "#5b625d"
-  lagoon: "#17525a"
-  lagoon-deep: "#103e45"
-  on-ink-accent: "#8ccdd3"
+  muted: "#5a6578"
+  navy: "#0e1f3b"
+  gold: "#b8923a"
+  gold-ink: "#7a5c14"
+  navy-deep: "#091528"
+  on-ink-accent: "#d4b268"
   ok: "#256b43"
   ok-soft: "#e1eee4"
   warn: "#8a5a00"
   warn-soft: "#f4e9cf"
   bad: "#a8261c"
   bad-soft: "#f5e0dc"
-  night-page: "#121816"
-  night-surface: "#181f1c"
-  night-sand: "#1d2521"
+  night-page: "#0b1322"
+  night-surface: "#111b2e"
+  night-sand: "#16223a"
   night-text: "#ece9e1"
-  night-muted: "#a7afa9"
-  night-lagoon: "#7fc3ca"
+  night-muted: "#a5aebf"
+  night-gold: "#d4b268"
 typography:
   display:
     fontFamily: "Newsreader Variable, Newsreader, Georgia, serif"
@@ -69,7 +71,7 @@ spacing:
   gutter: "64px"
 components:
   button-primary:
-    backgroundColor: "{colors.lagoon}"
+    backgroundColor: "{colors.navy}"
     textColor: "#ffffff"
     rounded: "{rounded.control}"
   button-ghost:
@@ -82,12 +84,12 @@ components:
 
 ## Overview
 
-A calm, residential, high-end platform for booking verified Lagos shortlets. Warm stone neutrals carry the page, thin hairlines organise it, and one deep lagoon-teal accent marks every action. Nothing is decorated: no gradients, no shadows, no cards inside cards, no stamps, no numbered markers (except true steps), no all-caps labels, no arrows on buttons.
+A calm, residential, high-end platform for booking verified Lagos shortlets. Warm stone neutrals carry the page, thin hairlines organise it, and one deep midnight-navy accent with champagne gold as a small second voice marks every action. Nothing is decorated: no gradients, no shadows, no cards inside cards, no stamps, no numbered markers (except true steps), no all-caps labels, no arrows on buttons.
 
 ## Colors
 
 - **Paper, surface, sand** form a flat warm-stone ground. Sections are separated by `line` hairlines, and `sand` marks the single quieter band (belief section, footer, page headers).
-- **Lagoon** (`#17525a`) is the only accent: primary buttons, links on hover, the wordmark full stop, verification marks. White text on it passes 8:1. In dark mode it lightens to `night-lagoon`.
+- **Lagoon** (`#0e1f3b`) is the only accent: primary buttons, links on hover, the wordmark full stop, verification marks. White text on it passes 8:1. In dark mode it lightens to `night-gold`.
 - **Ink** is text and the rare dark panel (`ink-panel`), with `on-ink-accent` for accent text on that panel.
 - Status colours (ok, warn, bad) appear only as status, always with a word.
 

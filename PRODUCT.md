@@ -39,7 +39,7 @@ Every listing is verified before it goes live (ownership/title evidence, partner
 
 ## Brand Commitments
 
-- Name: HAMLET (wordmark "HAMLET." with a lagoon-teal full stop). Tagline: "Your stay, sorted."
+- Name: HAMLET (wordmark "HAMLET." with a gold H crossbar and a navy wordmark). Tagline: "Your stay, sorted."
 - Voice: warm, plain and direct; one-voice serif headlines, sentence-case labels, no numbered section markers unless the content is a real sequence.
 - The approved homepage and the HAMLET design guideline canvas are the visual source of truth.
 

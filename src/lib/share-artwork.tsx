@@ -48,19 +48,19 @@ const cachedPublicImages = new Map<string, string>();
 const EMBEDDED_ARCHITECTURAL_FALLBACK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#172119"/>
+      <stop offset="0%" stop-color="#0e1f3b"/>
       <stop offset="55%" stop-color="#22302A"/>
       <stop offset="100%" stop-color="#101A14"/>
     </linearGradient>
     <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#D9F24B" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="#D9F24B" stop-opacity="0.04"/>
+      <stop offset="0%" stop-color="#d4b268" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#d4b268" stop-opacity="0.04"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="900" fill="url(#bg)"/>
   <rect x="72" y="72" width="1056" height="756" rx="28" fill="none" stroke="url(#brass)" stroke-width="2"/>
-  <circle cx="980" cy="180" r="260" fill="#D9F24B" fill-opacity="0.08"/>
-  <circle cx="220" cy="760" r="320" fill="#D9F24B" fill-opacity="0.06"/>
+  <circle cx="980" cy="180" r="260" fill="#d4b268" fill-opacity="0.08"/>
+  <circle cx="220" cy="760" r="320" fill="#d4b268" fill-opacity="0.06"/>
 </svg>`;
 
 const EMBEDDED_FALLBACK_DATA_URL = `data:image/svg+xml;base64,${Buffer.from(
@@ -368,11 +368,11 @@ function renderOgHamletLogo({
   markSize?: number;
   wordSize?: number;
 }) {
-  const stemFill = light ? '#FFFFFF' : '#172119';
+  const stemFill = light ? '#FFFFFF' : '#0e1f3b';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <svg width={markSize} height={markSize} viewBox="0 0 64 64" fill="none">
-        <rect x="2" y="2" width="60" height="60" rx="14" fill="#172119" />
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#0e1f3b" />
         <g transform="translate(5.12 5.12) scale(0.84)">
           <path
             d="M6.5 7H26.5V9.2C22.4 9.3 21 11.5 21 16.6V47.4C21 52.5 22.4 54.7 26.5 54.8V57H6.5V54.8C10.6 54.7 12 52.5 12 47.4V16.6C12 11.5 10.6 9.3 6.5 9.2V7Z"
@@ -384,7 +384,7 @@ function renderOgHamletLogo({
           />
           <path
             d="M12 21.4C13.2 26.2 16.5 28.8 21 28.8H43C47.5 28.8 50.8 26.2 52 21.4V42.2C50.8 37.4 47.5 34.8 43 34.8H21C16.5 34.8 13.2 37.4 12 42.2V21.4Z"
-            fill="#D9F24B"
+            fill="#d4b268"
           />
         </g>
       </svg>
@@ -400,7 +400,7 @@ function renderOgHamletLogo({
         }}
       >
         <span>HAMLET</span>
-        <span style={{ color: '#D9F24B' }}>.</span>
+        <span style={{ color: '#d4b268' }}>.</span>
       </div>
     </div>
   );
@@ -421,7 +421,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
             display: 'flex',
             width: 1200,
             height: 630,
-            backgroundColor: '#172119',
+            backgroundColor: '#0e1f3b',
             color: '#FFFFFF',
             fontFamily: 'Inter, InterExt',
             position: 'relative',
@@ -437,7 +437,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
               width: 650,
               height: 630,
               padding: '54px 56px',
-              backgroundColor: '#172119',
+              backgroundColor: '#0e1f3b',
               borderRight: '2px solid rgba(217,242,75,0.35)',
             }}
           >
@@ -479,7 +479,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                   display: 'flex',
                   fontSize: 26,
                   fontWeight: 600,
-                  color: '#D9F24B',
+                  color: '#d4b268',
                 }}
               >
                 Shortlets, with accountability.
@@ -506,7 +506,7 @@ export async function renderHamletDefaultOgBuffer(): Promise<Buffer> {
                 fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: '0.08em',
-                color: '#D9F24B',
+                color: '#d4b268',
               }}
             >
               <span>TITLE · IDENTITY · AUTHORITY · INSPECTION</span>
@@ -606,7 +606,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
             width: 1200,
             height: 630,
             position: 'relative',
-            backgroundColor: '#172119',
+            backgroundColor: '#0e1f3b',
             color: '#FFFFFF',
             fontFamily: 'Inter, InterExt',
             overflow: 'hidden',
@@ -776,7 +776,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
                         fontWeight: 700,
                         letterSpacing: '0.1em',
                         textTransform: '',
-                        color: '#D9F24B',
+                        color: '#d4b268',
                       }}
                     >
                       ALL-IN STAY RATE
@@ -892,10 +892,10 @@ export async function renderMarketingCardBuffer(
       : null;
 
   const isLightTheme = input.theme === 'ivory';
-  const bg = isLightTheme ? '#F6F1E7' : input.theme === 'lagoon' ? '#1F2B24' : '#172119';
+  const bg = isLightTheme ? '#F6F1E7' : input.theme === 'lagoon' ? '#1F2B24' : '#0e1f3b';
   const panelBg = isLightTheme ? '#FFFFFF' : 'rgba(255,255,255,0.06)';
   const panelBorder = isLightTheme ? '#D9DDCF' : 'rgba(217,242,75,0.42)';
-  const textPrimary = isLightTheme ? '#172119' : '#F6F1E7';
+  const textPrimary = isLightTheme ? '#0e1f3b' : '#F6F1E7';
   const textMuted = isLightTheme ? '#5B655A' : 'rgba(248,245,238,0.78)';
   const accent = isLightTheme ? '#4C5916' : '#E5F477';
 
@@ -1441,7 +1441,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
           width: 1080,
           height: 1350,
           padding: '72px 80px',
-          backgroundColor: '#172119',
+          backgroundColor: '#0e1f3b',
           color: '#F6F1E7',
           fontFamily: 'Inter, InterExt',
         }}
@@ -1454,7 +1454,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
               fontWeight: 700,
               letterSpacing: '0.14em',
               textTransform: '',
-              color: '#D9F24B',
+              color: '#d4b268',
             }}
           >
             {`VERIFIED SHORTLET STAY · ${areaLabel}`}
@@ -1470,7 +1470,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
             padding: 36,
             borderRadius: 36,
             backgroundColor: '#FFFFFF',
-            border: '3px solid #D9F24B',
+            border: '3px solid #d4b268',
           }}
         >
           <img
@@ -1506,7 +1506,7 @@ export async function renderBrandedQrPlacardBuffer(input: {
           <div style={{ display: 'flex', fontSize: 20, color: 'rgba(248,245,238,0.82)' }}>
             Scan with your phone camera to view photos, pricing & request dates on hamlet.rest
           </div>
-          <div style={{ display: 'flex', fontSize: 16, fontWeight: 700, color: '#D9F24B' }}>
+          <div style={{ display: 'flex', fontSize: 16, fontWeight: 700, color: '#d4b268' }}>
             Your stay, sorted.
           </div>
         </div>

@@ -5,7 +5,7 @@ export const THEME_STORAGE_KEY = 'hamlet-theme';
 export const THEME_CHOICES: readonly ThemeChoice[] = ['system', 'light', 'dark'];
 
 /** Browser bar colours: page colour in light and dark. */
-export const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#f4f3ef', dark: '#121816' };
+export const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#f4f3ef', dark: '#0b1322' };
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {
   return value === 'system' || value === 'light' || value === 'dark';
