@@ -641,11 +641,11 @@ export function DiscoveryMarketplace({
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label className="hm-field">
-              <span className="hm-field-label">Min price per night (₦, naira)</span>
+              <span className="hm-field-label">Min price (₦ / night)</span>
               <input type="text" inputMode="numeric" value={filters.minPriceInput} onChange={e => updateFilters({ minPriceInput: sanitisePrice(e.target.value) })} placeholder="No min" className="hm-input" />
             </label>
             <label className="hm-field">
-              <span className="hm-field-label">Max price (₦)</span>
+              <span className="hm-field-label">Max price (₦ / night)</span>
               <input type="text" inputMode="numeric" value={filters.maxPriceInput} onChange={e => updateFilters({ maxPriceInput: sanitisePrice(e.target.value) })} placeholder="No max" className="hm-input" />
             </label>
           </div>
@@ -659,11 +659,17 @@ export function DiscoveryMarketplace({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label className="hm-field">
               <span className="hm-field-label">Check-in</span>
-              <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} className="hm-input" />
+              <span className="hm-date-wrap" data-empty={filters.checkIn ? 'false' : 'true'}>
+                <input type="date" min={todayIso} value={filters.checkIn} onChange={e => updateFilters({ checkIn: e.target.value })} className="hm-input" />
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
+              </span>
             </label>
             <label className="hm-field">
               <span className="hm-field-label">Check-out</span>
-              <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} className="hm-input" />
+              <span className="hm-date-wrap" data-empty={filters.checkOut ? 'false' : 'true'}>
+                <input type="date" min={filters.checkIn || todayIso} value={filters.checkOut} onChange={e => updateFilters({ checkOut: e.target.value })} className="hm-input" />
+                <span className="hm-date-ph" aria-hidden="true">Add date</span>
+              </span>
             </label>
           </div>
 

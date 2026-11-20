@@ -37,7 +37,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
           </div>
           <div className="home-hero-art">
             <div className="home-photo-frame"><picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture><span className="home-image-index">A GOOD PLACE TO LAND <b>— NIGERIA</b></span></div>
-            <div className="home-stamp" aria-hidden="true"><span>YOUR CITY</span><strong>YOUR<br />STAY</strong><span>HAMLET · 2026</span></div>
+            <div className="home-stamp" aria-hidden="true"><span>YOUR CITY</span><strong>YOUR<br />STAY</strong></div>
             <span className="home-side-note">IN GOOD COMPANY, ALWAYS</span>
           </div>
         </div>

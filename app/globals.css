@@ -989,7 +989,7 @@ body { background:var(--hamlet-paper); color:var(--hamlet-forest); }
   .home-search { padding-block:20px 22px !important; }
   .home-search-field,
   .home-search-field.home-destination { padding-inline:10px !important; }
-  .home-search-field,.home-search-field.home-destination { height:70px !important; }
+  .home-search-field,.home-search-field.home-destination { height:auto !important; min-height:72px; }
   .home-search-button { height:48px; min-height:48px !important; }
   .home-area-quick a { padding:6px 9px !important; }
 }
@@ -1022,7 +1022,7 @@ main.auth-page{min-height:calc(100svh - 76px);padding:clamp(28px,6vw,76px) 24px;
 .home-guests{border-right:1px solid rgba(23,33,25,.17)}
 @media(max-width:700px){
  .home-search-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
- .home-search-field.home-guests{grid-column:1 / -1;height:58px!important;border-top:1px solid rgba(23,33,25,.12);border-right:0!important}
+ .home-search-field.home-guests{grid-column:1 / -1;height:auto!important;min-height:80px;border-top:1px solid rgba(23,33,25,.12);border-right:0!important}
  .home-search-field.home-guests select{max-width:100%}
 }
 
