@@ -47,7 +47,7 @@ describe('HAMLET UI kit — tokens and themes', () => {
     expect(layout).toContain('data-hm-dark="on"');
     expect(layout).toContain('<ThemeScript />');
     const shell = readFileSync(path.resolve(__dirname, '../site/SiteShell.tsx'), 'utf8');
-    expect(shell.match(/<ThemeSwitch/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(shell).not.toContain('<ThemeSwitch');
   });
 
   it('only overrides tokens in dark mode that exist in light mode', () => {
@@ -93,21 +93,21 @@ describe('HAMLET UI kit — theme resolution', () => {
     expect(isThemeChoice('sepia')).toBe(false);
   });
 
-  it('boot script applies the saved choice before paint and survives blocked storage', () => {
+  it('boot script follows the device setting before paint and ignores any saved manual choice', () => {
     const run = (stored: string | null, prefersDark: boolean, throwOnRead = false) => {
       const dataset: Record<string, string> = {};
       const sandbox = {
         localStorage: { getItem: (key: string) => { if (throwOnRead) throw new Error('blocked'); return key === THEME_STORAGE_KEY ? stored : null; } },
-        window: { matchMedia: () => ({ matches: prefersDark }) },
+        window: { matchMedia: () => ({ matches: prefersDark, addEventListener: () => undefined }) },
         document: { documentElement: { dataset } },
       };
       new Function('localStorage', 'window', 'document', THEME_BOOT_SCRIPT)(sandbox.localStorage, sandbox.window, sandbox.document);
       return dataset;
     };
-    expect(run('dark', false)).toEqual({ theme: 'dark', themeChoice: 'dark' });
+    expect(run('dark', false)).toEqual({ theme: 'light', themeChoice: 'system' });
     expect(run(null, true)).toEqual({ theme: 'dark', themeChoice: 'system' });
     expect(run('nonsense', false)).toEqual({ theme: 'light', themeChoice: 'system' });
-    expect(run(null, true, true)).toEqual({});
+    expect(run(null, true, true)).toEqual({ theme: 'dark', themeChoice: 'system' });
   });
 });
 

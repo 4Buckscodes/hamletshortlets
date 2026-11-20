@@ -4,8 +4,8 @@ export type ResolvedTheme = 'light' | 'dark';
 export const THEME_STORAGE_KEY = 'hamlet-theme';
 export const THEME_CHOICES: readonly ThemeChoice[] = ['system', 'light', 'dark'];
 
-/** Browser bar colours: the forest band in light mode, the darker band in dark mode. */
-export const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#172119', dark: '#121b16' };
+/** Browser bar colours: page colour in light and dark. */
+export const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#f4f3ef', dark: '#121816' };
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {
   return value === 'system' || value === 'light' || value === 'dark';
@@ -17,8 +17,8 @@ export function resolveTheme(choice: ThemeChoice, prefersDark: boolean): Resolve
 }
 
 /**
- * Inline script run before first paint: applies the saved choice (or the device setting) to
+ * Inline script run before first paint: follows the device setting automatically (no manual switch) and updates live on
  * html[data-theme] and html[data-theme-choice] so a dark-mode visitor never sees a light flash.
  * Kept dependency-free and wrapped in try/catch so private browsing or blocked storage is harmless.
  */
-export const THEME_BOOT_SCRIPT = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var c=localStorage.getItem(k);if(c!=='light'&&c!=='dark')c='system';var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=c==='system'?(d?'dark':'light'):c;var r=document.documentElement;r.dataset.theme=t;r.dataset.themeChoice=c;}catch(e){}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)');var r=document.documentElement;function a(){r.dataset.theme=m.matches?'dark':'light';r.dataset.themeChoice='system';}a();if(m.addEventListener)m.addEventListener('change',a);}catch(e){}})();`;
