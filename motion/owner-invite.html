@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>HAMLET – List your shortlet (motion)</title>
+<style>
+@font-face{font-family:Newsreader;src:url(assets/newsreader-latin-wght.woff2);font-weight:200 800}
+@font-face{font-family:Hanken;src:url(assets/hanken-grotesk-latin-wght.woff2);font-weight:100 900}
+:root{--ink:#0e1f3b;--deep:#091528;--paper:#f4f3ef;--sand:#eae8e1;--line:#dcd9d0;--gold:#b8923a;--gold2:#d4b268;--muted:#5a6578}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--paper)}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Hanken,system-ui,sans-serif;color:var(--ink)}
+.scene{position:absolute;inset:0;opacity:0}
+.serif{font-family:Newsreader,Georgia,serif;font-weight:420;letter-spacing:-.025em}
+.w{display:inline-block;will-change:transform,opacity}
+.mask{overflow:hidden;display:block;padding-bottom:.12em;margin-bottom:-.12em}
+.hair{position:absolute;height:2px;background:var(--line);transform-origin:left}
+.photo{position:absolute;overflow:hidden;background:var(--sand)}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dark{background:var(--ink);color:var(--paper)}
+.lockup{position:absolute;display:flex;align-items:center;gap:22px}
+.lockup span{font-family:Newsreader,serif;font-size:64px;font-weight:480;letter-spacing:.02em}
+.btn{position:absolute;background:var(--paper);color:var(--ink);border-radius:10px;font-weight:600;font-size:40px;padding:34px 56px;white-space:nowrap}
+</style></head>
+<body><div id="stage">
+
+<!-- Scene A: the question -->
+<div class="scene" id="A">
+  <div class="lockup" id="aLogo" style="left:96px;top:110px"></div>
+  <div class="hair" id="aHair" style="left:96px;right:96px;top:230px;width:888px"></div>
+  <div class="serif" id="aHead" style="position:absolute;left:96px;top:470px;width:890px;font-size:150px;line-height:.98"></div>
+  <div id="aSub" style="position:absolute;left:96px;top:1180px;width:820px;font-size:44px;line-height:1.45;color:var(--muted)">Lagos guests are looking for verified places to stay. Yours could be one of them.</div>
+</div>
+
+<!-- Scene B: photo reveal + invite -->
+<div class="scene" id="B">
+  <div class="photo" id="bPhoto" style="left:0;top:0;width:1080px;height:1920px"><img id="bImg" src="assets/hero-sample-living.jpg" style="object-position:62% 50%"></div>
+  <div id="bPanel" style="position:absolute;left:0;right:0;bottom:0;height:760px;background:var(--paper)"></div>
+  <div class="serif" id="bHead" style="position:absolute;left:96px;top:1240px;width:890px;font-size:128px;line-height:1"></div>
+  <div id="bSub" style="position:absolute;left:96px;top:1620px;width:880px;font-size:44px;line-height:1.4;color:var(--muted)">Join as a partner. Your workspace opens straight away.</div>
+</div>
+
+<!-- Scene C: promises -->
+<div class="scene dark" id="C">
+  <div id="cKick" style="position:absolute;left:96px;top:150px;font-size:36px;font-weight:600;color:var(--gold2)">Why owners list with HAMLET</div>
+  <div class="hair" id="cH0" style="left:96px;top:250px;width:888px;background:#2a3b5a"></div>
+  <div id="cRows"></div>
+</div>
+
+<!-- Scene D: steps -->
+<div class="scene" id="D">
+  <div id="dKick" style="position:absolute;left:96px;top:150px;font-size:36px;font-weight:600;color:var(--gold)">How it works</div>
+  <div class="hair" id="dH0" style="left:96px;top:250px;width:888px"></div>
+  <div id="dRows"></div>
+</div>
+
+<!-- Scene E: CTA -->
+<div class="scene dark" id="E">
+  <div class="photo" id="eFrame" style="left:96px;top:150px;width:888px;height:560px"><img id="eImg" src="assets/hero-sample-bedroom.jpg" style="object-position:50% 55%"></div>
+  <div class="serif" id="eHead" style="position:absolute;left:96px;top:790px;width:890px;font-size:150px;line-height:.98;color:var(--paper)"></div>
+  <div class="btn" id="eBtn" style="left:96px;top:1290px">Become a partner</div>
+  <div id="eUrl" style="position:absolute;left:96px;top:1470px;font-size:44px;color:var(--gold2);font-weight:500">hamlet.rest/partner/register</div>
+  <div class="lockup" id="eLogo" style="left:96px;top:1700px"></div>
+  <div id="eTag" style="position:absolute;right:96px;top:1722px;font-size:36px;color:#a5aebf">Your stay, sorted.</div>
+</div>
+</div>
+
+<script>
+const LOGO=(stem,bar,s)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64" fill="none"><path d="M6.5 7H26.5V9.2C22.4 9.3 21 11.5 21 16.6V47.4C21 52.5 22.4 54.7 26.5 54.8V57H6.5V54.8C10.6 54.7 12 52.5 12 47.4V16.6C12 11.5 10.6 9.3 6.5 9.2V7Z" fill="${stem}"/><path d="M37.5 7H57.5V9.2C53.4 9.3 52 11.5 52 16.6V47.4C52 52.5 53.4 54.7 57.5 54.8V57H37.5V54.8C41.6 54.7 43 52.5 43 47.4V16.6C43 11.5 41.6 9.3 37.5 9.2V7Z" fill="${stem}"/><path class="bar" d="M12 21.4C13.2 26.2 16.5 28.8 21 28.8H43C47.5 28.8 50.8 26.2 52 21.4V42.2C50.8 37.4 47.5 34.8 43 34.8H21C16.5 34.8 13.2 37.4 12 42.2V21.4Z" fill="${bar}"/></svg>`;
+const $=id=>document.getElementById(id);
+$('aLogo').innerHTML=LOGO('#0e1f3b','#b8923a',84)+'<span>HAMLET.</span>';
+$('eLogo').innerHTML=LOGO('#f4f3ef','#d4b268',84)+'<span style="color:#f4f3ef">HAMLET.</span>';
+
+// helpers
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out:t=>1-Math.pow(1-t,4),inOut:t=>t<.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2,soft:t=>1-Math.pow(1-t,3)};
+const seg=(t,a,d,ease=E.out)=>ease(clamp((t-a)/d));
+function words(el,text){el.innerHTML=text.split('\n').map(line=>`<span class="mask">${line.split(' ').map(w=>`<span class="w">${w}</span>`).join(' ')}</span>`).join('');return [...el.querySelectorAll('.w')]}
+function rise(ws,t,start,stag=.09,dur=.9,dist=1.1){ws.forEach((w,i)=>{const p=seg(t,start+i*stag,dur);w.style.transform=`translateY(${(1-p)*dist*100}%)`;w.style.opacity=p>0?1:0})}
+function fade(el,t,a,d=.7,dy=28){const p=seg(t,a,d);el.style.opacity=p;el.style.transform=`translateY(${(1-p)*dy}px)`}
+
+// text build
+const aW=words($('aHead'),'Got a place in\nLagos sitting\nempty?');
+const bW=words($('bHead'),'List it on\nHAMLET.');
+const eW=words($('eHead'),'List your\nLagos stay.');
+
+// promises (all taken from the product's real commitments)
+const promises=[['Verified before live','Every listing is checked before guests see it.'],['Nothing to pay until you accept','Guests only pay after you say yes to the request.'],['You stay in control','Accept or decline requests and manage your availability.']];
+$('cRows').innerHTML=promises.map((p,i)=>{const y=330+i*470;return `<div class="hair" id="cL${i}" style="left:96px;top:${y+400}px;width:888px;background:#2a3b5a"></div><div id="cR${i}" style="position:absolute;left:96px;top:${y}px;width:888px"><div class="serif" style="font-size:96px;line-height:1.02;color:#f4f3ef">${p[0]}</div><div style="margin-top:34px;font-size:42px;line-height:1.4;color:#a5aebf;width:860px">${p[1]}</div></div>`}).join('');
+// steps (a true sequence)
+const steps=[['Join as a partner','Your workspace opens straight away.'],['Add your place','Photos, details and your rate.'],['We verify it','Ownership, authority to list and an inspection.'],['Accept your first request','Then your stay is live for guests to book.']];
+steps[3]=['Accept requests','Guests book through HAMLET; you decide.'];
+$('dRows').innerHTML=steps.map((s,i)=>{const y=330+i*350;return `<div class="hair" id="dL${i}" style="left:96px;top:${y+300}px;width:888px"></div><div id="dR${i}" style="position:absolute;left:96px;top:${y}px;width:888px;display:flex;gap:48px;align-items:flex-start"><div class="serif" id="dN${i}" style="font-size:150px;line-height:.9;color:var(--gold);width:110px">${i+1}</div><div><div class="serif" style="font-size:78px;line-height:1.05">${s[0]}</div><div style="margin-top:20px;font-size:40px;line-height:1.4;color:var(--muted)">${s[1]}</div></div></div>`}).join('');
+
+const T={A:[0,3.6],B:[3.2,7.4],C:[7.0,12.2],D:[11.8,17.0],E:[16.6,21.5]};
+window.DURATION=21.5;
+const sc={A:$('A'),B:$('B'),C:$('C'),D:$('D'),E:$('E')};
+
+function render(t){
+  // scene visibility (hard cut under a wipe/overlap handled by reveal)
+  for(const k in sc){const [a,b]=T[k];sc[k].style.opacity=(t>=a&&t<b)?1:0;sc[k].style.zIndex=(k.charCodeAt(0))}
+  // ---- A
+  {const l=t-T.A[0];
+   fade($('aLogo'),l,0,.8);
+   $('aHair').style.transform=`scaleX(${seg(l,.2,1.1,E.inOut)})`;
+   rise(aW,l,.55,.12,1.0);
+   fade($('aSub'),l,1.9,.9);
+   // exit up
+   const ex=seg(t,T.A[1]-.0,.0);
+  }
+  // ---- B : photo wipes up from bottom over A
+  {const l=t-T.B[0];
+   const p=seg(l,0,1.0,E.inOut);
+   $('bPhoto').style.clipPath=`inset(${(1-p)*100}% 0 0 0)`;
+   const z=1.18-0.18*seg(l,0,4.2,E.soft);
+   $('bImg').style.transform=`scale(${z})`;
+   const pp=seg(l,.7,.9,E.inOut);
+   $('bPanel').style.transform=`translateY(${(1-pp)*100}%)`;
+   rise(bW,l,1.25,.12,.95);
+   fade($('bSub'),l,2.3,.8);
+  }
+  // ---- C : promises
+  {const l=t-T.C[0];
+   const wipe=seg(l,0,.8,E.inOut);
+   $('C').style.clipPath=`inset(0 0 ${(1-wipe)*100}% 0)`;
+   fade($('cKick'),l,.5,.7);
+   $('cH0').style.transform=`scaleX(${seg(l,.5,.9,E.inOut)})`;
+   for(let i=0;i<3;i++){const s=1.0+i*1.25;fade($('cR'+i),l,s,.9,36);$('cL'+i).style.transform=`scaleX(${seg(l,s+.5,.9,E.inOut)})`;$('cL'+i).style.transformOrigin='left'}
+  }
+  // ---- D : steps on paper
+  {const l=t-T.D[0];
+   const wipe=seg(l,0,.8,E.inOut);
+   $('D').style.clipPath=`inset(0 0 ${(1-wipe)*100}% 0)`;
+   $('D').style.background='var(--paper)';
+   fade($('dKick'),l,.5,.7);
+   $('dH0').style.transform=`scaleX(${seg(l,.5,.9,E.inOut)})`;
+   for(let i=0;i<4;i++){const s=1.0+i*1.0;fade($('dR'+i),l,s,.8,32);$('dL'+i).style.transform=`scaleX(${seg(l,s+.4,.8,E.inOut)})`;$('dL'+i).style.transformOrigin='left'}
+  }
+  // ---- E : CTA
+  {const l=t-T.E[0];
+   const wipe=seg(l,0,.8,E.inOut);
+   $('E').style.clipPath=`inset(0 0 ${(1-wipe)*100}% 0)`;
+   const fp=seg(l,.5,1.0,E.inOut);
+   $('eFrame').style.clipPath=`inset(0 ${(1-fp)*100}% 0 0)`;
+   $('eImg').style.transform=`scale(${1.15-.15*seg(l,.5,4.5,E.soft)})`;
+   rise(eW,l,1.0,.12,1.0);
+   fade($('eBtn'),l,2.0,.7,24);
+   fade($('eUrl'),l,2.3,.7,20);
+   fade($('eLogo'),l,2.8,.7,20);
+   fade($('eTag'),l,3.0,.7,20);
+  }
+}
+window.render=render;
+render(0);
+</script></body></html>
