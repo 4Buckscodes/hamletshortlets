@@ -1102,3 +1102,4 @@ html[data-hm-dark="on"][data-theme="dark"] .hm-content .hm-chip[aria-pressed="tr
 .hm-admin-tile-attention .hm-label::after { content: " · needs attention"; color: var(--hm-warn); }
 /* Money and references in workspaces use tabular Inter, not monospace (DESIGN: Price). */
 .hm-workspace .font-mono, .hm-content .font-mono { font-family: var(--hm-sans) !important; font-variant-numeric: tabular-nums; }
+.hm-card-band .hm-label { color: var(--hm-lime); }
