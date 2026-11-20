@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
@@ -381,9 +383,7 @@ export default function PartnerDashboardPage() {
                             {p.title}
                           </h3>
                         </div>
-                        <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
-                          {STATUS_BADGE[p.status] || p.status}
-                        </span>
+                        <StatusPill tone={statusEntry(p.status).tone}>{STATUS_BADGE[p.status] || statusEntry(p.status).label}</StatusPill>
                       </div>
 
                       <p className="m-0 mt-2 text-xs text-ink-500">

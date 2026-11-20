@@ -186,6 +186,7 @@ export default function AdminAccountsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={
             selected?.account_status === 'suspended'

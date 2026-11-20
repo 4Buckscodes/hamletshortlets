@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import {
   getBrowserSupabase,
   triggerBookingNotificationDispatchBestEffort,
@@ -182,9 +184,7 @@ export default function AdminBookingsPage() {
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-800">
-                    {b.status}
-                  </span>
+                  <StatusPill tone={statusEntry(b.status).tone}>{statusEntry(b.status).label}</StatusPill>
                   <button
                     type="button"
                     onClick={() => {
@@ -209,11 +209,12 @@ export default function AdminBookingsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.reference || 'Manage booking'}
           subtitle={
             selected
-              ? `${selected.profiles?.full_name || 'Guest'} · Current: ${selected.status}`
+              ? `${selected.profiles?.full_name || 'Guest'} · Current: ${statusEntry(selected.status).label}`
               : undefined
           }
           onClose={() => setSelected(null)}

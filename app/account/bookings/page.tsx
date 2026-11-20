@@ -534,6 +534,7 @@ export default function GuestBookingsPage() {
 
         {/* Safe Wayfinder Arrival Drawer (honestly gated if migration is not yet deployed) */}
         <FocusedDrawer
+          error={error}
           open={Boolean(wayfinderBooking)}
           title="Arrival & Wayfinder guide"
           subtitle={wayfinderBooking?.reference}
@@ -583,6 +584,7 @@ export default function GuestBookingsPage() {
 
         {/* Post-Stay Feedback Drawer */}
         <FocusedDrawer
+          error={error}
           open={Boolean(feedbackBooking)}
           title="Share post-stay feedback"
           subtitle={feedbackBooking?.reference}

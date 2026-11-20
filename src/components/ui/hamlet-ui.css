@@ -1087,3 +1087,11 @@ input, textarea { caret-color: var(--hm-blue); }
 @media (max-width: 760px) { .hm-content :is(.max-w-6xl, .max-w-5xl) { width: calc(100% - 36px) !important; } }
 /* Body copy at the 15px Body step; 12–13px stays for meta only. */
 .hm-content :is(p, li).leading-relaxed { font-size: 15px !important; line-height: 1.7 !important; }
+/* Selected chips read clearly in dark mode too (lime on dark, per DESIGN). */
+html[data-hm-dark="on"][data-theme="dark"] .hm-content .hm-chip[aria-pressed="true"] { border-color: var(--hm-lime); background: var(--hm-lime); color: #172119; }
+/* Partner accept sheet: the money and the 48-hour rule, before the partner commits. */
+.hm-accept-summary { display: grid; gap: 6px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--hm-line); }
+.hm-accept-summary > div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+.hm-accept-summary dt { color: var(--hm-muted); }
+.hm-accept-summary dd { margin: 0; color: var(--hm-text); font-weight: 750; }
+.hm-accept-summary p { margin: 6px 0 0; color: var(--hm-text); font-size: 13px; line-height: 1.55; }

@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -159,9 +161,7 @@ export default function AdminPartnersPage() {
                         {app.company}
                       </h2>
                     </div>
-                    <span className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-900">
-                      {app.status}
-                    </span>
+                    <StatusPill tone={statusEntry(app.status).tone}>{statusEntry(app.status).label}</StatusPill>
                   </div>
                   <p className="m-0 mt-2 text-xs text-ink-600">
                     {app.full_name} · {app.email} · {app.phone}
@@ -195,6 +195,7 @@ export default function AdminPartnersPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.company || 'Review partner application'}
           subtitle={selected ? `${selected.full_name} · ${selected.role}` : undefined}

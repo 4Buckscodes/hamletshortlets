@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import {
   getBrowserSupabase,
   triggerBookingNotificationDispatchBestEffort,
@@ -30,6 +32,14 @@ type Booking = {
   profiles?: { full_name?: string; phone?: string } | null;
 };
 
+function formatStayDates(checkIn: string, checkOut: string) {
+  const fmt = (iso: string) => {
+    const date = new Date(`${iso}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  };
+  return `${fmt(checkIn)} – ${fmt(checkOut)}`;
+}
+
 export default function PartnerBookingsPage() {
   const db = useMemo(() => getBrowserSupabase(), []);
   const [role, setRole] = useState('');
@@ -46,6 +56,22 @@ export default function PartnerBookingsPage() {
     label: string;
   } | null>(null);
   const [decisionNote, setDecisionNote] = useState('');
+  const [filter, setFilter] = useState<'needs' | 'upcoming' | 'past' | 'all' | null>(null);
+  const today = new Date().toISOString().slice(0, 10);
+  const groupOf = (b: Booking) =>
+    ['requested', 'checking'].includes(b.status)
+      ? 'needs'
+      : ['awaiting_payment', 'confirmed'].includes(b.status) && b.check_out >= today
+        ? 'upcoming'
+        : 'past';
+  const needsCount = bookings.filter(b => groupOf(b) === 'needs').length;
+  // Open on what needs the partner, oldest request first.
+  const activeFilter = filter ?? (needsCount > 0 ? 'needs' : 'all');
+  const visibleBookings = useMemo(() => {
+    const list = activeFilter === 'all' ? bookings : bookings.filter(b => groupOf(b) === activeFilter);
+    return activeFilter === 'needs' ? [...list].reverse() : list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookings, activeFilter]);
 
   const load = useCallback(async () => {
     if (!db) {
@@ -195,7 +221,22 @@ export default function PartnerBookingsPage() {
           <p className="mt-8 text-sm text-ink-600">Loading booking requests…</p>
         ) : bookings.length > 0 ? (
           <div className="mt-6 space-y-4">
-            {bookings.map(b => (
+            <div className="hm-chip-row hm-chip-row-scroll" role="group" aria-label="Filter bookings">
+              {(
+                [
+                  ['needs', `Needs your response (${needsCount})`],
+                  ['upcoming', 'Upcoming'],
+                  ['past', 'Past'],
+                  ['all', 'All'],
+                ] as const
+              ).map(([id, label]) => (
+                <button key={id} type="button" className="hm-chip" aria-pressed={activeFilter === id} onClick={() => setFilter(id)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {visibleBookings.length === 0 && <p className="hm-meta">Nothing here right now.</p>}
+            {visibleBookings.map(b => (
               <article
                 key={b.id}
                 className="rounded-3xl border border-ink-100 bg-white p-5 sm:p-6"
@@ -209,28 +250,26 @@ export default function PartnerBookingsPage() {
                       {b.properties?.title || 'Assigned property'}
                     </h2>
                     <p className="m-0 mt-1 text-xs text-ink-500">
-                      {b.check_in} → {b.check_out} · {b.guest_count}{' '}
+                      {formatStayDates(b.check_in, b.check_out)} · {b.guest_count}{' '}
                       {b.guest_count === 1 ? 'guest' : 'guests'} · Guest:{' '}
                       <strong className="text-ink-900">
                         {b.profiles?.full_name || 'Verified guest'}
                       </strong>
                     </p>
                   </div>
-                  <span className="rounded-full bg-paper px-3.5 py-1.5 text-xs font-bold text-ink-900">
-                    {b.status.replace(/_/g, ' ')}
-                  </span>
+                  <StatusPill tone={statusEntry(b.status).tone}>{statusEntry(b.status).label}</StatusPill>
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-600">
                   <span>
-                    Owner rate:{' '}
-                    <strong className="font-mono text-ink-900">
+                    Your rate for this stay:{' '}
+                    <strong className="hm-money text-ink-900">
                       ₦{Number(b.accommodation_subtotal || 0).toLocaleString('en-NG')}
                     </strong>
                   </span>
                   <span>
-                    Guest stay total:{' '}
-                    <strong className="font-mono text-ink-900">
+                    Guest pays (fees included):{' '}
+                    <strong className="hm-money text-ink-900">
                       ₦{Number(b.guest_total || 0).toLocaleString('en-NG')}
                     </strong>
                   </span>
@@ -264,7 +303,7 @@ export default function PartnerBookingsPage() {
                       }
                       className="secondary-button min-h-[44px]"
                     >
-                      Mark checking
+                      I&apos;m checking the dates
                     </button>
                   )}
 
@@ -304,11 +343,10 @@ export default function PartnerBookingsPage() {
                     </>
                   )}
 
-                  {b.status === 'confirmed' && (
+                  {b.status === 'confirmed' && b.check_in <= today && (
                     <>
                       <button
                         type="button"
-                        disabled={busyId === b.id}
                         onClick={() => {
                           setDecisionNote('');
                           setDecisionTarget({
@@ -317,7 +355,9 @@ export default function PartnerBookingsPage() {
                             label: 'Mark stay completed',
                           });
                         }}
-                        className="primary-button min-h-[44px]"
+                        disabled={busyId === b.id || b.check_out > today}
+                        title={b.check_out > today ? 'Available after check-out' : undefined}
+                        className="secondary-button min-h-[44px]"
                       >
                         Mark stay completed
                       </button>
@@ -350,6 +390,7 @@ export default function PartnerBookingsPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(decisionTarget)}
           title={decisionTarget?.label || 'Respond to booking'}
           subtitle={decisionTarget?.booking.reference}
@@ -360,8 +401,18 @@ export default function PartnerBookingsPage() {
               <div className="rounded-2xl bg-paper p-4 text-xs text-ink-700">
                 <p className="m-0 font-bold text-ink-900">
                   {decisionTarget.booking.properties?.title || 'Stay'} ·{' '}
-                  {decisionTarget.booking.check_in} → {decisionTarget.booking.check_out}
+                  {formatStayDates(decisionTarget.booking.check_in, decisionTarget.booking.check_out)}
                 </p>
+                {decisionTarget.nextStatus === 'awaiting_payment' && (
+                  <dl className="hm-accept-summary">
+                    <div><dt>Your rate for this stay</dt><dd className="hm-money">₦{Number(decisionTarget.booking.accommodation_subtotal || 0).toLocaleString('en-NG')}</dd></div>
+                    <div><dt>Guest pays (fees included)</dt><dd className="hm-money">₦{Number(decisionTarget.booking.guest_total || 0).toLocaleString('en-NG')}</dd></div>
+                    {Number(decisionTarget.booking.refundable_deposit) > 0 && (
+                      <div><dt>Refundable caution deposit</dt><dd className="hm-money">₦{Number(decisionTarget.booking.refundable_deposit).toLocaleString('en-NG')}</dd></div>
+                    )}
+                    <p>Accepting holds these dates. The guest then has 48 hours to pay inside HAMLET; the stay is confirmed once payment is verified.</p>
+                  </dl>
+                )}
                 <p className="m-0 mt-1">
                   Guest: {decisionTarget.booking.profiles?.full_name || 'Verified guest'} (
                   {decisionTarget.booking.guest_count} guests)
@@ -397,7 +448,7 @@ export default function PartnerBookingsPage() {
               <button
                 type="submit"
                 disabled={Boolean(busyId)}
-                className="primary-button min-h-[48px] w-full"
+                className={`${decisionTarget.nextStatus === 'declined' ? 'secondary-button' : 'primary-button'} min-h-[48px] w-full`}
               >
                 {busyId ? 'Updating…' : decisionTarget.label}
               </button>

@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { statusEntry } from '@/lib/statusLabels';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { getBrowserSupabase } from '@/lib/next-supabase';
 import { SiteHeader, SiteFooter } from '@/components/site/SiteShell';
 import {
@@ -164,7 +166,7 @@ export default function AdminIssuesPage() {
                     {issue.subject}
                   </h2>
                   <p className="m-0 mt-1 text-xs text-ink-500">
-                    {issue.category} · Status: <strong>{issue.status}</strong>
+                    {issue.category} · <StatusPill tone={statusEntry(issue.status).tone}>{statusEntry(issue.status).label}</StatusPill>
                     {issue.assignee_name ? ` · Assigned: ${issue.assignee_name}` : ''}
                   </p>
                   <p className="m-0 mt-2 whitespace-pre-wrap text-xs leading-relaxed text-ink-700">
@@ -197,6 +199,7 @@ export default function AdminIssuesPage() {
         )}
 
         <FocusedDrawer
+          error={error}
           open={Boolean(selected)}
           title={selected?.subject || 'Update issue'}
           subtitle={selected ? `${selected.reference} · ${selected.severity}` : undefined}

@@ -657,21 +657,66 @@ export function FocusedDrawer({
   subtitle,
   onClose,
   children,
+  error,
 }: {
   open: boolean;
   title: string;
   subtitle?: string;
   onClose: () => void;
   children: ReactNode;
+  /** Shown inside the drawer, so a failed action is never hidden behind the overlay. */
+  error?: string | null;
 }) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const focusables = () =>
+      panelRef.current
+        ? (Array.from(
+            panelRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+          ) as HTMLElement[])
+        : [];
+    // Focus the first field (or the close button) once the panel has rendered.
+    const raf = window.requestAnimationFrame(() => {
+      const items = focusables();
+      (items.find(node => /^(INPUT|SELECT|TEXTAREA)$/.test(node.tagName)) ?? items[0])?.focus();
+    });
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', onKey);
+      if (trigger && document.contains(trigger)) trigger.focus();
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open && error) errorRef.current?.focus();
+  }, [open, error]);
 
   if (!open) return null;
 
@@ -683,7 +728,7 @@ export function FocusedDrawer({
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink-950/55 sm:items-stretch sm:justify-end"
     >
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-lg sm:rounded-none">
+      <div ref={panelRef} className="relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-dvh sm:max-h-dvh sm:max-w-lg sm:rounded-none">
         <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
           <div className="min-w-0">
             <h2 className="serif m-0 text-xl font-medium text-ink-900">{title}</h2>
@@ -698,7 +743,14 @@ export function FocusedDrawer({
             <X className="h-4 w-4 shrink-0" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-y-contain p-5">
+          {error ? (
+            <p ref={errorRef} tabIndex={-1} role="alert" className="hm-notice hm-notice-bad" style={{ margin: '0 0 16px', outline: 'none' }}>
+              {error}
+            </p>
+          ) : null}
+          {children}
+        </div>
       </div>
     </div>
   );
