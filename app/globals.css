@@ -402,7 +402,7 @@ main :where(input,select,textarea):focus-visible { outline:3px solid rgba(54,89,
 body { background:var(--hamlet-paper); color:var(--hamlet-forest); }
 
 /* Unified HAMLET navigation — one working information architecture on every route. */
-.hamlet-global-header{position:relative;z-index:100;width:100%;background:var(--hm-band);color:var(--hm-page);border-bottom:1px solid rgba(217,242,75,.22)}
+.hamlet-global-header{position:relative;z-index:100;width:100%;background:var(--hm-band);color:var(--hm-page);border-bottom:1px solid var(--hm-line)}
 .hamlet-global-inner{width:min(1320px,calc(100% - 56px));min-height:76px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:28px}
 .hamlet-global-brand{display:inline-flex;align-items:center;gap:11px;white-space:nowrap;color:var(--hm-surface);font-size:15px;font-weight:850;letter-spacing:-.065em}
 .hamlet-global-monogram{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--hm-lime);color:var(--hm-lime);font:500 23px Georgia,serif;transform:rotate(-7deg)}
