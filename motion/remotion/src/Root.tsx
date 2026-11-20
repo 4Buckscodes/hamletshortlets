@@ -6,6 +6,7 @@ import { LondonLekki } from "./videos/LondonLekki";
 import { AgentEarn } from "./videos/AgentEarn";
 import { AgentNetwork } from "./videos/AgentNetwork";
 import { FPS } from "./anim";
+import { Lab } from "./pro/Lab";
 import { totalFrames } from "./kit/kit";
 
 const V = { width: 1080, height: 1920, fps: FPS };
@@ -21,6 +22,7 @@ export const RemotionRoot: React.FC = () => (
       <Composition id="AgentEarn" component={AgentEarn} {...V} durationInFrames={totalFrames("agentEarn")} />
       <Composition id="AgentNetwork" component={AgentNetwork} {...V} durationInFrames={totalFrames("agentNetwork")} />
     </Folder>
+    <Composition id="Lab" component={Lab} {...V} durationInFrames={60} />
     <Folder name="Earlier">
       <Composition id="OwnersDay" component={OwnersDay} {...V} durationInFrames={24 * FPS} defaultProps={{ voiceover: true }} />
       <Composition id="OwnersDayMusicOnly" component={OwnersDay} {...V} durationInFrames={24 * FPS} defaultProps={{ voiceover: false }} />

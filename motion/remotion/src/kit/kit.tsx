@@ -62,7 +62,7 @@ export const KineticCaption: React.FC<{ vid: string; top: number; tone?: "light"
 export type Sfx = { at: number; name: string; vol?: number };
 
 /** Voice lines, music ducked under the voice, and sound effects. */
-export const Soundtrack: React.FC<{ vid: string; sfx: Sfx[] }> = ({ vid, sfx }) => {
+export const Soundtrack: React.FC<{ vid: string; sfx: Sfx[]; musicGain?: number }> = ({ vid, sfx, musicGain = 1 }) => {
   const L = lines(vid);
   const duck = (sec: number) => {
     let d = 0;
@@ -71,7 +71,7 @@ export const Soundtrack: React.FC<{ vid: string; sfx: Sfx[] }> = ({ vid, sfx }) 
   };
   return (
     <>
-      <Audio src={staticFile(`audio/${vid}-music.wav`)} volume={(fr: number) => duck(fr / FPS)} />
+      <Audio src={staticFile(`audio/${vid}-music.wav`)} volume={(fr: number) => duck(fr / FPS) * musicGain} />
       {L.map((l: VoLine, i: number) => (
         <Sequence key={i} name={`VO ${i + 1}`} from={f(l.start)} layout="none"><Audio src={staticFile(l.file)} volume={1} /></Sequence>
       ))}

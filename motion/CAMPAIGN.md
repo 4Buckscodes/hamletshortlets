@@ -69,7 +69,7 @@ From `motion/remotion`: `python3 scripts/make-audio.py` (music and sound effects
 
 # Agent campaign: two 3D videos
 
-Real-time 3D (Three.js in Remotion), same brand and end card. Neither video states the commission
+Real-time 3D (Three.js, React Three Fiber and drei in Remotion): studio-lit reflective gold, soft shadows, depth fog, glowing window bands and light-trail arcs, with a 3D end card. Neither video states the commission
 percentage: agents' earnings vary, so the copy talks about "commission" and "referral rewards".
 
 | # | File | Angle | Voice | Length |
@@ -110,6 +110,10 @@ attributed bookings (`app/partners/apply` copy, pricing contract section 2); 90-
 - A new shot every 2 to 4 seconds, timed to the voice.
 - Word-by-word captions, so they work with the sound off.
 - One clear promise per video, one call to action, under 32 seconds.
+
+## Agent audio
+- Music: `scripts/make-audio-pro.py` produces an Afro-house bed per video (sidechained chords, sub bass, log drums, layered percussion, bell motif). The intro is filtered and opens up on the first cut. Also produces the cinematic SFX (impact, riser, swoosh, chime, clink, land, spark).
+- Voice: `scripts/polish-voice.sh public/vo/agentEarn public/vo/agentNetwork` applies de-essing, compression, presence EQ and a short room. Run it once after generating voices.
 
 ## Rendering
 `scripts/render.sh <CompositionId> out/<file>.mp4` renders and masters the audio (limiter, -14 LUFS).
