@@ -141,11 +141,12 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     await expect(neighbourhoods.getByRole('link', { name: /Island energy/i })).toBeVisible();
     await expect(neighbourhoods.getByRole('link', { name: /Mainland rhythm/i })).toBeVisible();
 
+    // Mood cards filter by the corridor in their caption (Yaba · Ikeja · Surulere).
     await neighbourhoods.getByRole('link', { name: /Mainland rhythm/i }).click();
-    await expect(page).toHaveURL(/\/stays\?area=Yaba/);
+    await expect(page).toHaveURL(/\/stays\?area=Lagos\+Mainland/);
     await expect(page.getByRole('button', { name: /Clear filters/i }).first()).toBeVisible();
     await page.getByRole('button', { name: /Clear filters/i }).first().click();
-    await expect(page).not.toHaveURL(/area=Yaba/);
+    await expect(page).not.toHaveURL(/area=/);
 
     // Navigate to /stays with combined filters & verify invalid min > max price validation
     await page.goto('/stays?area=Yaba&minPrice=300000&maxPrice=100000');
