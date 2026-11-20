@@ -1172,3 +1172,20 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 .hm-field .hm-date-wrap input[type="date"] { padding-right: 38px; }
 .hm-field .hm-date-wrap::after { right: 14px; }
 .hm-field-label { white-space: nowrap; }
+
+/* ---------- Homepage search on phones: one small pill that pops up a sheet ---------- */
+.home-page .home-search-pill { display: none; }
+@media (max-width: 760px) {
+  .home-page .home-search-form-inline { display: none !important; }
+  .home-page .home-search { padding: 24px 0 22px !important; }
+  .home-page .home-search-heading { margin-bottom: 12px !important; }
+  .home-page .home-search-pill { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 6px 6px 6px 20px; border: 1px solid var(--hm-field-line); border-radius: 999px; background: var(--hm-surface); color: var(--hm-text); text-align: left; font: inherit; cursor: pointer; }
+  .home-page .home-search-pill-text { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
+  .home-page .home-search-pill-text b, .home-page .home-search-pill-text span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-page .home-search-pill-text b { font-size: 16px; }
+  .home-page .home-search-pill-text span { color: var(--hm-muted); font-size: 13px; }
+  .home-page .home-search-pill-icon { display: grid; width: 52px; height: 52px; flex: none; place-items: center; border-radius: 50%; background: var(--hm-blue); color: #fff; }
+  .home-page .home-area-quick { margin-top: 14px !important; }
+}
+/* The same form inside the pop-up sheet: full width, one calm column of fields. */
+.home-search-form-sheet { display: grid !important; grid-template-columns: 1fr 1fr !important; overflow: hidden; border: 1px solid var(--hm-field-line) !important; border-radius: 16px !important; background: var(--hm-surface) !important; box-shadow: none !important; }

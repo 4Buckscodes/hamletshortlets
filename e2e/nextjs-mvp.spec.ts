@@ -238,12 +238,18 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     const mobileSearchRegion = mobilePage.getByRole('region', { name: 'Search for a stay' });
     await expect(mobileSearchRegion).toBeVisible();
     await expect(mobileSearchRegion.getByRole('heading', { name: 'Where to?' })).toBeVisible();
-    const mobileSearchForm = mobileSearchRegion.getByRole('search', {
+    // On phones the search is one small pill that pops up the form in a sheet.
+    await mobileSearchRegion.getByRole('button', { name: /Search Lagos stays/i }).click();
+    const mobileSearchSheet = mobilePage.getByRole('dialog', { name: 'Find a stay' });
+    await expect(mobileSearchSheet).toBeVisible();
+    const mobileSearchForm = mobileSearchSheet.getByRole('search', {
       name: /Search Lagos shortlets/i,
     });
     await expect(mobileSearchForm).toBeVisible();
     await expect(mobileSearchForm.getByLabel('Enter a Lagos area')).toBeVisible();
     await expect(mobileSearchForm.getByRole('button', { name: /Find my stay/i })).toBeVisible();
+    await mobilePage.keyboard.press('Escape');
+    await expect(mobileSearchSheet).toBeHidden();
 
     // Homepage trust section
     await expect(
@@ -276,8 +282,10 @@ test.describe('HAMLET Next.js App Router — Guest Property Discovery & Automati
     ).toBeVisible();
 
     // Homepage search submits the chosen area to /stays
-    await mobileSearchRegion.getByLabel('Enter a Lagos area').fill('Yaba');
-    await mobileSearchRegion.getByRole('button', { name: /Find my stay/i }).click();
+    await mobileSearchRegion.getByRole('button', { name: /Search Lagos stays/i }).click();
+    const searchSheet = mobilePage.getByRole('dialog', { name: 'Find a stay' });
+    await searchSheet.getByLabel('Enter a Lagos area').fill('Yaba');
+    await searchSheet.getByRole('button', { name: /Find my stay/i }).click();
     await expect(mobilePage).toHaveURL(/\/stays\?area=Yaba/);
 
     await mobileCtx.close();

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, MapPin, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { FocusedDrawer } from '@/components/forms/ProgressiveFormPrimitives';
 import type { PublicStayRecord } from '@/lib/next-supabase';
 import { StayListingCard } from '@/components/site/SiteShell';
 import { LAGOS_AREAS } from '@/lib/areas';
@@ -25,6 +26,21 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const featured = approvedStays.slice(0, 6);
   const today = lagosIsoDateOffset(0);
   const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [area, setArea] = useState('');
+  const [guests, setGuests] = useState('2');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const pillDates = checkIn && checkOut ? `${shortDate(checkIn)} – ${shortDate(checkOut)}` : 'Add dates';
+  const searchForm = (variant: 'inline' | 'sheet') => (
+    <form action="/stays" method="get" className={`home-search-form home-search-form-${variant}`} role="search" aria-label="Search Lagos shortlets">
+      <label className="home-search-field home-destination"><span><MapPin size={14} /> DESTINATION</span><input name="area" type="text" list={`hamlet-destinations-${variant}`} placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" value={area} onChange={event => setArea(event.target.value)} autoComplete="off" /><datalist id={`hamlet-destinations-${variant}`}>{LAGOS_AREAS.map(name => <option key={name} value={name} />)}</datalist></label>
+      <label className="home-search-field"><span>CHECK IN</span><DateInput name="checkIn" aria-label="Check-in date" min={today} defaultValue={checkIn} onChange={event => { setCheckIn(event.target.value); setCheckOut(''); }} /></label>
+      <label className="home-search-field"><span>CHECK OUT</span><DateInput key={checkIn || 'none'} name="checkOut" aria-label="Check-out date" min={checkIn ? addDaysIso(checkIn, 1) : addDaysIso(today, 1)} max={checkIn ? addDaysIso(checkIn, 60) : undefined} defaultValue={checkOut} onChange={event => setCheckOut(event.target.value)} /></label>
+      <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" value={guests} onChange={event => setGuests(event.target.value)} aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10].map(count => <option key={count} value={count}>{count} {count===1?'guest':'guests'}</option>)}</select></label>
+      <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
+    </form>
+  );
   return (
     <div className="home-page">
       <section className="home-hero" aria-labelledby="home-title">
@@ -32,7 +48,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
           <div className="home-hero-copy">
             <p className="home-kicker"><span className="home-kicker-dot" /> NOT JUST A PLACE TO SLEEP. A WAY IN.</p>
             <h1 id="home-title">Find your<br /><span>place to</span><br /><em>belong.</em></h1>
-            <div className="home-hero-cta"><Link href="/stays" className="hm-btn hm-btn-lime">Find a stay <ArrowRight size={16} aria-hidden="true" /></Link><a href="#find-your-stay" className="hm-btn hm-btn-ghost home-hero-ghost">Search dates</a></div><p className="home-hero-trust"><ShieldCheck size={15} aria-hidden="true" /> Verified stays · Nothing to pay until the partner accepts</p><div className="home-intro-row"><p>Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p><a href="#find-your-stay" className="home-scroll" aria-label="Scroll to find your stay"><ArrowDown size={18} /></a></div>
+            <div className="home-hero-cta"><Link href="/stays" className="hm-btn hm-btn-lime">Find a stay <ArrowRight size={16} aria-hidden="true" /></Link><a href="#find-your-stay" className="hm-btn hm-btn-ghost home-hero-ghost" onClick={event => { if (window.matchMedia('(max-width: 760px)').matches) { event.preventDefault(); setSearchOpen(true); } }}>Search dates</a></div><p className="home-hero-trust"><ShieldCheck size={15} aria-hidden="true" /> Verified stays · Nothing to pay until the partner accepts</p><div className="home-intro-row"><p>Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p><a href="#find-your-stay" className="home-scroll" aria-label="Scroll to find your stay"><ArrowDown size={18} /></a></div>
             <div className="home-coordinate">LAGOS, NIGERIA <span>·</span> STARTING POINT</div>
           </div>
           <div className="home-hero-art">
@@ -47,16 +63,17 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
       <section className="home-search" id="find-your-stay" aria-label="Search for a stay">
         <div className="home-shell">
           <div className="home-search-heading"><span>01 / MAKE IT YOURS</span><h2>Where to?</h2></div>
-          <form action="/stays" method="get" className="home-search-form" role="search" aria-label="Search Lagos shortlets">
-            <label className="home-search-field home-destination"><span><MapPin size={14} /> DESTINATION</span><input name="area" type="text" list="hamlet-destinations" placeholder="Lekki, Ikoyi, Yaba…" aria-label="Enter a Lagos area" /><datalist id="hamlet-destinations">{LAGOS_AREAS.map(area => <option key={area} value={area} />)}</datalist></label>
-            <label className="home-search-field"><span>CHECK IN</span><DateInput name="checkIn" aria-label="Check-in date" min={today} onChange={event => setCheckIn(event.target.value)} /></label>
-            <label className="home-search-field"><span>CHECK OUT</span><DateInput key={checkIn || 'none'} name="checkOut" aria-label="Check-out date" min={checkIn ? addDaysIso(checkIn, 1) : addDaysIso(today, 1)} max={checkIn ? addDaysIso(checkIn, 60) : undefined} /></label>
-            <label className="home-search-field home-guests"><span>GUESTS</span><select name="guests" defaultValue="2" aria-label="Number of guests">{[1,2,3,4,5,6,7,8,9,10].map(count => <option key={count} value={count}>{count} {count===1?'guest':'guests'}</option>)}</select></label>
-            <button className="home-search-button" type="submit"><span>Find my stay</span><ArrowRight size={18} /></button>
-          </form>
+          <button type="button" className="home-search-pill" onClick={() => setSearchOpen(true)} aria-haspopup="dialog" aria-label="Search Lagos stays: choose area, dates and guests">
+            <span className="home-search-pill-text"><b>{area.trim() || 'Anywhere in Lagos'}</b><span>{pillDates} · {guests} {guests === '1' ? 'guest' : 'guests'}</span></span>
+            <span className="home-search-pill-icon" aria-hidden="true"><Search size={18} /></span>
+          </button>
+          {searchForm('inline')}
           <div className="home-area-quick"><span>START WITH A VIBE · LAGOS</span>{['Lekki','Victoria Island','Ikoyi','Yaba'].map(area => <Link key={area} href={`/stays?area=${encodeURIComponent(area)}`}>{area}</Link>)}</div>
         </div>
-      </section>
+      <FocusedDrawer open={searchOpen} onClose={() => setSearchOpen(false)} title="Find a stay" subtitle="Where, when and how many">
+            {searchForm('sheet')}
+          </FocusedDrawer>
+        </section>
 
 
       <section className="home-live-stays">
