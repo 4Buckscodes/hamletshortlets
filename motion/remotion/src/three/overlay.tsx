@@ -7,7 +7,7 @@ import { useSec } from "../kit/kit";
 export const Title: React.FC<{ a: string; b?: string; top?: number; dark?: boolean; size?: number; at?: number; chip?: boolean }> = ({ a, b, top = 170, dark = true, size = 104, at = 0, chip = false }) => {
   const t = useSec();
   const line = (txt: string, i: number, color: string) => {
-    const p = at === 0 && i === 0 ? 1 : seg(t, at + i * 0.15, 0.55, E.out);
+    const p = at === 0 ? 1 : seg(t, at + i * 0.15, 0.55, E.out);
     return <span style={{ display: "block", overflow: "hidden", paddingBottom: "0.12em", marginBottom: "-0.12em" }}><span style={{ display: "inline-block", translate: `0 ${(1 - p) * 110}%`, color }}>{txt}</span></span>;
   };
   return (
