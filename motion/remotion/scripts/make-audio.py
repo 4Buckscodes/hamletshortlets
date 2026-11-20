@@ -108,3 +108,23 @@ t=tt(.18); sfx('lock',noise(len(t),3)*np.exp(-t*60)*.6+np.sin(2*np.pi*220*t)*np.
 t=tt(.35); sfx('thud',np.sin(2*np.pi*np.cumsum(60+80*np.exp(-t*30))/SR)*np.exp(-t*10))
 t=tt(.25); sfx('stamp',np.sin(2*np.pi*np.cumsum(90+120*np.exp(-t*40))/SR)*np.exp(-t*16)+noise(len(t),6)*np.exp(-t*50)*.4)
 print('ok')
+
+# 4. Agents, earn: hits from frame one, confident groove all the way
+if 'agentEarn' in T:
+    v=T['agentEarn']; m=Mix(v['total'])
+    m.add(kick(),0.0,0,.9); m.add(pad([45,52,57,61],1.6),0,0,.03)
+    groove(m,0.0,v['total']-1.0,108,PROG,0.0,density=2)
+    m.add(pad([53,57,60,64],v['total']),0,0,.014)
+    save(os.path.join(ROOT,'public','audio','agentEarn-music.wav'),m.out(fade_in=.02))
+
+# 5. Agents, network: plucks build up layer by layer as the network grows, full groove from line 3
+if 'agentNetwork' in T:
+    v=T['agentNetwork']; L=v['lines']; m=Mix(v['total']); full=L[2]['start']-0.2
+    sb=60/104/4; t0=0.0; i=0; notes=[69,72,76,79,81,84]
+    while t0<full:
+        n=1+min(5,int(t0/0.9)); m.add(ks(notes[i%n],.7),t0,.3 if i%2 else -.3,.11); t0+=sb*2; i+=1
+    m.add(pad([45,52,57,60],full+1),0,0,.02)
+    groove(m,full,v['total']-1.0,104,PROG,full,density=2)
+    m.add(pad([53,57,60,64,69],v['total']-full),full,0,.016)
+    save(os.path.join(ROOT,'public','audio','agentNetwork-music.wav'),m.out(fade_in=.02))
+print('agents ok')

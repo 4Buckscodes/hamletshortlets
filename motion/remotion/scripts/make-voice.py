@@ -9,7 +9,12 @@ if not keep:
     from kokoro_onnx import Kokoro
     k=Kokoro(os.path.join(sys.argv[1],'kokoro-v1.0.onnx'),os.path.join(sys.argv[1],'voices-v1.0.bin'))
 FPS=30; out={}
+only=[a.split('=',1)[1] for a in sys.argv if a.startswith('--only=')]
+only=only[0].split(',') if only else None
+if only:
+    _s=open(os.path.join(ROOT,'src','vo','timings.ts')).read(); out=json.loads(_s[_s.index('> = ')+4:_s.rindex(';')])
 for vid,s in scripts.items():
+    if only and vid not in only: continue
     d=os.path.join(ROOT,'public','vo',vid); os.makedirs(d,exist_ok=True)
     t=0.3; lines=[]
     for i,text in enumerate(s['lines'],1):

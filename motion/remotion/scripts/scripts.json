@@ -4,7 +4,7 @@
     "angle": "Loss: every empty night is income gone for good",
     "voice": "af_heart",
     "lang": "en-us",
-    "speed": 0.93,
+    "speed": 0.95,
     "lines": [
       "Your shortlet was empty last night.",
       "And the night before.",
@@ -19,9 +19,9 @@
   "yourRules": {
     "title": "Your rules",
     "angle": "Control and safety: you decide who stays, and you are protected",
-    "voice": "am_michael",
+    "voice": "af_bella",
     "lang": "en-us",
-    "speed": 1.0,
+    "speed": 0.97,
     "lines": [
       "Do you know who's sleeping in your apartment tonight?",
       "Fake bookings. Guests you know nothing about. Payments that never arrive.",
@@ -38,7 +38,7 @@
     "angle": "Diaspora owners: run your Lagos shortlet from anywhere, with clear money",
     "voice": "bf_emma",
     "lang": "en-gb",
-    "speed": 0.94,
+    "speed": 0.95,
     "lines": [
       "You live in London. Your apartment is in Lekki.",
       "So who's handling the bookings?",
@@ -48,6 +48,39 @@
       "Guests abroad can see prices in dollars or pounds.",
       "And our guest service fee is added on top of your rate, not taken out of it.",
       "Wherever you are, your place keeps working. List it on HAMLET."
+    ]
+  },
+  "agentEarn": {
+    "title": "Get paid on the stays you close",
+    "audience": "Closing agents and realtors",
+    "angle": "Commission on stays you close, paid from HAMLET's fee, no haggling with owners",
+    "voice": "af_heart",
+    "lang": "en-us",
+    "speed": 1.0,
+    "lines": [
+      "Agents. Get paid on the stays you close.",
+      "You already find guests for apartments across Lagos.",
+      "On HAMLET, the bookings you close earn you a commission.",
+      "It's paid from HAMLET's own fee, so the owner's rate stays whole.",
+      "No haggling with the owner over your cut.",
+      "And every listing is verified, so your clients book with confidence.",
+      "Close stays. Earn more. Join HAMLET as a closing agent."
+    ]
+  },
+  "agentNetwork": {
+    "title": "Your network pays",
+    "audience": "Realtors who know other realtors and owners",
+    "angle": "Referral rewards for inviting other agents and owners",
+    "voice": "af_bella",
+    "lang": "en-us",
+    "speed": 0.97,
+    "lines": [
+      "Your network is worth more than you think.",
+      "Invite other agents and property owners to HAMLET.",
+      "When they make bookings, you earn a referral reward.",
+      "For ninety days, their completed bookings keep paying you.",
+      "And every listing is verified, so they'll thank you for the invite.",
+      "Grow your network. Grow your earnings. Partner with HAMLET."
     ]
   }
 }

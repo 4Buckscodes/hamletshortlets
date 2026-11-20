@@ -8,52 +8,52 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
     "text": "Your shortlet was empty last night.",
     "file": "vo/emptyNights/01.wav",
     "start": 0.3,
-    "dur": 1.84
+    "dur": 1.817
    },
    {
     "text": "And the night before.",
     "file": "vo/emptyNights/02.wav",
-    "start": 2.59,
+    "start": 2.567,
     "dur": 1.017
    },
    {
     "text": "Every empty night is income you never get back.",
     "file": "vo/emptyNights/03.wav",
-    "start": 3.907,
-    "dur": 2.496
+    "start": 3.884,
+    "dur": 2.49
    },
    {
     "text": "HAMLET brings verified guests to verified homes in Lagos.",
     "file": "vo/emptyNights/04.wav",
-    "start": 6.702,
-    "dur": 3.659
+    "start": 6.674,
+    "dur": 3.628
    },
    {
     "text": "Requests come to you. You choose who stays.",
     "file": "vo/emptyNights/05.wav",
-    "start": 10.662,
-    "dur": 2.348
+    "start": 10.602,
+    "dur": 2.325
    },
    {
     "text": "And nothing is confirmed until the guest has paid.",
     "file": "vo/emptyNights/06.wav",
-    "start": 13.31,
-    "dur": 2.717
+    "start": 13.226,
+    "dur": 2.704
    },
    {
     "text": "Stop waiting for the next booking.",
     "file": "vo/emptyNights/07.wav",
-    "start": 16.326,
-    "dur": 1.613
+    "start": 16.23,
+    "dur": 1.588
    },
    {
     "text": "List your shortlet on HAMLET.",
     "file": "vo/emptyNights/08.wav",
-    "start": 18.239,
-    "dur": 1.526
+    "start": 18.118,
+    "dur": 1.502
    }
   ],
-  "total": 22.77
+  "total": 22.62
  },
  "yourRules": {
   "title": "Your rules",
@@ -62,52 +62,52 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
     "text": "Do you know who's sleeping in your apartment tonight?",
     "file": "vo/yourRules/01.wav",
     "start": 0.3,
-    "dur": 2.27
+    "dur": 2.173
    },
    {
     "text": "Fake bookings. Guests you know nothing about. Payments that never arrive.",
     "file": "vo/yourRules/02.wav",
-    "start": 3.02,
-    "dur": 4.12
+    "start": 2.923,
+    "dur": 4.06
    },
    {
     "text": "On HAMLET, nothing happens without you.",
     "file": "vo/yourRules/03.wav",
-    "start": 7.44,
-    "dur": 2.211
+    "start": 7.283,
+    "dur": 2.228
    },
    {
     "text": "Every request comes to you first. Accept, or decline.",
     "file": "vo/yourRules/04.wav",
-    "start": 9.951,
-    "dur": 3.608
+    "start": 9.812,
+    "dur": 3.556
    },
    {
     "text": "Guests pay through HAMLET before the booking is confirmed.",
     "file": "vo/yourRules/05.wav",
-    "start": 13.858,
-    "dur": 3.124
+    "start": 13.667,
+    "dur": 3.011
    },
    {
     "text": "Your exact address stays private until it is.",
     "file": "vo/yourRules/06.wav",
-    "start": 17.283,
-    "dur": 2.598
+    "start": 16.979,
+    "dur": 2.458
    },
    {
     "text": "And a refundable caution deposit protects your space.",
     "file": "vo/yourRules/07.wav",
-    "start": 20.181,
-    "dur": 3.109
+    "start": 19.737,
+    "dur": 3.047
    },
    {
     "text": "Your property. Your rules. List it on HAMLET.",
     "file": "vo/yourRules/08.wav",
-    "start": 23.589,
-    "dur": 2.804
+    "start": 23.084,
+    "dur": 2.823
    }
   ],
-  "total": 29.39
+  "total": 28.91
  },
  "londonLekki": {
   "title": "London to Lekki",
@@ -116,51 +116,141 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
     "text": "You live in London. Your apartment is in Lekki.",
     "file": "vo/londonLekki/01.wav",
     "start": 0.3,
-    "dur": 2.728
+    "dur": 2.697
    },
    {
     "text": "So who's handling the bookings?",
     "file": "vo/londonLekki/02.wav",
-    "start": 3.478,
-    "dur": 1.713
+    "start": 3.447,
+    "dur": 1.696
    },
    {
     "text": "With HAMLET, you run it all from your phone.",
     "file": "vo/londonLekki/03.wav",
-    "start": 5.49,
+    "start": 5.443,
     "dur": 2.072
    },
    {
     "text": "Requests, availability, bookings and earnings, in one partner workspace.",
     "file": "vo/londonLekki/04.wav",
-    "start": 7.862,
-    "dur": 4.17
+    "start": 7.815,
+    "dur": 4.169
    },
    {
     "text": "Every listing is verified before it goes live, so guests book with confidence.",
     "file": "vo/londonLekki/05.wav",
-    "start": 12.332,
-    "dur": 4.498
+    "start": 12.284,
+    "dur": 4.424
    },
    {
     "text": "Guests abroad can see prices in dollars or pounds.",
     "file": "vo/londonLekki/06.wav",
-    "start": 17.129,
-    "dur": 2.869
+    "start": 17.008,
+    "dur": 2.867
    },
    {
     "text": "And our guest service fee is added on top of your rate, not taken out of it.",
     "file": "vo/londonLekki/07.wav",
-    "start": 20.298,
-    "dur": 3.987
+    "start": 20.175,
+    "dur": 3.963
    },
    {
     "text": "Wherever you are, your place keeps working. List it on HAMLET.",
     "file": "vo/londonLekki/08.wav",
-    "start": 24.585,
-    "dur": 3.583
+    "start": 24.438,
+    "dur": 3.53
    }
   ],
-  "total": 31.17
+  "total": 30.97
+ },
+ "agentEarn": {
+  "title": "Get paid on the stays you close",
+  "lines": [
+   {
+    "text": "Agents. Get paid on the stays you close.",
+    "file": "vo/agentEarn/01.wav",
+    "start": 0.3,
+    "dur": 2.176
+   },
+   {
+    "text": "You already find guests for apartments across Lagos.",
+    "file": "vo/agentEarn/02.wav",
+    "start": 2.926,
+    "dur": 2.574
+   },
+   {
+    "text": "On HAMLET, the bookings you close earn you a commission.",
+    "file": "vo/agentEarn/03.wav",
+    "start": 5.8,
+    "dur": 2.678
+   },
+   {
+    "text": "It's paid from HAMLET's own fee, so the owner's rate stays whole.",
+    "file": "vo/agentEarn/04.wav",
+    "start": 8.778,
+    "dur": 3.381
+   },
+   {
+    "text": "No haggling with the owner over your cut.",
+    "file": "vo/agentEarn/05.wav",
+    "start": 12.46,
+    "dur": 2.046
+   },
+   {
+    "text": "And every listing is verified, so your clients book with confidence.",
+    "file": "vo/agentEarn/06.wav",
+    "start": 14.806,
+    "dur": 3.617
+   },
+   {
+    "text": "Close stays. Earn more. Join HAMLET as a closing agent.",
+    "file": "vo/agentEarn/07.wav",
+    "start": 18.723,
+    "dur": 3.412
+   }
+  ],
+  "total": 25.13
+ },
+ "agentNetwork": {
+  "title": "Your network pays",
+  "lines": [
+   {
+    "text": "Your network is worth more than you think.",
+    "file": "vo/agentNetwork/01.wav",
+    "start": 0.3,
+    "dur": 1.834
+   },
+   {
+    "text": "Invite other agents and property owners to HAMLET.",
+    "file": "vo/agentNetwork/02.wav",
+    "start": 2.584,
+    "dur": 3.067
+   },
+   {
+    "text": "When they make bookings, you earn a referral reward.",
+    "file": "vo/agentNetwork/03.wav",
+    "start": 5.951,
+    "dur": 2.657
+   },
+   {
+    "text": "For ninety days, their completed bookings keep paying you.",
+    "file": "vo/agentNetwork/04.wav",
+    "start": 8.908,
+    "dur": 3.19
+   },
+   {
+    "text": "And every listing is verified, so they'll thank you for the invite.",
+    "file": "vo/agentNetwork/05.wav",
+    "start": 12.398,
+    "dur": 3.44
+   },
+   {
+    "text": "Grow your network. Grow your earnings. Partner with HAMLET.",
+    "file": "vo/agentNetwork/06.wav",
+    "start": 16.138,
+    "dur": 3.146
+   }
+  ],
+  "total": 22.28
  }
 };
