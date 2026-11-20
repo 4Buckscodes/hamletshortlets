@@ -72,6 +72,7 @@ export function HoratioListingAssistant({
         Describe your property to generate an editable listing draft.
       </p>
       <textarea
+        aria-label="Describe your property for Horatio"
         value={description}
         onChange={event => setDescription(event.target.value)}
         maxLength={12000}

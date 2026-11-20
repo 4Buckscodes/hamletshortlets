@@ -365,10 +365,12 @@ export function PropertyMediaManager({
         if (caught instanceof DOMException && caught.name === 'AbortError') {
           return;
         }
+        // Storage and network errors are technical; give the partner a plain next step.
+        const raw = caught instanceof Error ? caught.message : '';
         const errMessage =
-          caught instanceof Error
-            ? caught.message
-            : 'Could not optimise or upload this photograph. Tap Retry to try again.';
+          !raw || /bucket|fetch|network|storage|jwt|policy|row-level|\b4\d\d\b|\b5\d\d\b/i.test(raw)
+            ? 'This photo didn’t upload. Check your connection and tap Retry.'
+            : raw;
 
         updateJobs(prev =>
           prev.map(j =>
@@ -831,6 +833,7 @@ export function PropertyMediaManager({
           value={urlInput}
           onChange={e => setUrlInput(e.target.value)}
           placeholder="Or paste an existing https:// photo URL…"
+          aria-label="Photo link (https)"
           className={`${FIELD_INPUT_CLASS} flex-1`}
         />
         <button
@@ -892,7 +895,7 @@ export function PropertyMediaManager({
                     type="button"
                     onClick={() => setPreviewLightboxIndex(idx)}
                     aria-label={`Preview photo ${idx + 1} full size`}
-                    className="absolute right-2 bottom-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-ink-950/75 text-white transition-colors hover:bg-ink-950"
+                    className="absolute right-2 bottom-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-ink-950/75 text-white transition-colors hover:bg-ink-950"
                   >
                     <Eye className="h-3.5 w-3.5 shrink-0" />
                   </button>
@@ -936,7 +939,7 @@ export function PropertyMediaManager({
                       disabled={idx === 0}
                       onClick={() => movePhoto(idx, -1)}
                       aria-label={`Move photo ${idx + 1} earlier`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
                     </button>
@@ -945,7 +948,7 @@ export function PropertyMediaManager({
                       disabled={idx === imageUrls.length - 1}
                       onClick={() => movePhoto(idx, 1)}
                       aria-label={`Move photo ${idx + 1} later`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-ink-700 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </button>
@@ -953,7 +956,7 @@ export function PropertyMediaManager({
                       type="button"
                       onClick={() => removeUploadedPhoto(idx)}
                       aria-label={`Remove photo ${idx + 1}`}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-red-700 hover:bg-red-50"
+                      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-3.5 w-3.5 shrink-0" />
                     </button>
