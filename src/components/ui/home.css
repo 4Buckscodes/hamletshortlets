@@ -73,6 +73,8 @@
 .hp-field input, .hp-field select, .hp-field .hm-date-wrap input { width: 100%; min-width: 0; min-height: 28px; padding: 0; border: 0; background: transparent; color: var(--hm-text); font: inherit; font-size: 16px; font-weight: 500; outline: 0; appearance: none; }
 .hp-field input::placeholder { color: var(--hm-muted); opacity: 0.8; }
 .hp-search-form-inline .hp-search-submit { align-self: stretch; min-height: 0; margin: 6px; padding-inline: 28px; }
+/* The search button is a form control, not a hover target: motion's 1.5% hover scale made it poke past the field edges (visible in the mobile sheet after a tap). */
+.hp-search-submit { transform: none !important; }
 .hp-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .hp-quick > span { margin-right: 6px; color: var(--hm-muted); font-size: 14px; }
 .hp-pill { display: none; }
