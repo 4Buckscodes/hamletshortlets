@@ -273,7 +273,7 @@ function HoratioDrawer({
             ...top.map(p => ({
               label: p.title,
               to: `/stays/${p.id}`,
-              meta: `${p.area} · ${p.bedrooms} bd · up to ${p.capacity} guests · ${formatStayPrice(guestFacingNightlyNgn(p.nightlyRate))}/night (+ ${formatNaira(p.deposit)} refundable deposit)`,
+              meta: `${p.area} · ${p.bedrooms} bd · up to ${p.capacity} guests · ${formatStayPrice(p.guestNightlyNgn ?? guestFacingNightlyNgn(p.nightlyRate))}/night (+ ${formatNaira(p.deposit)} refundable deposit)`,
             })),
             {
               label: `View all ${matches.length} matching stay${matches.length === 1 ? '' : 's'}`,

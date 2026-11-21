@@ -8,6 +8,7 @@ import {
   formatBedroomCountLabel,
   getStayTrustStatus,
   getValidGuestNightlyNgn,
+  getValidPublicGuestNightlyNgn,
 } from './discovery';
 import { formatNaira } from './pricing';
 import {
@@ -568,6 +569,8 @@ export interface PropertyOgInput {
   bathrooms?: number | null;
   capacity?: number | null;
   nightly_rate?: number | string | null;
+  /** Guest-facing price from the public view; preferred over the private owner rate. */
+  guest_nightly_ngn?: number | string | null;
   image_urls?: string[] | null;
   status: string;
   verification?: Record<string, string> | null;
@@ -584,7 +587,7 @@ export async function renderPropertyOgBuffer(stay: PropertyOgInput): Promise<Buf
     status: stay.status,
     verification: stay.verification ?? null,
   });
-  const guestNightly = getValidGuestNightlyNgn(stay.nightly_rate);
+  const guestNightly = getValidPublicGuestNightlyNgn(stay.guest_nightly_ngn) ?? getValidGuestNightlyNgn(stay.nightly_rate);
   const areaLabel = stay.area?.trim() ? `${stay.area.trim()}, Lagos` : 'Lagos, Nigeria';
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type ?? null,

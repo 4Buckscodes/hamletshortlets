@@ -82,7 +82,7 @@ describe('Next.js MVP Hardening — Overlap RPC Parity, Draft Listings & RLS Iso
 
     // Draft must NOT be visible to anon public queries
     const anonWhileDraft = await asAnon(db, async tx => {
-      const res = await tx.query(`select id from public.properties where id = $1`, [
+      const res = await tx.query(`select id from public.public_properties where id = $1`, [
         draftId,
       ]);
       return res.rows.length;

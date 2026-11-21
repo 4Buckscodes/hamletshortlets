@@ -173,7 +173,7 @@ describe('HAMLET Wayfinder — Supabase RLS, Secrets Isolation, Snapshot Integri
         public_landmarks: string[];
       }>(
         `select wayfinder_status, location_accuracy, public_landmarks
-         from public.properties where id = $1`,
+         from public.public_properties where id = $1`,
         [propertyId],
       );
       return res.rows[0];
@@ -548,7 +548,7 @@ describe('HAMLET Wayfinder — Supabase RLS, Secrets Isolation, Snapshot Integri
 
     const flaggedProp = await asAnon(db, async tx => {
       const res = await tx.query<{ wayfinder_status: string }>(
-        `select wayfinder_status from public.properties where id = $1`,
+        `select wayfinder_status from public.public_properties where id = $1`,
         [propertyId],
       );
       return res.rows[0];
