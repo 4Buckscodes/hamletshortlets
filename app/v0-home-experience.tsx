@@ -117,8 +117,9 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
           <figure className="hp-hero-art">
             <div className="hp-hero-frame" data-hero-parallax>
               <picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture>
+              <span className="hp-hero-glow" aria-hidden="true" />
             </div>
-            <span className="hp-hero-glow" aria-hidden="true" />
+            <figcaption className="hp-hero-caption">Victoria Island, Lagos</figcaption>
           </figure>
         </div>
       </section>

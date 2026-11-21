@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getPublicSupabase } from '@/lib/supabase-public';
-import { PUBLIC_PROPERTY_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
+import { PUBLIC_VIEW_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
 import {
   buildHomepageSchema,
   buildPublicPageMetadata,
@@ -35,8 +35,8 @@ export default async function HomePage() {
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
-      .select(PUBLIC_PROPERTY_SELECT)
+      .from('public_properties')
+      .select(PUBLIC_VIEW_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(36);

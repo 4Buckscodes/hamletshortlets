@@ -144,7 +144,7 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
     // 1. Anonymous marketplace endpoints
     await asAnon(db, async tx => {
       const approved = await tx.query<{ id: string }>(
-        `select * from public.properties where status = 'approved' order by created_at desc`,
+        `select * from public.public_properties where status = 'approved' order by created_at desc`,
       );
       expect(approved.rows.map(r => r.id)).toEqual([propertyId]);
 
