@@ -57,9 +57,24 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
   });
 
-  it('removes the hero slideshow image scale/reveal entrance effect without affecting other cards', () => {
+  it('animates the hero with GSAP only when motion is allowed, and cleans up', () => {
+    expect(hero).toContain("from 'gsap'");
+    expect(hero).toContain("gsap.matchMedia()");
+    expect(hero).toContain("(prefers-reduced-motion: no-preference)");
+    expect(hero).toContain('mm.revert()');
+    expect(hero).toContain("removeEventListener('pointermove'");
+    // The old CSS-class zoom/reveal approach stays out; motion is scripted and reversible.
     expect(hero).not.toMatch(/scale-105/);
     expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
     expect(hero).not.toMatch(/transition-transform/);
+  });
+
+  it('never hides hero content for reduced-motion visitors and reveals it if scripts fail', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
+    const hiddenStart = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'));
+    expect(hiddenStart).toContain('.hp-hero:not(.hp-live) .hp-word-in');
+    expect(hiddenStart).toContain('hp-failsafe');
+    // Hidden start states live only inside the no-preference media query.
+    expect(css.slice(0, css.indexOf('@media (prefers-reduced-motion: no-preference)'))).not.toContain('hp-live');
   });
 });

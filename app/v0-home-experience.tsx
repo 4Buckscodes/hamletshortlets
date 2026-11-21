@@ -8,7 +8,8 @@ import { StayListingCard } from '@/components/site/SiteShell';
 import { LAGOS_AREAS } from '@/lib/areas';
 import { DateInput } from '@/components/ui/DateInput';
 import { lagosIsoDateOffset } from '@/lib/pricing';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { m } from '@/components/ui/motion';
@@ -32,6 +33,75 @@ const promises = [
 ];
 
 const EASE = [0.2, 0.7, 0.2, 1] as const;
+const HERO_HEADLINE = 'Find your place to belong.';
+
+/**
+ * Hero choreography, "golden hour over the lagoon": the photo opens like a window from the
+ * bottom while it settles from a slight zoom, the headline rises word by word out of a mask,
+ * a band of warm light passes across the photo once, then the supporting copy follows. After
+ * the intro the photo breathes slowly and, with a mouse, drifts against the pointer for depth.
+ * Nothing runs for visitors who prefer reduced motion, and the CSS fail-safe in home.css
+ * reveals everything if scripts never arrive.
+ */
+function useHeroMotion(root: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const scope = root.current;
+    if (!scope) return;
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const q = <T extends Element>(selector: string) => Array.from(scope.querySelectorAll<T>(selector));
+      const art = scope.querySelector<HTMLElement>('.hp-hero-art');
+      const image = scope.querySelector<HTMLElement>('.hp-hero-frame img');
+      const glow = scope.querySelector<HTMLElement>('.hp-hero-glow');
+      const words = q('.hp-word-in');
+      const copy = q('.hp-lede, .hp-actions, .hp-trust');
+      if (!art || !image) return;
+
+      // Take over from the CSS start state first, so GSAP reads clean transforms (no stray 108% offset).
+      scope.classList.add('hp-live');
+      gsap.set(art, { clipPath: 'inset(100% 0% 0% 0%)' });
+      gsap.set(image, { scale: 1.18, transformOrigin: '50% 60%' });
+      gsap.set(words, { yPercent: 108 });
+      gsap.set(copy, { autoAlpha: 0, y: 18 });
+
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.to(art, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.25, ease: 'expo.out' }, 0)
+        .to(image, { scale: 1, duration: 2.2 }, 0)
+        .to(words, { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.09 }, 0.15)
+        .to(copy, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.1 }, 0.75);
+      if (glow) {
+        tl.fromTo(glow, { xPercent: -130, autoAlpha: 0.9 }, { xPercent: 130, duration: 2.1, ease: 'power2.inOut' }, 0.5)
+          .set(glow, { autoAlpha: 0 });
+      }
+
+      let drift: gsap.core.Tween | undefined;
+      tl.add(() => {
+        drift = gsap.to(image, { scale: 1.045, duration: 14, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+      });
+
+      const fine = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 901px)').matches;
+      const move = (event: PointerEvent) => {
+        const box = scope.getBoundingClientRect();
+        const nx = (event.clientX - box.left) / box.width - 0.5;
+        const ny = (event.clientY - box.top) / box.height - 0.5;
+        toX(-nx * 18);
+        toY(-ny * 12);
+      };
+      const toX = gsap.quickTo(image, 'x', { duration: 1.1, ease: 'power3.out' });
+      const toY = gsap.quickTo(image, 'y', { duration: 1.1, ease: 'power3.out' });
+      if (fine) scope.addEventListener('pointermove', move);
+
+      return () => {
+        scope.removeEventListener('pointermove', move);
+        drift?.kill();
+        tl.kill();
+        gsap.set([art, image, glow, ...words, ...copy].filter(Boolean) as gsap.TweenTarget[], { clearProps: 'all' });
+        scope.classList.remove('hp-live');
+      };
+    });
+    return () => mm.revert();
+  }, [root]);
+}
 
 export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
   const featured = approvedStays.slice(0, 6);
@@ -41,6 +111,8 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const [area, setArea] = useState('');
   const [guests, setGuests] = useState('2');
   const [searchOpen, setSearchOpen] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  useHeroMotion(heroRef);
   const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const pillDates = checkIn && checkOut ? `${shortDate(checkIn)} – ${shortDate(checkOut)}` : 'Add dates';
   const searchForm = (variant: 'inline' | 'sheet') => (
@@ -54,11 +126,11 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   );
   return (
     <div className="hp">
-      <section className="hp-hero" aria-labelledby="home-title">
+      <section className="hp-hero" aria-labelledby="home-title" ref={heroRef}>
         <div className="hp-shell hp-hero-grid">
           <div className="hp-hero-copy">
             <p className="hp-note">Verified shortlets in Lagos</p>
-            <h1 id="home-title">Find your place to belong.</h1>
+            <h1 id="home-title">{HERO_HEADLINE.split(' ').map((word, index, all) => (<span key={`${word}-${index}`}><span className="hp-word"><span className="hp-word-in">{word}</span></span>{index < all.length - 1 ? ' ' : null}</span>))}</h1>
             <p className="hp-lede">Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p>
             <div className="hp-actions">
               <Button href="/stays">Find a stay</Button>
@@ -70,6 +142,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
             <div className="hp-hero-frame" data-hero-parallax>
               <picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture>
             </div>
+            <span className="hp-hero-glow" aria-hidden="true" />
           </figure>
         </div>
       </section>

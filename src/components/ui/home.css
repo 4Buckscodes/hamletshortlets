@@ -17,9 +17,21 @@
 .hp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
 .hp-trust { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--hm-muted); font-size: 14px; }
 .hp-trust svg { flex: none; color: var(--hm-accent); }
-.hp-hero-art { margin: 0; overflow: hidden; border-radius: var(--hm-r-media); background: var(--hm-sand); aspect-ratio: 8 / 7; }
+.hp-hero-art { position: relative; margin: 0; overflow: hidden; border-radius: var(--hm-r-media); background: var(--hm-sand); aspect-ratio: 8 / 7; }
 .hp-hero-frame { height: 112%; margin-top: -6%; }
 .hp-hero-frame picture, .hp-hero-frame img { display: block; width: 100%; height: 100%; object-fit: cover; filter: var(--hm-photo-filter); }
+/* Hero motion. Words sit in a mask so they can rise into place; the glow is a band of warm light. */
+.hp-word { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+.hp-word-in { display: inline-block; will-change: transform; }
+.hp-hero-glow { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: soft-light;
+  background: linear-gradient(105deg, transparent 32%, color-mix(in srgb, var(--hm-gold) 85%, white) 50%, transparent 68%); }
+/* Hidden start state only while motion is allowed and scripts have not taken over; the fail-safe shows everything after 3s. */
+@media (prefers-reduced-motion: no-preference) {
+  .hp-hero:not(.hp-live) .hp-word-in { transform: translateY(108%); animation: hp-failsafe 0.01s 3s forwards; }
+  .hp-hero:not(.hp-live) .hp-lede, .hp-hero:not(.hp-live) .hp-actions, .hp-hero:not(.hp-live) .hp-trust { opacity: 0; animation: hp-failsafe 0.01s 3s forwards; }
+  .hp-hero:not(.hp-live) .hp-hero-art { clip-path: inset(100% 0 0 0); animation: hp-failsafe 0.01s 3s forwards; }
+}
+@keyframes hp-failsafe { to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
 @media (max-width: 900px) {
   .hp-hero-grid { grid-template-columns: 1fr; gap: 28px; padding-block: 28px 36px; }
   .hp-hero-art { aspect-ratio: 4 / 3; }

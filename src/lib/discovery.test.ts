@@ -312,7 +312,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
     expect(marketplace).not.toContain('/stays/showcase/');
   });
 
-  it('keeps the homepage hero static without image zoom/reveal transitions', () => {
+  it('drives hero motion through GSAP instead of CSS zoom/reveal transitions', () => {
     const heroSection = readFileSync(resolve(process.cwd(), 'app/v0-home-experience.tsx'), 'utf8');
     expect(heroSection).not.toMatch(/scale-105/);
     expect(heroSection).not.toMatch(/transition-all duration-1000 ease-out/);
