@@ -160,3 +160,6 @@
 .hl-facts, .hl-when { margin: 0; color: var(--hm-muted); font-size: 14px; line-height: 1.5; }
 .hl-when { font-size: 13px; }
 .hl-price { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--hm-line); }
+
+/* Naira reference under a foreign-currency price: small, muted, on its own line. */
+.hm-naira-ref { display: block; margin-top: 2px; color: var(--hm-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
