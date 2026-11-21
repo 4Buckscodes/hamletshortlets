@@ -6,7 +6,7 @@ const signInForm = readFileSync(resolve(process.cwd(), 'app/signin/signin-form.t
 const partnerForm = readFileSync(resolve(process.cwd(), 'app/partners/apply/partner-application-form.tsx'), 'utf8');
 const referralCapture = readFileSync(resolve(process.cwd(), 'src/components/site/ReferralAttributionCapture.tsx'), 'utf8');
 const resubmissionMigration = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261030100000_preserve_partner_referral_on_resubmission.sql'), 'utf8');
-const hero = readFileSync(resolve(process.cwd(), 'app/home-slideshow.tsx'), 'utf8');
+const hero = readFileSync(resolve(process.cwd(), 'app/v0-home-experience.tsx'), 'utf8');
 const migration = readFileSync(
   resolve(process.cwd(), 'supabase/migrations/20261029100000_lock_signup_referral_attribution.sql'),
   'utf8',
@@ -57,10 +57,32 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
   });
 
-  it('removes the hero slideshow image scale/reveal entrance effect without affecting other cards', () => {
-    const heroSlideshow = hero.split('/* ── Available Stays Marketplace Board')[0];
-    expect(heroSlideshow).not.toMatch(/scale-105/);
-    expect(heroSlideshow).not.toMatch(/transition-all duration-1000 ease-out/);
-    expect(heroSlideshow).not.toMatch(/transition-transform/);
+  it('plays the hero entrance in CSS, off the loading path, and only when motion is allowed', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
+    const motion = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'));
+    // No script is needed for the entrance, and the hero photo is never hidden from the browser.
+    expect(hero).not.toContain("from 'gsap'");
+    expect(motion).toContain('.hp-word-in { animation: hp-rise');
+    expect(motion).toContain('.hp-hero-frame::after');
+    expect(motion).toContain('hp-curtain');
+    expect(css).not.toMatch(/clip-path:\s*inset\(100%/);
+    expect(css).not.toContain('hp-live');
+    // Hover-only depth effect starts when idle, is throttled, and is removed on unmount.
+    expect(hero).toContain('requestIdleCallback');
+    expect(hero).toContain('requestAnimationFrame');
+    expect(hero).toContain("removeEventListener('pointermove'");
+    expect(hero).toContain('fetchPriority="high"');
+    expect(hero).not.toMatch(/scale-105/);
+    expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
+    expect(hero).not.toMatch(/transition-transform/);
+  });
+
+  it('keeps all hero animation inside the no-preference media query', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
+    const start = css.indexOf('/* Hero motion');
+    const mediaAt = css.indexOf('@media (prefers-reduced-motion: no-preference)', start);
+    const before = css.slice(start, mediaAt);
+    expect(before).not.toMatch(/animation\s*:/);
+    expect(css).toContain('hp-breathe');
   });
 });

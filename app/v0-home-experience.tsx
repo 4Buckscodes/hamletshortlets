@@ -8,7 +8,7 @@ import { StayListingCard } from '@/components/site/SiteShell';
 import { LAGOS_AREAS } from '@/lib/areas';
 import { DateInput } from '@/components/ui/DateInput';
 import { lagosIsoDateOffset } from '@/lib/pricing';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { m } from '@/components/ui/motion';
@@ -32,6 +32,52 @@ const promises = [
 ];
 
 const EASE = [0.2, 0.7, 0.2, 1] as const;
+const HERO_HEADLINE = 'Find your place to belong.';
+
+/**
+ * Hero motion, "golden hour over the lagoon". The entrance (photo opening like a window, headline
+ * rising word by word, a pass of warm light, copy fading up) is pure CSS in home.css: it starts at
+ * first paint, needs no JavaScript or hydration, never hides the hero image from the browser, and
+ * adds no script weight. The only script is a small pointer-depth effect for mouse users, started
+ * once the browser is idle so it can never compete with loading.
+ */
+function useHeroDepth(root: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const scope = root.current;
+    const art = scope?.querySelector<HTMLElement>('.hp-hero-art');
+    if (!scope || !art) return;
+    const query = '(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 901px)';
+    const mq = window.matchMedia(query);
+    let frame = 0;
+    let listening = false;
+    const move = (event: PointerEvent) => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const box = scope.getBoundingClientRect();
+        const nx = (event.clientX - box.left) / box.width - 0.5;
+        const ny = (event.clientY - box.top) / box.height - 0.5;
+        art.style.setProperty('--hx', `${(-nx * 18).toFixed(1)}px`);
+        art.style.setProperty('--hy', `${(-ny * 12).toFixed(1)}px`);
+      });
+    };
+    const start = () => {
+      if (!mq.matches || listening) return;
+      listening = true;
+      scope.addEventListener('pointermove', move, { passive: true });
+    };
+    const hasIdle = 'requestIdleCallback' in window;
+    const handle = hasIdle ? window.requestIdleCallback(start) : window.setTimeout(start, 1500);
+    return () => {
+      if (hasIdle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
+      cancelAnimationFrame(frame);
+      scope.removeEventListener('pointermove', move);
+      art.style.removeProperty('--hx');
+      art.style.removeProperty('--hy');
+    };
+  }, [root]);
+}
 
 export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
   const featured = approvedStays.slice(0, 6);
@@ -41,6 +87,8 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const [area, setArea] = useState('');
   const [guests, setGuests] = useState('2');
   const [searchOpen, setSearchOpen] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  useHeroDepth(heroRef);
   const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const pillDates = checkIn && checkOut ? `${shortDate(checkIn)} – ${shortDate(checkOut)}` : 'Add dates';
   const searchForm = (variant: 'inline' | 'sheet') => (
@@ -54,11 +102,11 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   );
   return (
     <div className="hp">
-      <section className="hp-hero" aria-labelledby="home-title">
+      <section className="hp-hero" aria-labelledby="home-title" ref={heroRef}>
         <div className="hp-shell hp-hero-grid">
           <div className="hp-hero-copy">
             <p className="hp-note">Verified shortlets in Lagos</p>
-            <h1 id="home-title">Find your place to belong.</h1>
+            <h1 id="home-title">{HERO_HEADLINE.split(' ').map((word, index, all) => (<span key={`${word}-${index}`}><span className="hp-word"><span className="hp-word-in" style={{ '--i': index } as React.CSSProperties}>{word}</span></span>{index < all.length - 1 ? ' ' : null}</span>))}</h1>
             <p className="hp-lede">Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p>
             <div className="hp-actions">
               <Button href="/stays">Find a stay</Button>
@@ -69,6 +117,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
           <figure className="hp-hero-art">
             <div className="hp-hero-frame" data-hero-parallax>
               <picture><source type="image/webp" srcSet="/images/hamlet-lagos-hero-760.webp 760w, /images/hamlet-lagos-hero-1280.webp 1280w" sizes="(max-width: 760px) 100vw, 55vw" /><img src="/images/hamlet-lagos-hero-1280.jpg" srcSet="/images/hamlet-lagos-hero-760.jpg 760w, /images/hamlet-lagos-hero-1280.jpg 1280w" sizes="(max-width: 760px) 100vw, 55vw" width={1312} height={816} alt="Living room with a view over the Lagos waterfront" fetchPriority="high" decoding="async" /></picture>
+              <span className="hp-hero-glow" aria-hidden="true" />
             </div>
             <figcaption className="hp-hero-caption">Victoria Island, Lagos</figcaption>
           </figure>

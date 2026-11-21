@@ -7,81 +7,30 @@ const readRepoFile = (relPath: string): string =>
 
 describe('mobile-first editorial Lagos hospitality redesign', () => {
   it('renders a single visible h1 across the homepage without duplicate mobile/desktop h1 tags', () => {
-    const homeSource = readRepoFile('app/home-slideshow.tsx');
-    const h1Matches = homeSource.match(/<h1\b/g) ?? [];
-    expect(h1Matches.length).toBe(1);
-    expect(homeSource).toContain('Find your next stay.');
-    expect(homeSource).toContain('Verified Shortlets · Lagos');
-    expect(homeSource).toContain(
-      'Island or Mainland, pick your side of the lagoon. Every stay is checked before you can request it.',
-    );
+    const homeSource = readRepoFile('app/v0-home-experience.tsx');
+    expect((homeSource.match(/<h1\b/g) ?? []).length).toBe(1);
+    expect(homeSource).toContain('Find your place to belong.');
+    expect(homeSource).toContain('Verified shortlets in Lagos');
   });
 
-  it('includes the Deep Navy (#0E1F3B) hero with the skyscraper & bridge skyline SVG while keeping the cream search pill and Find a stay sheet untouched', () => {
-    const homeSource = readRepoFile('app/home-slideshow.tsx');
-
-    // Deep Navy hero + Lagos Lagoon skyscraper & cable-stayed bridge illustration (IMG_4462)
-    expect(homeSource).toContain('bg-[#0E1F3B]');
-    expect(homeSource).toContain('viewBox="0 0 390 210"');
-    expect(homeSource).toContain('cx="296" cy="64" r="30" fill="#C9A45C"');
-    expect(homeSource).toContain('M0 150Q195 70 390 150');
-    expect(homeSource).toContain('M65 132V156M130 117V156M195 110V156M260 117V156M325 132V156');
-
-    // Curved Warm Ivory cream search sheet & tactile search trigger pill (untouched)
+  it('keeps the homepage search, area shortcuts and Find a stay entry points working', () => {
+    const homeSource = readRepoFile('app/v0-home-experience.tsx');
     expect(homeSource).toContain('Anywhere in Lagos');
-    expect(homeSource).toContain('Add dates');
-    expect(homeSource).toContain('aria-label="Find a stay"');
-
-    // Interactive Find a stay filter sheet (Where / When / Who / Clear / Show stays)
-    expect(homeSource).toContain('Anywhere');
-    expect(homeSource).toContain('Island');
-    expect(homeSource).toContain('Mainland');
-    expect(homeSource).toContain('Check-in');
-    expect(homeSource).toContain('Check-out');
-    expect(homeSource).toContain('text-base');
-    expect(homeSource).toContain('Adults &amp; children');
-    expect(homeSource).toContain('Clear');
-    expect(homeSource).toContain('Show stays');
+    expect(homeSource).toContain('aria-label="Search Lagos stays: choose area, dates and guests"');
+    expect(homeSource).toContain('title="Find a stay"');
+    expect(homeSource).toContain('<Button href="/stays">Find a stay</Button>');
+    expect(homeSource).toContain('/stays?area=${encodeURIComponent(name)}');
+    for (const area of ['Lekki', 'Victoria Island', 'Ikoyi', 'Yaba']) expect(homeSource).toContain(`'${area}'`);
+    expect(homeSource).toContain("href: '/stays?side=island'");
+    expect(homeSource).toContain("href: '/stays?area=Lagos+Mainland'");
+    expect(homeSource).toContain('View all stays');
   });
 
-  it('places the former Explore Lagos neighbourhoods photo rail right below the search pill and above Verified stays, followed by 4-step verification and Partner card', () => {
-    const homeSource = readRepoFile('app/home-slideshow.tsx');
-
-    // Former Explore Lagos neighbourhoods photo rail placed BEFORE Verified stays
-    expect(homeSource).toContain('Island &amp; Lagos Mainland corridors');
-    expect(homeSource).toContain('Explore Lagos neighbourhoods');
-    expect(homeSource).toContain('DISCOVERY_NEIGHBOURHOODS');
-    expect(homeSource).toContain('Every corridor');
-    expect(homeSource).toContain('All Lagos');
-    expect(homeSource).toContain('Island &amp; Mainland');
-    expect(homeSource).toMatch(/overflow-x-auto[\s\S]*overscroll-x-contain|overscroll-x-contain[\s\S]*overflow-x-auto/);
-
-    const railIdx = homeSource.indexOf('Explore Lagos neighbourhoods');
-    const staysIdx = homeSource.indexOf('id="stays"');
-    expect(railIdx).toBeGreaterThan(-1);
-    expect(staysIdx).toBeGreaterThan(railIdx);
-
-    // Verified stays cards with swipeable gallery & monogram fallback
-    expect(homeSource).toContain('Verified stays');
-    expect(homeSource).toContain('Photos coming soon');
-    expect(homeSource).toContain('View stay →');
-    expect(homeSource).toContain('See all stays →');
-
-    // 4-pillar verification grid
-    expect(homeSource).toContain('Verified before it’s bookable');
-    expect(homeSource).toContain('Title & lease');
-    expect(homeSource).toContain('Host identity');
-    expect(homeSource).toContain('Authority');
-    expect(homeSource).toContain('Inspection');
-
-    // Partner banner with gold CTA
-    expect(homeSource).toContain('Property Owners &amp; Managers');
-    expect(homeSource).toContain('Own or manage a verified shortlet in Lagos?');
-    expect(homeSource).toContain(
-      'List with HAMLET for visibility, booking and property management support.',
-    );
-    expect(homeSource).toContain('bg-[#C9A45C]');
-    expect(homeSource).toContain('Apply as a partner');
+  it('shows live verified stays and a helpful empty state rather than a blank section', () => {
+    const homeSource = readRepoFile('app/v0-home-experience.tsx');
+    expect(homeSource).toContain('StayListingCard');
+    expect(homeSource).toContain('New verified stays are on their way.');
+    expect(homeSource).toContain('Nothing to pay until the partner accepts your request.');
   });
 
   it('implements the forest site header, full-screen forest mobile drawer and collapsible forest footer from the UI kit', () => {

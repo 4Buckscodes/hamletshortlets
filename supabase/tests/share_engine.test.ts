@@ -304,10 +304,38 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
       return rows[0].p;
     });
     expect(perfCompleted.financials.completed_bookings).toBe(1);
-    // Instant partner access (20261116090000) deliberately does not gate payout
-    // readiness on identity verification, so completion approves the commission.
-    expect(perfCompleted.financials.earnings_pending_ngn).toBe(0);
-    expect(perfCompleted.financials.earnings_eligible_ngn).toBe(45_000);
+    // Payouts are held until identity verification (an approved partner
+    // application): this closing agent has none yet, so the commission stays pending.
+    expect(perfCompleted.financials.earnings_pending_ngn).toBe(45_000);
+    expect(perfCompleted.financials.earnings_eligible_ngn).toBe(0);
+
+    // 7b. Identity verification (application approved) releases the held commission.
+    const applicationId = await asServiceRole(db, async tx => {
+      const { rows } = await tx.query<{ id: string }>(
+        `insert into public.partner_applications (
+           applicant_id, full_name, email, phone, company, role, areas, properties_count, motivation
+         )
+         values ($1::uuid, 'Amaka Closing Agent', 'agent1@hamlet.rest', '+2348012340001', 'Amaka Stays',
+                 'Closing Agent', array['Ikoyi'], 0, 'Closing agent for Ikoyi and Victoria Island stays.')
+         returning id`,
+        [closingPartnerId],
+      );
+      return rows[0].id;
+    });
+    await asUser(db, adminId, async tx => {
+      await tx.query(
+        `select public.review_partner_application($1::uuid, 'approved', 'Identity verified.')`,
+        [applicationId],
+      );
+    });
+    const perfVerified = await asUser(db, closingPartnerId, async tx => {
+      const { rows } = await tx.query<{ p: PartnerMarketingPerformance }>(
+        `select public.get_my_marketing_performance(30) as p`,
+      );
+      return rows[0].p;
+    });
+    expect(perfVerified.financials.earnings_pending_ngn).toBe(0);
+    expect(perfVerified.financials.earnings_eligible_ngn).toBe(45_000);
 
     // 8. Reversal / adjustment reconciles cleanly with ledger
     await asServiceRole(db, async tx => {
