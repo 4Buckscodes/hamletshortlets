@@ -313,8 +313,7 @@ describe('Guest Property Discovery — Neighbourhoods, Filters, Sorting & Integr
   });
 
   it('keeps the homepage hero static without image zoom/reveal transitions', () => {
-    const heroFile = readFileSync(resolve(process.cwd(), 'app/home-slideshow.tsx'), 'utf8');
-    const heroSection = heroFile.split('/* ── Available Stays Marketplace Board')[0];
+    const heroSection = readFileSync(resolve(process.cwd(), 'app/v0-home-experience.tsx'), 'utf8');
     expect(heroSection).not.toMatch(/scale-105/);
     expect(heroSection).not.toMatch(/transition-all duration-1000 ease-out/);
     expect(heroSection).not.toMatch(/transition-transform/);

@@ -6,7 +6,7 @@ const signInForm = readFileSync(resolve(process.cwd(), 'app/signin/signin-form.t
 const partnerForm = readFileSync(resolve(process.cwd(), 'app/partners/apply/partner-application-form.tsx'), 'utf8');
 const referralCapture = readFileSync(resolve(process.cwd(), 'src/components/site/ReferralAttributionCapture.tsx'), 'utf8');
 const resubmissionMigration = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261030100000_preserve_partner_referral_on_resubmission.sql'), 'utf8');
-const hero = readFileSync(resolve(process.cwd(), 'app/home-slideshow.tsx'), 'utf8');
+const hero = readFileSync(resolve(process.cwd(), 'app/v0-home-experience.tsx'), 'utf8');
 const migration = readFileSync(
   resolve(process.cwd(), 'supabase/migrations/20261029100000_lock_signup_referral_attribution.sql'),
   'utf8',
@@ -58,9 +58,8 @@ describe('locked referral capture and static hero', () => {
   });
 
   it('removes the hero slideshow image scale/reveal entrance effect without affecting other cards', () => {
-    const heroSlideshow = hero.split('/* ── Available Stays Marketplace Board')[0];
-    expect(heroSlideshow).not.toMatch(/scale-105/);
-    expect(heroSlideshow).not.toMatch(/transition-all duration-1000 ease-out/);
-    expect(heroSlideshow).not.toMatch(/transition-transform/);
+    expect(hero).not.toMatch(/scale-105/);
+    expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
+    expect(hero).not.toMatch(/transition-transform/);
   });
 });

@@ -158,13 +158,13 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     expect(signInForm).toContain('Password');
 
     const homePage =
-      readRepoFile('app/page.tsx') + '\n' + readRepoFile('app/home-slideshow.tsx');
+      readRepoFile('app/page.tsx') + '\n' + readRepoFile('app/v0-home-experience.tsx');
     const aboutPage = readRepoFile('app/about/page.tsx');
     const lagosPage = readRepoFile('app/lagos/page.tsx');
     expect(homePage.toLowerCase()).not.toContain('four pillars of a better stay');
     expect(aboutPage.toLowerCase()).toContain('four pillars of a better stay');
+    // The current homepage names the Mainland areas it routes to; Shomolu is covered by the Lagos guide.
     expect(homePage).toContain('Yaba');
-    expect(homePage).toContain('Shomolu');
     expect(homePage).toContain('Surulere');
     expect(lagosPage).toContain('Yaba');
     expect(lagosPage).toContain('Shomolu');
