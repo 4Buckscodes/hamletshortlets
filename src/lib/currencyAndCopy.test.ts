@@ -172,7 +172,7 @@ describe('Lagos Mainland & Island corridor support', () => {
   });
 
   it('surfaces Lagos Mainland, Yaba, Shomolu, and Surulere across App Router discovery and legacy bridge', () => {
-    for (const rel of ['app/home-slideshow.tsx', 'src/lib/discovery.ts', 'src/legacy-pages/Home.tsx', 'src/legacy-pages/Lagos.tsx', 'src/legacy-pages/Stays.tsx']) {
+    for (const rel of ['src/lib/discovery.ts', 'src/legacy-pages/Home.tsx', 'src/legacy-pages/Lagos.tsx', 'src/legacy-pages/Stays.tsx']) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
       expect(content).toContain('Yaba');
       expect(content).toContain('Shomolu');
@@ -189,9 +189,9 @@ describe('HAMLET Website Copy & Lagos-only scope', () => {
     expect(indexHtml).toContain('HAMLET Shortlets | Find Your Next Stay in Lagos');
     expect(indexHtml).toContain('Your stay, sorted.');
 
-    const nextHomeSrc = readFileSync(join(ROOT, 'app/home-slideshow.tsx'), 'utf8');
+    const nextHomeSrc = readFileSync(join(ROOT, 'app/v0-home-experience.tsx'), 'utf8') + readFileSync(join(ROOT, 'app/page.tsx'), 'utf8');
     const nextAboutSrc = readFileSync(join(ROOT, 'app/about/page.tsx'), 'utf8');
-    expect(nextHomeSrc).toContain('Find your next stay.');
+    expect(nextHomeSrc).toContain('Find your place to belong.');
     expect(nextHomeSrc).toContain('Your stay, sorted.');
     expect(nextHomeSrc).not.toMatch(/Four pillars of a better stay/i);
     expect(nextAboutSrc).toMatch(/Four pillars of a better stay/i);

@@ -6,7 +6,7 @@ const signInForm = readFileSync(resolve(process.cwd(), 'app/signin/signin-form.t
 const partnerForm = readFileSync(resolve(process.cwd(), 'app/partners/apply/partner-application-form.tsx'), 'utf8');
 const referralCapture = readFileSync(resolve(process.cwd(), 'src/components/site/ReferralAttributionCapture.tsx'), 'utf8');
 const resubmissionMigration = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261030100000_preserve_partner_referral_on_resubmission.sql'), 'utf8');
-const hero = readFileSync(resolve(process.cwd(), 'app/home-slideshow.tsx'), 'utf8');
+const hero = readFileSync(resolve(process.cwd(), 'app/v0-home-experience.tsx'), 'utf8');
 const migration = readFileSync(
   resolve(process.cwd(), 'supabase/migrations/20261029100000_lock_signup_referral_attribution.sql'),
   'utf8',
@@ -57,10 +57,24 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
   });
 
-  it('removes the hero slideshow image scale/reveal entrance effect without affecting other cards', () => {
-    const heroSlideshow = hero.split('/* ── Available Stays Marketplace Board')[0];
-    expect(heroSlideshow).not.toMatch(/scale-105/);
-    expect(heroSlideshow).not.toMatch(/transition-all duration-1000 ease-out/);
-    expect(heroSlideshow).not.toMatch(/transition-transform/);
+  it('animates the hero with GSAP only when motion is allowed, and cleans up', () => {
+    expect(hero).toContain("from 'gsap'");
+    expect(hero).toContain("gsap.matchMedia()");
+    expect(hero).toContain("(prefers-reduced-motion: no-preference)");
+    expect(hero).toContain('mm.revert()');
+    expect(hero).toContain("removeEventListener('pointermove'");
+    // The old CSS-class zoom/reveal approach stays out; motion is scripted and reversible.
+    expect(hero).not.toMatch(/scale-105/);
+    expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
+    expect(hero).not.toMatch(/transition-transform/);
+  });
+
+  it('never hides hero content for reduced-motion visitors and reveals it if scripts fail', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
+    const hiddenStart = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'));
+    expect(hiddenStart).toContain('.hp-hero:not(.hp-live) .hp-word-in');
+    expect(hiddenStart).toContain('hp-failsafe');
+    // Hidden start states live only inside the no-preference media query.
+    expect(css.slice(0, css.indexOf('@media (prefers-reduced-motion: no-preference)'))).not.toContain('hp-live');
   });
 });
