@@ -82,5 +82,36 @@
       "And every listing is verified, so they'll thank you for the invite.",
       "Grow your network. Grow your earnings. Partner with HAMLET."
     ]
+  },
+  "guestPhotos": {
+    "title": "Same as the photos",
+    "audience": "Guests wary of scams",
+    "angle": "Trust: visited and verified, pay nothing until accepted",
+    "voice": "af_heart",
+    "lang": "en-us",
+    "speed": 0.96,
+    "lines": [
+      "Never send money to a stranger for a Lagos shortlet again.",
+      "Every stay on HAMLET is visited before it goes live.",
+      "We check who owns it, who's letting it, and that the photos are real.",
+      "And you pay nothing until the host accepts your request.",
+      "Verified Lagos stays. Find yours at hamlet dot rest."
+    ]
+  },
+  "guestDecember": {
+    "title": "Home for December",
+    "audience": "Nigerians abroad",
+    "angle": "Diaspora: book before you land, prices in pounds or dollars, address unlocked on confirmation",
+    "voice": "af_bella",
+    "lang": "en-us",
+    "speed": 0.97,
+    "lines": [
+      "Flying home for December?",
+      "Book your Lagos stay before you land. See prices in pounds or dollars.",
+      "Every stay is visited and verified, so what you see is what you get.",
+      "Send a request. Pay nothing until the host says yes.",
+      "Your exact address and arrival guide unlock in your account the moment it's confirmed.",
+      "Lagos is waiting. Your stay, sorted. hamlet dot rest."
+    ]
   }
 }

@@ -128,7 +128,7 @@ export const Check: React.FC<{ size?: number; color?: string; p?: number }> = ({
 );
 
 /** Shared closing card. */
-export const EndCard: React.FC<{ head: [string, string]; sub: string }> = ({ head, sub }) => {
+export const EndCard: React.FC<{ head: [string, string]; sub: string; cta?: string; url?: string }> = ({ head, sub, cta = "Partner with us", url = "hamlet.rest/partners/apply" }) => {
   const t = useSec();
   const r = (a: number) => { const p = seg(t, a, 0.6); return { opacity: p, translate: `0 ${(1 - p) * 26}px` }; };
   return (
@@ -140,8 +140,8 @@ export const EndCard: React.FC<{ head: [string, string]; sub: string }> = ({ hea
         })}
       </div>
       <div style={{ position: "absolute", left: 90, top: 720, width: 880, fontFamily: SANS, fontSize: 46, lineHeight: 1.4, color: C.mist, ...r(0.5) }}>{sub}</div>
-      <div style={{ position: "absolute", left: 90, top: 1010, background: C.gold2, color: C.ink, borderRadius: 12, fontFamily: SANS, fontWeight: 700, fontSize: 46, padding: "36px 60px", ...r(0.8) }}>Partner with us</div>
-      <div style={{ position: "absolute", left: 90, top: 1200, fontFamily: SANS, fontSize: 48, color: C.paper, fontWeight: 600, ...r(1.0) }}>hamlet.rest/partners/apply</div>
+      <div style={{ position: "absolute", left: 90, top: 1010, background: C.gold2, color: C.ink, borderRadius: 12, fontFamily: SANS, fontWeight: 700, fontSize: 46, padding: "36px 60px", ...r(0.8) }}>{cta}</div>
+      <div style={{ position: "absolute", left: 90, top: 1200, fontFamily: SANS, fontSize: 48, color: C.paper, fontWeight: 600, ...r(1.0) }}>{url}</div>
       <div style={{ position: "absolute", left: 90, top: 1690, display: "flex", alignItems: "center", gap: 22, ...r(1.3) }}>
         <Mark stem={C.paper} bar={C.gold2} size={84} />
         <span style={{ fontFamily: SERIF, fontSize: 64, fontWeight: 480, letterSpacing: ".02em", color: C.paper }}>HAMLET.</span>

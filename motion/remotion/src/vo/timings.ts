@@ -252,5 +252,83 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
    }
   ],
   "total": 22.28
+ },
+ "guestPhotos": {
+  "title": "Same as the photos",
+  "lines": [
+   {
+    "text": "Never send money to a stranger for a Lagos shortlet again.",
+    "file": "vo/guestPhotos/01.wav",
+    "start": 0.3,
+    "dur": 3.432
+   },
+   {
+    "text": "Every stay on HAMLET is visited before it goes live.",
+    "file": "vo/guestPhotos/02.wav",
+    "start": 4.182,
+    "dur": 3.025
+   },
+   {
+    "text": "We check who owns it, who's letting it, and that the photos are real.",
+    "file": "vo/guestPhotos/03.wav",
+    "start": 7.507,
+    "dur": 3.533
+   },
+   {
+    "text": "And you pay nothing until the host accepts your request.",
+    "file": "vo/guestPhotos/04.wav",
+    "start": 11.34,
+    "dur": 2.982
+   },
+   {
+    "text": "Verified Lagos stays. Find yours at hamlet dot rest.",
+    "file": "vo/guestPhotos/05.wav",
+    "start": 14.623,
+    "dur": 3.812
+   }
+  ],
+  "total": 21.43
+ },
+ "guestDecember": {
+  "title": "Home for December",
+  "lines": [
+   {
+    "text": "Flying home for December?",
+    "file": "vo/guestDecember/01.wav",
+    "start": 0.3,
+    "dur": 1.258
+   },
+   {
+    "text": "Book your Lagos stay before you land. See prices in pounds or dollars.",
+    "file": "vo/guestDecember/02.wav",
+    "start": 2.008,
+    "dur": 4.189
+   },
+   {
+    "text": "Every stay is visited and verified, so what you see is what you get.",
+    "file": "vo/guestDecember/03.wav",
+    "start": 6.497,
+    "dur": 3.961
+   },
+   {
+    "text": "Send a request. Pay nothing until the host says yes.",
+    "file": "vo/guestDecember/04.wav",
+    "start": 10.759,
+    "dur": 3.101
+   },
+   {
+    "text": "Your exact address and arrival guide unlock in your account the moment it's confirmed.",
+    "file": "vo/guestDecember/05.wav",
+    "start": 14.16,
+    "dur": 5.432
+   },
+   {
+    "text": "Lagos is waiting. Your stay, sorted. hamlet dot rest.",
+    "file": "vo/guestDecember/06.wav",
+    "start": 19.892,
+    "dur": 3.834
+   }
+  ],
+  "total": 26.73
  }
 };

@@ -106,4 +106,9 @@ t=tt(1.6); sfx('chime',bell(88,1.6)+.6*np.concatenate([np.zeros(int(.09*SR)),bel
 t=tt(.5); sfx('clink',sum(a*np.sin(2*np.pi*f*t)*np.exp(-t*d) for f,a,d in [(2350,1,14),(3720,.7,18),(5110,.5,22),(6830,.3,28)])*np.minimum(1,t*3000))
 t=tt(.35); sfx('land',np.sin(2*np.pi*np.cumsum(70+60*np.exp(-t*30))/SR)*np.exp(-t*12)+lp(rng.standard_normal(len(t)),1200)*np.exp(-t*40)*.3)
 t=tt(.12); sfx('spark',np.sin(2*np.pi*(2600+1500*t/.12)*t)*np.exp(-t*40))
+# guest videos: warmer major-key beds
+WARM=[([56,60,63,67,70],44),([53,56,60,63,67],41),([49,53,56,60,63],37),([51,55,58,63],39)]   # Abmaj9, Fm9, Dbmaj9, Eb
+import sys
+if 'guestPhotos' in T: produce('guestPhotos',100,WARM,1,[(0,75),(3,79),(6,80),(10,82),(13,79)])
+if 'guestDecember' in T: produce('guestDecember',104,WARM,1,[(0,79),(2,80),(6,82),(8,84),(12,80)])
 print('pro audio ok')
