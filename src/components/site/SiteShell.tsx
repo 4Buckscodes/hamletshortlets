@@ -50,6 +50,7 @@ import {
   type PublicStayRecord,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
+import { formatNaira } from '@/lib/pricing';
 
 interface SessionSummary {
   userId: string;
@@ -778,7 +779,7 @@ export function StayNightlyPrice({
   /** Append "· fees included" when the surrounding card does not already say it. */
   withFeesNote?: boolean;
 }) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency, activeRateIsAvailable } = useCurrency();
   const domesticNightly = getValidPublicGuestNightlyNgn(guestNightlyNgn);
 
   if (domesticNightly === null) {
@@ -797,6 +798,9 @@ export function StayNightlyPrice({
       <span className="text-xs font-medium text-ink-500">
         / night{withFeesNote ? ' · fees included' : ''}
       </span>
+      {currency !== 'NGN' && activeRateIsAvailable ? (
+        <span className="hm-naira-ref">{formatNaira(domesticNightly)} / night in naira</span>
+      ) : null}
     </span>
   );
 }

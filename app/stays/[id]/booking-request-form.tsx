@@ -446,9 +446,13 @@ export default function BookingRequestForm({
               </div>
             )}
             {currency !== 'NGN' && nights > 0 && (
-              <p className="hm-field-hint" style={{ margin: 0 }}>
-                Shown in {currency} at today’s rate, including a 10% exchange buffer. In naira the stay is {formatNaira(guestStayTotal)}.
-              </p>
+              <div className="hm-booking-line">
+                <span>
+                  Stay total in naira
+                  <small>Shown in {currency} at today’s rate, held for 30 minutes</small>
+                </span>
+                <span className="hm-money">{formatNaira(guestStayTotal)}</span>
+              </div>
             )}
           </div>
         )}
