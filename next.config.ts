@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
     '/api/partner/share/card': SHARE_ARTWORK_TRACED_ASSETS,
     '/api/share/qr': SHARE_ARTWORK_TRACED_ASSETS,
   },
+  async headers() {
+    return [
+      {
+        // Keep *.vercel.app mirrors out of search results so hamlet.rest stays the canonical site.
+        source: '/:path*',
+        has: [{ type: 'host', value: '.*\\.vercel\\.app$' }],
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.supabase.co' },

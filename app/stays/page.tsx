@@ -4,7 +4,7 @@ import {
   validateStayDates,
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { PUBLIC_PROPERTY_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
+import { PUBLIC_VIEW_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   buildPropertyListingPageSchema,
@@ -45,8 +45,8 @@ export default async function StaysCataloguePage({
 
   if (db) {
     const { data, error } = await db
-      .from('properties')
-      .select(PUBLIC_PROPERTY_SELECT)
+      .from('public_properties')
+      .select(PUBLIC_VIEW_SELECT)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(100);

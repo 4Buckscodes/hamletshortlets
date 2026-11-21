@@ -16,7 +16,7 @@ export const revalidate = 300;
 async function loadAreaCounts(): Promise<Record<string, number>> {
   const db = getPublicSupabase();
   if (!db) return {};
-  const { data } = await db.from('properties').select('area').eq('status', 'approved');
+  const { data } = await db.from('public_properties').select('area').eq('status', 'approved');
   const counts: Record<string, number> = {};
   for (const row of (data ?? []) as Array<{ area?: string | null }>) {
     const key = (row.area || '').trim();
