@@ -9,7 +9,6 @@ import { LAGOS_AREAS } from '@/lib/areas';
 import { DateInput } from '@/components/ui/DateInput';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { m } from '@/components/ui/motion';
@@ -36,70 +35,47 @@ const EASE = [0.2, 0.7, 0.2, 1] as const;
 const HERO_HEADLINE = 'Find your place to belong.';
 
 /**
- * Hero choreography, "golden hour over the lagoon": the photo opens like a window from the
- * bottom while it settles from a slight zoom, the headline rises word by word out of a mask,
- * a band of warm light passes across the photo once, then the supporting copy follows. After
- * the intro the photo breathes slowly and, with a mouse, drifts against the pointer for depth.
- * Nothing runs for visitors who prefer reduced motion, and the CSS fail-safe in home.css
- * reveals everything if scripts never arrive.
+ * Hero motion, "golden hour over the lagoon". The entrance (photo opening like a window, headline
+ * rising word by word, a pass of warm light, copy fading up) is pure CSS in home.css: it starts at
+ * first paint, needs no JavaScript or hydration, never hides the hero image from the browser, and
+ * adds no script weight. The only script is a small pointer-depth effect for mouse users, started
+ * once the browser is idle so it can never compete with loading.
  */
-function useHeroMotion(root: React.RefObject<HTMLElement | null>) {
+function useHeroDepth(root: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const scope = root.current;
-    if (!scope) return;
-    const mm = gsap.matchMedia();
-    mm.add('(prefers-reduced-motion: no-preference)', () => {
-      const q = <T extends Element>(selector: string) => Array.from(scope.querySelectorAll<T>(selector));
-      const art = scope.querySelector<HTMLElement>('.hp-hero-art');
-      const image = scope.querySelector<HTMLElement>('.hp-hero-frame img');
-      const glow = scope.querySelector<HTMLElement>('.hp-hero-glow');
-      const words = q('.hp-word-in');
-      const copy = q('.hp-lede, .hp-actions, .hp-trust');
-      if (!art || !image) return;
-
-      // Take over from the CSS start state first, so GSAP reads clean transforms (no stray 108% offset).
-      scope.classList.add('hp-live');
-      gsap.set(art, { clipPath: 'inset(100% 0% 0% 0%)' });
-      gsap.set(image, { scale: 1.18, transformOrigin: '50% 60%' });
-      gsap.set(words, { yPercent: 108 });
-      gsap.set(copy, { autoAlpha: 0, y: 18 });
-
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.to(art, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.25, ease: 'expo.out' }, 0)
-        .to(image, { scale: 1, duration: 2.2 }, 0)
-        .to(words, { yPercent: 0, duration: 0.95, ease: 'power4.out', stagger: 0.09 }, 0.15)
-        .to(copy, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.1 }, 0.75);
-      if (glow) {
-        tl.fromTo(glow, { xPercent: -130, autoAlpha: 0.9 }, { xPercent: 130, duration: 2.1, ease: 'power2.inOut' }, 0.5)
-          .set(glow, { autoAlpha: 0 });
-      }
-
-      let drift: gsap.core.Tween | undefined;
-      tl.add(() => {
-        drift = gsap.to(image, { scale: 1.045, duration: 14, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-      });
-
-      const fine = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 901px)').matches;
-      const move = (event: PointerEvent) => {
+    const art = scope?.querySelector<HTMLElement>('.hp-hero-art');
+    if (!scope || !art) return;
+    const query = '(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 901px)';
+    const mq = window.matchMedia(query);
+    let frame = 0;
+    let listening = false;
+    const move = (event: PointerEvent) => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
         const box = scope.getBoundingClientRect();
         const nx = (event.clientX - box.left) / box.width - 0.5;
         const ny = (event.clientY - box.top) / box.height - 0.5;
-        toX(-nx * 18);
-        toY(-ny * 12);
-      };
-      const toX = gsap.quickTo(image, 'x', { duration: 1.1, ease: 'power3.out' });
-      const toY = gsap.quickTo(image, 'y', { duration: 1.1, ease: 'power3.out' });
-      if (fine) scope.addEventListener('pointermove', move);
-
-      return () => {
-        scope.removeEventListener('pointermove', move);
-        drift?.kill();
-        tl.kill();
-        gsap.set([art, image, glow, ...words, ...copy].filter(Boolean) as gsap.TweenTarget[], { clearProps: 'all' });
-        scope.classList.remove('hp-live');
-      };
-    });
-    return () => mm.revert();
+        art.style.setProperty('--hx', `${(-nx * 18).toFixed(1)}px`);
+        art.style.setProperty('--hy', `${(-ny * 12).toFixed(1)}px`);
+      });
+    };
+    const start = () => {
+      if (!mq.matches || listening) return;
+      listening = true;
+      scope.addEventListener('pointermove', move, { passive: true });
+    };
+    const hasIdle = 'requestIdleCallback' in window;
+    const handle = hasIdle ? window.requestIdleCallback(start) : window.setTimeout(start, 1500);
+    return () => {
+      if (hasIdle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
+      cancelAnimationFrame(frame);
+      scope.removeEventListener('pointermove', move);
+      art.style.removeProperty('--hx');
+      art.style.removeProperty('--hy');
+    };
   }, [root]);
 }
 
@@ -112,7 +88,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const [guests, setGuests] = useState('2');
   const [searchOpen, setSearchOpen] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
-  useHeroMotion(heroRef);
+  useHeroDepth(heroRef);
   const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const pillDates = checkIn && checkOut ? `${shortDate(checkIn)} – ${shortDate(checkOut)}` : 'Add dates';
   const searchForm = (variant: 'inline' | 'sheet') => (
@@ -130,7 +106,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
         <div className="hp-shell hp-hero-grid">
           <div className="hp-hero-copy">
             <p className="hp-note">Verified shortlets in Lagos</p>
-            <h1 id="home-title">{HERO_HEADLINE.split(' ').map((word, index, all) => (<span key={`${word}-${index}`}><span className="hp-word"><span className="hp-word-in">{word}</span></span>{index < all.length - 1 ? ' ' : null}</span>))}</h1>
+            <h1 id="home-title">{HERO_HEADLINE.split(' ').map((word, index, all) => (<span key={`${word}-${index}`}><span className="hp-word"><span className="hp-word-in" style={{ '--i': index } as React.CSSProperties}>{word}</span></span>{index < all.length - 1 ? ' ' : null}</span>))}</h1>
             <p className="hp-lede">Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p>
             <div className="hp-actions">
               <Button href="/stays">Find a stay</Button>

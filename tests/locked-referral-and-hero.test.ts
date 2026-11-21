@@ -57,24 +57,32 @@ describe('locked referral capture and static hero', () => {
     expect(migration).toMatch(/This partner referral code is invalid or no longer active/i);
   });
 
-  it('animates the hero with GSAP only when motion is allowed, and cleans up', () => {
-    expect(hero).toContain("from 'gsap'");
-    expect(hero).toContain("gsap.matchMedia()");
-    expect(hero).toContain("(prefers-reduced-motion: no-preference)");
-    expect(hero).toContain('mm.revert()');
+  it('plays the hero entrance in CSS, off the loading path, and only when motion is allowed', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
+    const motion = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'));
+    // No script is needed for the entrance, and the hero photo is never hidden from the browser.
+    expect(hero).not.toContain("from 'gsap'");
+    expect(motion).toContain('.hp-word-in { animation: hp-rise');
+    expect(motion).toContain('.hp-hero-art::after');
+    expect(motion).toContain('hp-curtain');
+    expect(css).not.toMatch(/clip-path:\s*inset\(100%/);
+    expect(css).not.toContain('hp-live');
+    // Hover-only depth effect starts when idle, is throttled, and is removed on unmount.
+    expect(hero).toContain('requestIdleCallback');
+    expect(hero).toContain('requestAnimationFrame');
     expect(hero).toContain("removeEventListener('pointermove'");
-    // The old CSS-class zoom/reveal approach stays out; motion is scripted and reversible.
+    expect(hero).toContain('fetchPriority="high"');
     expect(hero).not.toMatch(/scale-105/);
     expect(hero).not.toMatch(/transition-all duration-1000 ease-out/);
     expect(hero).not.toMatch(/transition-transform/);
   });
 
-  it('never hides hero content for reduced-motion visitors and reveals it if scripts fail', () => {
+  it('keeps all hero animation inside the no-preference media query', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/components/ui/home.css'), 'utf8');
-    const hiddenStart = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'));
-    expect(hiddenStart).toContain('.hp-hero:not(.hp-live) .hp-word-in');
-    expect(hiddenStart).toContain('hp-failsafe');
-    // Hidden start states live only inside the no-preference media query.
-    expect(css.slice(0, css.indexOf('@media (prefers-reduced-motion: no-preference)'))).not.toContain('hp-live');
+    const start = css.indexOf('/* Hero motion');
+    const mediaAt = css.indexOf('@media (prefers-reduced-motion: no-preference)', start);
+    const before = css.slice(start, mediaAt);
+    expect(before).not.toMatch(/animation\s*:/);
+    expect(css).toContain('hp-breathe');
   });
 });
