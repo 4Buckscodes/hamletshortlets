@@ -60,7 +60,7 @@ describe('HAMLET live LLM discovery documents', () => {
     expect(text).toContain('Guest-facing nightly price:');
     expect(text).toContain('₦240,000');
     expect(text).toContain('Wi-Fi, Inverter backup');
-    expect(text).toContain('availability must be confirmed');
+    expect(text).toContain('availability and applicable terms must be confirmed');
     expect(text).not.toContain('Ikoyi, Lagos');
     expect(text).not.toContain('One king bed');
     expect(text).not.toContain('HAMLET reviewed');
