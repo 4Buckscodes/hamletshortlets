@@ -116,6 +116,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.4,
     },
+    {
+      url: `${site}/llms-stays.txt`,
+      lastModified: latestInventoryDate,
+      changeFrequency: 'hourly',
+      priority: 0.5,
+    },
+    {
+      url: `${site}/llms.md`,
+      lastModified: STATIC_BASELINE_LAST_MODIFIED,
+      changeFrequency: 'weekly',
+      priority: 0.3,
+    },
+    {
+      url: `${site}/llms-full.md`,
+      lastModified: STATIC_BASELINE_LAST_MODIFIED,
+      changeFrequency: 'weekly',
+      priority: 0.3,
+    },
   ];
 
   for (const property of approvedRows) {

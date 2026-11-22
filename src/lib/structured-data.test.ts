@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -390,17 +390,21 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
       }
     }
 
-    for (const publicFile of [
-      'public/robots.txt',
-      'public/sitemap.xml',
-      'public/llms.txt',
-      'public/llms-full.txt',
+    const llmSource = readFileSync(join(ROOT, 'src/lib/llm-discovery.ts'), 'utf8');
+    expect(llmSource).toContain('HAMLET_CANONICAL_ORIGIN');
+    expect(llmSource).not.toContain('www.hamlet.rest');
+    expect(llmSource).not.toContain('/#/');
+    for (const route of [
+      'app/llms.txt/route.ts',
+      'app/llms-full.txt/route.ts',
+      'app/llms-stays.txt/route.ts',
+      'app/llms.md/route.ts',
+      'app/llms-full.md/route.ts',
     ]) {
-      const content = readFileSync(join(ROOT, publicFile), 'utf8');
-      expect(content).toContain('https://hamlet.rest');
-      expect(content).not.toContain('www.hamlet.rest');
-      expect(content).not.toContain('/#/');
+      expect(existsSync(join(ROOT, route))).toBe(true);
     }
+    expect(existsSync(join(ROOT, 'public/robots.txt'))).toBe(false);
+    expect(existsSync(join(ROOT, 'public/sitemap.xml'))).toBe(false);
 
     const crawlerPolicy = readFileSync(join(ROOT, 'app', 'robots.ts'), 'utf8');
     expect(crawlerPolicy).toContain("'/api/og/'");
@@ -409,8 +413,16 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     expect(crawlerPolicy).toContain("'/partners/marketing'");
 
     const publicAiReferences = [
-      readFileSync(join(ROOT, 'public', 'llms.txt'), 'utf8'),
-      readFileSync(join(ROOT, 'public', 'llms-full.txt'), 'utf8'),
+      readFileSync(join(ROOT, 'src/lib/llm-discovery.ts'), 'utf8'),
+      ...[
+        'llms.txt/route.ts',
+        'llms-full.txt/route.ts',
+        'llms-stays.txt/route.ts',
+        'llms.md/route.ts',
+        'llms-full.md/route.ts',
+      ].map(route =>
+        readFileSync(join(ROOT, 'app', route), 'utf8'),
+      ),
     ].join('\\n');
     for (const confidentialPattern of [
       /B\\s*\\*\\s*1\\.20/i,
