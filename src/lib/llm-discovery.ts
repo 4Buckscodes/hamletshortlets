@@ -9,19 +9,20 @@ const MAX_STAYS = 500;
 function cleanText(value: string | null | undefined): string {
   return (value || '')
     .replace(/<[^>]*>/g, ' ')
-    .replace(/[\\u0000-\\u001f\\u007f]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 function escapeMarkdownLabel(value: string): string {
-  return cleanText(value).replace(/[\\\\[\\]<>]/g, '\\\\function cleanText(value: string | null | undefined): string {
-  return (value || '').replace(/\s+/g, ' ').trim();
-}');
+  return cleanText(value).replace(/([\\[\]<>])/g, '\\$1');
 }
 
 function safeListText(value: string | null | undefined): string {
-  return cleanText(value).replace(/[\\[\\]<>]/g, '').replace(/\\s+/g, ' ').trim();
+  return cleanText(value)
+    .replace(/[\[\]<>|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function publicStayMarkdown(stay: PublicStayRecord): string {
