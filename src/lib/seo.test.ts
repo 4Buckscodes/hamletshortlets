@@ -71,6 +71,8 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     expect(robotsSource).toContain("userAgent: '*'");
     expect(robotsSource).toContain("'/api/og/'");
     expect(robotsSource).toContain("'/llms-stays.txt'");
+    expect(robotsSource).toContain("'/llms.md'");
+    expect(robotsSource).toContain("'/llms-full.md'");
     for (const bot of [
       'OAI-SearchBot',
       'Claude-SearchBot',
@@ -79,6 +81,8 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
       'PerplexityBot',
       'Google-Extended',
       'Applebot-Extended',
+      'GPTBot',
+      'CCBot',
     ]) {
       expect(robotsSource).toContain(`'${bot}'`);
     }
@@ -99,6 +103,8 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     expect(sitemap).not.toMatch(EXCLUDED_CITIES_RE);
     expect(existsSync(join(ROOT, 'public', 'sitemap.xml'))).toBe(false);
     expect(existsSync(join(ROOT, 'public', 'robots.txt'))).toBe(false);
+    expect(existsSync(join(ROOT, 'public', 'llms.txt'))).toBe(false);
+    expect(existsSync(join(ROOT, 'public', 'llms-full.txt'))).toBe(false);
 
     const manifestRaw = readFileSync(join(ROOT, 'public', 'site.webmanifest'), 'utf8');
     expect(manifestRaw).not.toMatch(EXCLUDED_CITIES_RE);
