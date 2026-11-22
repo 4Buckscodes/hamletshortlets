@@ -390,17 +390,14 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
       }
     }
 
-    for (const publicFile of [
-      'public/robots.txt',
-      'public/sitemap.xml',
-      'public/llms.txt',
-      'public/llms-full.txt',
-    ]) {
+    for (const publicFile of ['public/llms.txt', 'public/llms-full.txt']) {
       const content = readFileSync(join(ROOT, publicFile), 'utf8');
       expect(content).toContain('https://hamlet.rest');
       expect(content).not.toContain('www.hamlet.rest');
       expect(content).not.toContain('/#/');
     }
+    expect(existsSync(join(ROOT, 'public/robots.txt'))).toBe(false);
+    expect(existsSync(join(ROOT, 'public/sitemap.xml'))).toBe(false);
 
     const crawlerPolicy = readFileSync(join(ROOT, 'app', 'robots.ts'), 'utf8');
     expect(crawlerPolicy).toContain("'/api/og/'");
