@@ -21,6 +21,22 @@ function markdownRewrite(source: string, destination: string) {
   return { source, destination, has: markdownAccept };
 }
 
+const markdownVaryHeaders = [
+  '/',
+  '/stays',
+  '/stays/:id',
+  '/lagos',
+  '/how-it-works',
+  '/safety',
+  '/about',
+  '/faqs',
+  '/legal',
+  '/partners/apply',
+].map(source => ({
+  source,
+  headers: [{ key: 'Vary', value: 'Accept' }],
+}));
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['sharp'],
@@ -54,11 +70,7 @@ const nextConfig: NextConfig = {
         has: [{ type: 'host', value: '.*\\.vercel\\.app$' }],
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
-      {
-        // Keep HTML and Markdown representations distinct in browser/CDN caches.
-        source: '/:path*',
-        headers: [{ key: 'Vary', value: 'Accept' }],
-      },
+      ...markdownVaryHeaders,
     ];
   },
   images: {
