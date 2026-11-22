@@ -74,7 +74,9 @@ describe('HAMLET live LLM discovery documents', () => {
       amenities: ['Wi-Fi | [click](https://example.invalid)'],
     })]);
     expect(text).not.toContain('<script>');
-    expect(text).not.toMatch(/(?<!\\)\\]\(https:\/\/example\\.invalid\\)/);
+    const injectedLinkIndex = text.indexOf('](https://example.invalid)');
+    expect(injectedLinkIndex).toBeGreaterThan(-1);
+    expect(text[injectedLinkIndex - 1]).toBe('\\\\');
     expect(text).toContain('\\]');
     expect(text).not.toContain('| [click]');
   });
