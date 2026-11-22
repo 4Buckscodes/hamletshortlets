@@ -32,7 +32,7 @@ describe('Markdown content negotiation representations', () => {
     expect(markdown).toContain('# Shortlets in Lagos');
     expect(markdown).toContain('Victoria Island');
     expect(markdown).toContain('Yaba');
-    expect(markdown).not.toContain('currently available');
+    expect(markdown).toContain('Area links are discovery shortcuts');
   });
 
   it('returns no Markdown document for unsupported or private routes', async () => {
