@@ -15,7 +15,7 @@ export const ROBOTS_INDEX_DIRECTIVE =
 export const ROBOTS_NOINDEX_DIRECTIVE = 'noindex, nofollow';
 
 export interface PageMetaOptions {
-  /** Override route path (e.g. '/stays' or '/stays/p-123'). Defaults to current hash route. */
+  /** Override route path (e.g. '/stays' or '/stays/p-123'). Defaults to the current pathname. */
   canonicalPath?: string;
   /** Force noindex, nofollow (auto-enabled on /signin, /account, /admin/*, and /partner/* workspace). */
   noindex?: boolean;
@@ -29,12 +29,11 @@ export interface PageMetaOptions {
   structuredData?: Record<string, unknown> | null;
 }
 
-/** Normalizes a route or hash fragment into a clean leading-slash pathname without query parameters. */
+/** Normalizes a route path into a clean leading-slash pathname without query parameters or fragments. */
 export function normalizeSeoPathname(rawPathOrHash: string): string {
   const trimmed = rawPathOrHash.trim();
   if (!trimmed || trimmed === '#' || trimmed === '#/') return '/';
-  const withoutHash = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
-  const pathOnly = withoutHash.split('?')[0]?.split('#')[0] ?? '/';
+  const pathOnly = trimmed.split('?')[0]?.split('#')[0] ?? '/';
   if (!pathOnly || pathOnly === '/') return '/';
   const withLeadingSlash = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
   return withLeadingSlash.replace(/\/+$/, '') || '/';
@@ -64,14 +63,13 @@ export function isNoIndexPath(pathname: string): boolean {
   return false;
 }
 
-/** Builds a clean canonical URL on https://www.hamlet.rest without tracking query params. */
+/** Builds a clean canonical URL on the HAMLET primary host without tracking query params. */
 export function buildCanonicalUrl(pathname: string): string {
   const clean = normalizeSeoPathname(pathname);
-  if (clean === '/') return `${HAMLET_SITE_URL}/`;
-  return `${HAMLET_SITE_URL}/#${clean}`;
+  return clean === '/' ? `${HAMLET_SITE_URL}/` : `${HAMLET_SITE_URL}${clean}`;
 }
 
-/** Resolves a relative or absolute asset URL against https://www.hamlet.rest. */
+/** Resolves a relative or absolute asset URL against HAMLET's primary host. */
 export function resolveAbsoluteSeoUrl(rawUrl: string | undefined | null): string {
   if (!rawUrl || !rawUrl.trim()) return HAMLET_DEFAULT_OG_IMAGE;
   const trimmed = rawUrl.trim();
@@ -294,7 +292,7 @@ export function applyDocumentSeo(
   const rawLocationPath =
     options?.canonicalPath ??
     (typeof window !== 'undefined'
-      ? window.location.hash || window.location.pathname || '/'
+      ? window.location.pathname || '/'
       : '/');
   const cleanPathname = normalizeSeoPathname(rawLocationPath);
   const effectiveDescription = description?.trim() || HAMLET_DEFAULT_DESCRIPTION;
