@@ -76,7 +76,7 @@ describe('HAMLET live LLM discovery documents', () => {
     expect(text).not.toContain('<script>');
     const injectedLinkIndex = text.indexOf('](https://example.invalid)');
     expect(injectedLinkIndex).toBeGreaterThan(-1);
-    expect(text[injectedLinkIndex - 1]).toBe('\\\\');
+    expect(text[injectedLinkIndex - 1]).toBe('\\');
     expect(text).toContain('\\]');
     expect(text).not.toContain('| [click]');
   });
