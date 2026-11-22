@@ -126,8 +126,18 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     };
 
     expect(vercelConfig.rewrites).toBeUndefined();
-    expect(vercelConfig.headers.length).toBeGreaterThanOrEqual(3);
-    expect(vercelConfig.headers.some(rule => rule.source.includes('llms'))).toBe(true);
+    expect(vercelConfig.headers.some(rule => /llms|robots|sitemap/i.test(rule.source))).toBe(false);
+    for (const routeFile of [
+      'app/llms.txt/route.ts',
+      'app/llms-full.txt/route.ts',
+      'app/llms-stays.txt/route.ts',
+      'app/llms.md/route.ts',
+      'app/llms-full.md/route.ts',
+    ]) {
+      const routeSource = readFileSync(join(ROOT, routeFile), 'utf8');
+      expect(routeSource).toContain('export const revalidate = 900');
+      expect(routeSource).toContain('s-maxage=900');
+    }
   });
 });
 
