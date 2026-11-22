@@ -21,10 +21,13 @@ const PRIVATE_ROUTES = [
 ];
 
 const AI_DISCOVERY_BOTS = [
+  'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
   'Claude-SearchBot',
   'ClaudeBot',
+  'Claude-Web',
+  'CCBot',
   'PerplexityBot',
   'Google-Extended',
   'Applebot-Extended',
@@ -46,6 +49,8 @@ const PUBLIC_AI_ROUTES = [
   '/llms.txt',
   '/llms-full.txt',
   '/llms-stays.txt',
+  '/llms.md',
+  '/llms-full.md',
   '/api/og/',
 ];
 
