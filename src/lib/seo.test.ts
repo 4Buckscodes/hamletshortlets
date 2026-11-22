@@ -20,9 +20,9 @@ const EXCLUDED_CITIES_RE = new RegExp('\\babu' + 'ja\\b|\\biba' + 'dan\\b', 'i')
 
 describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
   it('provides a spec-compliant public/llms.txt with H1, summary blockquote, canonical links, and Optional section', () => {
-    const llmsPath = join(ROOT, 'public', 'llms.txt');
-    expect(existsSync(llmsPath)).toBe(true);
-    const content = readFileSync(llmsPath, 'utf8');
+    const routePath = join(ROOT, 'app', 'llms.txt', 'route.ts');
+    expect(existsSync(routePath)).toBe(true);
+    const content = readFileSync(join(ROOT, 'src', 'lib', 'llm-discovery.ts'), 'utf8');
     const lines = content.trim().split('\n');
 
     // llmstxt.org spec: H1 on first line, followed by > blockquote summary and ## H2 link sections
@@ -33,6 +33,7 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
     expect(content).toContain('## Legal, Trust & Pricing Policies');
     expect(content).toContain('## Optional');
     expect(content).toContain(HAMLET_LLMS_FULL_TXT_URL);
+    expect(content).toContain('llms-stays.txt');
 
     // Commercial & Lagos-only scope accuracy
     expect(content).toContain('https://hamlet.rest');
@@ -47,12 +48,13 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
   });
 
   it('provides a comprehensive public/llms-full.txt without disclosing internal commercial allocations', () => {
-    const llmsFullPath = join(ROOT, 'public', 'llms-full.txt');
-    expect(existsSync(llmsFullPath)).toBe(true);
-    const content = readFileSync(llmsFullPath, 'utf8');
+    const routePath = join(ROOT, 'app', 'llms-full.txt', 'route.ts');
+    expect(existsSync(routePath)).toBe(true);
+    const content = readFileSync(join(ROOT, 'src', 'lib', 'llm-discovery.ts'), 'utf8');
 
     expect(content.startsWith('# HAMLET')).toBe(true);
     expect(content).toContain(HAMLET_LLMS_TXT_URL);
+    expect(content).toContain('llms-stays.txt');
     expect(content).toContain('HAMLET provides property owners with access to listing, visibility, booking and property management services.');
     expect(content).toContain('Four Verification Pillars');
     expect(content).not.toMatch(/\b\d+(?:\.\d+)?%/);
@@ -90,6 +92,9 @@ describe('Static crawler files (robots.txt, sitemap.xml, site.webmanifest) & ver
     expect(sitemap).toContain("from('public_properties')");
     expect(sitemap).toContain(".eq('status', 'approved')");
     expect(sitemap).toContain('HAMLET_CANONICAL_ORIGIN');
+    expect(sitemap).toContain('/llms-stays.txt');
+    expect(sitemap).toContain('/llms.md');
+    expect(sitemap).toContain('/llms-full.md');
     expect(sitemap).not.toMatch(EXCLUDED_CITIES_RE);
     expect(existsSync(join(ROOT, 'public', 'sitemap.xml'))).toBe(false);
     expect(existsSync(join(ROOT, 'public', 'robots.txt'))).toBe(false);
