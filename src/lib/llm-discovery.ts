@@ -7,7 +7,21 @@ const SITE = HAMLET_CANONICAL_ORIGIN;
 const MAX_STAYS = 500;
 
 function cleanText(value: string | null | undefined): string {
+  return (value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[\\u0000-\\u001f\\u007f]/g, ' ')
+    .replace(/\\s+/g, ' ')
+    .trim();
+}
+
+function escapeMarkdownLabel(value: string): string {
+  return cleanText(value).replace(/[\\\\[\\]<>]/g, '\\\\function cleanText(value: string | null | undefined): string {
   return (value || '').replace(/\s+/g, ' ').trim();
+}');
+}
+
+function safeListText(value: string | null | undefined): string {
+  return cleanText(value).replace(/[\\[\\]<>]/g, '').replace(/\\s+/g, ' ').trim();
 }
 
 function publicStayMarkdown(stay: PublicStayRecord): string {
@@ -19,13 +33,13 @@ function publicStayMarkdown(stay: PublicStayRecord): string {
     typeof stay.capacity === 'number' ? `up to ${stay.capacity} guests` : null,
   ].filter(Boolean);
   const lines = [
-    `### [${cleanText(stay.title)}](${SITE}${path})`,
-    cleanText(stay.area) ? `- Area: ${cleanText(stay.area)}` : null,
-    details.length ? `- Accommodation: ${details.join(', ')}` : null,
+    `### [${escapeMarkdownLabel(stay.title)}](${SITE}${path})`,
+    cleanText(stay.area) ? `- Area: ${safeListText(stay.area)}` : null,
+    details.length ? `- Accommodation: ${details.map(safeListText).join(', ')}` : null,
     typeof stay.guest_nightly_ngn === 'number' && stay.guest_nightly_ngn > 0
       ? `- Guest-facing nightly price: ${formatNaira(stay.guest_nightly_ngn)}`
       : null,
-    stay.amenities?.length ? `- Recorded amenities: ${stay.amenities.map(cleanText).filter(Boolean).join(', ')}` : null,
+    stay.amenities?.length ? `- Recorded amenities: ${stay.amenities.map(safeListText).filter(Boolean).join(', ')}` : null,
     stay.image_urls?.filter(Boolean).length ? `- Photos: ${stay.image_urls.filter(Boolean).length} public image(s)` : null,
     `- Listing status: approved`,
     `- Booking: request; availability and applicable terms must be confirmed before payment.`,
