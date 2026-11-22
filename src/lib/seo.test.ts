@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { renderLlmFull, renderLlmMain } from './llm-discovery';
 import {
   buildCanonicalUrl,
   buildFaqStructuredData,
@@ -22,7 +23,7 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
   it('provides a spec-compliant public/llms.txt with H1, summary blockquote, canonical links, and Optional section', () => {
     const routePath = join(ROOT, 'app', 'llms.txt', 'route.ts');
     expect(existsSync(routePath)).toBe(true);
-    const content = readFileSync(join(ROOT, 'src', 'lib', 'llm-discovery.ts'), 'utf8');
+    const content = renderLlmMain();
     const lines = content.trim().split('\n');
 
     // llmstxt.org spec: H1 on first line, followed by > blockquote summary and ## H2 link sections
@@ -50,7 +51,7 @@ describe('LLMs.txt & LLMs-full.txt specification and accuracy', () => {
   it('provides a comprehensive public/llms-full.txt without disclosing internal commercial allocations', () => {
     const routePath = join(ROOT, 'app', 'llms-full.txt', 'route.ts');
     expect(existsSync(routePath)).toBe(true);
-    const content = readFileSync(join(ROOT, 'src', 'lib', 'llm-discovery.ts'), 'utf8');
+    const content = renderLlmFull();
 
     expect(content.startsWith('# HAMLET')).toBe(true);
     expect(content).toContain(HAMLET_LLMS_TXT_URL);
