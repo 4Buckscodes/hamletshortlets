@@ -414,6 +414,15 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
 
     const publicAiReferences = [
       readFileSync(join(ROOT, 'src/lib/llm-discovery.ts'), 'utf8'),
+      ...[
+        'llms.txt/route.ts',
+        'llms-full.txt/route.ts',
+        'llms-stays.txt/route.ts',
+        'llms.md/route.ts',
+        'llms-full.md/route.ts',
+      ].map(route =>
+        readFileSync(join(ROOT, 'app', route), 'utf8'),
+      ),
     ].join('\\n');
     for (const confidentialPattern of [
       /B\\s*\\*\\s*1\\.20/i,
