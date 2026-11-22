@@ -328,6 +328,14 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
       ...collectActiveFiles(join(ROOT, 'src')),
       ...collectActiveFiles(join(ROOT, 'public')),
       ...collectActiveFiles(join(ROOT, 'supabase', 'functions')),
+      join(ROOT, 'src', 'lib', 'llm-discovery.ts'),
+      ...[
+        'llms.txt/route.ts',
+        'llms-full.txt/route.ts',
+        'llms-stays.txt/route.ts',
+        'llms.md/route.ts',
+        'llms-full.md/route.ts',
+      ].map(route => join(ROOT, 'app', route)),
       join(ROOT, 'index.html'),
     ];
 
