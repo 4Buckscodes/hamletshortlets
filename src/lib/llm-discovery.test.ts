@@ -67,6 +67,18 @@ describe('HAMLET live LLM discovery documents', () => {
     expect(text).not.toContain('owner rate');
   });
 
+  it('escapes untrusted listing title and text before emitting Markdown', () => {
+    const text = renderLlmStays([sampleStay({
+      title: 'Penthouse ](https://example.invalid) <script>alert(1)</script>',
+      area: 'Ikoyi | [click](https://example.invalid)',
+      amenities: ['Wi-Fi | [click](https://example.invalid)'],
+    })]);
+    expect(text).not.toContain('<script>');
+    expect(text).not.toContain('](https://example.invalid)');
+    expect(text).toContain('\\]');
+    expect(text).not.toContain('| [click]');
+  });
+
   it('omits an invalid guest price instead of inferring or fabricating one', () => {
     const text = renderLlmStays([sampleStay({ guest_nightly_ngn: null })]);
     expect(text).not.toContain('Guest-facing nightly price:');
