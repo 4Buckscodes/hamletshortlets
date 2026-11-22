@@ -34,7 +34,10 @@ const markdownVaryHeaders = [
   '/partners/apply',
 ].map(source => ({
   source,
-  headers: [{ key: 'Vary', value: 'Accept' }],
+  headers: [
+    { key: 'Vary', value: 'Accept' },
+    { key: 'Content-Signal', value: 'ai-train=no, search=yes, ai-input=yes' },
+  ],
 }));
 
 const nextConfig: NextConfig = {
