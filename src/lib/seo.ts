@@ -33,7 +33,8 @@ export interface PageMetaOptions {
 export function normalizeSeoPathname(rawPathOrHash: string): string {
   const trimmed = rawPathOrHash.trim();
   if (!trimmed || trimmed === '#' || trimmed === '#/') return '/';
-  const pathOnly = trimmed.split('?')[0]?.split('#')[0] ?? '/';
+  const withoutHash = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+  const pathOnly = withoutHash.split('?')[0]?.split('#')[0] ?? '/';
   if (!pathOnly || pathOnly === '/') return '/';
   const withLeadingSlash = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
   return withLeadingSlash.replace(/\/+$/, '') || '/';
@@ -292,7 +293,7 @@ export function applyDocumentSeo(
   const rawLocationPath =
     options?.canonicalPath ??
     (typeof window !== 'undefined'
-      ? window.location.pathname || '/'
+      ? window.location.hash || window.location.pathname || '/'
       : '/');
   const cleanPathname = normalizeSeoPathname(rawLocationPath);
   const effectiveDescription = description?.trim() || HAMLET_DEFAULT_DESCRIPTION;
