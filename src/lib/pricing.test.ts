@@ -373,8 +373,12 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
 
     for (const relPath of [
       ['src', 'components', 'site', 'SiteShell.tsx'],
-      ['public', 'llms.txt'],
-      ['public', 'llms-full.txt'],
+      ['src', 'lib', 'llm-discovery.ts'],
+      ['app', 'llms.txt', 'route.ts'],
+      ['app', 'llms-full.txt', 'route.ts'],
+      ['app', 'llms-stays.txt', 'route.ts'],
+      ['app', 'llms.md', 'route.ts'],
+      ['app', 'llms-full.md', 'route.ts'],
     ] as const) {
       expect(readFileSync(join(ROOT, ...relPath), 'utf8')).toContain(
         APPROVED_OWNER_SERVICES_POLICY_COPY,
