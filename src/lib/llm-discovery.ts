@@ -7,20 +7,25 @@ const SITE = HAMLET_CANONICAL_ORIGIN;
 const MAX_STAYS = 500;
 
 function cleanText(value: string | null | undefined): string {
-  return (value || '')
+  const printable = Array.from(value || '')
+    .filter(character => {
+      const code = character.charCodeAt(0);
+      return code >= 0x20 && code !== 0x7f;
+    })
+    .join('');
+  return printable
     .replace(/<[^>]*>/g, ' ')
-    .replace(/[\u0000-\u001f\u007f]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function escapeMarkdownLabel(value: string): string {
-  return cleanText(value).replace(/([\\[\]<>])/g, '\\$1');
+  return cleanText(value).replace(/\\|\[|\]|<|>/g, '\\$&');
 }
 
 function safeListText(value: string | null | undefined): string {
   return cleanText(value)
-    .replace(/[\[\]<>|]/g, '')
+    .replace(/\[|\]|<|>|\|/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
