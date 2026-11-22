@@ -9,18 +9,20 @@ const SITE = HAMLET_CANONICAL_ORIGIN;
 function clean(value: unknown): string {
   return String(value ?? '')
     .replace(/<[^>]*>/g, ' ')
-    .replace(/[\\u0000-\\u001f\\u007f]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 function safe(value: unknown): string {
-  return clean(value).replace(/[\\\\\\[\\]<>|]/g, '').replace(/([*_])/g, '\\\\$1');
+  return clean(value)
+    .replace(/[<>\[\]|\\]/g, '')
+    .replace(/([*_])/g, '\\$1');
 }
 
 function bullets(values: string[] | null | undefined): string {
   const items = (values ?? []).map(safe).filter(Boolean);
-  return items.length ? items.map(item => '- ' + item).join('\\n') : 'Not provided in the public listing.';
+  return items.length ? items.map(item => '- ' + item).join('\n') : 'Not provided in the public listing.';
 }
 
 function renderProperty(stay: PublicStayRecord): string {
@@ -48,7 +50,7 @@ function renderProperty(stay: PublicStayRecord): string {
     '',
     'The exact address and private arrival instructions are not included in this public response.',
   ].filter((line): line is string => line !== null);
-  return lines.join('\\n');
+  return lines.join('\n');
 }
 
 const STATIC_PAGES: Record<string, string> = {
@@ -72,7 +74,7 @@ const STATIC_PAGES: Record<string, string> = {
     'Area links are discovery shortcuts, not claims that inventory is currently available. Check live approved listings and confirm availability before payment.',
     '',
     '[Explore all Lagos stays](' + SITE + '/stays)',
-  ].join('\\n'),
+  ].join('\n'),
   'how-it-works': [
     '# How HAMLET Works',
     '',
@@ -89,7 +91,7 @@ const STATIC_PAGES: Record<string, string> = {
     'A booking request is not a confirmed reservation. Do not treat informal messages, screenshots or off-platform transfers as proof of confirmation.',
     '',
     '[Explore Lagos stays](' + SITE + '/stays) · [Guest safety](' + SITE + '/safety)',
-  ].join('\\n'),
+  ].join('\n'),
   safety: [
     '# Guest Safety on HAMLET',
     '',
@@ -105,7 +107,7 @@ const STATIC_PAGES: Record<string, string> = {
     'A booking request is not a confirmed reservation. Exact address and private arrival guidance are shared through the applicable confirmed-booking process.',
     '',
     '[Explore stays](' + SITE + '/stays) · [How HAMLET works](' + SITE + '/how-it-works)',
-  ].join('\\n'),
+  ].join('\n'),
   about: [
     '# About HAMLET',
     '',
@@ -116,7 +118,7 @@ const STATIC_PAGES: Record<string, string> = {
     'HAMLET helps guests discover shortlet accommodation and connect with property owners, authorised agents, property managers and shortlet operators. The marketplace focuses on clear listing information, reviewed submissions and accountable booking steps.',
     '',
     '[Explore stays](' + SITE + '/stays) · [Become a partner](' + SITE + '/partners/apply)',
-  ].join('\\n'),
+  ].join('\n'),
   faqs: [
     '# HAMLET — Guest FAQs',
     '',
@@ -136,14 +138,14 @@ const STATIC_PAGES: Record<string, string> = {
     'Exact address and private arrival guidance are shared through the applicable confirmed-booking process.',
     '',
     '[Explore stays](' + SITE + '/stays) · [How HAMLET works](' + SITE + '/how-it-works)',
-  ].join('\\n'),
+  ].join('\n'),
   legal: [
     '# HAMLET — Legal and Privacy Information',
     '',
     'This page is a pointer to HAMLET current public legal and privacy information. The live legal page and applicable written agreements are authoritative.',
     '',
     'Review the current terms on [HAMLET Legal](' + SITE + '/legal). Do not rely on this Markdown summary as a contract or substitute for the current published terms.',
-  ].join('\\n'),
+  ].join('\n'),
   'partners/apply': [
     '# Become a HAMLET Property Partner',
     '',
@@ -152,11 +154,11 @@ const STATIC_PAGES: Record<string, string> = {
     'Partner submissions are subject to HAMLET current eligibility, identity, authority and property-review requirements. Access, permissions and commercial arrangements are governed by current written partner terms.',
     '',
     '[Partner application](' + SITE + '/partners/apply) · [HAMLET home](' + SITE + ')',
-  ].join('\\n'),
+  ].join('\n'),
 };
 
 export async function getNegotiatedMarkdown(pathSegments: string[] | undefined): Promise<string | null> {
-  const path = (pathSegments ?? []).join('/').replace(/^\\/+|\\/+$/g, '');
+  const path = (pathSegments ?? []).join('/').replace(/^\/+|\/+$/g, '');
 
   if (!path) {
     const stays = await getApprovedPublicStays();
@@ -181,7 +183,7 @@ export async function getNegotiatedMarkdown(pathSegments: string[] | undefined):
       listingLines.length ? '' : null,
       listingLines.length ? '## Featured approved public listings' : null,
       ...listingLines,
-    ].filter((line): line is string => line !== null).join('\\n');
+    ].filter((line): line is string => line !== null).join('\n');
   }
 
   if (path === 'stays') {
@@ -201,9 +203,9 @@ export async function getNegotiatedMarkdown(pathSegments: string[] | undefined):
         '- Bedrooms: ' + (stay.bedrooms ?? 'Not specified'),
         '- Guest capacity: ' + (stay.capacity ?? 'Not specified'),
         '- Nightly price: ' + (typeof stay.guest_nightly_ngn === 'number' && stay.guest_nightly_ngn > 0 ? formatNaira(stay.guest_nightly_ngn) : 'Not published'),
-      ].join('\\n')),
+      ].join('\n')),
     ];
-    return lines.join('\\n');
+    return lines.join('\n\n');
   }
 
   if (path.startsWith('stays/')) {
