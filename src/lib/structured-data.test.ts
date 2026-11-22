@@ -391,7 +391,7 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     }
 
     const llmSource = readFileSync(join(ROOT, 'src/lib/llm-discovery.ts'), 'utf8');
-    expect(llmSource).toContain('https://hamlet.rest');
+    expect(llmSource).toContain('HAMLET_CANONICAL_ORIGIN');
     expect(llmSource).not.toContain('www.hamlet.rest');
     expect(llmSource).not.toContain('/#/');
     for (const route of [
