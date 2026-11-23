@@ -695,6 +695,7 @@ const FOOTER_LINK_GROUPS = [
       { href: '/safety', label: 'Verification & safety' },
       { href: '/about', label: 'About HAMLET' },
       { href: '/faqs', label: 'FAQs' },
+      { href: '/contact', label: 'Contact us' },
       { href: '/legal', label: 'Legal, privacy & NDPR' },
     ],
   },
