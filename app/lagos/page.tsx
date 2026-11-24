@@ -37,9 +37,9 @@ function countLabel(count: number) {
 }
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
+  title: 'Shortlets in Lagos: Island and Mainland Guide',
   description:
-    'Explore shortlets across Lagos Mainland — Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja GRA & environs — and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) on HAMLET.REST.',
+    'Shortlets across Lagos Island (Victoria Island, Ikoyi, Lekki, Ajah) and Lagos Mainland (Yaba, Surulere, Gbagada, Ikeja GRA). Verified listings on HAMLET.REST.',
   pathname: '/lagos',
 });
 
