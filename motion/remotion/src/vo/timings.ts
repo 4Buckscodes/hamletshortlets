@@ -546,5 +546,77 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
    }
   ],
   "total": 62.99
+ },
+ "explainHoratio": {
+  "title": "List with Horatio",
+  "lines": [
+   {
+    "text": "Listing an apartment used to mean filling in form after form.",
+    "file": "vo/explainHoratio/01.wav",
+    "start": 0.3,
+    "dur": 3.475
+   },
+   {
+    "text": "On HAMLET, you just tell Horatio about it.",
+    "file": "vo/explainHoratio/02.wav",
+    "start": 4.225,
+    "dur": 2.374
+   },
+   {
+    "text": "Horatio is our listing assistant. Write a short brief, the way you'd describe the place to a friend.",
+    "file": "vo/explainHoratio/03.wav",
+    "start": 6.899,
+    "dur": 5.659
+   },
+   {
+    "text": "Bedrooms, bathrooms, how many guests, what's included, and your rate. Then tap, generate listing draft.",
+    "file": "vo/explainHoratio/04.wav",
+    "start": 12.858,
+    "dur": 5.888
+   },
+   {
+    "text": "Horatio fills in the form for you. The title, the area, the rooms, the amenities and the price.",
+    "file": "vo/explainHoratio/05.wav",
+    "start": 19.046,
+    "dur": 5.593
+   },
+   {
+    "text": "If something's missing, Horatio tells you. It never makes things up. You check the draft, then apply it.",
+    "file": "vo/explainHoratio/06.wav",
+    "start": 24.939,
+    "dur": 5.997
+   },
+   {
+    "text": "Next, add your photos straight from your phone. HAMLET optimises them and turns them the right way up. Pick your cover photo.",
+    "file": "vo/explainHoratio/07.wav",
+    "start": 31.236,
+    "dur": 7.257
+   },
+   {
+    "text": "Preview what guests will pay, confirm you're allowed to list it, and submit.",
+    "file": "vo/explainHoratio/08.wav",
+    "start": 38.793,
+    "dur": 3.81
+   },
+   {
+    "text": "That's one apartment. Got more? Just do it again. A short brief and a few photos for each one.",
+    "file": "vo/explainHoratio/09.wav",
+    "start": 42.902,
+    "dur": 5.755
+   },
+   {
+    "text": "Then HAMLET checks every listing before it goes live, so guests can trust it.",
+    "file": "vo/explainHoratio/10.wav",
+    "start": 48.957,
+    "dur": 4.185
+   },
+   {
+    "text": "Tell Horatio. Add photos. Submit. List your apartments on HAMLET.",
+    "file": "vo/explainHoratio/11.wav",
+    "start": 53.442,
+    "dur": 4.426
+   }
+  ],
+  "total": 60.87
  }
 };

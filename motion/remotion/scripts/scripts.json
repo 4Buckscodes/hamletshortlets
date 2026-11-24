@@ -176,5 +176,26 @@
       "Booking from abroad? You can see prices in pounds or dollars. And if you have questions about an area, just ask Horatio.",
       "Verified stays. Simple booking. Find your stay at hamlet dot rest."
     ]
+  },
+  "explainHoratio": {
+    "title": "List with Horatio",
+    "audience": "Owners and property managers listing one or many apartments",
+    "cta": "List with Horatio",
+    "voice": "af_heart",
+    "lang": "en-us",
+    "speed": 0.98,
+    "lines": [
+      "Listing an apartment used to mean filling in form after form.",
+      "On HAMLET, you just tell Horatio about it.",
+      "Horatio is our listing assistant. Write a short brief, the way you'd describe the place to a friend.",
+      "Bedrooms, bathrooms, how many guests, what's included, and your rate. Then tap, generate listing draft.",
+      "Horatio fills in the form for you. The title, the area, the rooms, the amenities and the price.",
+      "If something's missing, Horatio tells you. It never makes things up. You check the draft, then apply it.",
+      "Next, add your photos straight from your phone. HAMLET optimises them and turns them the right way up. Pick your cover photo.",
+      "Preview what guests will pay, confirm you're allowed to list it, and submit.",
+      "That's one apartment. Got more? Just do it again. A short brief and a few photos for each one.",
+      "Then HAMLET checks every listing before it goes live, so guests can trust it.",
+      "Tell Horatio. Add photos. Submit. List your apartments on HAMLET."
+    ]
   }
 }
