@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'How HAMLET Works — Booking Shortlets Made Clear',
+  title: 'How HAMLET Works — Book a Lagos Shortlet',
   description:
     'Four clear steps to find, request, confirm, and check into a verified Lagos shortlet on HAMLET.REST — with upfront pricing and server-verified Paystack checkout.',
   pathname: '/how-it-works',

@@ -87,8 +87,11 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     expect(logo.width).toBe(512);
     expect(logo.height).toBe(512);
 
-    // Unverified social media profiles must never be fabricated
-    expect(org.sameAs).toBeUndefined();
+    // Only the business's confirmed social profile is emitted; nothing else is fabricated
+    expect(org.sameAs).toEqual(['https://www.instagram.com/hamletrest/']);
+
+    // Without any confirmed profile there is no sameAs at all
+    expect(buildOrganizationSchema({ verifiedSocialProfiles: [] }).sameAs).toBeUndefined();
 
     // Verified social profiles are emitted only when explicitly supplied
     const withVerifiedSocial = buildOrganizationSchema({

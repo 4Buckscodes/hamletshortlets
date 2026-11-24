@@ -731,6 +731,11 @@ export function SiteFooter() {
             <p>
               Contact: <a href="mailto:hello@hamlet.rest">hello@hamlet.rest</a>
             </p>
+            <p>
+              <a href="https://www.instagram.com/hamletrest/" target="_blank" rel="me noopener noreferrer" aria-label="HAMLET on Instagram (opens in a new tab)">
+                Instagram @hamletrest
+              </a>
+            </p>
           </div>
 
           {FOOTER_LINK_GROUPS.map(group => {
@@ -881,7 +886,7 @@ export function StayListingCard({
         )}
       </div>
       <Link href={detailHref} className="hl-body">
-        <p className="hl-where">{locationText}{corridor ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
+        <p className="hl-where">{locationText}{corridor && !locationText.toLowerCase().includes(corridor.toLowerCase()) ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
         <h3 className="hl-title">{stay.title}</h3>
         <p className="hl-facts">{facts}{visibleAmenities.length ? ` · ${visibleAmenities.join(', ')}${extraAmenitiesCount > 0 ? ` +${extraAmenitiesCount}` : ''}` : ''}</p>
         <p className="hl-when">
