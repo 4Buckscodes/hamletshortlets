@@ -197,5 +197,26 @@
       "Then HAMLET checks every listing before it goes live, so guests can trust it.",
       "Tell Horatio. Add photos. Submit. List your apartments on HAMLET."
     ]
+  },
+  "explainAgent": {
+    "title": "HAMLET for closing agents",
+    "audience": "Closing agents and realtors",
+    "cta": "Start sharing",
+    "voice": "af_bella",
+    "lang": "en-us",
+    "speed": 0.97,
+    "lines": [
+      "You're an agent. You already find people places to stay.",
+      "On HAMLET, the stays you close can earn you a commission.",
+      "Here's how it works, in four simple steps.",
+      "Step one. Join the HAMLET partner network as a closing agent.",
+      "Step two. Open Share and Studio, and pick from verified stays that owners have opened to the partner network.",
+      "Make a branded property card with your name on it, or a QR code, and share it on WhatsApp in a tap.",
+      "Every link carries your own tracking code. So when your client books through it, the booking is linked to you.",
+      "Step three. Your client sends a request, the host accepts, and your client pays safely through HAMLET.",
+      "Step four. When the stay is completed, your commission is recorded in your ledger. It's paid from HAMLET's fee, so the owner's rate stays whole.",
+      "And when you invite other partners, you can earn referral rewards on their completed bookings too.",
+      "Share verified stays. Get credited. Join HAMLET as a closing agent."
+    ]
   }
 }

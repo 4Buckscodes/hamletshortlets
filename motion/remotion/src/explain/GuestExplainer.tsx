@@ -3,7 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { C, Mark, SANS, SERIF } from "../brand";
 import { E, seg } from "../anim";
 import { Beats, EndCard, Sfx, Soundtrack, lines, useSec } from "../kit/kit";
-import { CaptionUntil } from "../videos/EmptyNights";
+import { Captions } from "../kit/captions";
 import { AppBar, Badge, Bleed, Btn, Checklist, Device, Fine, Heading, StepTrack, Tap, Thumb, Tick, pop, rise, typed } from "./ui";
 
 const VID = "explainGuest";
@@ -240,7 +240,7 @@ export const GuestExplainer: React.FC = () => {
           <EndCard head={["Verified stays.", "Simple booking."]} sub="Request first. Pay once the host says yes. Your arrival guide unlocks when it's confirmed." cta="Find your stay" url="hamlet.rest" />]}
       </Beats>
       <StepTrack vid={VID} map={MAP} labels={STEPS} dark={DARK} />
-      <CaptionUntil vid={VID} until={L[9].start - 0.12} top={1545} size={50} />
+      <Captions vid={VID} until={L[9].start - 0.12} />
       <Soundtrack vid={VID} sfx={sfx} musicGain={0.32} />
     </AbsoluteFill>
   );

@@ -178,8 +178,9 @@ export const Badge: React.FC<{ children: React.ReactNode; bg?: string; fg?: stri
   <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: bg, color: fg, fontFamily: SANS, fontWeight: 700, fontSize: size, padding: "8px 18px", borderRadius: 999 }}>{children}</span>
 );
 
-export const Fine: React.FC<{ children: React.ReactNode; top?: number; dark?: boolean }> = ({ children, top = 1480, dark = true }) => (
-  <div style={{ position: "absolute", left: 90, right: 90, top, textAlign: "center", fontFamily: SANS, fontSize: 26, lineHeight: 1.35, color: dark ? "rgba(236,233,225,0.72)" : C.muted }}>{children}</div>
+/** Small print. Anything meant for the bottom of the frame sits below the captions, clear of the phone. */
+export const Fine: React.FC<{ children: React.ReactNode; top?: number; dark?: boolean }> = ({ children, top = 1790, dark = true }) => (
+  <div style={{ position: "absolute", left: 80, right: 80, top: top >= 1400 ? 1790 : top, textAlign: "center", fontFamily: SANS, fontSize: 25, lineHeight: 1.35, color: dark ? "rgba(236,233,225,0.75)" : C.muted }}>{children}</div>
 );
 
 /** Pop-in helper for any element. */

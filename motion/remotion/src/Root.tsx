@@ -11,6 +11,7 @@ import { OwnerExplainer } from "./explain/OwnerExplainer";
 import { ManagerExplainer } from "./explain/ManagerExplainer";
 import { GuestExplainer } from "./explain/GuestExplainer";
 import { HoratioExplainer } from "./explain/HoratioExplainer";
+import { AgentExplainer } from "./explain/AgentExplainer";
 import { GuestPhotos } from "./videos/GuestPhotos";
 import { GuestDecember } from "./videos/GuestDecember";
 import { totalFrames } from "./kit/kit";
@@ -36,6 +37,7 @@ export const RemotionRoot: React.FC = () => (
       <Composition id="OwnerExplainer" component={OwnerExplainer} {...V} durationInFrames={totalFrames("explainOwner")} />
       <Composition id="ManagerExplainer" component={ManagerExplainer} {...V} durationInFrames={totalFrames("explainManager")} />
       <Composition id="GuestExplainer" component={GuestExplainer} {...V} durationInFrames={totalFrames("explainGuest")} />
+      <Composition id="AgentExplainer" component={AgentExplainer} {...V} durationInFrames={totalFrames("explainAgent")} />
       <Composition id="HoratioExplainer" component={HoratioExplainer} {...V} durationInFrames={totalFrames("explainHoratio")} />
     </Folder>
     <Composition id="Lab" component={Lab} {...V} durationInFrames={60} />

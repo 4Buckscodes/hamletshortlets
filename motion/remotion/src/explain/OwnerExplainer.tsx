@@ -3,7 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { C, Mark, SANS, SERIF } from "../brand";
 import { E, seg } from "../anim";
 import { Beats, EndCard, Sfx, Soundtrack, lines, useSec } from "../kit/kit";
-import { CaptionUntil } from "../videos/EmptyNights";
+import { Captions } from "../kit/captions";
 import { AppBar, Badge, Bleed, Btn, Checklist, Chip, Device, Field, Fine, Heading, StepTrack, Tap, Thumb, Tick, pop, rise } from "./ui";
 
 const VID = "explainOwner";
@@ -272,7 +272,7 @@ export const OwnerExplainer: React.FC = () => {
           <EndCard head={["Your home.", "Your rules."]} sub="Verified guests, on your terms. Join as a partner today." cta="List your property" url="hamlet.rest/partners/apply" />]}
       </Beats>
       <StepTrack vid={VID} map={MAP} labels={STEPS} dark={DARK} />
-      <CaptionUntil vid={VID} until={L[11].start - 0.12} top={1545} size={50} />
+      <Captions vid={VID} until={L[11].start - 0.12} />
       <Soundtrack vid={VID} sfx={sfx} musicGain={0.32} />
     </AbsoluteFill>
   );

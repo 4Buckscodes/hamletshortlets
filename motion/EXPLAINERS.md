@@ -6,6 +6,7 @@ Three ~60-second vertical (9:16) explainers, written so a 10-year-old can follow
 |---|---|---|---|---|
 | Owners | `remotion/out/hamlet-explainer-01-owners.mp4` | Warm female, US (af_heart) | **List your property** → hamlet.rest/partners/apply | Your home. Your rules. |
 | Property managers | `remotion/out/hamlet-explainer-02-property-managers.mp4` | Clear female, British (bf_emma) | **Add your first property** → hamlet.rest/partners/apply | One workspace. Every property. |
+| Agents | `remotion/out/hamlet-explainer-05-agents.mp4` | Friendly female, US (af_bella) | **Start sharing** → hamlet.rest/partners/apply | Share stays. Get credited. |
 | Guests | `remotion/out/hamlet-explainer-03-guests.mp4` | Friendly female, US (af_bella) | **Find your stay** → hamlet.rest | Verified stays. Simple booking. |
 
 ## How every explainer is built
@@ -97,3 +98,26 @@ Shows the real flow: the "Meet Horatio" box with HAMLET's own example brief → 
 11. Tell Horatio. Add photos. Submit. List your apartments on HAMLET.
 
 Accuracy notes: Horatio drafts one property per brief, fills only facts stated in the brief (never invents prices, addresses or amenities) and lists what's missing (`app/api/partner/horatio/listing-draft/route.ts`). "Done" means submitted: every listing is still reviewed before it goes live. Photo copy from the listing wizard ("HAMLET automatically optimises, orients, and converts them").
+
+## Agents: voice-over script
+
+Call to action: **Start sharing** → hamlet.rest/partners/apply
+
+1. You're an agent. You already find people places to stay.
+2. On HAMLET, the stays you close can earn you a commission.
+3. Here's how it works, in four simple steps.
+4. Step one. Join the HAMLET partner network as a closing agent.
+5. Step two. Open Share and Studio, and pick from verified stays that owners have opened to the partner network.
+6. Make a branded property card with your name on it, or a QR code, and share it on WhatsApp in a tap.
+7. Every link carries your own tracking code. So when your client books through it, the booking is linked to you.
+8. Step three. Your client sends a request, the host accepts, and your client pays safely through HAMLET.
+9. Step four. When the stay is completed, your commission is recorded in your ledger. It's paid from HAMLET's fee, so the owner's rate stays whole.
+10. And when you invite other partners, you can earn referral rewards on their completed bookings too.
+11. Share verified stays. Get credited. Join HAMLET as a closing agent.
+
+Accuracy notes: the Share Engine (branded property cards, QR codes, Share on WhatsApp), attribution tokens on every link, "Network sharing: Open" stays and the attributed commission ledger come from `app/partners/marketing/page.tsx` and `app/partners/page.tsx`. No percentage is stated; fine print covers completed, non-refunded, attributed bookings and that estimates are not guaranteed payouts.
+
+## Captions
+- **On screen:** short phrases (never more than two lines) that break at natural pauses, with the spoken word highlighted in gold. Timing comes from the voice model's own word timings (`scripts/make-voice-timed.py`), so each word lights up exactly when it's said.
+- **Caption files:** `remotion/out/captions/*.srt` and `*.vtt` for platforms that take uploaded closed captions. Regenerate with `npx tsx scripts/export-captions.ts <id> out/captions/<name>`.
+- **Social post captions:** see `SOCIAL-CAPTIONS.md`.

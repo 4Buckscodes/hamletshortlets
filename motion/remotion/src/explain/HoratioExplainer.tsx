@@ -3,7 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { C, Mark, SANS, SERIF } from "../brand";
 import { E, seg } from "../anim";
 import { Beats, EndCard, Sfx, Soundtrack, lines, useSec } from "../kit/kit";
-import { CaptionUntil } from "../videos/EmptyNights";
+import { Captions } from "../kit/captions";
 import { AppBar, Badge, Btn, Device, Fine, Heading, StepTrack, Tap, Thumb, Tick, caret, pop, rise, typed } from "./ui";
 
 const VID = "explainHoratio";
@@ -245,7 +245,7 @@ export const HoratioExplainer: React.FC = () => {
           <EndCard head={["Tell Horatio.", "Add photos. Submit."]} sub="Let Horatio draft your listings, apartment after apartment. HAMLET checks each one before it goes live." cta="List with Horatio" url="hamlet.rest/partners/apply" />]}
       </Beats>
       <StepTrack vid={VID} map={MAP} labels={STEPS} dark={DARK} />
-      <CaptionUntil vid={VID} until={L[10].start - 0.12} top={1545} size={50} />
+      <Captions vid={VID} until={L[10].start - 0.12} />
       <Soundtrack vid={VID} sfx={sfx} musicGain={0.32} />
     </AbsoluteFill>
   );
