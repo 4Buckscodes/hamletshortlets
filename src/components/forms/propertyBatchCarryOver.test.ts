@@ -15,7 +15,7 @@ const submitted: PropertyWizardValues = {
   capacity: 4,
   bedSetup: '1 king · 2 twin',
   imageUrls: ['https://cdn.example/a.webp', 'https://cdn.example/b.webp'],
-  youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ',
+  tourVideoUrl: 'https://youtu.be/dQw4w9WgXcQ',
   amenities: ['Wifi', 'Kitchen'],
   houseRulesText: 'No parties',
   nightlyRate: 150000,
@@ -43,7 +43,7 @@ describe('batch listing carry-over', () => {
     expect(starter.nightlyRate).toBe(150000);
     expect(starter.amenities).toEqual(['Wifi', 'Kitchen']);
     expect(starter.amenities).not.toBe(submitted.amenities);
-    for (const key of ['title', 'address', 'imageUrls', 'youtubeUrl', 'firstAvailableDate', 'correctionNote'] as const) {
+    for (const key of ['title', 'address', 'imageUrls', 'tourVideoUrl', 'firstAvailableDate', 'correctionNote'] as const) {
       expect(starter).not.toHaveProperty(key);
     }
   });

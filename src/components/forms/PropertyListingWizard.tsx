@@ -12,7 +12,7 @@ import {
   guestFacingNightlyNgn,
 } from '@/lib/pricing';
 import { getBrowserSupabase } from '@/lib/next-supabase';
-import { parseYouTubeVideoId } from '@/lib/youtube';
+import { parseTourVideo } from '@/lib/tourVideo';
 import {
   deletePropertyMediaObjects,
   extractPropertyMediaObjectPath,
@@ -42,7 +42,7 @@ export interface PropertyWizardValues {
   capacity: number;
   bedSetup: string;
   imageUrls: string[];
-  youtubeUrl: string;
+  tourVideoUrl: string;
   amenities: string[];
   houseRulesText: string;
   nightlyRate: number;
@@ -105,7 +105,7 @@ const DEFAULT_VALUES: PropertyWizardValues = {
   capacity: 2,
   bedSetup: '',
   imageUrls: [],
-  youtubeUrl: '',
+  tourVideoUrl: '',
   amenities: [],
   houseRulesText: '',
   nightlyRate: 0,
@@ -330,6 +330,11 @@ export function PropertyListingWizard({
     return () => window.clearTimeout(timer);
   }, [db, propertyId, values.area, values.title]);
 
+  const tourVideoPreview = useMemo(
+    () => parseTourVideo(values.tourVideoUrl),
+    [values.tourVideoUrl],
+  );
+
   const samplePricing = useMemo(() => {
     const cleanFee = Math.max(0, Math.round(Number(values.cleaningFee) || 0));
     return calculateGuestPricing({
@@ -359,8 +364,8 @@ export function PropertyListingWizard({
       }
     }
     if (targetStep === 2) {
-      if (values.youtubeUrl.trim() && !parseYouTubeVideoId(values.youtubeUrl)) {
-        return 'That video link is not a YouTube video. Paste a youtube.com or youtu.be link, or clear the box.';
+      if (values.tourVideoUrl.trim() && !parseTourVideo(values.tourVideoUrl)) {
+        return 'That video link is not supported. Paste a YouTube, Vimeo or Instagram post/reel link, or clear the box.';
       }
       if (mediaActivity.hasActiveUploads) {
         return 'Please wait a moment — your photographs are still optimising and uploading.';
@@ -454,7 +459,7 @@ export function PropertyListingWizard({
           capacity: values.capacity,
           bedSetup: values.bedSetup,
           imageUrls: values.imageUrls,
-          youtubeUrl: values.youtubeUrl.trim(),
+          videoUrl: values.tourVideoUrl.trim(),
           amenities: values.amenities,
           houseRules,
           nightlyRate: Math.round(Number(values.nightlyRate)),
@@ -737,9 +742,9 @@ export function PropertyListingWizard({
           />
           <div className="mt-6">
             <FormField
-              label="YouTube video tour"
+              label="Video tour"
               optional
-              hint="Have a walkthrough on YouTube? Paste the link and guests can watch it on your listing. Public or unlisted videos work."
+              hint="Have a walkthrough on YouTube, Vimeo or Instagram? Paste the link and guests can watch it on your listing. It must be public (unlisted works on YouTube and Vimeo)."
             >
               {fieldProps => (
                 <input
@@ -747,21 +752,18 @@ export function PropertyListingWizard({
                   type="url"
                   inputMode="url"
                   autoComplete="off"
-                  value={values.youtubeUrl}
+                  value={values.tourVideoUrl}
                   onChange={e =>
-                    setValues(prev => ({ ...prev, youtubeUrl: e.target.value }))
+                    setValues(prev => ({ ...prev, tourVideoUrl: e.target.value }))
                   }
-                  placeholder="https://www.youtube.com/watch?v=…"
+                  placeholder="https://www.youtube.com/watch?v=… or instagram.com/reel/…"
                   className={FIELD_INPUT_CLASS}
                 />
               )}
             </FormField>
-            {values.youtubeUrl.trim() && parseYouTubeVideoId(values.youtubeUrl) && (
+            {tourVideoPreview && (
               <div className="mt-3 max-w-md">
-                <StayVideo
-                  videoId={parseYouTubeVideoId(values.youtubeUrl) as string}
-                  title={values.title || 'Your property'}
-                />
+                <StayVideo video={tourVideoPreview} title={values.title || 'Your property'} />
               </div>
             )}
           </div>
