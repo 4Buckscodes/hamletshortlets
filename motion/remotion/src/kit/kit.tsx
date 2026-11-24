@@ -133,7 +133,7 @@ export const EndCard: React.FC<{ head: [string, string]; sub: string; cta?: stri
   const r = (a: number) => { const p = seg(t, a, 0.6); return { opacity: p, translate: `0 ${(1 - p) * 26}px` }; };
   return (
     <AbsoluteFill style={{ background: C.ink }}>
-      <div style={{ position: "absolute", left: 90, top: 330, width: 900, fontFamily: SERIF, fontWeight: 420, letterSpacing: "-0.025em", fontSize: 150, lineHeight: 0.98, color: C.paper }}>
+      <div style={{ position: "absolute", left: 90, top: 330, width: 900, fontFamily: SERIF, fontWeight: 420, letterSpacing: "-0.025em", fontSize: Math.min(150, Math.floor(900 / (Math.max(...head.map((h) => h.length)) * 0.5))), lineHeight: 0.98, color: C.paper }}>
         {head.map((h, i) => {
           const p = seg(t, 0.05 + i * 0.14, 0.8);
           return <span key={i} style={{ display: "block", overflow: "hidden", paddingBottom: "0.12em", marginBottom: "-0.12em" }}><span style={{ display: "inline-block", translate: `0 ${(1 - p) * 110}%`, color: i === 1 ? C.gold2 : C.paper }}>{h}</span></span>;

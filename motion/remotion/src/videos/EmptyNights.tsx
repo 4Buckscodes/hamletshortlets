@@ -148,7 +148,7 @@ export const EmptyNights: React.FC = () => {
   );
 };
 
-export const CaptionUntil: React.FC<{ vid: string; until: number; top?: number }> = ({ vid, until, top = 1560 }) => {
+export const CaptionUntil: React.FC<{ vid: string; until: number; top?: number; size?: number }> = ({ vid, until, top = 1560, size = 60 }) => {
   const t = useSec();
-  return t < until ? <KineticCaption vid={vid} top={top} /> : null;
+  return t < until ? <KineticCaption vid={vid} top={top} size={size} /> : null;
 };

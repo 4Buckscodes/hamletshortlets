@@ -7,6 +7,9 @@ import { AgentEarn } from "./videos/AgentEarn";
 import { AgentNetwork } from "./videos/AgentNetwork";
 import { FPS } from "./anim";
 import { Lab } from "./pro/Lab";
+import { OwnerExplainer } from "./explain/OwnerExplainer";
+import { ManagerExplainer } from "./explain/ManagerExplainer";
+import { GuestExplainer } from "./explain/GuestExplainer";
 import { GuestPhotos } from "./videos/GuestPhotos";
 import { GuestDecember } from "./videos/GuestDecember";
 import { totalFrames } from "./kit/kit";
@@ -27,6 +30,11 @@ export const RemotionRoot: React.FC = () => (
     <Folder name="Guest-campaign">
       <Composition id="GuestPhotos" component={GuestPhotos} {...V} durationInFrames={totalFrames("guestPhotos")} />
       <Composition id="GuestDecember" component={GuestDecember} {...V} durationInFrames={totalFrames("guestDecember")} />
+    </Folder>
+    <Folder name="Explainers">
+      <Composition id="OwnerExplainer" component={OwnerExplainer} {...V} durationInFrames={totalFrames("explainOwner")} />
+      <Composition id="ManagerExplainer" component={ManagerExplainer} {...V} durationInFrames={totalFrames("explainManager")} />
+      <Composition id="GuestExplainer" component={GuestExplainer} {...V} durationInFrames={totalFrames("explainGuest")} />
     </Folder>
     <Composition id="Lab" component={Lab} {...V} durationInFrames={60} />
     <Folder name="Earlier">

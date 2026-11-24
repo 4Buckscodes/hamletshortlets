@@ -5,7 +5,7 @@ import { readFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 const out = process.argv[2]; mkdirSync(out, { recursive: true });
 const ids = process.argv.slice(3).length ? process.argv.slice(3) : ["EmptyNights", "YourRules", "LondonLekki"];
-const key = { EmptyNights: "emptyNights", YourRules: "yourRules", LondonLekki: "londonLekki", AgentEarn: "agentEarn", AgentNetwork: "agentNetwork", GuestPhotos: "guestPhotos", GuestDecember: "guestDecember" };
+const key = { EmptyNights: "emptyNights", YourRules: "yourRules", LondonLekki: "londonLekki", AgentEarn: "agentEarn", AgentNetwork: "agentNetwork", GuestPhotos: "guestPhotos", GuestDecember: "guestDecember", OwnerExplainer: "explainOwner", ManagerExplainer: "explainManager", GuestExplainer: "explainGuest" };
 const ts = readFileSync("src/vo/timings.ts", "utf8"); const T = JSON.parse(ts.slice(ts.indexOf("> = ") + 4, ts.lastIndexOf(";")));
 const browserExecutable = process.env.REMOTION_BROWSER;
 const chromiumOptions = { gl: process.env.REMOTION_GL || "angle" };

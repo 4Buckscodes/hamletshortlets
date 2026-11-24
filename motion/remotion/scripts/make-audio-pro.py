@@ -111,4 +111,7 @@ WARM=[([56,60,63,67,70],44),([53,56,60,63,67],41),([49,53,56,60,63],37),([51,55,
 import sys
 if 'guestPhotos' in T: produce('guestPhotos',100,WARM,1,[(0,75),(3,79),(6,80),(10,82),(13,79)])
 if 'guestDecember' in T: produce('guestDecember',104,WARM,1,[(0,79),(2,80),(6,82),(8,84),(12,80)])
+# explainers: calm, warm, unobtrusive under a long voice-over
+for vid,bpm in (('explainOwner',96),('explainManager',100),('explainGuest',98)):
+    if vid in T: produce(vid,bpm,WARM,1,[(0,75),(4,79),(8,80),(12,79)])
 print('pro audio ok')

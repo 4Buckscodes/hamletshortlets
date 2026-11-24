@@ -113,5 +113,68 @@
       "Your exact address and arrival guide unlock in your account the moment it's confirmed.",
       "Lagos is waiting. Your stay, sorted. hamlet dot rest."
     ]
+  },
+  "explainOwner": {
+    "title": "HAMLET for property owners",
+    "audience": "Property owners",
+    "cta": "List your property",
+    "voice": "af_heart",
+    "lang": "en-us",
+    "speed": 0.95,
+    "lines": [
+      "Got a home in Lagos that sits empty some nights?",
+      "HAMLET helps you fill those nights with verified guests. Here's how it works, in four simple steps.",
+      "Step one. Join as a partner. Your workspace opens straight away.",
+      "Step two. Add your place. Upload photos, describe it, and set your price per night.",
+      "Step three. We check it. Who owns it, who's allowed to let it, and we visit to make sure the photos are real.",
+      "Only then does your home go live for guests to find.",
+      "Step four. Guests send you requests. You choose. Accept, or decline. Nothing is booked without your yes.",
+      "When you accept, the guest has forty-eight hours to pay. The booking is only confirmed once the payment is verified.",
+      "Guests pay our service fee on top of your price. It never comes out of your rate.",
+      "Your exact address stays private until the guest has paid. And a refundable caution deposit helps protect your home.",
+      "Your bookings and earnings live in one place. We verify your identity before your first payout.",
+      "Your home. Your rules. Verified guests. List your property on HAMLET."
+    ]
+  },
+  "explainManager": {
+    "title": "HAMLET for property managers",
+    "audience": "Authorised property managers and multi-property operators",
+    "cta": "Add your first property",
+    "voice": "bf_emma",
+    "lang": "en-gb",
+    "speed": 0.95,
+    "lines": [
+      "Managing shortlets for other owners?",
+      "Lots of homes. Lots of guests. Lots of messages. HAMLET puts it all in one place.",
+      "Think of it as one front desk for every property you look after.",
+      "Step one. Join as a partner and choose authorised property manager.",
+      "Step two. Add each property with its signed management mandate from the owner. That's how we know you're allowed to let it.",
+      "Not sure how to write the listing? Describe the place in your own words, and Horatio, our assistant, can draft it for you.",
+      "Step three. We visit every property. Photos, backup power and the address are checked on site before it goes live.",
+      "Step four. Requests for all your properties arrive in one workspace. Accept or decline, and keep every calendar up to date.",
+      "Guests pay through HAMLET before a booking is confirmed, so you're not chasing transfers.",
+      "And when you bring other owners and agents to HAMLET, you can earn referral rewards on their completed bookings.",
+      "One workspace. Every property. Add your first property on HAMLET."
+    ]
+  },
+  "explainGuest": {
+    "title": "HAMLET for guests",
+    "audience": "Guests booking a Lagos stay",
+    "cta": "Find your stay",
+    "voice": "af_bella",
+    "lang": "en-us",
+    "speed": 0.96,
+    "lines": [
+      "Booking a shortlet in Lagos shouldn't feel like a gamble.",
+      "On HAMLET, every home is visited before it goes live. We check who owns it, that the photos are real, and the backup power.",
+      "So how does booking work? Four simple steps.",
+      "Step one. Search. Pick an area, your dates, and how many guests.",
+      "Step two. Choose a place you love and send a request. You don't pay anything yet.",
+      "Step three. The host checks the dates. If they say yes, you have forty-eight hours to pay, safely, through Paystack.",
+      "The price you see already includes our fee. Cleaning and a refundable caution deposit are shown before you request. No surprises.",
+      "Step four. Once your stay is confirmed, your exact address and arrival guide unlock in your account.",
+      "Booking from abroad? You can see prices in pounds or dollars. And if you have questions about an area, just ask Horatio.",
+      "Verified stays. Simple booking. Find your stay at hamlet dot rest."
+    ]
   }
 }

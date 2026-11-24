@@ -330,5 +330,221 @@ export const TIMINGS: Record<string, { title: string; total: number; lines: VoLi
    }
   ],
   "total": 26.73
+ },
+ "explainOwner": {
+  "title": "HAMLET for property owners",
+  "lines": [
+   {
+    "text": "Got a home in Lagos that sits empty some nights?",
+    "file": "vo/explainOwner/01.wav",
+    "start": 0.3,
+    "dur": 2.708
+   },
+   {
+    "text": "HAMLET helps you fill those nights with verified guests. Here's how it works, in four simple steps.",
+    "file": "vo/explainOwner/02.wav",
+    "start": 3.458,
+    "dur": 5.716
+   },
+   {
+    "text": "Step one. Join as a partner. Your workspace opens straight away.",
+    "file": "vo/explainOwner/03.wav",
+    "start": 9.475,
+    "dur": 3.792
+   },
+   {
+    "text": "Step two. Add your place. Upload photos, describe it, and set your price per night.",
+    "file": "vo/explainOwner/04.wav",
+    "start": 13.567,
+    "dur": 4.844
+   },
+   {
+    "text": "Step three. We check it. Who owns it, who's allowed to let it, and we visit to make sure the photos are real.",
+    "file": "vo/explainOwner/05.wav",
+    "start": 18.71,
+    "dur": 6.067
+   },
+   {
+    "text": "Only then does your home go live for guests to find.",
+    "file": "vo/explainOwner/06.wav",
+    "start": 25.077,
+    "dur": 2.954
+   },
+   {
+    "text": "Step four. Guests send you requests. You choose. Accept, or decline. Nothing is booked without your yes.",
+    "file": "vo/explainOwner/07.wav",
+    "start": 28.332,
+    "dur": 6.411
+   },
+   {
+    "text": "When you accept, the guest has forty-eight hours to pay. The booking is only confirmed once the payment is verified.",
+    "file": "vo/explainOwner/08.wav",
+    "start": 35.042,
+    "dur": 6.903
+   },
+   {
+    "text": "Guests pay our service fee on top of your price. It never comes out of your rate.",
+    "file": "vo/explainOwner/09.wav",
+    "start": 42.246,
+    "dur": 4.146
+   },
+   {
+    "text": "Your exact address stays private until the guest has paid. And a refundable caution deposit helps protect your home.",
+    "file": "vo/explainOwner/10.wav",
+    "start": 46.692,
+    "dur": 7.167
+   },
+   {
+    "text": "Your bookings and earnings live in one place. We verify your identity before your first payout.",
+    "file": "vo/explainOwner/11.wav",
+    "start": 54.158,
+    "dur": 5.584
+   },
+   {
+    "text": "Your home. Your rules. Verified guests. List your property on HAMLET.",
+    "file": "vo/explainOwner/12.wav",
+    "start": 60.042,
+    "dur": 4.241
+   }
+  ],
+  "total": 67.28
+ },
+ "explainManager": {
+  "title": "HAMLET for property managers",
+  "lines": [
+   {
+    "text": "Managing shortlets for other owners?",
+    "file": "vo/explainManager/01.wav",
+    "start": 0.3,
+    "dur": 1.954
+   },
+   {
+    "text": "Lots of homes. Lots of guests. Lots of messages. HAMLET puts it all in one place.",
+    "file": "vo/explainManager/02.wav",
+    "start": 2.704,
+    "dur": 4.976
+   },
+   {
+    "text": "Think of it as one front desk for every property you look after.",
+    "file": "vo/explainManager/03.wav",
+    "start": 7.98,
+    "dur": 3.219
+   },
+   {
+    "text": "Step one. Join as a partner and choose authorised property manager.",
+    "file": "vo/explainManager/04.wav",
+    "start": 11.498,
+    "dur": 3.787
+   },
+   {
+    "text": "Step two. Add each property with its signed management mandate from the owner. That's how we know you're allowed to let it.",
+    "file": "vo/explainManager/05.wav",
+    "start": 15.586,
+    "dur": 6.125
+   },
+   {
+    "text": "Not sure how to write the listing? Describe the place in your own words, and Horatio, our assistant, can draft it for you.",
+    "file": "vo/explainManager/06.wav",
+    "start": 22.011,
+    "dur": 6.36
+   },
+   {
+    "text": "Step three. We visit every property. Photos, backup power and the address are checked on site before it goes live.",
+    "file": "vo/explainManager/07.wav",
+    "start": 28.671,
+    "dur": 6.425
+   },
+   {
+    "text": "Step four. Requests for all your properties arrive in one workspace. Accept or decline, and keep every calendar up to date.",
+    "file": "vo/explainManager/08.wav",
+    "start": 35.397,
+    "dur": 7.137
+   },
+   {
+    "text": "Guests pay through HAMLET before a booking is confirmed, so you're not chasing transfers.",
+    "file": "vo/explainManager/09.wav",
+    "start": 42.834,
+    "dur": 4.596
+   },
+   {
+    "text": "And when you bring other owners and agents to HAMLET, you can earn referral rewards on their completed bookings.",
+    "file": "vo/explainManager/10.wav",
+    "start": 47.73,
+    "dur": 5.747
+   },
+   {
+    "text": "One workspace. Every property. Add your first property on HAMLET.",
+    "file": "vo/explainManager/11.wav",
+    "start": 53.777,
+    "dur": 3.854
+   }
+  ],
+  "total": 60.63
+ },
+ "explainGuest": {
+  "title": "HAMLET for guests",
+  "lines": [
+   {
+    "text": "Booking a shortlet in Lagos shouldn't feel like a gamble.",
+    "file": "vo/explainGuest/01.wav",
+    "start": 0.3,
+    "dur": 3.183
+   },
+   {
+    "text": "On HAMLET, every home is visited before it goes live. We check who owns it, that the photos are real, and the backup power.",
+    "file": "vo/explainGuest/02.wav",
+    "start": 3.933,
+    "dur": 7.888
+   },
+   {
+    "text": "So how does booking work? Four simple steps.",
+    "file": "vo/explainGuest/03.wav",
+    "start": 12.121,
+    "dur": 2.519
+   },
+   {
+    "text": "Step one. Search. Pick an area, your dates, and how many guests.",
+    "file": "vo/explainGuest/04.wav",
+    "start": 14.94,
+    "dur": 3.911
+   },
+   {
+    "text": "Step two. Choose a place you love and send a request. You don't pay anything yet.",
+    "file": "vo/explainGuest/05.wav",
+    "start": 19.151,
+    "dur": 4.871
+   },
+   {
+    "text": "Step three. The host checks the dates. If they say yes, you have forty-eight hours to pay, safely, through Paystack.",
+    "file": "vo/explainGuest/06.wav",
+    "start": 24.323,
+    "dur": 7.204
+   },
+   {
+    "text": "The price you see already includes our fee. Cleaning and a refundable caution deposit are shown before you request. No surprises.",
+    "file": "vo/explainGuest/07.wav",
+    "start": 31.826,
+    "dur": 8.396
+   },
+   {
+    "text": "Step four. Once your stay is confirmed, your exact address and arrival guide unlock in your account.",
+    "file": "vo/explainGuest/08.wav",
+    "start": 40.522,
+    "dur": 6.342
+   },
+   {
+    "text": "Booking from abroad? You can see prices in pounds or dollars. And if you have questions about an area, just ask Horatio.",
+    "file": "vo/explainGuest/09.wav",
+    "start": 47.164,
+    "dur": 7.93
+   },
+   {
+    "text": "Verified stays. Simple booking. Find your stay at hamlet dot rest.",
+    "file": "vo/explainGuest/10.wav",
+    "start": 55.395,
+    "dur": 4.591
+   }
+  ],
+  "total": 62.99
  }
 };
