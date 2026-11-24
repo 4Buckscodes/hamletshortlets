@@ -885,7 +885,7 @@ export function StayListingCard({
         )}
       </div>
       <Link href={detailHref} className="hl-body">
-        <p className="hl-where">{locationText}{corridor ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
+        <p className="hl-where">{locationText}{corridor && !locationText.toLowerCase().includes(corridor.toLowerCase()) ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
         <h3 className="hl-title">{stay.title}</h3>
         <p className="hl-facts">{facts}{visibleAmenities.length ? ` · ${visibleAmenities.join(', ')}${extraAmenitiesCount > 0 ? ` +${extraAmenitiesCount}` : ''}` : ''}</p>
         <p className="hl-when">

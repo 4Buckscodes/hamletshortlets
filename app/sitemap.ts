@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { HAMLET_CANONICAL_ORIGIN } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import { LAGOS_AREA_GUIDES, stayMatchesAreaGuide } from '@/lib/lagosAreaGuides';
 
 /** Revalidate /sitemap.xml every 15 minutes so newly approved stays surface without requiring a redeploy. */
 export const revalidate = 900;
@@ -20,12 +21,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     id: string;
     updated_at?: string | null;
     created_at?: string | null;
+    area?: string | null;
+    public_address?: string | null;
+    title?: string | null;
   }> = [];
 
   if (db) {
     const { data, error } = await db
       .from('public_properties')
-      .select('id,updated_at,created_at')
+      .select('id,updated_at,created_at,area,public_address,title')
       .eq('status', 'approved')
       .order('updated_at', { ascending: false })
       .limit(5000);
@@ -135,6 +139,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
   ];
+
+  // Area pages are listed only once they have a live stay, matching their indexable state.
+  for (const guide of LAGOS_AREA_GUIDES) {
+    const matching = approvedRows.filter(row => stayMatchesAreaGuide(row, guide));
+    if (matching.length === 0) continue;
+    routes.push({
+      url: `${site}/lagos/${guide.slug}`,
+      lastModified: resolveValidDate(
+        matching[0]?.updated_at ?? matching[0]?.created_at,
+        STATIC_BASELINE_LAST_MODIFIED,
+      ),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    });
+  }
 
   for (const property of approvedRows) {
     routes.push({
