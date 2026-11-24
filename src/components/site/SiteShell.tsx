@@ -730,6 +730,11 @@ export function SiteFooter() {
             <p>
               Contact: <a href="mailto:hello@hamlet.rest">hello@hamlet.rest</a>
             </p>
+            <p>
+              <a href="https://www.instagram.com/hamletrest/" target="_blank" rel="me noopener noreferrer" aria-label="HAMLET on Instagram (opens in a new tab)">
+                Instagram @hamletrest
+              </a>
+            </p>
           </div>
 
           {FOOTER_LINK_GROUPS.map(group => {
