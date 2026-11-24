@@ -52,6 +52,46 @@ export interface PropertyWizardValues {
   correctionNote: string;
 }
 
+export interface PropertySubmissionResult {
+  title: string;
+  area: string;
+  savedAsDraft: boolean;
+  message: string;
+  values: PropertyWizardValues;
+}
+
+/** Owner-level details that stay the same across the apartments one partner lists in a row. */
+export function carryOverOwnerDetails(values: PropertyWizardValues): Partial<PropertyWizardValues> {
+  return {
+    submittedRole: values.submittedRole,
+    authorityBasis: values.authorityBasis,
+    calendarResponsiblePerson: values.calendarResponsiblePerson,
+  };
+}
+
+/**
+ * Starting point for "add a similar unit" (e.g. another flat in the same building).
+ * Never copies identity-bearing or media fields: title, address, photos and availability
+ * stay blank so each listing is verified, duplicate-screened and photographed on its own,
+ * and removing one listing's photos can never touch another's.
+ */
+export function similarUnitStarter(values: PropertyWizardValues): Partial<PropertyWizardValues> {
+  return {
+    ...carryOverOwnerDetails(values),
+    propertyType: values.propertyType,
+    area: values.area,
+    bedrooms: values.bedrooms,
+    bathrooms: values.bathrooms,
+    capacity: values.capacity,
+    bedSetup: values.bedSetup,
+    amenities: [...values.amenities],
+    houseRulesText: values.houseRulesText,
+    nightlyRate: values.nightlyRate,
+    cleaningFee: values.cleaningFee,
+    deposit: values.deposit,
+  };
+}
+
 const DEFAULT_VALUES: PropertyWizardValues = {
   title: '',
   propertyType: 'Apartment',
@@ -167,6 +207,7 @@ export function PropertyListingWizard({
   adminReviewNote,
   currentStatus,
   onCompleted,
+  onSubmitted,
 }: {
   mode: 'create' | 'edit';
   propertyId?: string;
@@ -174,6 +215,11 @@ export function PropertyListingWizard({
   adminReviewNote?: string | null;
   currentStatus?: string;
   onCompleted?: () => void;
+  /**
+   * Create mode only. When provided, it replaces `onCompleted` and receives what was just
+   * saved, so a parent can keep the owner in a "list the next property" loop.
+   */
+  onSubmitted?: (result: PropertySubmissionResult) => void;
 }) {
   const db = useMemo(() => getBrowserSupabase(), []);
 
@@ -441,13 +487,23 @@ export function PropertyListingWizard({
       }
 
       clearDraft();
-      setMessage(
+      const savedMessage =
         payload.message ||
-          (saveAsDraft
-            ? 'Draft saved to your partner workspace.'
-            : 'Listing submitted for HAMLET review.'),
-      );
-      onCompleted?.();
+        (saveAsDraft
+          ? 'Draft saved to your partner workspace.'
+          : 'Listing submitted for HAMLET review.');
+      setMessage(savedMessage);
+      if (mode === 'create' && onSubmitted) {
+        onSubmitted({
+          title: values.title.trim(),
+          area: values.area,
+          savedAsDraft: saveAsDraft,
+          message: savedMessage,
+          values,
+        });
+      } else {
+        onCompleted?.();
+      }
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'Could not save this listing.',
