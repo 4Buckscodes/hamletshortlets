@@ -77,3 +77,23 @@ Every line was checked against `PRODUCT.md`, `docs/PRICING_AND_PAYMENT_CONTRACT.
 - Names, prices, dates and chats on phone screens are illustrative and labelled that way.
 
 Changes made in review: the owner fee line was simplified for clarity; the guest line "the host says yes" became "if they say yes"; "join free" and "list in minutes" were removed from the owner end card (not substantiated).
+
+## List with Horatio (owners and managers)
+
+File: `remotion/out/hamlet-explainer-04-list-with-horatio.mp4` · Voice: warm female, US (af_heart) · Call to action: **List with Horatio** → hamlet.rest/partners/apply
+
+Shows the real flow: the "Meet Horatio" box with HAMLET's own example brief → **Generate listing draft** → the form fills field by field → **Still needed** list and the note "Horatio has not verified these details" → **Apply draft** → **Property photos & cover order** (optimised, turned upright, **Make cover**) → pricing preview and authority → **Submit for HAMLET review** → repeat for each apartment → HAMLET checks before live.
+
+1. Listing an apartment used to mean filling in form after form.
+2. On HAMLET, you just tell Horatio about it.
+3. Horatio is our listing assistant. Write a short brief, the way you'd describe the place to a friend.
+4. Bedrooms, bathrooms, how many guests, what's included, and your rate. Then tap, generate listing draft.
+5. Horatio fills in the form for you. The title, the area, the rooms, the amenities and the price.
+6. If something's missing, Horatio tells you. It never makes things up. You check the draft, then apply it.
+7. Next, add your photos straight from your phone. HAMLET optimises them and turns them the right way up. Pick your cover photo.
+8. Preview what guests will pay, confirm you're allowed to list it, and submit.
+9. That's one apartment. Got more? Just do it again. A short brief and a few photos for each one.
+10. Then HAMLET checks every listing before it goes live, so guests can trust it.
+11. Tell Horatio. Add photos. Submit. List your apartments on HAMLET.
+
+Accuracy notes: Horatio drafts one property per brief, fills only facts stated in the brief (never invents prices, addresses or amenities) and lists what's missing (`app/api/partner/horatio/listing-draft/route.ts`). "Done" means submitted: every listing is still reviewed before it goes live. Photo copy from the listing wizard ("HAMLET automatically optimises, orients, and converts them").
