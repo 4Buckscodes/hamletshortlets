@@ -26,6 +26,8 @@ import {
 import { SiteHeader, SiteFooter, StayNightlyPrice } from '@/components/site/SiteShell';
 import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
+import { StayVideo } from '@/components/site/StayVideo';
+import { isYouTubeVideoId } from '@/lib/youtube';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
@@ -126,6 +128,15 @@ export default async function PropertyDetailPage({ params }: Props) {
   );
   const bedroomLabel = formatBedroomCountLabel(stay.bedrooms, stay.property_type);
   const wayfinderMeta = await probePropertyWayfinderMeta(db, stay.id);
+  // Best-effort and separate from the main select, so the page keeps working even if the
+  // youtube_video_id column has not been deployed to this database yet.
+  const { data: videoRow, error: videoError } = await db
+    .from('public_properties')
+    .select('youtube_video_id')
+    .eq('id', stay.id)
+    .maybeSingle();
+  const youtubeVideoId =
+    !videoError && isYouTubeVideoId(videoRow?.youtube_video_id) ? videoRow.youtube_video_id : null;
   const images = stay.image_urls ?? [];
   const structuredData = buildPropertyDetailSchema({
     stay,
@@ -204,6 +215,16 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <li>{accommodationLabel}</li>
                 {stay.bed_setup && <li>{stay.bed_setup}</li>}
               </ul>
+
+              {youtubeVideoId && (
+                <section className="hm-detail-block" aria-labelledby="stay-video">
+                  <p className="hm-label">{label('Video tour')}</p>
+                  <h2 id="stay-video" className="hm-h3">
+                    Take a look around
+                  </h2>
+                  <StayVideo videoId={youtubeVideoId} title={stay.title} />
+                </section>
+              )}
 
               <section className="hm-detail-block" aria-labelledby="stay-location">
                 <p className="hm-label">{label('Location')}</p>

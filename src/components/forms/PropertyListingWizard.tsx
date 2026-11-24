@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { HoratioListingAssistant } from './HoratioListingAssistant';
+import { StayVideo } from '@/components/site/StayVideo';
 import { ISLAND_AND_LEKKI_AREAS, MAINLAND_AREAS } from '@/lib/areas';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
@@ -11,6 +12,7 @@ import {
   guestFacingNightlyNgn,
 } from '@/lib/pricing';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { parseYouTubeVideoId } from '@/lib/youtube';
 import {
   deletePropertyMediaObjects,
   extractPropertyMediaObjectPath,
@@ -40,6 +42,7 @@ export interface PropertyWizardValues {
   capacity: number;
   bedSetup: string;
   imageUrls: string[];
+  youtubeUrl: string;
   amenities: string[];
   houseRulesText: string;
   nightlyRate: number;
@@ -102,6 +105,7 @@ const DEFAULT_VALUES: PropertyWizardValues = {
   capacity: 2,
   bedSetup: '',
   imageUrls: [],
+  youtubeUrl: '',
   amenities: [],
   houseRulesText: '',
   nightlyRate: 0,
@@ -355,6 +359,9 @@ export function PropertyListingWizard({
       }
     }
     if (targetStep === 2) {
+      if (values.youtubeUrl.trim() && !parseYouTubeVideoId(values.youtubeUrl)) {
+        return 'That video link is not a YouTube video. Paste a youtube.com or youtu.be link, or clear the box.';
+      }
       if (mediaActivity.hasActiveUploads) {
         return 'Please wait a moment — your photographs are still optimising and uploading.';
       }
@@ -447,6 +454,7 @@ export function PropertyListingWizard({
           capacity: values.capacity,
           bedSetup: values.bedSetup,
           imageUrls: values.imageUrls,
+          youtubeUrl: values.youtubeUrl.trim(),
           amenities: values.amenities,
           houseRules,
           nightlyRate: Math.round(Number(values.nightlyRate)),
@@ -727,6 +735,36 @@ export function PropertyListingWizard({
             onChangeImageUrls={handleChangeImageUrls}
             onActivityChange={setMediaActivity}
           />
+          <div className="mt-6">
+            <FormField
+              label="YouTube video tour"
+              optional
+              hint="Have a walkthrough on YouTube? Paste the link and guests can watch it on your listing. Public or unlisted videos work."
+            >
+              {fieldProps => (
+                <input
+                  {...fieldProps}
+                  type="url"
+                  inputMode="url"
+                  autoComplete="off"
+                  value={values.youtubeUrl}
+                  onChange={e =>
+                    setValues(prev => ({ ...prev, youtubeUrl: e.target.value }))
+                  }
+                  placeholder="https://www.youtube.com/watch?v=…"
+                  className={FIELD_INPUT_CLASS}
+                />
+              )}
+            </FormField>
+            {values.youtubeUrl.trim() && parseYouTubeVideoId(values.youtubeUrl) && (
+              <div className="mt-3 max-w-md">
+                <StayVideo
+                  videoId={parseYouTubeVideoId(values.youtubeUrl) as string}
+                  title={values.title || 'Your property'}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* STEP 4: AMENITIES & HOUSE RULES */}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_PROPERTY_MEDIA_POLICY } from '@/lib/pricing';
+import { parseYouTubeVideoId } from '@/lib/youtube';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +21,7 @@ type Payload = {
   bedSetup?: string;
   amenities?: string[];
   imageUrls?: string[];
+  youtubeUrl?: string;
   houseRules?: string[];
   firstAvailableDate?: string;
   calendarResponsiblePerson?: string;
@@ -144,12 +146,23 @@ function parseAndValidatePayload(body: Payload) {
     };
   }
 
+  // Optional YouTube tour. Blank means none; anything else must be a real YouTube video link.
+  const youtubeInput = text(body.youtubeUrl, 300);
+  const youtubeVideoId = youtubeInput ? parseYouTubeVideoId(youtubeInput) : null;
+  if (youtubeInput && !youtubeVideoId) {
+    return {
+      validationError:
+        'That video link is not a YouTube video. Paste a youtube.com or youtu.be link, or leave it blank.',
+    };
+  }
+
   const firstAvailableDate = text(body.firstAvailableDate, 20);
   const calendarResponsiblePerson = text(body.calendarResponsiblePerson, 120);
 
   return {
     saveAsDraft,
     title,
+    youtubeVideoId,
     listingData: {
       title,
       property_type: propertyType,
@@ -185,6 +198,25 @@ function parseAndValidatePayload(body: Payload) {
     },
     correctionNote: text(body.correctionNote, 500) || null,
   };
+}
+
+/**
+ * Attaches (or clears) the optional YouTube tour after the listing itself is saved. Deliberately
+ * non-fatal: the listing is already safely stored, so a failure here is reported as a warning
+ * rather than failing the whole submission.
+ */
+async function attachYouTubeVideo(
+  db: Extract<ReturnType<typeof getAuthenticatedDb>, { db: unknown }>['db'],
+  propertyId: string,
+  videoId: string | null,
+): Promise<string | null> {
+  const { error } = await db.rpc('set_partner_property_video', {
+    target_property_id: propertyId,
+    video_id: videoId,
+  });
+  return error
+    ? 'The listing was saved, but the YouTube video could not be attached. You can add it again by editing the listing.'
+    : null;
 }
 
 export async function POST(request: Request) {
@@ -247,6 +279,13 @@ export async function POST(request: Request) {
     );
   }
 
+  const videoWarning = parsed.youtubeVideoId
+    ? await attachYouTubeVideo(db, String(propertyId), parsed.youtubeVideoId)
+    : null;
+  const createdMessage = parsed.saveAsDraft
+    ? 'Draft listing saved to your partner workspace. You can finish and submit it anytime.'
+    : 'Listing submitted for HAMLET review. It will not appear publicly until approved.';
+
   return NextResponse.json(
     {
       property: {
@@ -254,9 +293,7 @@ export async function POST(request: Request) {
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
       },
-      message: parsed.saveAsDraft
-        ? 'Draft listing saved to your partner workspace. You can finish and submit it anytime.'
-        : 'Listing submitted for HAMLET review. It will not appear publicly until approved.',
+      message: videoWarning ? `${createdMessage} ${videoWarning}` : createdMessage,
     },
     { status: 201 },
   );
@@ -313,6 +350,15 @@ export async function PATCH(request: Request) {
     );
   }
 
+  // An explicit youtubeUrl (even blank) updates the video; an absent field leaves it untouched.
+  const videoWarning =
+    body.youtubeUrl !== undefined
+      ? await attachYouTubeVideo(db, propertyId, parsed.youtubeVideoId)
+      : null;
+  const updatedMessage = parsed.saveAsDraft
+    ? 'Draft changes saved.'
+    : 'Listing updated and resubmitted for HAMLET review.';
+
   return NextResponse.json(
     {
       property: {
@@ -320,9 +366,7 @@ export async function PATCH(request: Request) {
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
       },
-      message: parsed.saveAsDraft
-        ? 'Draft changes saved.'
-        : 'Listing updated and resubmitted for HAMLET review.',
+      message: videoWarning ? `${updatedMessage} ${videoWarning}` : updatedMessage,
     },
     { status: 200 },
   );
