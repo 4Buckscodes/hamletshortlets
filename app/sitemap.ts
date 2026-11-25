@@ -19,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const db = getPublicSupabase();
   let approvedRows: Array<{
     id: string;
+    slug: string;
     updated_at?: string | null;
     created_at?: string | null;
     area?: string | null;
@@ -29,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (db) {
     const { data, error } = await db
       .from('public_properties')
-      .select('id,updated_at,created_at,area,public_address,title')
+      .select('id,slug,updated_at,created_at,area,public_address,title')
       .eq('status', 'approved')
       .order('updated_at', { ascending: false })
       .limit(5000);
@@ -157,7 +158,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const property of approvedRows) {
     routes.push({
-      url: `${site}/stays/${encodeURIComponent(property.id)}`,
+      url: `${site}/stays/${encodeURIComponent(property.slug || property.id)}`,
       lastModified: resolveValidDate(
         property.updated_at ?? property.created_at,
         STATIC_BASELINE_LAST_MODIFIED,
