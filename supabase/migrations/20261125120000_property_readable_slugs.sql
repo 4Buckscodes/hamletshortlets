@@ -115,6 +115,8 @@ select
   nullif(to_jsonb(p) ->> 'wayfinder_status', '') as wayfinder_status,
   p.created_at,
   p.updated_at,
+  p.tour_video_provider,
+  p.tour_video_id,
   p.slug
 from public.properties as p
 where p.status = 'approved';
