@@ -79,7 +79,7 @@ export function HoratioListingAssistant({
   const ready = description.trim().length >= 30;
   const slugPreview = draft?.title && draft?.area
     ? (draft.title + ' ' + draft.area).toLowerCase().normalize('NFKD')
-        .replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
+        .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '')
     : '';
 
@@ -179,7 +179,14 @@ export function HoratioListingAssistant({
             <p className="mb-0 mt-1 text-base font-extrabold text-ink-950">
               {draft.title || 'Untitled listing'}
             </p>
-            {slugPreview && (\n              <div className="mt-3 rounded-xl border border-ink-100 bg-paper p-3">\n                <p className="m-0 text-[10px] font-bold uppercase tracking-wider text-ink-500">URL preview</p>\n                <p className="m-0 mt-1 break-all text-xs font-semibold text-ink-800">hamlet.rest/stays/{slugPreview}-[unique-id]</p>\n                <p className="m-0 mt-1 text-[10px] text-ink-500">The final unique URL is assigned automatically when you save the property.</p>\n              </div>\n            )}\n            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-800">
+            {slugPreview && (
+              <div className="mt-3 rounded-xl border border-ink-100 bg-paper p-3">
+                <p className="m-0 text-[10px] font-bold uppercase tracking-wider text-ink-500">URL preview</p>
+                <p className="m-0 mt-1 break-all text-xs font-semibold text-ink-800">hamlet.rest/stays/{slugPreview}-[unique-id]</p>
+                <p className="m-0 mt-1 text-[10px] text-ink-500">The final unique URL is assigned automatically when you save the property.</p>
+              </div>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-800">
               {draft.area && <span className="rounded-full bg-paper px-3 py-1">{draft.area}</span>}
               {draft.bedrooms ? <span className="rounded-full bg-paper px-3 py-1">{draft.bedrooms} bed</span> : null}
               {draft.bathrooms ? <span className="rounded-full bg-paper px-3 py-1">{draft.bathrooms} bath</span> : null}
