@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Bath, BedDouble, Check, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import {
@@ -44,9 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const { data } = await db
     .from('public_properties')
-    .select('title,area,property_type,bedrooms,capacity,guest_nightly_ngn,image_urls,updated_at')
-    .eq('id', id)
+    .select('id,slug,title,area,property_type,bedrooms,capacity,guest_nightly_ngn,image_urls,updated_at')
     .eq('status', 'approved')
+    .or(`slug.eq.${id},id.eq.${id}`)
     .maybeSingle();
 
   if (!data) {
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     guestNightly !== null ? ` · ${formatNaira(guestNightly)}/night` : '';
   const title = `${data.title} in ${areaLabel}`;
   const description = `${accommodationSummary} in ${areaLabel}, Lagos${priceSnippet}. View photos, verification status, house rules and request dates on HAMLET.`;
-  const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(id)}`);
+  const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(data.slug || data.id)}`);
   const previewVersion = buildPropertyPreviewVersion(data);
   const shareImage = `${HAMLET_CANONICAL_ORIGIN}/api/og/property/${encodeURIComponent(
     id,
@@ -112,8 +112,8 @@ export default async function PropertyDetailPage({ params }: Props) {
   const { data, error } = await db
     .from('public_properties')
     .select(PUBLIC_VIEW_SELECT)
-    .eq('id', id)
     .eq('status', 'approved')
+    .or(`slug.eq.${id},id.eq.${id}`)
     .maybeSingle();
 
   if (error || !data) {
@@ -121,6 +121,7 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const stay = toPublicStayRecord(data as Record<string, unknown>);
+  if (id !== stay.slug) permanentRedirect(`/stays/${encodeURIComponent(stay.slug)}`);
   const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,
