@@ -282,6 +282,11 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: savedProperty } = await db
+    .from('properties')
+    .select('slug')
+    .eq('id', propertyId)
+    .maybeSingle();
   const videoWarning = parsed.tourVideo
     ? await attachTourVideo(db, String(propertyId), parsed.tourVideo)
     : null;
@@ -295,6 +300,8 @@ export async function POST(request: Request) {
         id: propertyId,
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
+        slug: savedProperty?.slug ?? null,
+        url: savedProperty?.slug ? '/stays/' + savedProperty.slug : null,
       },
       message: videoWarning ? `${createdMessage} ${videoWarning}` : createdMessage,
     },
