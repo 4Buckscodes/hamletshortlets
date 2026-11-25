@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { PUBLIC_VIEW_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
+import { prioritiseIkateProperties } from '@/lib/property-priority';
 import {
   buildHomepageSchema,
   buildPublicPageMetadata,
@@ -40,7 +41,11 @@ export default async function HomePage() {
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(36);
-    if (!error) approvedStays = (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>));
+    if (!error) {
+      approvedStays = prioritiseIkateProperties(
+        (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>)),
+      );
+    }
   }
 
   const pageSchema = buildHomepageSchema({ approvedStays });
