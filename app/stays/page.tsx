@@ -5,6 +5,7 @@ import {
 } from '@/lib/discovery';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { PUBLIC_VIEW_SELECT, toPublicStayRecord, type PublicStayRecord } from '@/lib/next-supabase';
+import { prioritiseIkateProperties } from '@/lib/property-priority';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   buildPropertyListingPageSchema,
@@ -54,7 +55,9 @@ export default async function StaysCataloguePage({
     if (error) {
       queryError = true;
     } else {
-      approvedStays = (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>));
+      approvedStays = prioritiseIkateProperties(
+        (data ?? []).map(row => toPublicStayRecord(row as Record<string, unknown>)),
+      );
     }
 
     const dateCheck = validateStayDates(
