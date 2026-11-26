@@ -260,6 +260,10 @@ export function DiscoveryMarketplace({
   // External inventory is queried server-side only. The API key never reaches the browser.
   // Search is debounced and the server caches each exact query for ten minutes.
   useEffect(() => {
+    if (mode !== 'stays') {
+      setExternalStays([]);
+      return;
+    }
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setExternalLoading(true);
@@ -301,6 +305,7 @@ export function DiscoveryMarketplace({
     filters.checkOut,
     filters.guests,
     dateValidation.valid,
+    mode,
   ]);
 
   const filteredExternal = useMemo(
