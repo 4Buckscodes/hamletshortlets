@@ -39,6 +39,7 @@ const PUBLIC_AI_ROUTES = [
   '/',
   '/stays',
   '/lagos',
+  '/blog',
   '/how-it-works',
   '/safety',
   '/about',
