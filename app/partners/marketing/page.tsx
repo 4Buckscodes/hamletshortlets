@@ -13,13 +13,12 @@ import {
   Search,
   Sparkles,
 } from 'lucide-react';
-import { formatAccommodationLabel, getValidGuestNightlyNgn } from '@/lib/discovery';
+import { formatAccommodationLabel, getValidPublicGuestNightlyNgn } from '@/lib/discovery';
 import {
   getBrowserSupabase,
   isMissingSchemaObjectError,
-  PUBLIC_PROPERTY_SELECT,
 } from '@/lib/next-supabase';
-import { formatNaira, multiplyNairaBasisPoints } from '@/lib/pricing';
+import { formatNaira } from '@/lib/pricing';
 import {
   buildPartnerPropertyTrackingUrl,
   buildPropertyCanonicalShareUrl,
@@ -47,7 +46,6 @@ interface ShareablePropertyRow {
   bedrooms: number | null;
   bathrooms: number | null;
   capacity: number | null;
-  nightly_rate: number;
   guest_nightly_ngn: number;
   amenities: string[] | null;
   image_urls: string[] | null;
@@ -145,49 +143,34 @@ function PartnerMarketingContent() {
     if (!rpcRes.error && Array.isArray(rpcRes.data)) {
       const normalized = (rpcRes.data as ShareablePropertyRow[]).map(item => ({
         ...item,
-        nightly_rate: Number(item.nightly_rate || 0),
-        guest_nightly_ngn:
-          Number(item.guest_nightly_ngn || 0) ||
-          getValidGuestNightlyNgn(item.nightly_rate) ||
-          0,
+        guest_nightly_ngn: Number(item.guest_nightly_ngn || 0),
       }));
       setStays(normalized);
     } else if (isMissingSchemaObjectError(rpcRes.error)) {
-      // Schema-tolerant fallback if migration is pending on an environment
+      // Schema-tolerant fallback still uses the redacted public surface. Without the
+      // partner RPC, do not invent partner deal terms or expose the owner base rate.
       const { data: fallbackRows } = await db
-        .from('properties')
-        .select(PUBLIC_PROPERTY_SELECT)
+        .from('public_properties')
+        .select('id,title,area,property_type,bedrooms,bathrooms,capacity,guest_nightly_ngn,amenities,image_urls,trust_label')
         .eq('status', 'approved')
         .order('updated_at', { ascending: false });
 
-      const normalized: ShareablePropertyRow[] = (fallbackRows || []).map(raw => {
-        const rate = Number(raw.nightly_rate || 0);
-        const estPerNight = multiplyNairaBasisPoints(rate, 1_000);
-        return {
-          id: raw.id,
-          title: raw.title,
-          area: raw.area,
-          property_type: raw.property_type,
-          bedrooms: raw.bedrooms,
-          bathrooms: raw.bathrooms,
-          capacity: raw.capacity,
-          nightly_rate: rate,
-          guest_nightly_ngn: getValidGuestNightlyNgn(rate) || 0,
-          amenities: raw.amenities,
-          image_urls: raw.image_urls,
-          trust_label: raw.trust_label,
-          allow_partner_sharing: true,
-          share_token: null,
-          deal_terms: {
-            authorised: true,
-            relationship: 'closing_agent',
-            commission_rate: 0.1,
-            estimated_per_night_ngn: estPerNight,
-            basis_label: '10% of owner base rate on completed stays',
-            disclaimer: 'Estimated opportunity on completed stays; not a guaranteed payout.',
-          },
-        };
-      });
+      const normalized: ShareablePropertyRow[] = (fallbackRows || []).map(raw => ({
+        id: raw.id,
+        title: raw.title,
+        area: raw.area,
+        property_type: raw.property_type,
+        bedrooms: raw.bedrooms,
+        bathrooms: raw.bathrooms,
+        capacity: raw.capacity,
+        guest_nightly_ngn: getValidPublicGuestNightlyNgn(raw.guest_nightly_ngn) || 0,
+        amenities: raw.amenities,
+        image_urls: raw.image_urls,
+        trust_label: raw.trust_label,
+        allow_partner_sharing: true,
+        share_token: null,
+        deal_terms: null,
+      }));
       setStays(normalized);
     } else if (rpcRes.error) {
       setError(rpcRes.error.message || 'Could not load shareable stays.');
@@ -446,7 +429,6 @@ function PartnerMarketingContent() {
         bedrooms: selectedStay.bedrooms,
         capacity: selectedStay.capacity,
         guestNightlyNgn: selectedStay.guest_nightly_ngn,
-        ownerNightlyRateNgn: selectedStay.nightly_rate,
         trackingUrl,
       });
       const waUrl = buildWhatsAppClickToChatUrl(msg);
@@ -1158,7 +1140,6 @@ function PartnerMarketingContent() {
                           bedrooms: stay.bedrooms,
                           capacity: stay.capacity,
                           guestNightlyNgn: stay.guest_nightly_ngn,
-                          ownerNightlyRateNgn: stay.nightly_rate,
                           initialShareToken: stay.share_token,
                         }}
                       />

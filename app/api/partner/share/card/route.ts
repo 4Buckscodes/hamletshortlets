@@ -83,9 +83,9 @@ export async function GET(request: Request) {
         .eq('user_id', authData.user.id)
         .maybeSingle(),
       db
-        .from('properties')
+        .from('public_properties')
         .select(
-          'id,title,area,property_type,bedrooms,bathrooms,capacity,nightly_rate,amenities,image_urls,status,verification',
+          'id,title,area,property_type,bedrooms,bathrooms,capacity,guest_nightly_ngn,amenities,image_urls,status,verification',
         )
         .eq('id', propertyId)
         .eq('status', 'approved')

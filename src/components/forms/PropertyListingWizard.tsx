@@ -313,7 +313,7 @@ export function PropertyListingWizard({
         return;
       }
       const { data } = await db
-        .from('properties')
+        .from('public_properties')
         .select('id,title,area')
         .eq('area', values.area)
         .ilike('title', values.title.trim())

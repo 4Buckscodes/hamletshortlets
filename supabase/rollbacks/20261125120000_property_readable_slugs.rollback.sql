@@ -7,6 +7,9 @@ begin;
 
 drop trigger if exists properties_set_slug on public.properties;
 
+-- The post-slug privacy hardening migration routes guest booking eligibility through
+-- public_properties. Temporarily remove and recreate that policy around the view swap.
+drop policy if exists "Guests can request approved properties" on public.bookings;
 drop view if exists public.public_properties;
 create view public.public_properties
 with (security_barrier = true)
@@ -78,6 +81,19 @@ comment on view public.public_properties is
 revoke all on public.public_properties from public, anon, authenticated;
 grant select on public.public_properties to anon, authenticated;
 grant select on public.public_properties to service_role;
+
+create policy "Guests can request approved properties"
+  on public.bookings for insert to authenticated
+  with check (
+    guest_id = (select auth.uid())
+    and status = 'requested'
+    and exists (
+      select 1
+      from public.public_properties as listing
+      where listing.id = bookings.property_id
+        and listing.status = 'approved'
+    )
+  );
 
 -- Dropping the column also drops properties_slug_unique_idx.
 alter table public.properties drop column if exists slug;

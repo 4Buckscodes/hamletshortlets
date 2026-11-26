@@ -1,15 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import {
-  calculateGuestPricing,
-  calculateInternationalStayQuote,
-  nightsBetween,
-  PRICING_RULES_VERSION,
-} from '@/lib/pricing';
-import {
-  isMissingSchemaObjectError,
-  loadActiveExchangeRates,
-} from '@/lib/next-supabase';
+import { nightsBetween } from '@/lib/pricing';
+import { isMissingSchemaObjectError } from '@/lib/next-supabase';
 import { normalizeShareToken } from '@/lib/share-engine';
 import type { SupportedCurrency } from '@/lib/types';
 
@@ -133,8 +125,8 @@ export async function POST(request: Request) {
   }
 
   const { data: property, error: propertyError } = await db
-    .from('properties')
-    .select('id,status,nightly_rate,cleaning_fee,refundable_deposit,capacity,first_available_date')
+    .from('public_properties')
+    .select('id,status,guest_nightly_ngn,capacity,first_available_date')
     .eq('id', propertyId)
     .eq('status', 'approved')
     .maybeSingle();
@@ -150,6 +142,10 @@ export async function POST(request: Request) {
       `This stay is available from ${String(property.first_available_date)} onwards.`,
       409,
     );
+  }
+  const guestNightlyRate = Number(property.guest_nightly_ngn);
+  if (!Number.isFinite(guestNightlyRate) || guestNightlyRate <= 0) {
+    return errorResponse('The price for this stay is currently unavailable. Please contact HAMLET.', 409);
   }
 
   const { data: unavailable, error: availabilityError } = await db.rpc(
@@ -172,69 +168,31 @@ export async function POST(request: Request) {
     );
   }
 
-  const nightlyRate = Math.max(0, Math.round(Number(property.nightly_rate || 0)));
-  const cleaningFee = Math.max(0, Math.round(Number(property.cleaning_fee || 0)));
-  const deposit = Math.max(0, Math.round(Number(property.refundable_deposit || 0)));
-  const pricing = calculateGuestPricing({
-    accommodationSubtotal: nightlyRate * nights,
-    mandatoryCharges: cleaningFee > 0 ? [{ label: 'Cleaning fee', amount: cleaningFee }] : [],
-    refundableDeposit: deposit,
-  });
-
-  const activeRates = await loadActiveExchangeRates(db);
-  const matchingRate = activeRates.find(r => r.currency === requestedCurrency) ?? null;
-  const fxQuote = calculateInternationalStayQuote({
-    domesticGuestAmountNgn: pricing.guestTotal,
-    refundableDepositNgn: pricing.refundableDeposit,
-    currency: requestedCurrency,
-    rateConfig: matchingRate,
-  });
-
   const reference =
     'HML-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
 
-  const fullInsertPayload = {
+  // Submit intent only. The BEFORE INSERT database trigger re-reads the approved
+  // property, checks availability and calculates the authoritative NGN/FX quote.
+  // No owner rate or private property column is read or sent by this API route.
+  const bookingIntentPayload = {
     reference,
     property_id: propertyId,
     guest_id: user.id,
     check_in: checkIn,
     check_out: checkOut,
     guest_count: guests,
-    accommodation_subtotal: pricing.accommodationSubtotal,
-    mandatory_charges: pricing.mandatoryCharges,
-    mandatory_total: pricing.mandatoryChargesTotal,
-    hamlet_guest_fee: pricing.hamletGuestServiceFee,
-    guest_total: pricing.guestTotal,
-    refundable_deposit: pricing.refundableDeposit,
-    status: 'requested',
     special_requests: specialRequests || null,
-    pricing_rules_version: PRICING_RULES_VERSION,
-    owner_listed_price_ngn: pricing.ownerListedPriceNgn,
-    domestic_markup_rate: pricing.serviceFeeRate,
-    domestic_markup_ngn: pricing.domesticMarkupNgn,
-    domestic_guest_price_ngn: pricing.domesticGuestPriceNgn,
-    quote_currency: fxQuote.currency,
-    currency_pair: fxQuote.currencyPair,
-    exchange_rate_ngn_per_unit: fxQuote.exchangeRateNgnPerUnit,
-    exchange_rate_source: fxQuote.exchangeRateSource,
-    exchange_rate_timestamp: fxQuote.exchangeRateTimestamp,
-    international_buffer_rate: fxQuote.internationalBufferRate,
-    converted_base_amount: fxQuote.convertedBaseAmount,
-    international_buffer_amount: fxQuote.internationalBufferAmount,
-    international_buffer_ngn_equiv: fxQuote.internationalBufferNgnEquiv,
-    quoted_guest_total: fxQuote.quotedGuestTotal,
-    settlement_total_ngn: fxQuote.settlementTotalNgn,
-    quote_expires_at: fxQuote.currency === 'NGN' ? null : fxQuote.quoteExpiresAt,
+    quote_currency: requestedCurrency,
   };
 
   const payloadWithShare =
     visitorSessionKey || shareTokenInput
       ? {
-          ...fullInsertPayload,
+          ...bookingIntentPayload,
           ...(visitorSessionKey ? { share_session_key: visitorSessionKey } : {}),
           ...(shareTokenInput ? { share_token_input: shareTokenInput } : {}),
         }
-      : fullInsertPayload;
+      : bookingIntentPayload;
 
   let { data: booking, error: insertError } = await db
     .from('bookings')
@@ -242,10 +200,10 @@ export async function POST(request: Request) {
     .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
     .single();
 
-  if (insertError && isMissingSchemaObjectError(insertError) && payloadWithShare !== fullInsertPayload) {
+  if (insertError && isMissingSchemaObjectError(insertError) && payloadWithShare !== bookingIntentPayload) {
     const retryRes = await db
       .from('bookings')
-      .insert(fullInsertPayload)
+      .insert(bookingIntentPayload)
       .select('id,reference,status,guest_total,refundable_deposit,quote_currency,quoted_guest_total')
       .single();
     booking = retryRes.data;

@@ -857,7 +857,9 @@ export async function renderMarketingCardBuffer(
       ? await generateQrCodeDataUrl(input.targetUrl, { size: 320, margin: 4 })
       : null;
 
-  const guestNightly = getValidGuestNightlyNgn(input.stay.nightly_rate);
+  const guestNightly =
+    getValidPublicGuestNightlyNgn(input.stay.guest_nightly_ngn) ??
+    getValidGuestNightlyNgn(input.stay.nightly_rate);
   const areaLabel = input.stay.area?.trim()
     ? `${input.stay.area.trim()}, Lagos`
     : 'Lagos, Nigeria';
