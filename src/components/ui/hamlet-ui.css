@@ -1069,3 +1069,9 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 .hm-blog-list h2 a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .hm-blog-list .hm-body { margin-bottom: 14px; }
 .hm-content-title.hm-blog-title { max-width: 18ch; }
+
+/* Footer social icons */
+.hm-footer-brand .hm-footer-social { display: flex; gap: 8px; }
+.hm-footer-social a { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--hm-band-line); border-radius: 999px; color: var(--hm-on-band); transition: background-color 0.15s ease; }
+.hm-footer-social a:hover { background: var(--hm-neutral-soft); }
+.hm-footer-social a:focus-visible { outline: 2px solid var(--hm-text); outline-offset: 2px; }
