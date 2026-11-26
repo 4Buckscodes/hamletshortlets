@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import type { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -116,5 +117,28 @@ describe('Readable property slugs', () => {
 
   it('keeps the slug readable by anonymous visitors only through the view', async () => {
     await expect(asAnon(db, async tx => tx.query('select slug from public.properties'))).rejects.toThrow(/permission denied/i);
+  });
+
+  it('has a rollback script that restores the previous public view and removes the slug objects', async () => {
+    const other = await createMigratedTestDb();
+    try {
+      const rollback = readFileSync(new URL('../rollbacks/20261125120000_property_readable_slugs.rollback.sql', import.meta.url), 'utf8');
+      await other.exec(rollback);
+      const columns = (await other.query<{ column_name: string }>(
+        `select column_name from information_schema.columns where table_schema='public' and table_name='public_properties' order by ordinal_position`,
+      )).rows.map(row => row.column_name);
+      expect(columns).not.toContain('slug');
+      expect(columns[columns.length - 1]).toBe('tour_video_id');
+      const slugColumn = await other.query(`select 1 from information_schema.columns where table_schema='public' and table_name='properties' and column_name='slug'`);
+      expect(slugColumn.rows).toHaveLength(0);
+      const leftovers = await other.query(`select proname from pg_proc where proname in ('set_property_slug','hamlet_property_slug_base')`);
+      expect(leftovers.rows).toHaveLength(0);
+      const anonView = await other.query(`select has_table_privilege('anon','public.public_properties','SELECT') as ok`);
+      expect((anonView.rows[0] as { ok: boolean }).ok).toBe(true);
+      const anonTable = await other.query(`select has_table_privilege('anon','public.properties','SELECT') as ok`);
+      expect((anonTable.rows[0] as { ok: boolean }).ok).toBe(false);
+    } finally {
+      await other.close();
+    }
   });
 });
