@@ -1,4 +1,5 @@
 import { PUBLIC_VIEW_SELECT, type PublicStayRecord, toPublicStayRecord } from '@/lib/next-supabase';
+import { stayPath } from './stayRoutes';
 import { formatNaira } from '@/lib/pricing';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { HAMLET_CANONICAL_ORIGIN } from '@/lib/structured-data';
@@ -31,7 +32,7 @@ function safeListText(value: string | null | undefined): string {
 }
 
 function publicStayMarkdown(stay: PublicStayRecord): string {
-  const path = `/stays/${encodeURIComponent(stay.id)}`;
+  const path = stayPath(stay);
   const details = [
     stay.property_type,
     typeof stay.bedrooms === 'number' ? `${stay.bedrooms} bedrooms` : null,

@@ -8,13 +8,15 @@ language sql
 immutable
 set search_path = public
 as $$
-  select trim(both '-' from regexp_replace(
+  -- Readable part only: at most 60 characters, so a long title cannot make a long address.
+  -- The 8-character id suffix added by the callers keeps every slug unique.
+  select trim(both '-' from left(trim(both '-' from regexp_replace(
     regexp_replace(
       lower(coalesce(input_title, '') || ' ' || coalesce(input_area, '')),
       '[^a-z0-9]+', '-', 'g'
     ),
     '-{2,}', '-', 'g'
-  ));
+  )), 60));
 $$;
 
 alter table public.properties add column if not exists slug text;

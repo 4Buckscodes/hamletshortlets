@@ -301,7 +301,8 @@ export async function POST(request: Request) {
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
         slug: savedProperty?.slug ?? null,
-        url: savedProperty?.slug ? '/stays/' + savedProperty.slug : null,
+        // Public once HAMLET approves the listing; until then this address shows 'unavailable'.
+        urlWhenApproved: savedProperty?.slug ? '/stays/' + savedProperty.slug : null,
       },
       message: videoWarning ? `${createdMessage} ${videoWarning}` : createdMessage,
     },

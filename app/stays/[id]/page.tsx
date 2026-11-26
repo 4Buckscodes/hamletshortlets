@@ -28,13 +28,20 @@ import { StayGallery } from './stay-gallery';
 import BookingRequestForm from './booking-request-form';
 import { StayVideo } from '@/components/site/StayVideo';
 import { toTourVideo } from '@/lib/tourVideo';
+import { buildStayRedirectPath, isValidStayRef, type StaySearchParams } from '@/lib/stayRoutes';
 import { PartnerPropertyDetailBar } from '@/components/share/PartnerShareActions';
 import { PropertyEnquiryCard } from '@/components/share/PropertyEnquiryCard';
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<StaySearchParams>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  if (!isValidStayRef(id)) {
+    return { title: 'Stay unavailable', robots: { index: false, follow: false } };
+  }
   const db = getPublicSupabase();
   if (!db) {
     return {
@@ -69,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = buildNextCanonicalUrl(`/stays/${encodeURIComponent(data.slug || data.id)}`);
   const previewVersion = buildPropertyPreviewVersion(data);
   const shareImage = `${HAMLET_CANONICAL_ORIGIN}/api/og/property/${encodeURIComponent(
-    id,
+    data.id,
   )}?v=${encodeURIComponent(previewVersion)}`;
 
   return {
@@ -101,8 +108,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PropertyDetailPage({ params }: Props) {
+export default async function PropertyDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  if (!isValidStayRef(id)) {
+    notFound();
+  }
   const db = getPublicSupabase();
 
   if (!db) {
@@ -121,7 +131,10 @@ export default async function PropertyDetailPage({ params }: Props) {
   }
 
   const stay = toPublicStayRecord(data as Record<string, unknown>);
-  if (id !== stay.slug) permanentRedirect(`/stays/${encodeURIComponent(stay.slug)}`);
+  // The id address stays valid forever: send it to the readable one, keeping ?ref=, dates and other parameters.
+  if (stay.slug && id !== stay.slug) {
+    permanentRedirect(buildStayRedirectPath(stay.slug, searchParams ? await searchParams : undefined));
+  }
   const trust = getStayTrustStatus(stay);
   const accommodationLabel = formatAccommodationLabel(
     stay.property_type,

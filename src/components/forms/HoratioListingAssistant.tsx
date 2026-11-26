@@ -77,10 +77,11 @@ export function HoratioListingAssistant({
   }
 
   const ready = description.trim().length >= 30;
+  // Mirrors hamlet_property_slug_base in the database (60 characters at most); the final address adds a short unique id.
   const slugPreview = draft?.title && draft?.area
     ? (draft.title + ' ' + draft.area).toLowerCase().normalize('NFKD')
         .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
+        .replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/g, '')
     : '';
 
   return (
@@ -181,9 +182,9 @@ export function HoratioListingAssistant({
             </p>
             {slugPreview && (
               <div className="mt-3 rounded-xl border border-ink-100 bg-paper p-3">
-                <p className="m-0 text-[10px] font-bold uppercase tracking-wider text-ink-500">URL preview</p>
+                <p className="m-0 text-xs font-semibold text-ink-500">Address preview</p>
                 <p className="m-0 mt-1 break-all text-xs font-semibold text-ink-800">hamlet.rest/stays/{slugPreview}-[unique-id]</p>
-                <p className="m-0 mt-1 text-[10px] text-ink-500">The final unique URL is assigned automatically when you save the property.</p>
+                <p className="m-0 mt-1 text-xs text-ink-500">The final address, with a short unique code, is created when you save the property.</p>
               </div>
             )}
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-800">
