@@ -129,13 +129,13 @@
 @media (max-width: 640px) { .hp-place-link { grid-template-columns: minmax(0, 1fr) 96px; gap: 16px; padding-block: 20px; } .hp-place-text small { display: none; } }
 
 /* Belief: sand ground, one heading, three plain statements divided by hairlines. */
-.hp-belief { border-top: 1px solid var(--hm-line); background: var(--hm-sand); }
+.hp-belief { padding-block: clamp(32px, 4.5vw, 56px); border-top: 1px solid var(--hm-line); background: var(--hm-surface); }
 .hp-belief-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
 .hp-belief-grid > div:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
 .hp-promises { margin: 0; border-top: 1px solid var(--hm-text); }
-.hp-promises > div { padding-block: 22px; border-bottom: 1px solid var(--hm-line); }
-.hp-promises dt { font-family: var(--hm-serif); font-size: 24px; font-weight: 450; letter-spacing: -0.01em; }
-.hp-promises dd { max-width: 54ch; margin: 8px 0 0; color: var(--hm-muted); font-size: 16px; line-height: 1.6; }
+.hp-promises > div { padding-block: 16px; border-bottom: 1px solid var(--hm-line); }
+.hp-promises dt { font-family: var(--hm-serif); font-size: 22px; font-weight: 450; letter-spacing: -0.01em; }
+.hp-promises dd { max-width: 54ch; margin: 6px 0 0; color: var(--hm-muted); font-size: 16px; line-height: 1.6; }
 @media (max-width: 900px) { .hp-belief-grid { grid-template-columns: 1fr; } }
 
 /* Stay listing card. */
