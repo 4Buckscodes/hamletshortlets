@@ -118,6 +118,14 @@ export function filterExternalStays(
   },
 ): ExternalStay[] {
   return stays.filter(stay => {
+    if (filters.area) {
+      const requestedArea = filters.area.split(',')[0].trim().toLowerCase();
+      const locationText = [stay.city, stay.region].filter(Boolean).join(' ').toLowerCase();
+      const country = (stay.country || '').trim().toLowerCase();
+      if (!country.includes('nigeria') && country !== 'ng') return false;
+      const areaAliases = requestedArea === 'lagos mainland' ? ['lagos'] : [requestedArea];
+      if (!areaAliases.some(area => locationText.includes(area))) return false;
+    }
     if (filters.bedrooms && (stay.bedrooms === null || stay.bedrooms < filters.bedrooms)) return false;
     if (filters.guests && filters.guests > 1 && (stay.capacity === null || stay.capacity < filters.guests)) return false;
     if (filters.minPrice !== null && filters.minPrice !== undefined) {
