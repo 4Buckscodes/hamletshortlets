@@ -22,6 +22,7 @@ This is a reversible, preview-first experiment to supplement HAMLET's own approv
 Set these only in the Vercel Preview environment while testing:
 
 ```env
+NEXT_PUBLIC_STAYINGAPI_PILOT_ENABLED=true
 STAYINGAPI_ENABLED=true
 STAYINGAPI_KEY=stay_test_...
 ```
