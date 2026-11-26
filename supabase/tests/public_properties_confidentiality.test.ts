@@ -238,4 +238,44 @@ describe('Public properties view — anonymous commercial confidentiality', () =
       guest_total: 493000,
     });
   });
+
+  it('shows a guest the name, area and photos of their own booked stays only, even after the stay is paused', async () => {
+    const guestId = await createTestUser(db, { email: 'summary-guest@hamlet.test', fullName: 'Summary Guest', role: 'guest' });
+    const otherGuestId = await createTestUser(db, { email: 'summary-other@hamlet.test', fullName: 'Other Guest', role: 'guest' });
+    const checkIn = new Date(Date.now() + 10 * 86_400_000).toISOString().slice(0, 10);
+    const checkOut = new Date(Date.now() + 12 * 86_400_000).toISOString().slice(0, 10);
+    await asUser(db, guestId, async tx => {
+      await tx.query(
+        `insert into public.bookings (reference, property_id, guest_id, check_in, check_out, guest_count, quote_currency)
+         values ('HML-SUMMARY01', $1, $2::uuid, $3::date, $4::date, 2, 'NGN')`,
+        [approvedPropertyId, guestId, checkIn, checkOut],
+      );
+    });
+
+    const mine = await asUser(db, guestId, async tx =>
+      (await tx.query<Record<string, unknown>>('select * from public.get_my_booking_property_summaries()')).rows,
+    );
+    expect(mine).toHaveLength(1);
+    expect(Object.keys(mine[0]!).sort()).toEqual(['area', 'image_urls', 'property_id', 'title']);
+    expect(mine[0]).toMatchObject({ property_id: approvedPropertyId, title: 'Approved Victoria Island Apartment', area: 'Victoria Island' });
+    expect(JSON.stringify(mine)).not.toContain('195000');
+    expect(JSON.stringify(mine)).not.toContain('Private calendar contact');
+
+    const others = await asUser(db, otherGuestId, async tx =>
+      (await tx.query('select * from public.get_my_booking_property_summaries()')).rows,
+    );
+    expect(others).toHaveLength(0);
+
+    // The stay is later paused: the guest's booking history keeps its name and photo.
+    await db.query(`update public.properties set status = 'submitted' where id = $1`, [approvedPropertyId]);
+    const afterPause = await asUser(db, guestId, async tx =>
+      (await tx.query<{ title: string }>('select * from public.get_my_booking_property_summaries()')).rows,
+    );
+    expect(afterPause).toHaveLength(1);
+    expect(afterPause[0]!.title).toBe('Approved Victoria Island Apartment');
+
+    await expect(
+      asAnon(db, async tx => tx.query('select * from public.get_my_booking_property_summaries()')),
+    ).rejects.toThrow(/permission denied/i);
+  });
 });

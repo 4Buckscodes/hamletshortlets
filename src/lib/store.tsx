@@ -876,6 +876,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     wayfinderStepsRaw,
     wayfinderSecretsRaw,
     wayfinderEventsRaw,
+    publicStayRowsRaw,
   ] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -909,6 +910,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       ? safeQuery<RemoteWayfinderSecretRow>(supabase.from('property_wayfinder_secrets').select('*'))
       : Promise.resolve([] as RemoteWayfinderSecretRow[]),
     safeQuery<RemoteWayfinderEventRow>(supabase.from('wayfinder_events').select('*').order('created_at', { ascending: false }).limit(250)),
+    // Guests no longer read raw property rows; approved stays come from the redacted public view.
+    safeQuery<RemoteProperty>(supabase.from('public_properties').select('*').eq('status', 'approved')),
   ]);
 
   for (const result of [
@@ -933,7 +936,13 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const profileById = new Map(profileRows.map(item => [item.id, item]));
   const adminDirectoryRows = (adminDirectoryResult.data ?? []) as unknown as RemoteAdminDirectoryRow[];
   const adminDirectoryById = new Map(adminDirectoryRows.map(item => [item.id, item]));
-  const propertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
+  // Rows the user may read in full (assigned partners, admins), plus every approved stay from the public view.
+  const ownPropertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
+  const ownPropertyIds = new Set(ownPropertyRows.map(row => row.id));
+  const propertyRows: RemoteProperty[] = [
+    ...ownPropertyRows,
+    ...publicStayRowsRaw.filter(row => !ownPropertyIds.has(row.id)),
+  ];
   const accesses = (accessResult.data ?? []) as unknown as Array<{
     property_id: string; user_id: string; access_role: string; scope: string;
     commission_rate: number | null; commission_note: string; status: 'active' | 'revoked';

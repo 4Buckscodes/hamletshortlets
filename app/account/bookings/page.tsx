@@ -1,5 +1,6 @@
 'use client';
 
+import { loadBookingPropertySummaries, withPropertySummaries } from '@/lib/bookingProperties';
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -148,14 +149,15 @@ export default function GuestBookingsPage() {
     const { data, error: queryError } = await db
       .from('bookings')
       .select(
-        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at,properties(title,area,image_urls)',
+        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at',
       )
       .order('created_at', { ascending: false });
 
     if (queryError) {
       setError('We could not load your booking requests. Please refresh and try again.');
     } else {
-      setItems((data || []) as unknown as Booking[]);
+      const summaries = await loadBookingPropertySummaries(db);
+      setItems(withPropertySummaries((data || []) as unknown as Booking[], summaries) as unknown as Booking[]);
       setError('');
     }
     setLoading(false);
