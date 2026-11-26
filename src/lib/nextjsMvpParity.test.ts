@@ -102,6 +102,24 @@ describe('Next.js App Router MVP — Redirect Safety, Live Schema Safety & Progr
     expect('calendar_responsible_person' in publicStay).toBe(false);
   });
 
+  it('keeps guest booking and partner-share listing reads on the redacted public view', () => {
+    const bookingRoute = readRepoFile('app/api/booking-requests/route.ts');
+    const shareCardRoute = readRepoFile('app/api/partner/share/card/route.ts');
+    const partnerMarketing = readRepoFile('app/partners/marketing/page.tsx');
+    const artwork = readRepoFile('src/lib/share-artwork.tsx');
+
+    expect(bookingRoute).toContain(".from('public_properties')");
+    expect(bookingRoute).not.toContain(".from('properties')");
+    expect(bookingRoute).not.toContain('nightly_rate');
+    expect(shareCardRoute).toContain(".from('public_properties')");
+    expect(shareCardRoute).not.toContain(".from('properties')");
+    expect(shareCardRoute).not.toContain('nightly_rate');
+    expect(partnerMarketing).toContain(".from('public_properties')");
+    expect(partnerMarketing).not.toContain(".from('properties')");
+    expect(partnerMarketing).not.toContain('ownerNightlyRateNgn');
+    expect(artwork).toContain('getValidPublicGuestNightlyNgn(input.stay.guest_nightly_ngn)');
+  });
+
   it('provides all required Next.js App Router public, guest, partner, admin and API routes', () => {
     const requiredFiles = [
       'app/page.tsx',
