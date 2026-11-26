@@ -38,6 +38,7 @@ import {
   type DiscoverySortKey,
 } from '@/lib/discovery';
 import { getBrowserSupabase, type PublicStayRecord } from '@/lib/next-supabase';
+import { filterExternalStays, type ExternalStay } from '@/lib/stayingapi';
 import { lagosIsoDateOffset } from '@/lib/pricing';
 import {
   FocusedDrawer,
@@ -75,6 +76,8 @@ export function DiscoveryMarketplace({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
+  const [externalStays, setExternalStays] = useState<ExternalStay[]>([]);
+  const [externalLoading, setExternalLoading] = useState(false);
 
   const initialPairKey =
     initialFilters?.checkIn && initialFilters?.checkOut
@@ -245,6 +248,80 @@ export function DiscoveryMarketplace({
   const priceValidation = useMemo(
     () => validatePriceRange(filters.minPriceInput, filters.maxPriceInput),
     [filters.minPriceInput, filters.maxPriceInput],
+  );
+
+  const externalLocation = useMemo(() => {
+    const selected = filters.area.trim();
+    if (!selected || selected === 'Lagos Mainland') return 'Lagos, Nigeria';
+    if (selected === 'Abuja, Nigeria' || selected === 'Ibadan, Nigeria') return selected;
+    return `${selected}, Lagos, Nigeria`;
+  }, [filters.area]);
+
+  // External inventory is queried server-side only. The API key never reaches the browser.
+  // Search is debounced and the server caches each exact query for ten minutes.
+  useEffect(() => {
+    if (mode !== 'stays' || process.env.NEXT_PUBLIC_STAYINGAPI_PILOT_ENABLED !== 'true') return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setExternalLoading(true);
+      try {
+        const params = new URLSearchParams({
+          location: externalLocation,
+          guests: String(filters.guests || 1),
+        });
+        if (dateValidation.valid) {
+          params.set('checkIn', filters.checkIn);
+          params.set('checkOut', filters.checkOut);
+        }
+        const response = await fetch(`/api/external-stays?${params.toString()}`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) {
+          if (!controller.signal.aborted) setExternalStays([]);
+          return;
+        }
+        const payload = (await response.json()) as { stays?: ExternalStay[] };
+        if (!controller.signal.aborted) {
+          setExternalStays(Array.isArray(payload.stays) ? payload.stays : []);
+        }
+      } catch {
+        if (!controller.signal.aborted) setExternalStays([]);
+      } finally {
+        if (!controller.signal.aborted) setExternalLoading(false);
+      }
+    }, 450);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [
+    externalLocation,
+    filters.checkIn,
+    filters.checkOut,
+    filters.guests,
+    dateValidation.valid,
+    mode,
+  ]);
+
+  const filteredExternal = useMemo(
+    () => filterExternalStays(externalStays, {
+      area: externalLocation,
+      bedrooms: filters.minBedrooms,
+      guests: filters.guests,
+      minPrice: priceValidation.minPrice,
+      maxPrice: priceValidation.maxPrice,
+      type: filters.type,
+    }),
+    [
+      externalStays,
+      filters.minBedrooms,
+      filters.guests,
+      filters.type,
+      priceValidation.minPrice,
+      priceValidation.maxPrice,
+    ],
   );
 
   const filteredApproved = useMemo(
@@ -499,6 +576,10 @@ export function DiscoveryMarketplace({
           </div>
         </div>
 
+        {externalLoading && externalStays.length === 0 && (
+          <p className="hm-meta" role="status">Checking additional accommodation sources…</p>
+        )}
+
         {queryError ? (
           <Card role="alert" style={{ display: 'grid', justifyItems: 'center', gap: 12, padding: 40, textAlign: 'center' }}>
             <span className="hm-status hm-status-bad">Connection problem</span>
@@ -557,6 +638,25 @@ export function DiscoveryMarketplace({
               <StayResultCard key={stay.id} stay={stay} querySuffix={detailQuerySuffix} index={index} />
             ))}
           </StayGrid>
+        )}
+        {filteredExternal.length > 0 && (
+          <div style={{ display: 'grid', gap: 18 }}>
+            <SectionHeader
+              label={`${filteredExternal.length} additional stays · third-party sources`}
+              title="More places to"
+              accent="explore."
+            />
+            <p className="hm-meta" style={{ margin: 0, maxWidth: 760 }}>
+              These listings are supplied by external accommodation platforms. HAMLET has not verified
+              these properties and does not take bookings for them. Select a listing to continue with
+              its original platform.
+            </p>
+            <StayGrid>
+              {filteredExternal.map((stay, index) => (
+                <ExternalStayResultCard key={stay.id} stay={stay} index={index} />
+              ))}
+            </StayGrid>
+          </div>
         )}
       </section>
 
@@ -695,7 +795,11 @@ function sanitisePrice(value: string) {
 function AreaOptions() {
   return (
     <>
-      <option value="">Any Lagos area</option>
+      <option value="">Any location</option>
+      <optgroup label="Other cities">
+        <option value="Abuja, Nigeria">Abuja</option>
+        <option value="Ibadan, Nigeria">Ibadan</option>
+      </optgroup>
       <optgroup label="Lagos Mainland">
         <option value="Lagos Mainland">All Lagos Mainland</option>
         {MAINLAND_AREAS.map(a => (
@@ -712,6 +816,40 @@ function AreaOptions() {
         ))}
       </optgroup>
     </>
+  );
+}
+
+function ExternalStayResultCard({ stay, index }: { stay: ExternalStay; index: number }) {
+  const [failed, setFailed] = useState(0);
+  const photo = stay.images[failed] ?? '';
+  const location = [stay.city, stay.region].filter(Boolean).join(', ') || 'Location supplied by source';
+  const details = [
+    stay.propertyType,
+    stay.bedrooms !== null ? `${stay.bedrooms} bedrooms` : null,
+    stay.capacity !== null ? `up to ${stay.capacity} guests` : null,
+    stay.rating !== null ? `${stay.rating}/${stay.ratingScale || 5} rating` : null,
+  ].filter(Boolean).join(' · ');
+  const price = stay.nightlyPrice !== null && stay.currency
+    ? new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: stay.currency,
+        maximumFractionDigits: 0,
+      }).format(stay.nightlyPrice)
+    : null;
+
+  return (
+    <StayCard
+      href={stay.sourceUrl}
+      imageSrc={photo}
+      imageAlt={photo ? `${stay.title} · image supplied by ${stay.platform}` : ''}
+      onImageError={() => setFailed(count => count + 1)}
+      tag={`External · ${stay.platform === 'booking' ? 'Booking.com' : stay.platform === 'google' ? 'Google Hotels' : stay.platform === 'vrbo' ? 'Vrbo' : 'Airbnb'}`}
+      title={stay.title}
+      meta={details ? `${details} · ${location}` : location}
+      price={price}
+      priceSuffix={price ? '/ night · source price' : ''}
+      revealIndex={index}
+    />
   );
 }
 

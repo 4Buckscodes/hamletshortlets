@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { m } from '@/components/ui/motion';
+import { filterExternalStays, type ExternalStay } from '@/lib/stayingapi';
 
 function addDaysIso(iso: string, days: number) {
   const date = new Date(`${iso}T00:00:00Z`);
@@ -87,6 +88,25 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
   const [area, setArea] = useState('');
   const [guests, setGuests] = useState('2');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [externalStays, setExternalStays] = useState<ExternalStay[]>([]);
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_STAYINGAPI_PILOT_ENABLED !== 'true') return;
+    const controller = new AbortController();
+    fetch('/api/external-stays?location=Lagos%2C%20Nigeria&guests=2', {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => {
+        if (controller.signal.aborted) return;
+        const stays = Array.isArray(payload?.stays) ? payload.stays as ExternalStay[] : [];
+        setExternalStays(filterExternalStays(stays, { area: 'Lagos, Nigeria', guests: 2 }).slice(0, 3));
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setExternalStays([]);
+      });
+    return () => controller.abort();
+  }, []);
   const heroRef = useRef<HTMLElement>(null);
   useHeroDepth(heroRef);
   const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -145,6 +165,34 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
           {featured.length ? <div className="hp-stays">{featured.map(stay => <StayListingCard key={stay.id} stay={stay}/>)}</div> : <div className="hp-empty" data-hamlet-reveal><p className="hp-empty-title">New verified stays are on their way.</p><p className="hm-body">Every listing passes HAMLET&apos;s four checks before it appears here. Meanwhile, browse by area and we will show what is live.</p><div className="hm-chip-row">{['Victoria Island','Lekki Phase 1','Ikoyi','Yaba','Ikeja GRA'].map(name => <Chip key={name} href={`/stays?area=${encodeURIComponent(name)}`}>{name}</Chip>)}</div></div>}
         </div>
       </section>
+
+      {externalStays.length > 0 && (
+        <section className="hp-section hp-section-ruled" aria-labelledby="external-stays-title">
+          <div className="hp-shell">
+            <div className="hp-head">
+              <div>
+                <p className="hp-note">More places to explore</p>
+                <h2 className="hp-h2" id="external-stays-title">More stays around Lagos.</h2>
+                <p className="hm-body">Additional options from external booking platforms. These are not HAMLET partner listings.</p>
+              </div>
+              <Link className="hm-link" href="/stays">Explore all stays</Link>
+            </div>
+            <div className="hp-stays">
+              {externalStays.map(stay => (
+                <a key={stay.id} href={stay.sourceUrl} target="_blank" rel="noopener noreferrer" className="hp-external-stay">
+                  {stay.images[0] ? <img src={stay.images[0]} alt="" loading="lazy" /> : <span className="hp-external-placeholder">External listing</span>}
+                  <span className="hp-external-copy">
+                    <small>External · {stay.platform === 'booking' ? 'Booking.com' : stay.platform === 'airbnb' ? 'Airbnb' : stay.platform}</small>
+                    <strong>{stay.title}</strong>
+                    <span>{[stay.city, stay.region].filter(Boolean).join(', ')}</span>
+                    <span>View on {stay.platform === 'booking' ? 'Booking.com' : stay.platform === 'airbnb' ? 'Airbnb' : stay.platform}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="hp-section hp-section-ruled" aria-label="Lagos neighbourhoods">
         <div className="hp-shell">

@@ -19,9 +19,9 @@ import { StaysExplorer } from './stays-explorer';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Explore Lagos Shortlet Stays',
+  title: 'Explore Shortlet Stays in Nigeria',
   description:
-    'Explore verified shortlets across Lagos Island (Lekki Phase 1, Ikate, Victoria Island, Ikoyi, Ajah) and Lagos Mainland (Yaba, Ikeja GRA, Surulere, Shomolu).',
+    'Explore shortlet accommodation across Lagos, Abuja and Ibadan, including Lekki Phase 1, Victoria Island, Ikoyi, Ikeja, Yaba and more.',
   pathname: '/stays',
 });
 
@@ -99,10 +99,10 @@ export default async function StaysCataloguePage({
           className="hm-band-compact"
           headingId="stays-title"
           live={liveCount > 0}
-          kicker={liveCount > 0 ? `Explore Lagos stays · ${liveCount} live now` : 'Explore Lagos stays'}
+          kicker={liveCount > 0 ? `Explore stays · ${liveCount} HAMLET partner listings` : 'Explore shortlet stays'}
           title="Find a stay"
           accent="that feels like yours."
-          intro="Every listing is reviewed before it goes live. The price you see already includes HAMLET’s service fee."
+          intro="HAMLET partner properties are reviewed before publication. Any external listings are clearly identified and link to their original platform."
           scrollCue={{
             href: '#places-worth-staying-in',
             label: liveCount > 0 ? `Scroll to see ${liveCount} ${liveCount === 1 ? 'stay' : 'stays'}` : 'Scroll to explore',
