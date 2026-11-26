@@ -51,6 +51,7 @@ import {
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
 import { formatNaira } from '@/lib/pricing';
+import { stayPath } from '@/lib/stayRoutes';
 
 interface SessionSummary {
   userId: string;
@@ -839,7 +840,7 @@ export function StayListingCard({
   const amenities = (stay.amenities ?? []).filter(Boolean);
   const visibleAmenities = amenities.slice(0, 3);
   const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
-  const detailHref = `/stays/${encodeURIComponent(stay.id)}${querySuffix}`;
+  const detailHref = `${stayPath(stay)}${querySuffix}`;
 
   function stepPhoto(event: MouseEvent<HTMLButtonElement>, delta: number) {
     event.preventDefault();

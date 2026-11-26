@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { SiteHeader, SiteFooter, StayListingCard } from '@/components/site/SiteShell';
 import { getPublicSupabase } from '@/lib/supabase-public';
+import { stayPath } from '@/lib/stayRoutes';
 import {
   PUBLIC_VIEW_SELECT,
   toPublicStayRecord,
@@ -79,7 +80,7 @@ function AreaSchema(guide: LagosAreaGuide, stays: PublicStayRecord[]) {
       itemListElement: stays.slice(0, 20).map((stay, index) => ({
         '@type': 'ListItem',
         position: index + 1,
-        url: `${HAMLET_CANONICAL_ORIGIN}/stays/${encodeURIComponent(stay.id)}`,
+        url: `${HAMLET_CANONICAL_ORIGIN}${stayPath(stay)}`,
         name: stay.title,
       })),
     });

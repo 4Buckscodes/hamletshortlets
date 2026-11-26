@@ -64,12 +64,13 @@ export const PUBLIC_PROPERTY_SELECT =
  * owner rate, calendar contact, partner or review-note columns.
  */
 export const PUBLIC_VIEW_SELECT =
-  'id,title,property_type,area,public_address,guest_nightly_ngn,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at';
+  'id,title,property_type,area,public_address,guest_nightly_ngn,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at,slug';
 
 export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},calendar_responsible_person,review_note`;
 
 export interface PublicStayRecord {
   id: string;
+  slug: string;
   title: string;
   property_type: string | null;
   area: string | null;

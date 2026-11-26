@@ -1,5 +1,6 @@
 'use client';
 
+import { stayPath } from '@/lib/stayRoutes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -727,7 +728,7 @@ function StayResultCard({ stay, querySuffix, index }: { stay: PublicStayRecord; 
 
   return (
     <StayCard
-      href={`/stays/${encodeURIComponent(stay.id)}${querySuffix}`}
+      href={`${stayPath(stay)}${querySuffix}`}
       imageSrc={photo}
       imageAlt={`${stay.title} in ${locationText}`}
       onImageError={() => setFailed(count => count + 1)}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { stayPath } from './stayRoutes';
 import { hasReliableLocationData } from './areas';
 import {
   formatAccommodationLabel,
@@ -322,7 +323,7 @@ function buildApprovedStaysItemListNode(
       '@type': 'ListItem',
       position: index + 1,
       name: stay.title.trim(),
-      url: buildNextCanonicalUrl(`/stays/${encodeURIComponent(stay.id)}`),
+      url: buildNextCanonicalUrl(stayPath(stay)),
     })),
   };
 }
@@ -571,8 +572,7 @@ export function buildPropertyDetailSchema({
   stay,
   publicLocationSummary,
 }: PropertyDetailSchemaInput): Record<string, unknown> {
-  const encodedId = encodeURIComponent(stay.id);
-  const relativePath = `/stays/${encodedId}`;
+  const relativePath = stayPath(stay);
   const canonicalUrl = buildNextCanonicalUrl(relativePath);
   const cleanTitle = stay.title.trim();
   const cleanArea = (stay.area || '').trim();

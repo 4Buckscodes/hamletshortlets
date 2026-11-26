@@ -77,6 +77,16 @@ export function HoratioListingAssistant({
   }
 
   const ready = description.trim().length >= 30;
+  // Mirrors hamlet_property_slug_base in the database: at most 60 characters, cut at a whole word.
+  // The final address adds a short unique code.
+  const slugFull = draft?.title && draft?.area
+    ? (draft.title + ' ' + draft.area).toLowerCase().normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+    : '';
+  const slugPreview = slugFull.length <= 60
+    ? slugFull
+    : (slugFull[60] === '-' ? slugFull.slice(0, 60) : slugFull.slice(0, 60).replace(/-[^-]*$/, '')).replace(/-+$/g, '');
 
   return (
     <section
@@ -174,6 +184,13 @@ export function HoratioListingAssistant({
             <p className="mb-0 mt-1 text-base font-extrabold text-ink-950">
               {draft.title || 'Untitled listing'}
             </p>
+            {slugPreview && (
+              <div className="mt-3 rounded-xl border border-ink-100 bg-paper p-3">
+                <p className="m-0 text-xs font-semibold text-ink-500">Address preview</p>
+                <p className="m-0 mt-1 break-all text-xs font-semibold text-ink-800">hamlet.rest/stays/{slugPreview}-[unique-id]</p>
+                <p className="m-0 mt-1 text-xs text-ink-500">The final address, with a short unique code, is created when you save the property.</p>
+              </div>
+            )}
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-800">
               {draft.area && <span className="rounded-full bg-paper px-3 py-1">{draft.area}</span>}
               {draft.bedrooms ? <span className="rounded-full bg-paper px-3 py-1">{draft.bedrooms} bed</span> : null}
