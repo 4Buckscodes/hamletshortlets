@@ -307,6 +307,7 @@ export function DiscoveryMarketplace({
 
   const filteredExternal = useMemo(
     () => filterExternalStays(externalStays, {
+      area: externalLocation,
       bedrooms: filters.minBedrooms,
       guests: filters.guests,
       minPrice: priceValidation.minPrice,
