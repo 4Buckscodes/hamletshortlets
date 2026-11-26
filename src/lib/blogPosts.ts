@@ -87,6 +87,155 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       { label: 'Booking FAQs', href: '/faqs' },
     ],
   },
+  {
+    slug: 'lagos-island-vs-mainland-shortlets',
+    title: 'Lagos Island vs Mainland: Where Should You Book a Shortlet?',
+    description:
+      'Compare shortlets on Lagos Island (Victoria Island, Ikoyi, Lekki, Ajah) and the Mainland (Yaba, Surulere, Shomolu, Ikeja) to pick the area that fits your trip.',
+    category: 'Lagos areas',
+    datePublished: '2026-11-26',
+    readingMinutes: 4,
+    body: [
+      {
+        type: 'p',
+        text: 'The first decision when booking a shortlet in Lagos is not the apartment, it is the side of the city. Lagos Island and the Mainland feel different, and the right choice depends on where you need to be each day.',
+      },
+      { type: 'h2', text: 'Lagos Island: business, dining and quieter estates' },
+      {
+        type: 'ul',
+        items: [
+          'Victoria Island: business districts, conferences, embassies and city dining.',
+          'Ikoyi and Banana Island: quiet residential apartments and penthouses with controlled estate access.',
+          'Lekki Phase 1 and Oniru: serviced apartments near dining, retail and waterfront venues.',
+          'Ajah: spacious duplexes and apartments suited to family and extended stays.',
+        ],
+      },
+      { type: 'h2', text: 'Lagos Mainland: tech, campuses, airport and local life' },
+      {
+        type: 'ul',
+        items: [
+          'Yaba: tech hubs, campuses and fast Third Mainland Bridge access to Lagos Island.',
+          'Surulere: tree-lined avenues, creative studios and central Mainland–Island links.',
+          'Shomolu, Gbagada and Ilupeju: central Ikorodu Road and Gbagada expressway access across Lagos.',
+          'Ikeja and the northern Mainland: convenient to Murtala Muhammed Airport, corporate offices and gated GRAs.',
+        ],
+      },
+      { type: 'h2', text: 'How to choose' },
+      {
+        type: 'p',
+        text: 'Start from your daily destination. If your meetings, events or restaurants are on the Island, staying there saves you from crossing the city every day. If you are working with a tech team, visiting a campus or flying out of the airport, the Mainland is often the more practical base. For family trips and longer stays, look at areas with larger apartments and duplexes.',
+      },
+      {
+        type: 'p',
+        text: 'Whichever side you pick, check the amenities for backup power and Wi-Fi, and read the house rules before you request. HAMLET lists verified stays for each area, and you can browse them from our Lagos guide.',
+      },
+    ],
+    related: [
+      { label: 'Lagos neighbourhood guide', href: '/lagos' },
+      { label: 'Browse verified stays', href: '/stays' },
+      { label: 'Shortlets in Yaba', href: '/lagos/yaba' },
+      { label: 'Shortlets in Victoria Island', href: '/lagos/victoria-island' },
+    ],
+  },
+  {
+    slug: 'shortlet-fees-and-caution-deposits-in-lagos',
+    title: 'Shortlet Fees and Caution Deposits in Lagos, Explained',
+    description:
+      'What you pay for a Lagos shortlet: nightly rate, service fee, cleaning charge, refundable caution deposit and currency conversion, and how to avoid surprises.',
+    category: 'Pricing',
+    datePublished: '2026-11-26',
+    readingMinutes: 4,
+    body: [
+      {
+        type: 'p',
+        text: 'Hidden fees are one of the most common worries when booking a shortlet. Knowing what each charge is for makes it easy to compare listings fairly. Here is how pricing works on HAMLET.',
+      },
+      { type: 'h2', text: 'The nightly rate' },
+      {
+        type: 'p',
+        text: 'The nightly price you see already includes HAMLET’s 20% service fee. No extra service fee is added at checkout, so the number on the listing is the number you compare.',
+      },
+      { type: 'h2', text: 'Cleaning and turnover' },
+      {
+        type: 'p',
+        text: 'When a stay has a cleaning or turnover charge, it is shown as its own line before you send a request, not buried in the nightly rate.',
+      },
+      { type: 'h2', text: 'The caution deposit' },
+      {
+        type: 'p',
+        text: 'A caution deposit is a refundable amount held against damage or breakages. On HAMLET it is itemised separately from the stay price and returned after the check-out inspection. Always check the deposit amount and return terms on the listing before you request.',
+      },
+      { type: 'h2', text: 'Paying from abroad' },
+      {
+        type: 'p',
+        text: 'If you are booking from outside Nigeria, prices can be shown in USD or GBP with a single 10% exchange buffer. You are charged in naira, and your own bank may add a card fee on top.',
+      },
+      { type: 'h2', text: 'When you actually pay' },
+      {
+        type: 'ul',
+        items: [
+          'Sending a request does not charge you.',
+          'When the partner accepts, a 48-hour payment window opens in your account.',
+          'You pay through Paystack, and the stay is confirmed once the payment is verified.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Unpaid requests can be cancelled free of charge. Paid bookings follow the cancellation terms shown on your reservation.',
+      },
+    ],
+    related: [
+      { label: 'How HAMLET works', href: '/how-it-works' },
+      { label: 'Booking FAQs', href: '/faqs' },
+      { label: 'Browse verified stays', href: '/stays' },
+    ],
+  },
+  {
+    slug: 'what-to-look-for-in-a-lagos-shortlet-for-business-travel',
+    title: 'Business Trip to Lagos? What to Look for in a Shortlet',
+    description:
+      'Choosing a shortlet for a business trip to Lagos: the best areas for meetings, reliable power and Wi-Fi, secure estates, and flexible booking for longer stays.',
+    category: 'Travel tips',
+    datePublished: '2026-11-26',
+    readingMinutes: 4,
+    body: [
+      {
+        type: 'p',
+        text: 'A shortlet can be a better base than a hotel for a business trip: more space, a kitchen and a workspace. The details below help you pick one that supports your schedule.',
+      },
+      { type: 'h2', text: 'Pick the area around your meetings' },
+      {
+        type: 'p',
+        text: 'Victoria Island is known for business districts, conferences and embassies. Ikeja suits trips built around corporate offices or the airport, and Yaba suits tech and campus visits. Staying close to where you will spend your days matters more than any amenity.',
+      },
+      { type: 'h2', text: 'Confirm power and Wi-Fi' },
+      {
+        type: 'p',
+        text: 'Reliable power and internet decide whether you can work from the apartment. Check the amenities list for 24/7 estate supply, an inverter or a generator, and for Wi-Fi and air conditioning.',
+      },
+      { type: 'h2', text: 'Look at security and access' },
+      {
+        type: 'p',
+        text: 'Many Lagos stays sit in gated estates with controlled access. Check the listed security amenities and the verification status, and read the house rules for visitors, which matter if you plan to host a meeting.',
+      },
+      { type: 'h2', text: 'Plan for longer stays' },
+      {
+        type: 'p',
+        text: 'For a week or more, look for spacious apartments with a proper kitchen and workspace. Areas such as Ajah and Lekki have larger apartments and duplexes suited to extended stays.',
+      },
+      { type: 'h2', text: 'Book with a clear paper trail' },
+      {
+        type: 'p',
+        text: 'Because the partner confirms your dates before you pay, you know the stay is available before any money moves. You pay within 48 hours of acceptance and can find your booking details and arrival guide in your account, which is handy for expense reports.',
+      },
+    ],
+    related: [
+      { label: 'Shortlets in Victoria Island', href: '/lagos/victoria-island' },
+      { label: 'Shortlets in Ikeja', href: '/lagos/ikeja' },
+      { label: 'Browse verified stays', href: '/stays' },
+      { label: 'Verification and safety', href: '/safety' },
+    ],
+  },
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {
