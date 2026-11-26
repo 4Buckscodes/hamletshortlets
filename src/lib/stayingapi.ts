@@ -46,11 +46,17 @@ export function normaliseExternalStay(value: unknown): ExternalStay | null {
   const price = record(item.price);
   const platform = String(item.platform || '').toLowerCase();
   const sourceUrl = typeof item.url === 'string' ? item.url : '';
+  let sourceHost = '';
+  try { sourceHost = new URL(sourceUrl).hostname.toLowerCase(); } catch { sourceHost = ''; }
+  const allowedHost =
+    (platform === 'airbnb' && (sourceHost === 'airbnb.com' || sourceHost.endsWith('.airbnb.com'))) ||
+    (platform === 'booking' && (sourceHost === 'booking.com' || sourceHost.endsWith('.booking.com'))) ||
+    (platform === 'vrbo' && (sourceHost === 'vrbo.com' || sourceHost.endsWith('.vrbo.com'))) ||
+    (platform === 'google' && (sourceHost === 'google.com' || sourceHost.endsWith('.google.com')));
 
   if (
     !['airbnb', 'booking', 'vrbo', 'google'].includes(platform) ||
-    !/^https:\/\//i.test(sourceUrl) ||
-    !/^https:\/\//i.test(sourceUrl) ||
+    !allowedHost ||
     typeof item.name !== 'string' ||
     !item.name.trim()
   ) {
@@ -111,14 +117,7 @@ export function filterExternalStays(
     type?: string;
   },
 ): ExternalStay[] {
-  const area = (filters.area || '').trim().toLowerCase();
   return stays.filter(stay => {
-    const location = [stay.city, stay.region, stay.country].filter(Boolean).join(' ').toLowerCase();
-    if (area && !location.includes(area) && !area.split(',').some(part => part.trim() && location.includes(part.trim()))) {
-      // Search results are already scoped by the requested destination. Keep the provider's
-      // result if it has no structured locality rather than inventing a location mismatch.
-      if (stay.city || stay.region || stay.country) return false;
-    }
     if (filters.bedrooms && (stay.bedrooms === null || stay.bedrooms < filters.bedrooms)) return false;
     if (filters.guests && filters.guests > 1 && (stay.capacity === null || stay.capacity < filters.guests)) return false;
     if (filters.minPrice !== null && filters.minPrice !== undefined) {
