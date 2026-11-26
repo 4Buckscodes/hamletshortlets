@@ -738,6 +738,11 @@ export function SiteFooter() {
                 Instagram @hamletrest
               </a>
             </p>
+            <p>
+              <a href="https://www.tiktok.com/@hamlet.rest" target="_blank" rel="me noopener noreferrer" aria-label="HAMLET on TikTok (opens in a new tab)">
+                TikTok @hamlet.rest
+              </a>
+            </p>
           </div>
 
           {FOOTER_LINK_GROUPS.map(group => {

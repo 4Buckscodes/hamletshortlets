@@ -23,7 +23,10 @@ export const HAMLET_VERIFIED_CONTACT_EMAIL = 'hello@hamlet.rest';
  * Verified official social media profile URLs for HAMLET.
  * Only handles the business has confirmed are listed, so unverified URLs are never emitted.
  */
-export const HAMLET_VERIFIED_SOCIAL_PROFILES: readonly string[] = ['https://www.instagram.com/hamletrest/'];
+export const HAMLET_VERIFIED_SOCIAL_PROFILES: readonly string[] = [
+  'https://www.instagram.com/hamletrest/',
+  'https://www.tiktok.com/@hamlet.rest',
+];
 
 export const HAMLET_BUSINESS_DESCRIPTION =
   'HAMLET is a verified shortlet marketplace in Lagos, Nigeria by Abundance Abodes, connecting guests with inspected serviced apartments across Lagos Island and Lagos Mainland.';
