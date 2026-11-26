@@ -51,25 +51,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <p className="hm-label">
               <Link href="/blog">Blog</Link> · {post.category}
             </p>
-            <h1 className="hm-display hm-content-title">{post.title}</h1>
+            <h1 className="hm-h2 hm-content-title" style={{ maxWidth: '24ch' }}>{post.title}</h1>
             <p className="hm-meta">
               <time dateTime={post.datePublished}>{formatBlogDate(post.datePublished)}</time> · {post.readingMinutes} min read
             </p>
           </div>
         </section>
 
-        <article className="hm-shell hm-section-tight space-y-6">
+        <article className="hm-shell hm-section-tight hm-prose">
           {post.body.map((block, i) => {
             if (block.type === 'h2') {
               return (
-                <h2 key={i} className="hm-h2" style={{ marginTop: 24 }}>
-                  {block.text}
-                </h2>
+                <h2 key={i}>{block.text}</h2>
               );
             }
             if (block.type === 'ul') {
               return (
-                <ul key={i} className="hm-body" style={{ paddingLeft: 20, listStyle: 'disc' }}>
+                <ul key={i}>
                   {block.items.map(item => (
                     <li key={item}>{item}</li>
                   ))}
@@ -83,7 +81,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             );
           })}
 
-          <nav aria-label="Related pages" className="flex flex-wrap items-center gap-3" style={{ marginTop: 32 }}>
+          <nav aria-label="Related pages" className="hm-prose-actions flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link href="/stays" className="hm-btn hm-btn-primary">
               Find a verified stay <ArrowRight size={16} aria-hidden="true" />
             </Link>

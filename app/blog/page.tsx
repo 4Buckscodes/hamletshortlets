@@ -39,15 +39,15 @@ export default function BlogIndexPage() {
           </div>
         </section>
 
-        <div className="hm-shell hm-section-tight space-y-8">
-          <ul className="space-y-8" style={{ listStyle: 'none', padding: 0 }}>
+        <div className="hm-shell hm-section-tight">
+          <ul className="hm-blog-list">
             {BLOG_POSTS.map(post => (
               <li key={post.slug}>
                 <article>
                   <p className="hm-label">
                     {post.category} · <time dateTime={post.datePublished}>{formatBlogDate(post.datePublished)}</time>
                   </p>
-                  <h2 className="hm-h2" style={{ marginTop: 10 }}>
+                  <h2>
                     <Link href={`/blog/${post.slug}`}>{post.title}</Link>
                   </h2>
                   <p className="hm-body">{post.description}</p>

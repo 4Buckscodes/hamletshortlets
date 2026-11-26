@@ -93,7 +93,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     description:
       'Compare shortlets on Lagos Island (Victoria Island, Ikoyi, Lekki, Ajah) and the Mainland (Yaba, Surulere, Shomolu, Ikeja) to pick the area that fits your trip.',
     category: 'Lagos areas',
-    datePublished: '2026-11-26',
+    datePublished: '2026-11-19',
     readingMinutes: 4,
     body: [
       {
@@ -143,7 +143,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     description:
       'What you pay for a Lagos shortlet: nightly rate, service fee, cleaning charge, refundable caution deposit and currency conversion, and how to avoid surprises.',
     category: 'Pricing',
-    datePublished: '2026-11-26',
+    datePublished: '2026-11-12',
     readingMinutes: 4,
     body: [
       {
@@ -196,7 +196,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     description:
       'Choosing a shortlet for a business trip to Lagos: the best areas for meetings, reliable power and Wi-Fi, secure estates, and flexible booking for longer stays.',
     category: 'Travel tips',
-    datePublished: '2026-11-26',
+    datePublished: '2026-11-05',
     readingMinutes: 4,
     body: [
       {
