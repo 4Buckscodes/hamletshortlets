@@ -88,7 +88,10 @@ describe('HAMLET Technical SEO & Structured Data Architecture', () => {
     expect(logo.height).toBe(512);
 
     // Only the business's confirmed social profile is emitted; nothing else is fabricated
-    expect(org.sameAs).toEqual(['https://www.instagram.com/hamletrest/']);
+    expect(org.sameAs).toEqual([
+      'https://www.instagram.com/hamletrest/',
+      'https://www.tiktok.com/@hamlet.rest',
+    ]);
 
     // Without any confirmed profile there is no sameAs at all
     expect(buildOrganizationSchema({ verifiedSocialProfiles: [] }).sameAs).toBeUndefined();
