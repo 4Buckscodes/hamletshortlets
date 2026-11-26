@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { HAMLET_CANONICAL_ORIGIN } from '@/lib/structured-data';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import { LAGOS_AREA_GUIDES, stayMatchesAreaGuide } from '@/lib/lagosAreaGuides';
+import { BLOG_POSTS } from '@/lib/blogPosts';
 
 /** Revalidate /sitemap.xml every 15 minutes so newly approved stays surface without requiring a redeploy. */
 export const revalidate = 900;
@@ -65,6 +66,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: STATIC_BASELINE_LAST_MODIFIED,
       changeFrequency: 'weekly',
       priority: 0.85,
+    },
+    {
+      url: `${site}/blog`,
+      lastModified: resolveValidDate(BLOG_POSTS[0]?.dateModified ?? BLOG_POSTS[0]?.datePublished, STATIC_BASELINE_LAST_MODIFIED),
+      changeFrequency: 'weekly',
+      priority: 0.7,
     },
     {
       url: `${site}/how-it-works`,
@@ -139,6 +146,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
   ];
+
+  for (const post of BLOG_POSTS) {
+    routes.push({
+      url: `${site}/blog/${post.slug}`,
+      lastModified: resolveValidDate(post.dateModified ?? post.datePublished, STATIC_BASELINE_LAST_MODIFIED),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    });
+  }
 
   // Area pages are listed only once they have a live stay, matching their indexable state.
   for (const guide of LAGOS_AREA_GUIDES) {

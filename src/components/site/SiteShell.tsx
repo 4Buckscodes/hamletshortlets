@@ -377,6 +377,7 @@ export function NextCurrencySwitcher(_props?: {
 const PRIMARY_NAV = [
   { href: '/stays', label: 'Explore stays' },
   { href: '/lagos', label: 'Lagos guide' },
+  { href: '/blog', label: 'Blog' },
   { href: '/how-it-works', label: 'How it works' },
   { href: '/safety', label: 'Safety' },
   { href: '/faqs', label: 'FAQs' },
@@ -520,6 +521,7 @@ export function SiteHeader() {
   const mobileGuestNav = [
     { href: '/stays', label: 'Explore stays' },
     { href: '/lagos', label: 'Lagos guide' },
+    { href: '/blog', label: 'Blog' },
     { href: '/how-it-works', label: 'How it works' },
     { href: '/safety', label: 'Safety' },
     { href: '/faqs', label: 'FAQs' },
@@ -694,6 +696,7 @@ const FOOTER_LINK_GROUPS = [
       { href: '/how-it-works', label: 'How bookings work' },
       { href: '/safety', label: 'Verification & safety' },
       { href: '/about', label: 'About HAMLET' },
+      { href: '/blog', label: 'Blog' },
       { href: '/faqs', label: 'FAQs' },
       { href: '/legal', label: 'Legal, privacy & NDPR' },
     ],
