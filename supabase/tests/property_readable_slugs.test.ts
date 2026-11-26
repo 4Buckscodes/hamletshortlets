@@ -80,6 +80,24 @@ describe('Readable property slugs', () => {
     expect(readable.length).toBeLessThanOrEqual(60);
     expect(readable).not.toMatch(/-$/);
     expect(slug.endsWith('-dddddddd')).toBe(true);
+    // Cut at a whole word: the readable part is a prefix of the full text that ends where a word ends.
+    const full = 'luxury-2bedroom-apartment-for-short-and-long-stay-with-pool-and-gym-and-a-very-long-name-victoria-island';
+    expect(full.startsWith(readable + '-')).toBe(true);
+    expect(readable).toBe('luxury-2bedroom-apartment-for-short-and-long-stay-with-pool');
+  });
+
+  it('cuts the Victoria Island listing at a whole word', async () => {
+    const id = 'c025a253-3e3d-4ea1-80e2-dd354c545b3b';
+    await insertProperty(id, 'Luxury 2Bedroom Apartment for Short and Long Stay.', 'Victoria Island');
+    expect(await slugOf(id)).toBe('luxury-2bedroom-apartment-for-short-and-long-stay-victoria-c025a253');
+  });
+
+  it('keeps one very long word under the cap instead of dropping it', async () => {
+    const id = '56565656-0000-0000-0000-000000000010';
+    await insertProperty(id, 'Supercalifragilisticexpialidocious'.repeat(3), 'Yaba');
+    const readable = (await slugOf(id)).replace(/-56565656$/, '');
+    expect(readable.length).toBeGreaterThan(0);
+    expect(readable.length).toBeLessThanOrEqual(60);
   });
 
   it('falls back to a safe slug for titles with no latin letters', async () => {

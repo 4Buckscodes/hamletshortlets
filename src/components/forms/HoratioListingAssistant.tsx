@@ -77,12 +77,16 @@ export function HoratioListingAssistant({
   }
 
   const ready = description.trim().length >= 30;
-  // Mirrors hamlet_property_slug_base in the database (60 characters at most); the final address adds a short unique id.
-  const slugPreview = draft?.title && draft?.area
+  // Mirrors hamlet_property_slug_base in the database: at most 60 characters, cut at a whole word.
+  // The final address adds a short unique code.
+  const slugFull = draft?.title && draft?.area
     ? (draft.title + ' ' + draft.area).toLowerCase().normalize('NFKD')
         .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/g, '')
+        .replace(/^-+|-+$/g, '')
     : '';
+  const slugPreview = slugFull.length <= 60
+    ? slugFull
+    : (slugFull[60] === '-' ? slugFull.slice(0, 60) : slugFull.slice(0, 60).replace(/-[^-]*$/, '')).replace(/-+$/g, '');
 
   return (
     <section
