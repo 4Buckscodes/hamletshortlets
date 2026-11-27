@@ -108,6 +108,22 @@ describe('Automatic guest currency detection & conversion (NGN ₦ / USD $ / GBP
     expect(detectUserCurrency({})).toBe('NGN');
   });
 
+  it('never shows pounds or dollars to a device that is on Lagos time, even over a VPN or with English (UK)', () => {
+    expect(detectUserCurrency({ countryCode: 'GB', timeZone: 'Africa/Lagos', locales: ['en-GB'] })).toBe('NGN');
+    expect(detectUserCurrency({ countryCode: 'US', timeZone: 'Africa/Lagos', locales: ['en-US'] })).toBe('NGN');
+    expect(detectUserCurrency({ countryCode: null, timeZone: 'Africa/Lagos', locales: ['en-GB', 'en-US'] })).toBe('NGN');
+    // A real UK or US visitor is unaffected.
+    expect(detectUserCurrency({ countryCode: 'GB', timeZone: 'Europe/London', locales: ['en-GB'] })).toBe('GBP');
+    expect(detectUserCurrency({ countryCode: 'US', timeZone: 'America/Chicago', locales: ['en-US'] })).toBe('USD');
+  });
+
+  it('does not let a language setting alone switch the first paint away from naira', () => {
+    // First paint uses the timezone only: English (UK) with no timezone clue stays in naira.
+    expect(detectUserCurrency({ timeZone: null, locales: [] })).toBe('NGN');
+    const source = readFileSync(join(ROOT, 'src/lib/currency.tsx'), 'utf8');
+    expect(source).toContain('detectUserCurrency({ timeZone: timeZoneNow, locales: [] })');
+  });
+
   it('removes manual guest-facing currency switcher UI while wiring CurrencyProvider and useCurrency', () => {
     const shellSrc = readFileSync(join(ROOT, 'src/components/site/SiteShell.tsx'), 'utf8');
     expect(shellSrc).toContain('CurrencyProvider');

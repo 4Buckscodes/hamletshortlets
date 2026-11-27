@@ -52,8 +52,10 @@ function extractRegionFromLocale(locale: string): string | null {
 /**
  * Pure, deterministic user currency detector (safe in both server routes and client components).
  * Priority:
+ * 0. A device set to Lagos time (`Africa/Lagos`) is in Nigeria, whatever its IP address says
+ *    (VPNs, some mobile carriers and roaming routes show a UK or US address) -> NGN
  * 1. Explicit geo country code (`NG` -> NGN, `GB` -> GBP, `US`/`CA`/... -> USD)
- * 2. IANA timezone (`Africa/Lagos` -> NGN, `Europe/London` -> GBP, `America/*` -> USD)
+ * 2. IANA timezone (`Europe/London` -> GBP, `America/*` -> USD)
  * 3. Browser/OS locale region subtags (`en-NG`, `en-GB`, `en-US`, etc.)
  * 4. Safe HAMLET Lagos default (`NGN`)
  */
@@ -62,12 +64,13 @@ export function detectUserCurrency(signals: {
   timeZone?: string | null;
   locales?: readonly string[] | null;
 }): DisplayCurrency {
+  const tz = (signals.timeZone || '').trim();
+  if (tz === 'Africa/Lagos') return 'NGN';
+
   const fromCountry = mapCountryToCurrency(signals.countryCode);
   if (fromCountry) return fromCountry;
 
-  const tz = (signals.timeZone || '').trim();
   if (tz) {
-    if (tz === 'Africa/Lagos') return 'NGN';
     if (
       tz === 'Europe/London' ||
       tz === 'Europe/Belfast' ||

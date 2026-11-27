@@ -252,10 +252,18 @@ export function CurrencyProvider({
       // Ignore storage access errors in private browsing contexts.
     }
 
-    const browserDetected = detectBrowserCurrency();
+    // Until the visitor's country is known, only a clear timezone may change the currency. A language
+    // setting such as English (UK) is common in Nigeria and must not flash prices in pounds.
+    let timeZoneNow: string | null = null;
+    try {
+      timeZoneNow = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+    } catch {
+      timeZoneNow = null;
+    }
+    const timeZoneOnly = detectUserCurrency({ timeZone: timeZoneNow, locales: [] });
     const timer = window.setTimeout(() => {
       if (active) {
-        setCurrencyState(browserDetected);
+        setCurrencyState(timeZoneOnly);
       }
     }, 0);
 
@@ -268,7 +276,12 @@ export function CurrencyProvider({
         };
       })
       .then(payload => {
-        if (!active || !payload?.country) return;
+        if (!active) return;
+        if (!payload?.country) {
+          // No country from the network (local or unusual setups): use timezone and language.
+          setCurrencyState(detectBrowserCurrency());
+          return;
+        }
         let timeZone: string | null = null;
         try {
           timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
@@ -284,7 +297,8 @@ export function CurrencyProvider({
         setCurrencyState(resolved);
       })
       .catch(() => {
-        // Browser timezone/locale detection remains active when offline or without edge geo headers.
+        // Offline or blocked: fall back to timezone and language.
+        if (active) setCurrencyState(detectBrowserCurrency());
       });
 
     return () => {
