@@ -93,3 +93,27 @@ describe('Euro (EUR) quotes', () => {
     expect(b.settlement_total_ngn).toBe(264_000);
   });
 });
+
+describe('apply_fx_rate_refresh', () => {
+  let db: PGlite;
+  beforeAll(async () => {
+    db = await createMigratedTestDb();
+  });
+  afterAll(async () => {
+    await db.close();
+  });
+
+  it('stores an expiring rate and blocks a sudden 25% jump from the same source', async () => {
+    await db.query(`select public.apply_fx_rate_refresh('EUR', 1700, 'exchangerate-api.com', 48)`);
+    const { rows } = await db.query<{ ngn_per_unit: string; is_active: boolean; hours: number }>(
+      `select ngn_per_unit::text, is_active, extract(epoch from (expires_at - now()))/3600 as hours
+       from public.currency_exchange_rates where currency = 'EUR'`,
+    );
+    expect(Number(rows[0].ngn_per_unit)).toBe(1700);
+    expect(rows[0].is_active).toBe(true);
+    expect(Math.round(rows[0].hours)).toBe(48);
+    await expect(
+      db.query(`select public.apply_fx_rate_refresh('EUR', 3000, 'exchangerate-api.com', 48)`),
+    ).rejects.toThrow(/more than 25%/);
+  });
+});
