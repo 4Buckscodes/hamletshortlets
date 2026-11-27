@@ -132,7 +132,7 @@ export default function PartnerBookingsPage() {
     setBusyId(booking.id);
 
     try {
-      // Pre-check active holds/confirmed stays or calendar blocks before opening a 48h hold
+      // Pre-check active holds/confirmed stays or calendar blocks before opening a 2-hour payment hold
       if (nextStatus === 'awaiting_payment') {
         const { data: unavailable } = await db.rpc('get_unavailable_property_ids', {
           requested_check_in: booking.check_in,
@@ -140,7 +140,7 @@ export default function PartnerBookingsPage() {
         });
         if (Array.isArray(unavailable) && unavailable.includes(booking.property_id)) {
           throw new Error(
-            'Those dates now conflict with an active calendar block, 48-hour payment hold, or confirmed stay on this property.',
+            'Those dates now conflict with an active calendar block, payment hold, or confirmed stay on this property.',
           );
         }
       }
@@ -317,7 +317,7 @@ export default function PartnerBookingsPage() {
                           setDecisionTarget({
                             booking: b,
                             nextStatus: 'awaiting_payment',
-                            label: 'Accept dates & open 48h payment hold',
+                            label: 'Accept dates & open 2-hour payment hold',
                           });
                         }}
                         className="primary-button min-h-[44px]"
@@ -410,7 +410,7 @@ export default function PartnerBookingsPage() {
                     {Number(decisionTarget.booking.refundable_deposit) > 0 && (
                       <div><dt>Refundable caution deposit</dt><dd className="hm-money">₦{Number(decisionTarget.booking.refundable_deposit).toLocaleString('en-NG')}</dd></div>
                     )}
-                    <p>Accepting holds these dates. The guest then has 48 hours to pay inside HAMLET; the stay is confirmed once payment is verified.</p>
+                    <p>Accepting holds these dates. The guest then has 2 hours to pay inside HAMLET; the stay is confirmed once payment is verified. If they don't pay in time, the dates are released automatically.</p>
                   </dl>
                 )}
                 <p className="m-0 mt-1">

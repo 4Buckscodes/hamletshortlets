@@ -176,7 +176,7 @@ export default function PartnerBookingReview() {
       });
       if (nextStatus === 'awaiting_payment') {
         toast(
-          `${booking.ref} availability confirmed — 48-hour payment window opened for the guest.`,
+          `${booking.ref} availability confirmed — 2-hour payment window opened for the guest.`,
           'success',
         );
         setPartnerNote('');
@@ -589,7 +589,7 @@ export default function PartnerBookingReview() {
                 <>
                   <p className="text-[12px] font-medium leading-relaxed text-ink-200">
                     Confirming availability holds these dates for{' '}
-                    <strong className="text-ink-50">48 hours</strong> while the guest completes
+                    <strong className="text-ink-50">2 hours</strong> while the guest completes
                     payment on HAMLET (<span className="font-mono text-[11px]">awaiting_payment</span>
                     ). The booking is <strong className="text-brass-300">not confirmed</strong>{' '}
                     until Paystack’s server webhook verifies payment.
@@ -617,7 +617,7 @@ export default function PartnerBookingReview() {
                       <CheckCircle2 size={15} />
                       {busyAction === 'awaiting_payment'
                         ? 'Confirming availability…'
-                        : 'Confirm availability — set 48h payment window'}
+                        : 'Confirm availability — set 2-hour payment window'}
                     </button>
 
                     {booking.status === 'requested' && (

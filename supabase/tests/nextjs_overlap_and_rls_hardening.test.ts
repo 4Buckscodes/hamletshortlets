@@ -30,7 +30,7 @@ describe('Next.js MVP Hardening — Overlap RPC Parity, Draft Listings & RLS Iso
     await db.close();
   });
 
-  it('keeps has_booking_overlap aligned with get_unavailable_property_ids across inquiries, 48h holds, expired holds and calendar blocks', async () => {
+  it('keeps has_booking_overlap aligned with get_unavailable_property_ids across inquiries, 2-hour holds, expired holds and calendar blocks', async () => {
     const admin = await createTestUser(db, {
       email: 'admin-overlap@hamlet.test',
       fullName: 'Overlap Admin',
@@ -165,7 +165,7 @@ describe('Next.js MVP Hardening — Overlap RPC Parity, Draft Listings & RLS Iso
     });
     expect(overlapWhileRequested).toBe(false);
 
-    // 2. Partner accepts -> status becomes awaiting_payment (active 48h hold) -> MUST block overlap
+    // 2. Partner accepts -> status becomes awaiting_payment (active 2-hour hold) -> MUST block overlap
     await asUser(db, partner, async tx => {
       await tx.query(
         `select public.transition_booking($1, 'awaiting_payment', 'Dates confirmed')`,

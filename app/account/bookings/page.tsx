@@ -71,14 +71,29 @@ function formatStayDates(checkIn: string, checkOut: string) {
   return `${fmt(checkIn)} → ${fmt(checkOut)}`;
 }
 
-/** "41 hours left · pay by Sat 21 Nov, 22:16 Lagos time (21:16 your time)" */
-function deadlineLabel(deadline: string) {
+/** True once the 2-hour payment deadline has passed (checkout can no longer start). */
+function paymentWindowClosed(deadline: string | null | undefined, nowMs: number) {
+  if (!deadline) return false;
+  const when = new Date(deadline).getTime();
+  return !Number.isNaN(when) && when <= nowMs;
+}
+
+/** "1 hr 24 min left · pay by Sat 21 Nov, 22:16 Lagos time (21:16 your time)" */
+function deadlineLabel(deadline: string, nowMs: number) {
   const when = new Date(deadline);
-  if (Number.isNaN(when.getTime())) return 'Pay within 48 hours of acceptance to keep these dates.';
-  const hours = Math.max(0, Math.round((when.getTime() - Date.now()) / 3600000));
+  if (Number.isNaN(when.getTime())) return 'Pay within 2 hours of acceptance to keep these dates.';
   const lagos = when.toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
   const local = when.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  const left = hours <= 0 ? 'Payment window has closed' : hours < 1 ? 'Less than an hour left' : `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
+  const minutesLeft = Math.floor((when.getTime() - nowMs) / 60000);
+  if (when.getTime() <= nowMs) {
+    return `Payment window closed at ${lagos} Lagos time. If you already paid, we are verifying it; otherwise these dates will be released.`;
+  }
+  const left =
+    minutesLeft < 1
+      ? 'Less than a minute left'
+      : minutesLeft < 60
+        ? `${minutesLeft} min left`
+        : `${Math.floor(minutesLeft / 60)} hr ${minutesLeft % 60} min left`;
   return `${left} · pay by ${lagos} Lagos time (${local} your time)`;
 }
 
@@ -96,6 +111,12 @@ export default function GuestBookingsPage() {
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState('');
+  // Ticks every 30 seconds so the payment countdown stays current.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const visibleItems = useMemo(() => {
     if (filter === 'all') return items;
     const today = new Date().toISOString().slice(0, 10);
@@ -140,7 +161,7 @@ export default function GuestBookingsPage() {
       return;
     }
 
-    // Opportunistically sweep expired 48h holds cleanly
+    // Opportunistically sweep expired payment holds (a scheduled job also runs every 5 minutes)
     await db.rpc('expire_overdue_bookings').then(
       () => undefined,
       () => undefined,
@@ -240,7 +261,7 @@ export default function GuestBookingsPage() {
       if (fnError) {
         const message = await extractEdgeFunctionError(
           fnError,
-          'Online payment checkout is not available right now. Your 48-hour hold remains active and no charge was made.',
+          'Online payment checkout is not available right now. Your payment hold remains active until the deadline and no charge was made.',
         );
         throw new Error(message);
       }
@@ -469,7 +490,7 @@ export default function GuestBookingsPage() {
                   )}
                   {b.status === 'awaiting_payment' && b.payment_deadline && (
                     <span className="hm-notice hm-notice-warn" style={{ flexBasis: '100%', margin: '4px 0 0' }}>
-                      {deadlineLabel(b.payment_deadline)}
+                      {deadlineLabel(b.payment_deadline, nowMs)}
                     </span>
                   )}
                   <span>Ref. <span className="font-mono">{b.reference}</span></span>
@@ -485,7 +506,7 @@ export default function GuestBookingsPage() {
                   {b.status === 'awaiting_payment' && (
                     <button
                       type="button"
-                      disabled={busyId === b.id}
+                      disabled={busyId === b.id || paymentWindowClosed(b.payment_deadline, nowMs)}
                       onClick={() => void startPaystackCheckout(b)}
                       className="hm-btn hm-btn-primary min-h-[46px]"
                     >

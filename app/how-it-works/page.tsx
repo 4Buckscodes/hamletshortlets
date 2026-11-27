@@ -31,8 +31,8 @@ const STEPS = [
   },
   {
     title: 'The partner confirms',
-    body: 'The partner checks the dates and accepts. That opens a 48-hour window for you to pay.',
-    status: 'Accepted: pay within 48 hours',
+    body: 'The partner checks the dates and accepts. From that moment you have 2 hours to pay, and we email you a reminder 30 minutes before the deadline.',
+    status: 'Accepted: pay within 2 hours',
   },
   {
     title: 'Pay inside your account',

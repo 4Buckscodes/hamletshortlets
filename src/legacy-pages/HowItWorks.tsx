@@ -24,13 +24,13 @@ const CEREMONY_STEPS = [
     badge: 'Step 02 · Host',
     Icon: ClipboardCheck,
     title: 'Host confirms dates',
-    body: 'The owner or authorised partner confirms availability and locks your dates under a 48-hour payment hold.',
+    body: 'The owner or authorised partner confirms availability and locks your dates under a 2-hour payment hold.',
   },
   {
     num: '03',
     badge: 'Step 03 · Checkout',
     Icon: CreditCard,
-    title: 'Pay via Paystack (48h)',
+    title: 'Pay via Paystack (2 hours)',
     body: 'Pay inside your HAMLET account. Bookings confirm exclusively via Paystack’s signed server-side webhook — never screenshots.',
   },
   {
@@ -45,7 +45,7 @@ const CEREMONY_STEPS = [
 
 const LIFECYCLE_STATES = [
   { step: '1', code: 'requested', sub: 'Dates reviewed' },
-  { step: '2', code: 'awaiting_payment', sub: '48h Paystack hold' },
+  { step: '2', code: 'awaiting_payment', sub: '2-hour Paystack hold' },
   { step: '3', code: 'confirmed', sub: 'Webhook + Wayfinder' },
   { step: '4', code: 'completed', sub: 'Deposit inspected' },
 ];

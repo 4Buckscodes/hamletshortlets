@@ -72,7 +72,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       { type: 'h2', text: '5. Request first, pay when the host confirms' },
       {
         type: 'p',
-        text: 'On HAMLET, sending a request does not charge you. Once the partner confirms your dates, a 48-hour payment window opens and you pay securely through Paystack from your account. The stay is confirmed when the payment is verified, and the exact address and arrival guide unlock in your account.',
+        text: 'On HAMLET, sending a request does not charge you. Once the partner confirms your dates, you have 2 hours to pay securely through Paystack from your account. The stay is confirmed when the payment is verified, and the exact address and arrival guide unlock in your account.',
       },
       { type: 'h2', text: '6. Know what to do if something is wrong' },
       {
@@ -175,7 +175,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
         type: 'ul',
         items: [
           'Sending a request does not charge you.',
-          'When the partner accepts, a 48-hour payment window opens in your account.',
+          'When the partner accepts, you have 2 hours to pay from your account.',
           'You pay through Paystack, and the stay is confirmed once the payment is verified.',
         ],
       },
@@ -226,7 +226,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       { type: 'h2', text: 'Book with a clear paper trail' },
       {
         type: 'p',
-        text: 'Because the partner confirms your dates before you pay, you know the stay is available before any money moves. You pay within 48 hours of acceptance and can find your booking details and arrival guide in your account, which is handy for expense reports.',
+        text: 'Because the partner confirms your dates before you pay, you know the stay is available before any money moves. You pay within 2 hours of acceptance and can find your booking details and arrival guide in your account, which is handy for expense reports.',
       },
     ],
     related: [

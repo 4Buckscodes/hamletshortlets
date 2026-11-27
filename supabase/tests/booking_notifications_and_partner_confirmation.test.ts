@@ -575,7 +575,7 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
       }),
     ).rejects.toThrow(/Invalid booking transition/i);
 
-    // Authorized partner confirms availability -> status becomes 'awaiting_payment' with 48h deadline
+    // Authorized partner confirms availability -> status becomes 'awaiting_payment' with a 2-hour deadline
     await asUser(db, ctx.ownerPartnerId, async tx => {
       await tx.query(
         `select public.transition_booking('bkg-accept-001', 'awaiting_payment', 'Estate gate pass ready once payment clears')`,
@@ -1032,6 +1032,47 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
       expect(transportResult).toEqual({ id: 're_live_mock_123', statusCode: 200 });
     } finally {
       globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('renders the 2-hour payment emails: availability confirmed, 30-minute reminder and expiry', () => {
+    const payload = {
+      property_title: 'Ikoyi Waterfront Two-Bedroom',
+      property_area: 'Ikoyi',
+      guest_name: 'Ngozi Guest',
+      check_in: '2026-12-10',
+      check_out: '2026-12-13',
+      nights: 3,
+      guest_count: 2,
+      guest_total: 520000,
+      payment_deadline: '2026-12-01T14:30:00.000Z',
+      status: 'awaiting_payment',
+    };
+    const render = (eventType: 'booking_availability_confirmed' | 'booking_payment_reminder' | 'booking_expired') =>
+      renderBookingNotificationEmail({
+        bookingId: 'bkg-2h-001',
+        bookingReference: 'HML-2026-2H',
+        eventType,
+        recipientType: 'guest',
+        appBaseUrl: 'https://hamletshortlets.vercel.app',
+        payload,
+      });
+
+    const confirmed = render('booking_availability_confirmed');
+    expect(confirmed.html).toContain('complete payment within 2 hours');
+    expect(confirmed.text).toContain('2 hours from this confirmation');
+
+    const reminder = render('booking_payment_reminder');
+    expect(reminder.subject).toBe('Reminder: about 30 minutes left to pay for HAMLET booking HML-2026-2H');
+    expect(reminder.html).toContain('About 30 minutes left to secure your dates');
+    expect(reminder.html).toContain('1 Dec 2026, 15:30 WAT');
+    expect(reminder.text).toContain('the booking expires and the dates are released');
+
+    const expired = render('booking_expired');
+    expect(expired.html).toContain('The payment deadline passed without payment');
+
+    for (const email of [confirmed, reminder, expired]) {
+      expect(`${email.subject} ${email.html} ${email.text}`).not.toMatch(/48[- ]hour/i);
     }
   });
 });

@@ -24,7 +24,7 @@ Every listing is verified before it goes live (ownership/title evidence, partner
 
 ## Operating Context
 
-- Booking lifecycle: request → partner checks availability → accepted, 48-hour Paystack payment window → confirmed (payment verified server-side) → stay → completed, with cancellation, expiry, refund, dispute and no-show states.
+- Booking lifecycle: request → partner checks availability → accepted, 2-hour Paystack payment window → confirmed (payment verified server-side) → stay → completed, with cancellation, expiry, refund, dispute and no-show states.
 - Guests track bookings, pay, open the arrival guide, report issues and leave feedback in their account.
 - Horatio is HAMLET's assistant for questions about areas and stays.
 - Lagos areas are grouped into Lagos Island & Lekki (Victoria Island, Ikoyi, Lekki Phase 1, Ikate, Oniru, Ajah, Banana Island) and Lagos Mainland (Yaba, Surulere, Shomolu, Gbagada, Maryland, Ikeja GRA).

@@ -166,7 +166,7 @@ function HoratioDrawer({
       }
 
       // 3. Guest's own bookings / arrival / Wayfinder
-      if (/(my booking|arrival|wayfinder|check-in|checkin|paystack|status)/.test(q)) {
+      if (/(my booking|arrival|wayfinder|check-in|checkin|paystack|status|payment window|booking hold)/.test(q)) {
         if (role === 'guest' && session) {
           const myBookings = state.bookings.filter(b => b.guestId === session.userId);
           if (myBookings.length === 0) {
@@ -178,7 +178,7 @@ function HoratioDrawer({
           const awaiting = myBookings.filter(b => b.status === 'awaiting_payment').length;
           const confirmed = myBookings.filter(b => b.status === 'confirmed');
           return {
-            text: `You have ${myBookings.length} booking record(s): ${confirmed.length} confirmed and ${awaiting} awaiting payment within the 48-hour Paystack window.`,
+            text: `You have ${myBookings.length} booking record(s): ${confirmed.length} confirmed and ${awaiting} awaiting payment within the 2-hour Paystack window.`,
             links: [
               { label: 'Open My Account & Bookings', to: '/account' },
               ...confirmed.slice(0, 2).map(b => ({
@@ -191,7 +191,7 @@ function HoratioDrawer({
           };
         }
         return {
-          text: 'Every HAMLET booking follows four accountable steps: (1) Request dates & review house rules with zero card charge, (2) Host or HAMLET ops confirms availability, (3) 48-hour Paystack checkout window opens (confirmed only by signed server webhook), and (4) Wayfinder arrival guidance unlocks in your account.',
+          text: 'Every HAMLET booking follows four accountable steps: (1) Request dates & review house rules with zero card charge, (2) Host or HAMLET ops confirms availability, (3) you have 2 hours to pay through Paystack (confirmed only by signed server webhook), and (4) Wayfinder arrival guidance unlocks in your account.',
           links: [
             { label: 'How HAMLET works', to: '/how-it-works' },
             { label: 'Sign in to view your bookings', to: '/signin' },
@@ -366,7 +366,7 @@ function HoratioDrawer({
             'Stays in Lagos Mainland with 24/7 power',
             'Stays in Victoria Island or Lekki',
             'How do pricing, USD/GBP & deposits work?',
-            'How does the 48h booking hold work?',
+            'How does the 2-hour payment window work?',
           ];
 
   const onSubmit = (e: FormEvent) => {

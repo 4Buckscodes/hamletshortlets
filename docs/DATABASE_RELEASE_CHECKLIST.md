@@ -13,7 +13,7 @@
 - **Storage bucket `property-media` is live (`public: true`).**
 - **All `58` core RPCs & triggers called by Next.js are live:**
   - `submit_partner_property` & `update_and_resubmit_partner_property` already support `'draft'` status listings on live `jopnnevqnwrpldrojmdu`.
-  - `get_unavailable_property_ids` & `enforce_booking_request_integrity` already enforce `pg_advisory_xact_lock`, `first_available_date`, `property_availability_blocks`, `confirmed` bookings, non-expired `awaiting_payment` 48h holds, and authoritative `v2_20pct_markup_10pct_fx_buffer` pricing.
+  - `get_unavailable_property_ids` & `enforce_booking_request_integrity` already enforce `pg_advisory_xact_lock`, `first_available_date`, `property_availability_blocks`, `confirmed` bookings, non-expired `awaiting_payment` 2-hour holds, and authoritative `v2_20pct_markup_10pct_fx_buffer` pricing.
   - `confirm_booking_payment_webhook`, `transition_booking`, `transition_booking_issue`, `record_booking_refund`, `update_payout_status`, `transition_caution_deposit`, `review_partner_property`, `review_partner_application`, `set_partner_account_status`, and `set_guest_account_status` are all live.
 - **Unapplied Wayfinder columns are safely gated:** `PUBLIC_PROPERTY_SELECT` queries only guaranteed live columns, and `isMissingSchemaObjectError` gracefully gates `probePropertyWayfinderMeta` and `get_guest_booking_wayfinder` until `20261024180000` is applied.
 

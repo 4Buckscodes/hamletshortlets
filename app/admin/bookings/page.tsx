@@ -262,7 +262,7 @@ export default function AdminBookingsPage() {
                       className={FIELD_INPUT_CLASS}
                     >
                       <option value="checking">checking</option>
-                      <option value="awaiting_payment">awaiting_payment (48h hold)</option>
+                      <option value="awaiting_payment">awaiting_payment (2-hour hold)</option>
                       <option value="completed">completed</option>
                       <option value="disputed">disputed</option>
                       <option value="cancelled">cancelled</option>

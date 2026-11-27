@@ -193,7 +193,7 @@ export default function AdminBookings() {
         <div>
           <p className="text-[10px] font-extrabold text-brass-400">Lifecycle control</p>
           <h1 className="mt-1.5 font-display text-2xl font-black text-ink-50 sm:text-3xl">Booking operations</h1>
-          <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every booking is request-to-book: requested → checking → accepted (awaiting payment, 48h deadline) → confirmed only after webhook-verified payment → completed / cancelled / expired / refunded / disputed. Overlaps on confirmed dates are prevented.</p>
+          <p className="mt-1 max-w-2xl text-[12px] font-medium text-ink-300">Every booking is request-to-book: requested → checking → accepted (awaiting payment, 2-hour deadline) → confirmed only after webhook-verified payment → completed / cancelled / expired / refunded / disputed. Overlaps on confirmed dates are prevented.</p>
         </div>
         <button onClick={exportBookingsCsv} disabled={filtered.length === 0} className="btn-ghost-dark !border !border-ink-700 !py-2.5 text-[12px] disabled:opacity-40">
           <Download size={14} /> Export CSV ({filtered.length})
@@ -259,7 +259,7 @@ export default function AdminBookings() {
                   <button disabled={busy} onClick={() => void runTransition(b, 'checking', 'Moved to "availability & terms being checked".')} className="btn-ghost-dark !border !border-ink-700 !px-3.5 !py-2 text-[11px] disabled:opacity-50"><Clock3 size={13} /> Begin check</button>
                 )}
                 {(b.status === 'requested' || b.status === 'checking') && (
-                  <button disabled={busy} onClick={() => void runTransition(b, 'awaiting_payment', `${b.ref} accepted — 48h payment deadline set.`)} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500 disabled:opacity-50"><CheckCircle2 size={13} /> Accept — set deadline</button>
+                  <button disabled={busy} onClick={() => void runTransition(b, 'awaiting_payment', `${b.ref} accepted — 2-hour payment deadline set.`)} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500 disabled:opacity-50"><CheckCircle2 size={13} /> Accept — set deadline</button>
                 )}
                 {b.status === 'awaiting_payment' && !backendConfigured && (
                   <button disabled={busy} onClick={() => { verifyPayment(b.id); toast('Demo payment verified (webhook simulation). Booking confirmed.'); }} className="flex items-center gap-1.5 rounded-xl bg-jade-600 px-3.5 py-2 text-[11px] font-bold text-white hover:bg-jade-500 disabled:opacity-50"><ShieldCheck size={13} /> Simulate provider webhook (demo)</button>

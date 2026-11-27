@@ -151,7 +151,7 @@ export default function GuestAccountOverviewPage() {
                   <h2 className="hm-h3">
                     {awaitingPaymentCount === 1 ? 'A partner accepted your request.' : `${awaitingPaymentCount} requests were accepted.`}
                   </h2>
-                  <p className="hm-body">Pay within 48 hours of acceptance to keep the dates. Your booking shows the exact deadline and total.</p>
+                  <p className="hm-body">Pay within 2 hours of acceptance to keep the dates. Your booking shows the exact deadline, time left and total.</p>
                   <Link href="/account/bookings" className="hm-btn hm-btn-primary" style={{ justifySelf: 'start' }}>
                     Review and pay
                   </Link>

@@ -338,7 +338,7 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
   });
 
   describe('Partner & admin booking transitions', () => {
-    it('transitions requested -> checking -> awaiting_payment with a 48h payment deadline, timeline, and audit trail', async () => {
+    it('transitions requested -> checking -> awaiting_payment with a 2-hour payment deadline, timeline, and audit trail', async () => {
       const booking = await insertBookingAsGuest(guestAId);
 
       await asUser(db, partnerId, tx =>
@@ -371,8 +371,8 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
 
       const deadlineMs = new Date(afterAccept.payment_deadline!).getTime();
       const hoursAhead = (deadlineMs - beforeAcceptMs) / (3600 * 1000);
-      expect(hoursAhead).toBeGreaterThan(47.9);
-      expect(hoursAhead).toBeLessThan(48.1);
+      expect(hoursAhead).toBeGreaterThan(1.95);
+      expect(hoursAhead).toBeLessThan(2.05);
 
       expect(afterAccept.timeline).toHaveLength(3);
       expect(afterAccept.timeline[2].label).toBe('Accepted — awaiting payment');
@@ -820,10 +820,10 @@ describe('HAMLET booking lifecycle (PostgreSQL migrations, RLS & RPCs)', () => {
         tx.query(`select public.transition_booking($1, 'awaiting_payment')`, [activeBooking.id]),
       );
 
-      // Rewind overdueBooking's deadline into the past
+      // Rewind overdueBooking's deadline past the deadline and the 15-minute payment-verification grace
       await db.query(
         `update public.bookings
-         set payment_deadline = now() - interval '5 minutes'
+         set payment_deadline = now() - interval '20 minutes'
          where id = $1`,
         [overdueBooking.id],
       );

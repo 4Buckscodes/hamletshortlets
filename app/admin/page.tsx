@@ -95,14 +95,14 @@ export default function AdminOverviewPage() {
 
   async function sweepOverdueHolds() {
     if (!db) return;
-    if (!window.confirm('Release every awaiting-payment hold that is past its 48-hour deadline? Guests on those holds lose the dates.')) return;
+    if (!window.confirm('Release every awaiting-payment hold that is past its payment deadline and 15-minute verification grace? Guests on those holds lose the dates.')) return;
     setSweeping(true);
     setError('');
     setNotice('');
     try {
       const { data, error: rpcError } = await db.rpc('expire_overdue_bookings');
       if (rpcError) throw new Error(rpcError.message);
-      setNotice(`Swept overdue 48-hour payment holds (${Number(data || 0)} expired).`);
+      setNotice(`Swept overdue payment holds (${Number(data || 0)} expired).`);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not run expiry sweep.');
@@ -243,10 +243,10 @@ export default function AdminOverviewPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-ink-100 bg-white p-5">
               <div>
                 <p className="m-0 text-sm font-bold text-ink-900">
-                  48-hour unpaid booking holds
+                  Unpaid 2-hour booking holds
                 </p>
                 <p className="m-0 text-xs text-ink-500">
-                  Release expired awaiting-payment holds.
+                  These expire automatically every 5 minutes after the deadline and a 15-minute grace. Run the sweep now if needed.
                 </p>
               </div>
               <button
