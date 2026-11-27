@@ -10,7 +10,6 @@ import type { PublicStayRecord } from './next-supabase';
 
 export const HAMLET_CANONICAL_ORIGIN = 'https://hamlet.rest';
 export const HAMLET_BRAND = 'HAMLET';
-export const HAMLET_LEGAL_NAME = 'HAMLET Marketplace Ltd';
 export const HAMLET_PARENT_ORGANIZATION_NAME = 'Abundance Abodes';
 export const HAMLET_ORGANIZATION_ID = `${HAMLET_CANONICAL_ORIGIN}/#organization`;
 export const HAMLET_PARENT_ORGANIZATION_ID = `${HAMLET_CANONICAL_ORIGIN}/#parent-organization`;
@@ -168,7 +167,6 @@ export function buildOrganizationSchema(
     '@id': HAMLET_ORGANIZATION_ID,
     name: HAMLET_BRAND,
     alternateName: ['HAMLET.REST', 'HAMLET Shortlets'],
-    legalName: HAMLET_LEGAL_NAME,
     url: HAMLET_CANONICAL_ORIGIN,
     slogan: 'Your stay, sorted.',
     description: HAMLET_BUSINESS_DESCRIPTION,

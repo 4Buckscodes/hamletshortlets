@@ -161,7 +161,7 @@ export default function Legal() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-ink-200 pt-6 text-xs font-semibold text-ink-500">
-          <p>HAMLET Marketplace Ltd · {HAMLET_PARENT_COMPANY} · Lagos · Oct 2026</p>
+          <p>HAMLET.REST · {HAMLET_PARENT_COMPANY} · Lagos · Oct 2026</p>
           <div className="flex flex-wrap gap-4 text-ink-900">
             <Link to="/how-it-works" className="hover:underline">
               How HAMLET works
