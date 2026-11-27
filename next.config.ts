@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
     '/api/partner/share/card': SHARE_ARTWORK_TRACED_ASSETS,
     '/api/share/qr': SHARE_ARTWORK_TRACED_ASSETS,
   },
+  async redirects() {
+    return [
+      { source: '/terms', destination: '/legal#terms', permanent: true },
+      { source: '/privacy', destination: '/legal#privacy', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
