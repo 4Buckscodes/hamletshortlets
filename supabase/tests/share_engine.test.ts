@@ -652,6 +652,39 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     expect(ownerEnquiryRows[0].guest_email).toBe('private.guest@example.com');
   });
 
+  it('Enquiry retry protection: identical submissions within ten minutes return the original enquiry', async () => {
+    const submit = () =>
+      asAnon(db, async tx => {
+        const { rows } = await tx.query<{
+          result: { enquiry_id: string; status: string; duplicate?: boolean };
+        }>(
+          `select public.submit_property_enquiry(
+             $1, 'Retry Guest', 'retry.guest@example.com',
+             'Please confirm whether early check-in is available.',
+             'vsess_retry_enquiry_001', null, null
+           ) as result`,
+          [approvedPropertyId],
+        );
+        return rows[0].result;
+      });
+
+    const first = await submit();
+    const retry = await submit();
+
+    expect(first.status).toBe('open');
+    expect(first.duplicate).toBe(false);
+    expect(retry.enquiry_id).toBe(first.enquiry_id);
+    expect(retry.duplicate).toBe(true);
+
+    const { rows } = await db.query<{ count: number }>(
+      `select count(*)::int as count
+         from public.property_enquiries
+        where property_id = $1 and guest_email = 'retry.guest@example.com'`,
+      [approvedPropertyId],
+    );
+    expect(rows[0].count).toBe(1);
+  });
+
   it('Rollback Path: documented rollback SQL drops all Share Engine objects cleanly while preserving core properties and bookings', async () => {
     await db.exec(`
       begin;
