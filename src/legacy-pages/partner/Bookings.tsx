@@ -42,7 +42,7 @@ export default function PartnerBookings() {
     try {
       await bookingTransition(id, status, { note });
       toast(
-        status === 'awaiting_payment' ? `${ref} accepted. Guest has a 48h payment deadline.` :
+        status === 'awaiting_payment' ? `${ref} accepted. Guest has a 2-hour payment deadline.` :
           status === 'checking' ? `Now checking availability & terms for ${ref}.` :
             `${ref} declined.`,
         status === 'checking' || status === 'declined' ? 'info' : 'success',

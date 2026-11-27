@@ -13,7 +13,7 @@ This matrix maps every user, partner, administrator, and crawler route from the 
 | Stay Detail & Booking Request | `/#/stays/:id` | `/stays/[id]` (`app/stays/[id]/page.tsx`) | **Complete** | `opacity-100` gallery, 4-pillar verification grid, JSON-LD, 2-step progressive booking form + mobile sticky CTA bar |
 | Lagos Neighbourhood Guide | `/#/lagos` | `/lagos` (`app/lagos/page.tsx`) | **Complete** | Lagos Island & Lekki + Lagos Mainland (Yaba, Shomolu, Surulere, Gbagada, Ikeja GRA) + JSON-LD |
 | About HAMLET | `/#/about` | `/about` (`app/about/page.tsx`) | **Complete** | Houses `"Four pillars of a better stay"` per brand rules |
-| How Bookings Work | `/#/how-it-works` | `/how-it-works` (`app/how-it-works/page.tsx`) | **Complete** | 4-step request → partner confirm → 48h hold → server-verified payment lifecycle |
+| How Bookings Work | `/#/how-it-works` | `/how-it-works` (`app/how-it-works/page.tsx`) | **Complete** | 4-step request → partner confirm → 2-hour hold → server-verified payment lifecycle |
 | Trust & Safety | `/#/safety` | `/safety` (`app/safety/page.tsx`) | **Complete** | Honest verified vs. self-reported labelling & payment safety |
 | Frequently Asked Questions | `/#/faqs` | `/faqs` (`app/faqs/page.tsx`) | **Complete** | Expandable Q&A + `FAQPage` JSON-LD |
 | Legal, Privacy & NDPR Terms | `/#/legal` | `/legal` (`app/legal/page.tsx`) | **Complete** | Marketplace role, pricing/FX/caution terms, NDPR privacy notice, partner terms |

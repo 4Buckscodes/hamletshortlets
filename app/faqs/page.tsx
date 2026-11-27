@@ -42,7 +42,7 @@ const FAQ_ITEMS: readonly FaqEntry[] = [
   },
   {
     q: '6. Is my booking confirmed when I send a request?',
-    a: 'No. The host confirms dates first, opening a 48-hour Paystack payment window.',
+    a: 'No. The host confirms dates first. You then have 2 hours to pay through Paystack, and your booking is confirmed once the payment is verified.',
     category: 'pricing',
   },
   {

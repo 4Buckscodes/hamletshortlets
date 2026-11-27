@@ -1023,7 +1023,7 @@ export default function Account() {
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200 bg-amber-50 px-5 py-3.5">
                         <div className="max-w-xl">
                           <p className="text-xs font-bold text-amber-900">
-                            Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '48h from acceptance'} — pay only via verified HAMLET Paystack checkout (NGN settlement).
+                            Payment deadline: {b.paymentDeadline ? formatDateTime(b.paymentDeadline) : '2 hours from acceptance'} — pay only via verified HAMLET Paystack checkout (NGN settlement).
                           </p>
                           {quoteExpired && (
                             <p className="mt-1 text-[11px] font-semibold text-red-800">

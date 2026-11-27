@@ -41,7 +41,7 @@ const CONTENT: Record<string, { title: string; intro: string; sections: { h: str
     sections: [
       {
         h: 'Request to book — the only flow',
-        b: 'Every booking is a request. The owner or authorised partner checks availability and terms. Acceptance sets a payment deadline (48h in the pilot). Your booking is confirmed only after our payment provider verifies your payment server-side AND final availability is rechecked.',
+        b: 'Every booking is a request. The owner or authorised partner checks availability and terms. Acceptance sets a payment deadline (2 hours after acceptance). Your booking is confirmed only after our payment provider verifies your payment server-side AND final availability is rechecked.',
       },
       {
         h: 'Payment & proof',

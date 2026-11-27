@@ -127,7 +127,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('pay') || q.includes('paystack') || q.includes('confirm') || q.includes('cancel') || q.includes('hold')) {
     return {
-      text: 'No charge is taken on request. Once the host confirms, a 48-hour Paystack payment window opens in My Bookings.',
+      text: 'No charge is taken on request. Once the host confirms, you have 2 hours to pay through Paystack in My Bookings.',
       links: [
         { label: 'How HAMLET works', href: '/how-it-works' },
         { label: 'My bookings', href: '/account/bookings' },
@@ -136,7 +136,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
   }
 
   return {
-    text: 'Ask about Lagos neighbourhoods, property verification, pricing, 48-hour payment holds, or listing a property.',
+    text: 'Ask about Lagos neighbourhoods, property verification, pricing, the 2-hour payment window, or listing a property.',
     links: [
       { label: 'Explore stays', href: '/stays' },
       { label: 'Verification & safety', href: '/safety' },

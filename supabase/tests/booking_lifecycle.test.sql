@@ -86,9 +86,9 @@ select is(
   'Acceptance does not confirm the booking'
 );
 select ok(
-  (select payment_deadline between now() + interval '47 hours' and now() + interval '49 hours'
+  (select payment_deadline between now() + interval '115 minutes' and now() + interval '125 minutes'
    from public.bookings where id = 'booking-lifecycle-a'),
-  'Acceptance sets a payment deadline about 48 hours ahead'
+  'Acceptance sets a payment deadline about 2 hours ahead'
 );
 select throws_ok(
   $$select public.transition_booking('booking-lifecycle-b', 'awaiting_payment', null)$$,

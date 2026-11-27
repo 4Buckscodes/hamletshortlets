@@ -77,7 +77,7 @@ export default function LegalPage() {
                 <strong>Refundable caution deposits:</strong> Itemised separately with no service fee or FX buffer, and released after post-checkout inspection.
               </li>
               <li>
-                <strong>Holds &amp; cancellations:</strong> Accepted requests hold dates for 48 hours awaiting payment. Unpaid requests can be cancelled free of charge; paid bookings follow the listing’s cancellation terms.
+                <strong>Holds &amp; cancellations:</strong> Accepted requests hold dates for 2 hours awaiting payment; unpaid holds then expire automatically and the dates are released. Unpaid requests can be cancelled free of charge; paid bookings follow the listing’s cancellation terms.
               </li>
             </ul>
           </section>

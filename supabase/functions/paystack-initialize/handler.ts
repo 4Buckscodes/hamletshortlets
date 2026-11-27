@@ -264,7 +264,7 @@ export async function handlePaystackInitialize(
     new Date(booking.payment_deadline).getTime() <= currentNow.getTime()
   ) {
     return jsonResponse(
-      { ok: false, error: 'The 48-hour payment deadline has expired. Submit a fresh booking request.' },
+      { ok: false, error: 'The 2-hour payment window for this booking has closed. Submit a fresh booking request.' },
       409,
     );
   }

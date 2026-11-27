@@ -64,7 +64,7 @@ Keep `hamlet.rest` / `www.hamlet.rest` and production Supabase unchanged until a
   *(Note: Until `PAYSTACK_SECRET_KEY` and `RESEND_*` are set, `paystack-initialize` returns a clean `503 provider_not_configured` message without charging cards, and booking notifications remain safely queued in `public.booking_notifications`.)*
 
 ### Gate 3 — Database Compatibility & Optional Migrations (`jopnnevqnwrpldrojmdu`)
-- [x] **Core Schema & RPC Compatibility Verified Live:** **Zero migrations are required before domain cutover.** All `17` tables have `RLS = true`, `currency_exchange_rates` has active `USD` (`1600`, `10%` buffer) and `GBP` (`2000`, `10%` buffer) rows, `admin_bootstrap_emails` includes `jfolawaley@gmail.com`, `submit_partner_property` & `update_and_resubmit_partner_property` already support `'draft'` listings, and `get_unavailable_property_ids` + `enforce_booking_request_integrity` already enforce transactional advisory locks and 48-hour hold overlap protection.
+- [x] **Core Schema & RPC Compatibility Verified Live:** **Zero migrations are required before domain cutover.** All `17` tables have `RLS = true`, `currency_exchange_rates` has active `USD` (`1600`, `10%` buffer) and `GBP` (`2000`, `10%` buffer) rows, `admin_bootstrap_emails` includes `jfolawaley@gmail.com`, `submit_partner_property` & `update_and_resubmit_partner_property` already support `'draft'` listings, and `get_unavailable_property_ids` + `enforce_booking_request_integrity` already enforce transactional advisory locks and 2-hour hold overlap protection.
 - [ ] *(Optional Post-Backup Enhancement)*: If enabling **Wayfinder Arrival Guides** (`20261024180000`) and `has_booking_overlap` (`20261026120000`), follow the exact `supabase migration repair` procedure in `docs/DATABASE_RELEASE_CHECKLIST.md` first — **do not run raw `supabase db push` without repairing the 8 server-timestamped migration versions**.
 
 ### Gate 4 — Real Verified Lagos Inventory (`public.properties`)
@@ -84,7 +84,7 @@ Keep `hamlet.rest` / `www.hamlet.rest` and production Supabase unchanged until a
   ```
 - [ ] Execute 1 real controlled rehearsal on `https://hamletshortlets-jonn.vercel.app`:
   1. Guest submits a booking request on `/stays/[id]` (`status = requested`, `₦0` charged).
-  2. Partner confirms dates in `/partners/bookings` (`status = awaiting_payment`, 48h hold created, calendar overlap blocked).
+  2. Partner confirms dates in `/partners/bookings` (`status = awaiting_payment`, 2-hour hold created, calendar overlap blocked).
   3. Guest clicks **Pay via Paystack** in `/account/bookings`, completes Paystack checkout, returns to `/account/bookings?payment=return`, and confirms `paystack-webhook` transitions the booking to `confirmed` and writes a verified row in `booking_payment_records`.
   4. Admin verifies the booking & ledger entry in `/admin/bookings` and `/admin/settlements`, then cancels/refunds or archives the rehearsal booking cleanly.
 
