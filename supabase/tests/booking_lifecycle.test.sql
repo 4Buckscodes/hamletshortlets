@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(19);
+select plan(21);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
@@ -131,6 +131,24 @@ reset role;
 
 update public.bookings
 set payment_deadline = now() - interval '1 minute'
+where id = 'booking-lifecycle-c';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select is(
+  public.expire_overdue_bookings(),
+  0,
+  'The expiry sweep leaves a request inside the 15-minute payment-verification grace'
+);
+select is(
+  (select status from public.bookings where id = 'booking-lifecycle-c'),
+  'awaiting_payment',
+  'A request just past its deadline stays open while an in-flight payment can be verified'
+);
+reset role;
+
+update public.bookings
+set payment_deadline = now() - interval '20 minutes'
 where id = 'booking-lifecycle-c';
 
 set local role authenticated;
