@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
     let validatedToken: string | null = null;
     const authHeader = request.headers.get('authorization') || '';
-    const bearerToken = authHeader.match(/^Bearer\s+(.+)$/i)?.[1];
+    const bearerToken = authHeader.match(/^Bearer\\s+(.+)$/i)?.[1];
 
     if (bearerToken) {
       const userDb = createServerUserSupabase(bearerToken);
@@ -73,10 +73,10 @@ export async function GET(request: Request) {
         }
       }
     } else if (requestedToken) {
-      const { data: checkRes } = await publicDb.rpc('record_share_link_visit', {
+      // Read-only validation: rendering a QR must not count as a guest visit
+      // or create a synthetic first-touch attribution session.
+      const { data: checkRes } = await publicDb.rpc('resolve_public_share_link', {
         incoming_share_token: requestedToken,
-        visitor_session_key: 'qr_verify_probe_0000',
-        client_idempotency_key: `qr_verify:${requestedToken}`,
       });
       const checkPayload = checkRes as { valid?: boolean; property_id?: string } | null;
       if (checkPayload?.valid && checkPayload.property_id === propertyId) {
