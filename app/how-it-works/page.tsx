@@ -89,7 +89,7 @@ export default function HowItWorksPage() {
               <li><strong>The nightly price already includes HAMLET&apos;s 20% service fee.</strong> No fee is added at checkout.</li>
               <li>Cleaning and turnover, when a stay has one, is shown as its own line before you request.</li>
               <li>The refundable caution deposit is itemised separately and returned after the check-out inspection.</li>
-              <li>Booking from abroad? Prices can be shown in USD or GBP with a 10% exchange buffer; you are charged in naira, and your bank may add its own card fee.</li>
+              <li>Booking from abroad? Prices can be shown in USD, GBP or EUR with a 10% exchange buffer; you are charged in naira, and your bank may add its own card fee.</li>
             </ul>
           </section>
 

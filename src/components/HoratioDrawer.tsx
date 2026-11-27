@@ -202,7 +202,7 @@ function HoratioDrawer({
       // 4. Pricing, fees, FX buffer, or caution deposit questions
       if (/(price|fee|markup|deposit|caution|usd|gbp|dollar|pound|currency|commission|owner)/.test(q)) {
         return {
-          text: `HAMLET uses one central pricing calculation across search, listing detail, checkout, and the ledger: HAMLET’s confirmed guest service fee is 20% of the owner’s agreed NGN rate (B), included in the displayed domestic guest stay price (B × 1.20 — never added again at checkout). USD ($) and GBP (£) stay quotes convert at the active configured FX rate plus a single 10% currency buffer, settling transparently in NGN via Paystack. Refundable caution deposits are itemised separately, never marked up or buffered, and refunded after post-checkout inspection review. ${APPROVED_OWNER_SERVICES_POLICY_COPY}`,
+          text: `HAMLET uses one central pricing calculation across search, listing detail, checkout, and the ledger: HAMLET’s confirmed guest service fee is 20% of the owner’s agreed NGN rate (B), included in the displayed domestic guest stay price (B × 1.20 — never added again at checkout). USD ($), GBP (£) and EUR (€) stay quotes convert at the active configured FX rate plus a single 10% currency buffer, settling transparently in NGN via Paystack. Refundable caution deposits are itemised separately, never marked up or buffered, and refunded after post-checkout inspection review. ${APPROVED_OWNER_SERVICES_POLICY_COPY}`,
           links: [
             { label: 'Fees & settlement policy', to: '/legal/pricing' },
             { label: 'Partner commercial terms', to: '/partner/register' },
@@ -365,7 +365,7 @@ function HoratioDrawer({
         : [
             'Stays in Lagos Mainland with 24/7 power',
             'Stays in Victoria Island or Lekki',
-            'How do pricing, USD/GBP & deposits work?',
+            'How do pricing, USD/GBP/EUR & deposits work?',
             'How does the 2-hour payment window work?',
           ];
 

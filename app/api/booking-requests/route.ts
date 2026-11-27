@@ -69,7 +69,9 @@ export async function POST(request: Request) {
   const specialRequests =
     typeof body.specialRequests === 'string' ? body.specialRequests.trim().slice(0, 1000) : '';
   const requestedCurrency: SupportedCurrency =
-    body.quoteCurrency === 'USD' || body.quoteCurrency === 'GBP' ? body.quoteCurrency : 'NGN';
+    body.quoteCurrency === 'USD' || body.quoteCurrency === 'GBP' || body.quoteCurrency === 'EUR'
+      ? body.quoteCurrency
+      : 'NGN';
   const visitorSessionKey =
     typeof body.visitorSessionKey === 'string' &&
     body.visitorSessionKey.trim().length >= 12 &&

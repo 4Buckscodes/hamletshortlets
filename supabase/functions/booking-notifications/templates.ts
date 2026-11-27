@@ -125,9 +125,9 @@ function formatNairaEmail(amount: number | undefined | null): string {
   return `₦${safe.toLocaleString('en-NG')}`;
 }
 
-function formatForeignCurrencyEmail(amount: number | undefined | null, currency: 'USD' | 'GBP'): string {
+function formatForeignCurrencyEmail(amount: number | undefined | null, currency: 'USD' | 'GBP' | 'EUR'): string {
   const safe = typeof amount === 'number' && Number.isFinite(amount) ? amount : 0;
-  const symbol = currency === 'USD' ? '$' : '£';
+  const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '£';
   return `${symbol}${safe.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
@@ -319,7 +319,7 @@ export function renderBookingNotificationEmail(input: {
   const guestsSummary = `${guests} guest${guests === 1 ? '' : 's'}`;
   const rawQuoteCurrency = (payload.quote_currency ?? 'NGN').toUpperCase();
   const isForeignQuote =
-    (rawQuoteCurrency === 'USD' || rawQuoteCurrency === 'GBP') &&
+    (rawQuoteCurrency === 'USD' || rawQuoteCurrency === 'GBP' || rawQuoteCurrency === 'EUR') &&
     typeof payload.quoted_guest_total === 'number' &&
     payload.quoted_guest_total > 0;
   const settlementNgn =
@@ -328,7 +328,7 @@ export function renderBookingNotificationEmail(input: {
       : payload.guest_total ?? 0;
   const settlementTotalFmt = formatNairaEmail(settlementNgn);
   const guestTotalFmt = isForeignQuote
-    ? `${formatForeignCurrencyEmail(payload.quoted_guest_total, rawQuoteCurrency as 'USD' | 'GBP')} (incl. 10% FX buffer @ 1 ${rawQuoteCurrency} = ${formatNairaEmail(payload.exchange_rate_ngn_per_unit)})`
+    ? `${formatForeignCurrencyEmail(payload.quoted_guest_total, rawQuoteCurrency as 'USD' | 'GBP' | 'EUR')} (incl. 10% FX buffer @ 1 ${rawQuoteCurrency} = ${formatNairaEmail(payload.exchange_rate_ngn_per_unit)})`
     : settlementTotalFmt;
   const cautionDepositAmount =
     typeof payload.refundable_deposit === 'number' && payload.refundable_deposit > 0

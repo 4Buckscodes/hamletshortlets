@@ -81,6 +81,19 @@ export function convertNairaToGbp(
   return roundCurrencyMinor(amountNgn / safeRate);
 }
 
+/** Raw conversion without the 10% international stay buffer. No default rate: an unset euro rate must never produce a price. */
+export function convertNairaToEur(amountNgn: number, ngnPerEur: number): number {
+  if (!Number.isFinite(amountNgn) || amountNgn <= 0) return 0;
+  if (!Number.isFinite(ngnPerEur) || ngnPerEur <= 0) return 0;
+  return roundCurrencyMinor(amountNgn / ngnPerEur);
+}
+
+/** International guest price in EUR including the 10% buffer applied once (§6.1). */
+export function convertDomesticStayToEur(domesticGuestAmountNgn: number, ngnPerEur: number): number {
+  const base = convertNairaToEur(domesticGuestAmountNgn, ngnPerEur);
+  return roundCurrencyMinor(base + roundCurrencyMinor(base * INTERNATIONAL_CURRENCY_BUFFER_RATE));
+}
+
 /** International guest price in USD including the 10% buffer applied once (§6.1). */
 export function convertDomesticStayToUsd(
   domesticGuestAmountNgn: number,
@@ -127,7 +140,19 @@ export function formatGbp(amountGbp: number, opts?: { roundWhole?: boolean }): s
   }).format(rounded);
 }
 
-/** Formats minor units (cents for USD, pence for GBP, whole Naira for NGN). */
+export function formatEur(amountEur: number, opts?: { roundWhole?: boolean }): string {
+  if (!Number.isFinite(amountEur) || amountEur <= 0) return '€0';
+  const rounded = opts?.roundWhole ? Math.round(amountEur) : roundCurrencyMinor(amountEur);
+  const isWhole = Number.isInteger(rounded);
+  return new Intl.NumberFormat('en-IE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: isWhole ? 0 : 2,
+    maximumFractionDigits: isWhole ? 0 : 2,
+  }).format(rounded);
+}
+
+/** Formats minor units (cents for USD, pence for GBP, cents for EUR, whole Naira for NGN). */
 export function formatMinorCurrency(
   minorAmount: number,
   currency: DisplayCurrency,
@@ -137,6 +162,9 @@ export function formatMinorCurrency(
   }
   if (currency === 'GBP') {
     return formatGbp(minorAmount / 100);
+  }
+  if (currency === 'EUR') {
+    return formatEur(minorAmount / 100);
   }
   return formatNaira(minorAmount);
 }
@@ -148,12 +176,14 @@ export function formatCurrencyAmount(
 ): string {
   if (currency === 'USD') return formatUsd(amount, opts);
   if (currency === 'GBP') return formatGbp(amount, opts);
+  if (currency === 'EUR') return formatEur(amount, opts);
   return formatNaira(amount);
 }
 
 export interface FormatStayAmountOptions {
   ngnPerUsd?: number;
   ngnPerGbp?: number;
+  ngnPerEur?: number;
   roundWhole?: boolean;
   roundUsd?: boolean;
   /**
@@ -189,6 +219,15 @@ export function formatStayAmount(
       : convertNairaToGbp(domesticGuestAmountNgn, ngnPerGbp);
     return formatGbp(gbp, { roundWhole });
   }
+  if (currency === 'EUR') {
+    const ngnPerEur = typeof opts === 'object' ? (opts?.ngnPerEur ?? 0) : 0;
+    // Without a real euro rate there is no euro price: show naira rather than invent one.
+    if (!(ngnPerEur > 0)) return formatNaira(domesticGuestAmountNgn);
+    const eur = applyBuffer
+      ? convertDomesticStayToEur(domesticGuestAmountNgn, ngnPerEur)
+      : convertNairaToEur(domesticGuestAmountNgn, ngnPerEur);
+    return formatEur(eur, { roundWhole });
+  }
   return formatNaira(domesticGuestAmountNgn);
 }
 
@@ -200,6 +239,7 @@ interface CurrencyContextValue {
   currencySymbol: string;
   ngnPerUsd: number;
   ngnPerGbp: number;
+  ngnPerEur: number;
   ngnPerUnit: number;
   activeRateConfig: ExchangeRateConfig | null;
   activeRateIsAvailable: boolean;
@@ -324,12 +364,19 @@ export function CurrencyProvider({
     [exchangeRates],
   );
 
+  const eurConfig = useMemo(
+    () => exchangeRates.find(r => r.currency === 'EUR') ?? null,
+    [exchangeRates],
+  );
+
   const requestedConfig =
     requestedCurrency === 'USD'
       ? usdConfig
       : requestedCurrency === 'GBP'
         ? gbpConfig
-        : null;
+        : requestedCurrency === 'EUR'
+          ? eurConfig
+          : null;
 
   const probeQuote = useMemo(
     () =>
@@ -350,8 +397,9 @@ export function CurrencyProvider({
 
   const ngnPerUsd = usdConfig?.ngnPerUnit ?? DEFAULT_NGN_PER_USD;
   const ngnPerGbp = gbpConfig?.ngnPerUnit ?? DEFAULT_NGN_PER_GBP;
+  const ngnPerEur = eurConfig?.ngnPerUnit ?? 0;
   const ngnPerUnit =
-    currency === 'USD' ? ngnPerUsd : currency === 'GBP' ? ngnPerGbp : 1;
+    currency === 'USD' ? ngnPerUsd : currency === 'GBP' ? ngnPerGbp : currency === 'EUR' ? ngnPerEur : 1;
 
   const setCurrency = useCallback((next: DisplayCurrency) => {
     setCurrencyState(next);
@@ -369,10 +417,11 @@ export function CurrencyProvider({
       formatStayAmount(domesticGuestAmountNgn, currency, {
         ngnPerUsd,
         ngnPerGbp,
+        ngnPerEur,
         roundWhole: opts?.roundWhole ?? opts?.roundUsd,
         applyInternationalBuffer: opts?.applyInternationalBuffer ?? true,
       }),
-    [currency, ngnPerUsd, ngnPerGbp],
+    [currency, ngnPerUsd, ngnPerGbp, ngnPerEur],
   );
 
   const formatCautionDeposit = useCallback(
@@ -380,10 +429,11 @@ export function CurrencyProvider({
       formatStayAmount(depositNgn, currency, {
         ngnPerUsd,
         ngnPerGbp,
+        ngnPerEur,
         roundWhole: opts?.roundWhole,
         applyInternationalBuffer: false,
       }),
-    [currency, ngnPerUsd, ngnPerGbp],
+    [currency, ngnPerUsd, ngnPerGbp, ngnPerEur],
   );
 
   const buildStayQuote = useCallback(
@@ -404,6 +454,7 @@ export function CurrencyProvider({
       currencySymbol: CURRENCY_SYMBOLS[currency],
       ngnPerUsd,
       ngnPerGbp,
+      ngnPerEur,
       ngnPerUnit,
       activeRateConfig,
       activeRateIsAvailable,
@@ -423,6 +474,7 @@ export function CurrencyProvider({
       currency,
       ngnPerUsd,
       ngnPerGbp,
+      ngnPerEur,
       ngnPerUnit,
       activeRateConfig,
       activeRateIsAvailable,

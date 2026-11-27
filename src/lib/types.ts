@@ -185,7 +185,7 @@ export type PayoutStatus =
   | 'withheld'
   | 'reversed';
 
-export type SupportedCurrency = 'NGN' | 'USD' | 'GBP';
+export type SupportedCurrency = 'NGN' | 'USD' | 'GBP' | 'EUR';
 
 export interface TimelineEvent {
   at: string;
@@ -391,7 +391,7 @@ export interface PartnerReferralReward {
 
 export interface ExchangeRateConfig {
   currency: Exclude<SupportedCurrency, 'NGN'>;
-  currencyPair: string; // 'NGN/USD' | 'NGN/GBP' | 'USD_NGN' | 'GBP_NGN'
+  currencyPair: string; // 'NGN/USD' | 'NGN/GBP' | 'NGN/EUR' | 'USD_NGN' | 'GBP_NGN'
   ngnPerUnit: number;
   bufferRate?: number;
   source: string;

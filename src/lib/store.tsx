@@ -323,7 +323,7 @@ type RemoteCautionDeposit = {
 };
 
 type RemoteExchangeRate = {
-  currency: 'USD' | 'GBP'; currency_pair: 'NGN/USD' | 'NGN/GBP';
+  currency: 'USD' | 'GBP' | 'EUR'; currency_pair: 'NGN/USD' | 'NGN/GBP' | 'NGN/EUR';
   ngn_per_unit: number; buffer_rate: number; source: string;
   effective_at: string; expires_at?: string | null; is_active: boolean;
   updated_by?: string | null; updated_at: string;
@@ -698,7 +698,7 @@ function toRemoteBooking(
   const convBaseVal = row.converted_base_amount !== undefined ? Number(row.converted_base_amount) : row.guest_total;
   const intlBufVal = row.international_buffer_amount !== undefined ? Number(row.international_buffer_amount) : 0;
   const quotedTotalVal = row.quoted_guest_total !== undefined ? Number(row.quoted_guest_total) : row.guest_total;
-  const isForeign = quoteCurr === 'USD' || quoteCurr === 'GBP';
+  const isForeign = quoteCurr === 'USD' || quoteCurr === 'GBP' || quoteCurr === 'EUR';
   return {
     id: row.id,
     ref: row.reference,
@@ -2756,7 +2756,7 @@ interface Store {
   requestBooking: (input: { property: Property; guestId: string; guestName: string; guestEmail: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string; quoteCurrency?: SupportedCurrency; closingAgentCode?: string; guestReferralSource?: string }) => Promise<{ ok: boolean; error?: string; booking?: Booking }>;
   refreshBookingFxQuote: (bookingId: string, quoteCurrency: SupportedCurrency) => Promise<void>;
   transitionCautionDeposit: (bookingId: string, status: CautionDepositStatus, opts?: { deductedAmountNgn?: number; refundedAmountNgn?: number; inspectionNotes?: string; deductionReason?: string; refundReference?: string; evidence?: string[] }) => Promise<void>;
-  updateExchangeRateConfig: (input: { currency: 'USD' | 'GBP'; ngnPerUnit: number; source: string; quoteTtlMinutes?: number; isActive?: boolean; expiresAt?: string | null }) => Promise<void>;
+  updateExchangeRateConfig: (input: { currency: 'USD' | 'GBP' | 'EUR'; ngnPerUnit: number; source: string; quoteTtlMinutes?: number; isActive?: boolean; expiresAt?: string | null }) => Promise<void>;
   updatePayoutStatus: (entryId: string, payoutStatus: PayoutStatus, note?: string) => Promise<void>;
   bookingTransition: (id: string, to: Booking['status'], opts?: { note?: string; reason?: string }) => Promise<void>;
   retryBookingNotifications: (bookingId: string) => Promise<{ ok: boolean; sent: number; failed: number; error?: string }>;

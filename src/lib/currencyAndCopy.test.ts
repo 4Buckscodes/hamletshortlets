@@ -39,8 +39,8 @@ function collectFiles(dir: string, acc: string[] = []): string[] {
 
 describe('Automatic guest currency detection & conversion (NGN ₦ / USD $ / GBP £)', () => {
   it('converts Naira stay amounts into USD and GBP accurately and formats all three currencies', () => {
-    expect(CURRENCY_ORDER).toEqual(['NGN', 'USD', 'GBP']);
-    expect(CURRENCY_SYMBOLS).toEqual({ NGN: '₦', USD: '$', GBP: '£' });
+    expect(CURRENCY_ORDER).toEqual(['NGN', 'USD', 'GBP', 'EUR']);
+    expect(CURRENCY_SYMBOLS).toEqual({ NGN: '₦', USD: '$', GBP: '£', EUR: '€' });
 
     expect(DEFAULT_NGN_PER_USD).toBe(1600);
     expect(convertNairaToUsd(160_000, 1600)).toBe(100);
