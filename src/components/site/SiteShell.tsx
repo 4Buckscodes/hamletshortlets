@@ -700,6 +700,7 @@ const FOOTER_LINK_GROUPS = [
       { href: '/about', label: 'About HAMLET' },
       { href: '/blog', label: 'Blog' },
       { href: '/faqs', label: 'FAQs' },
+      { href: '/contact', label: 'Contact us' },
       { href: '/legal', label: 'Legal, privacy & NDPR' },
     ],
   },

@@ -351,7 +351,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-ink-800 pt-5 text-[11.5px] text-ink-400 sm:flex-row sm:items-center">
-          <p>© 2026 HAMLET Marketplace Ltd · {HAMLET_TAGLINE}</p>
+          <p>© 2026 HAMLET.REST · {HAMLET_TAGLINE}</p>
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/legal/privacy" className="transition hover:text-white">Privacy</Link>
             <Link to="/legal/terms" className="transition hover:text-white">Terms</Link>

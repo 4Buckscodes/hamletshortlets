@@ -164,6 +164,13 @@
 /* Naira reference under a foreign-currency price: small, muted, on its own line. */
 .hm-naira-ref { display: block; margin-top: 2px; color: var(--hm-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 
+/* Contact page: ruled rows, one action per row. */
+.hm-contact-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--hm-text); }
+.hm-contact-list > li { display: flex; align-items: center; justify-content: space-between; gap: 24px 48px; padding-block: 28px; border-bottom: 1px solid var(--hm-line); }
+.hm-contact-list .hm-body { margin-top: 6px; max-width: 56ch; }
+.hm-contact-list .hm-link { flex: none; }
+@media (max-width: 640px) { .hm-contact-list > li { flex-direction: column; align-items: flex-start; } }
+
 /* Area page facts: a plain definition list on hairlines. */
 .hm-area-facts dl { margin: 20px 0 0; border-top: 1px solid var(--hm-text); }
 .hm-area-facts dl > div { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 16px; padding-block: 16px; border-bottom: 1px solid var(--hm-line); }
