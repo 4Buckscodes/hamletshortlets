@@ -140,6 +140,68 @@ describe('HAMLET Share Engine — PostgreSQL Schema, Attribution, Ledger & Priva
     );
   });
 
+  it('Share visit hardening: caller keys cannot bypass hourly dedupe and QR validation is read-only', async () => {
+    const token = await asUser(db, closingPartnerId, async tx => {
+      const { rows } = await tx.query<{ r: { share_token: string } }>(
+        `select public.get_or_create_partner_share_link($1) as r`,
+        [approvedPropertyId],
+      );
+      return rows[0].r.share_token;
+    });
+
+    const sessionKey = 'vsess_visit_hardening_0001';
+    await asAnon(db, async tx => {
+      await tx.query(
+        `select public.record_share_link_visit($1, $2, 'caller-key-one')`,
+        [token, sessionKey],
+      );
+      await tx.query(
+        `select public.record_share_link_visit($1, $2, 'caller-key-two')`,
+        [token, sessionKey],
+      );
+      const { rows } = await tx.query<{ r: { valid: boolean; property_id: string } }>(
+        `select public.resolve_public_share_link($1) as r`,
+        [token],
+      );
+      expect(rows[0].r.valid).toBe(true);
+      expect(rows[0].r.property_id).toBe(approvedPropertyId);
+      const { rows: eventRows } = await tx.query<{ n: number }>(
+        `select count(*)::int as n
+         from public.property_share_events
+         where event_type = 'link_visited' and session_key = $1`,
+        [sessionKey],
+      );
+      expect(eventRows[0].n).toBe(1);
+      const { rows: sessionRows } = await tx.query<{ n: number }>(
+        `select count(*)::int as n
+         from public.share_attribution_sessions
+         where session_key = $1 and property_id = $2`,
+        [sessionKey, approvedPropertyId],
+      );
+      expect(sessionRows[0].n).toBe(1);
+    });
+
+    const tooLongKey = await asAnon(db, async tx => {
+      const { rows } = await tx.query<{ r: { valid: boolean; reason: string } }>(
+        `select public.record_share_link_visit($1, $2, $3) as r`,
+        [token, 'vsess_visit_hardening_0002', 'x'.repeat(161)],
+      );
+      return rows[0].r;
+    });
+    expect(tooLongKey.valid).toBe(false);
+    expect(tooLongKey.reason).toBe('invalid_idempotency_key');
+
+    const probeSessionCount = await asServiceRole(db, async tx => {
+      const { rows } = await tx.query<{ n: number }>(
+        `select count(*)::int as n
+         from public.share_attribution_sessions
+         where session_key = 'qr_verify_probe_0000'`,
+      );
+      return rows[0].n;
+    });
+    expect(probeSessionCount).toBe(0);
+  });
+
   it('Scenario A + Ledger Reconciliation: tracks share -> visit -> auth bind -> enquiry -> booking -> confirmation -> completion -> reversal accurately', async () => {
     // 1. Closing agent initiates WhatsApp share & copies link
     const shareRes = await asUser(db, closingPartnerId, async tx => {
