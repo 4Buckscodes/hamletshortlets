@@ -62,9 +62,9 @@ begin
   select e.id into duplicate_enquiry_id
     from public.property_enquiries e
     where e.property_id = target_property_id
-      and lower(btrim(e.guest_email)) = clean_email
-      and btrim(e.guest_name) = clean_name
-      and btrim(e.message) = clean_msg
+      and e.guest_email = clean_email
+      and e.guest_name = clean_name
+      and e.message = clean_msg
       and e.created_at >= now() - interval '10 minutes'
     order by e.created_at desc
     limit 1;
