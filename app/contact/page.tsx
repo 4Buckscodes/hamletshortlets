@@ -9,7 +9,7 @@ const DESCRIPTION =
   'How to reach HAMLET: booking issues from your account, partner enquiries, and email for everything else.';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: `${TITLE} — HAMLET.REST`,
+  title: TITLE,
   description: DESCRIPTION,
   pathname: '/contact',
 });

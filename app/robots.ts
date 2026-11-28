@@ -47,7 +47,6 @@ const PUBLIC_AI_ROUTES = [
   '/legal',
   '/contact',
   '/partners/apply',
-  '/partners/apply/form',
   '/llms.txt',
   '/llms-full.txt',
   '/llms-stays.txt',

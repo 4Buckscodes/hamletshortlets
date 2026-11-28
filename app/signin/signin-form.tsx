@@ -15,7 +15,7 @@ import { GoogleContinueButton } from '@/components/auth/GoogleContinueButton';
 import { FormField } from '@/components/forms/ProgressiveFormPrimitives';
 
 const OAUTH_CONTEXT_STORAGE_KEY = 'hamlet:oauth-context';
-type Mode = 'signin' | 'signup' | 'reset';
+type Mode = 'signin' | 'signup' | 'reset' | 'recovery';
 
 /** Plain-language auth errors; never show raw network or provider text. */
 function friendlyAuthError(caught: unknown, bookingIntent: boolean) {
@@ -57,6 +57,22 @@ export default function SignInForm() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+
+  // The email link signs the guest in with a short-lived recovery session. Ask for a new
+  // password right away instead of dropping them on the normal sign-in form.
+  useEffect(() => {
+    if (!client) return;
+    const timer = window.setTimeout(() => {
+      if (/[#&]type=recovery\b/.test(window.location.hash)) setMode('recovery');
+    }, 0);
+    const { data } = client.auth.onAuthStateChange(event => {
+      if (event === 'PASSWORD_RECOVERY') setMode('recovery');
+    });
+    return () => {
+      window.clearTimeout(timer);
+      data.subscription.unsubscribe();
+    };
+  }, [client]);
 
   const isPartnerSignup = Boolean(requestedNext?.startsWith('/partners'));
   const bookingIntent = Boolean(requestedNext?.startsWith('/stays/'));
@@ -120,6 +136,25 @@ export default function SignInForm() {
     setError('');
     setMessage('');
     const cleanEmail = email.trim().toLowerCase();
+    if (mode === 'recovery') {
+      if (!client) return;
+      if (password.length < 8) {
+        setError('Use a password with at least 8 characters.');
+        return;
+      }
+      setBusy(true);
+      try {
+        const { data, error: updateError } = await client.auth.updateUser({ password });
+        if (updateError) throw updateError;
+        window.history.replaceState(null, '', window.location.pathname);
+        if (data.user) await resolveRoleAndNavigate(data.user.id, false);
+      } catch {
+        setError('We couldn’t save your new password. The link may have expired. Request a new reset link and try again.');
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (!cleanEmail || !cleanEmail.includes('@')) {
       setError('Enter a valid email address.');
       return;
@@ -195,20 +230,26 @@ export default function SignInForm() {
         </div>
       )}
 
+      {mode !== 'recovery' && (
       <div role="tablist" aria-label="Authentication mode" className="hm-segmented">
         <button type="button" role="tab" aria-selected={mode === 'signin'} onClick={() => { setMode('signin'); setError(''); setMessage(''); }}>Sign in</button>
         <button type="button" role="tab" aria-selected={mode === 'signup'} onClick={() => { setMode('signup'); setError(''); setMessage(''); }}>Create account</button>
       </div>
+      )}
 
       <div className="hm-auth-heading">
         <h2 className="hm-h2">
-          {bookingIntent && mode !== 'reset' ? (
+          {bookingIntent && mode !== 'reset' && mode !== 'recovery' ? (
             <>
               Almost there. {mode === 'signup' ? 'Create an account' : 'Sign in'} <em>to send your request.</em>
             </>
           ) : mode === 'signup' ? (
             <>
               Create your <em>account.</em>
+            </>
+          ) : mode === 'recovery' ? (
+            <>
+              Choose a new <em>password.</em>
             </>
           ) : mode === 'reset' ? (
             <>
@@ -223,7 +264,9 @@ export default function SignInForm() {
         <p className="hm-meta">
           {mode === 'signup'
             ? 'Book verified stays or open your partner workspace.'
-            : mode === 'reset'
+            : mode === 'recovery'
+              ? 'Pick a new password for your HAMLET account. You will be signed in straight after.'
+              : mode === 'reset'
               ? 'We’ll email you a secure link to set a new password.'
               : 'Sign in to manage your bookings or your partner workspace.'}
         </p>
@@ -239,12 +282,14 @@ export default function SignInForm() {
       )}
 
       <form onSubmit={handleSubmit} className="hm-auth-fields">
+        {mode !== 'recovery' && (
         <FormField label="Email address">
           {fieldProps => <input {...fieldProps} required type="email" inputMode="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="hm-input" />}
         </FormField>
+        )}
 
         {mode !== 'reset' && (
-          <FormField label="Password">
+          <FormField label={mode === 'recovery' ? 'New password' : 'Password'}>
             {fieldProps => (
               <div className="relative">
                 <input {...fieldProps} required minLength={8} type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className="hm-input" style={{ paddingRight: 52 }} />
@@ -281,7 +326,7 @@ export default function SignInForm() {
 
         <div className="hm-auth-actions">
           <button type="submit" disabled={busy || oauthBusy} className="hm-btn hm-btn-primary hm-btn-block">
-            {busy ? (mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in'}
+            {busy ? (mode === 'recovery' ? 'Saving…' : mode === 'reset' ? 'Sending link…' : mode === 'signup' ? 'Creating account…' : 'Signing in…') : mode === 'recovery' ? 'Save new password' : mode === 'reset' ? 'Send password reset link' : mode === 'signup' ? 'Create my account' : 'Sign in'}
           </button>
           {mode === 'reset' && <button type="button" onClick={() => { setMode('signin'); setError(''); }} className="hm-btn hm-btn-ghost hm-btn-block">Back to sign in</button>}
         </div>
