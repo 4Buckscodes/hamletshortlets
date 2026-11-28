@@ -42,4 +42,13 @@ describe('homepage hero motion', () => {
   it('keeps the search button inside its fields (no hover scale poking past the edges)', () => {
     expect(css).toMatch(/\.hp-search-submit \{ transform: none !important; \}/);
   });
+
+  it('does not repeat itself: the intro line adds new information', () => {
+    const lede = hero.match(/<p className="hp-lede">([^<]*)<\/p>/)?.[1] ?? '';
+    expect(lede.length).toBeGreaterThan(0);
+    // The eyebrow already says "Verified shortlets in Lagos" and the headline starts with "Find".
+    expect(lede).not.toMatch(/verified/i);
+    expect(lede).not.toMatch(/\bfind\b/i);
+    expect(lede).not.toMatch(/\bLagos\b/);
+  });
 });
