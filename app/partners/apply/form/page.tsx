@@ -8,12 +8,16 @@ import {
 } from '@/lib/structured-data';
 import PartnerApplicationForm from '../partner-application-form';
 
-export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Payout Identity Verification — HAMLET.REST',
+export const metadata: Metadata = {
+  ...buildPublicPageMetadata({
+  title: 'Payout Identity Verification',
   description:
     'Complete identity verification for HAMLET partner payouts. Your partner workspace remains active while verification is reviewed.',
   pathname: '/partners/apply/form',
-});
+  }),
+  // A private step for signed-in partners: keep it out of search results.
+  robots: { index: false, follow: false },
+};
 
 const PARTNER_APPLICATION_FORM_SCHEMA = buildInformationalPageSchema({
   title: 'Payout Identity Verification — HAMLET',
