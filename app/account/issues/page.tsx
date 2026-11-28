@@ -1,5 +1,6 @@
 'use client';
 
+import { loadBookingPropertySummaries, withPropertySummaries } from '@/lib/bookingProperties';
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getBrowserSupabase } from '@/lib/next-supabase';
@@ -20,7 +21,8 @@ type Booking = {
   status: string;
   check_in: string;
   check_out: string;
-  properties?: { title?: string } | null;
+  property_id?: string | null;
+  properties?: { title?: string | null } | null;
 };
 
 type Issue = {
@@ -163,7 +165,7 @@ export default function AccountIssuesPage() {
     const [bookingResult, issueResult] = await Promise.all([
       db
         .from('bookings')
-        .select('id,reference,status,check_in,check_out,properties(title)')
+        .select('id,reference,status,check_in,check_out,property_id')
         .order('created_at', { ascending: false }),
       db
         .from('booking_issues')
@@ -175,7 +177,8 @@ export default function AccountIssuesPage() {
     if (bookingResult.error) {
       setError('We could not load your bookings. Refresh and try again.');
     } else {
-      const list = (bookingResult.data || []) as unknown as Booking[];
+      const summaries = await loadBookingPropertySummaries(db);
+      const list = withPropertySummaries((bookingResult.data || []) as unknown as Booking[], summaries) as unknown as Booking[];
       setBookings(list);
       const qBooking = new URLSearchParams(window.location.search).get('bookingId');
       if (qBooking && list.some(b => b.id === qBooking)) {

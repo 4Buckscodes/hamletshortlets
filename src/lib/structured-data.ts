@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { stayPath } from './stayRoutes';
 import { hasReliableLocationData } from './areas';
 import {
   formatAccommodationLabel,
@@ -9,7 +10,6 @@ import type { PublicStayRecord } from './next-supabase';
 
 export const HAMLET_CANONICAL_ORIGIN = 'https://hamlet.rest';
 export const HAMLET_BRAND = 'HAMLET';
-export const HAMLET_LEGAL_NAME = 'HAMLET Marketplace Ltd';
 export const HAMLET_PARENT_ORGANIZATION_NAME = 'Abundance Abodes';
 export const HAMLET_ORGANIZATION_ID = `${HAMLET_CANONICAL_ORIGIN}/#organization`;
 export const HAMLET_PARENT_ORGANIZATION_ID = `${HAMLET_CANONICAL_ORIGIN}/#parent-organization`;
@@ -21,9 +21,12 @@ export const HAMLET_VERIFIED_CONTACT_EMAIL = 'hello@hamlet.rest';
 
 /**
  * Verified official social media profile URLs for HAMLET.
- * Kept empty until official social handles are verified so unverified URLs are never emitted.
+ * Only handles the business has confirmed are listed, so unverified URLs are never emitted.
  */
-export const HAMLET_VERIFIED_SOCIAL_PROFILES: readonly string[] = [];
+export const HAMLET_VERIFIED_SOCIAL_PROFILES: readonly string[] = [
+  'https://www.instagram.com/hamletrest/',
+  'https://www.tiktok.com/@hamlet.rest',
+];
 
 export const HAMLET_BUSINESS_DESCRIPTION =
   'HAMLET is a verified shortlet marketplace in Lagos, Nigeria by Abundance Abodes, connecting guests with inspected serviced apartments across Lagos Island and Lagos Mainland.';
@@ -164,7 +167,6 @@ export function buildOrganizationSchema(
     '@id': HAMLET_ORGANIZATION_ID,
     name: HAMLET_BRAND,
     alternateName: ['HAMLET.REST', 'HAMLET Shortlets'],
-    legalName: HAMLET_LEGAL_NAME,
     url: HAMLET_CANONICAL_ORIGIN,
     slogan: 'Your stay, sorted.',
     description: HAMLET_BUSINESS_DESCRIPTION,
@@ -322,7 +324,7 @@ function buildApprovedStaysItemListNode(
       '@type': 'ListItem',
       position: index + 1,
       name: stay.title.trim(),
-      url: buildNextCanonicalUrl(`/stays/${encodeURIComponent(stay.id)}`),
+      url: buildNextCanonicalUrl(stayPath(stay)),
     })),
   };
 }
@@ -571,8 +573,7 @@ export function buildPropertyDetailSchema({
   stay,
   publicLocationSummary,
 }: PropertyDetailSchemaInput): Record<string, unknown> {
-  const encodedId = encodeURIComponent(stay.id);
-  const relativePath = `/stays/${encodedId}`;
+  const relativePath = stayPath(stay);
   const canonicalUrl = buildNextCanonicalUrl(relativePath);
   const cleanTitle = stay.title.trim();
   const cleanArea = (stay.area || '').trim();

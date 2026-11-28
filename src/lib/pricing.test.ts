@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { renderLlmFull, renderLlmMain } from './llm-discovery';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
   calculateBookingCurrencyQuote,
@@ -328,6 +329,14 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
       ...collectActiveFiles(join(ROOT, 'src')),
       ...collectActiveFiles(join(ROOT, 'public')),
       ...collectActiveFiles(join(ROOT, 'supabase', 'functions')),
+      join(ROOT, 'src', 'lib', 'llm-discovery.ts'),
+      ...[
+        'llms.txt/route.ts',
+        'llms-full.txt/route.ts',
+        'llms-stays.txt/route.ts',
+        'llms.md/route.ts',
+        'llms-full.md/route.ts',
+      ].map(route => join(ROOT, 'app', route)),
       join(ROOT, 'index.html'),
     ];
 
@@ -365,13 +374,16 @@ describe('HAMLET Commercial Policy Cleanup & Pricing Guarantees', () => {
 
     for (const relPath of [
       ['src', 'components', 'site', 'SiteShell.tsx'],
-      ['public', 'llms.txt'],
-      ['public', 'llms-full.txt'],
+      ['src', 'lib', 'llm-discovery.ts'],
     ] as const) {
       expect(readFileSync(join(ROOT, ...relPath), 'utf8')).toContain(
         APPROVED_OWNER_SERVICES_POLICY_COPY,
       );
     }
+
+    // Route handlers delegate to the shared renderer; assert the generated documents contain the approved policy copy.
+    expect(renderLlmMain()).toContain(APPROVED_OWNER_SERVICES_POLICY_COPY);
+    expect(renderLlmFull()).toContain(APPROVED_OWNER_SERVICES_POLICY_COPY);
   });
 });
 

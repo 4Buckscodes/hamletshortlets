@@ -4,6 +4,7 @@ import { statusEntry } from '@/lib/statusLabels';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PauseCircle, PlayCircle, CalendarDays } from 'lucide-react';
+import { toTourVideo, tourVideoWatchUrl, type TourVideo } from '@/lib/tourVideo';
 import {
   getBrowserSupabase,
   PARTNER_PROPERTY_SELECT,
@@ -40,6 +41,7 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
   const [property, setProperty] = useState<RawPropertyRow | null>(null);
   const [authorityBasis, setAuthorityBasis] = useState('');
   const [submittedRole, setSubmittedRole] = useState('Property owner');
+  const [tourVideo, setTourVideo] = useState<TourVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -74,6 +76,18 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
         .limit(1)
         .maybeSingle(),
     ]);
+
+    // Separate, best-effort read: a missing column (migration not applied yet) must never break editing.
+    const videoRes = await db
+      .from('properties')
+      .select('tour_video_provider,tour_video_id')
+      .eq('id', propertyId)
+      .maybeSingle();
+    setTourVideo(
+      videoRes.error
+        ? null
+        : toTourVideo(videoRes.data?.tour_video_provider, videoRes.data?.tour_video_id),
+    );
 
     if (propRes.error || !propRes.data) {
       setError('Property not found or your partner account cannot manage it.');
@@ -161,6 +175,7 @@ export default function PropertyEditPanel({ propertyId }: { propertyId: string }
     capacity: Number(property.capacity ?? 2),
     bedSetup: property.bed_setup || '',
     imageUrls: Array.isArray(property.image_urls) ? property.image_urls : [],
+    tourVideoUrl: tourVideo ? tourVideoWatchUrl(tourVideo) : '',
     amenities: Array.isArray(property.amenities) ? property.amenities : [],
     houseRulesText: Array.isArray(property.house_rules)
       ? property.house_rules.join('\n')

@@ -2,6 +2,7 @@ export type BookingNotificationEventType =
   | 'booking_request_created'
   | 'booking_availability_confirmed'
   | 'booking_availability_declined'
+  | 'booking_payment_reminder'
   | 'booking_payment_confirmed'
   | 'booking_cancelled'
   | 'booking_expired'
@@ -145,7 +146,7 @@ function formatDateReadable(isoDate: string | undefined): string {
 }
 
 function formatDateTimeWat(isoDateTime: string | null | undefined): string {
-  if (!isoDateTime) return 'Within 48 hours of acceptance';
+  if (!isoDateTime) return 'Within 2 hours of availability being confirmed';
   const date = new Date(isoDateTime);
   if (Number.isNaN(date.getTime())) return isoDateTime;
   return `${date.toLocaleString('en-GB', {
@@ -373,7 +374,7 @@ export function renderBookingNotificationEmail(input: {
           introHtml: `<p style="margin:0;">Hi ${escapeHtml(guestName)}, thank you for requesting <strong>${escapeHtml(propertyTitle)}</strong> on HAMLET.</p>`,
           noticeTone: 'amber',
           noticeHtml:
-            '<strong>Awaiting availability confirmation — not yet confirmed:</strong> Your stay is not confirmed yet and no payment has been collected. Once the authorised property partner confirms availability, we will email you a 48-hour payment window to complete checkout securely on HAMLET.',
+            '<strong>Awaiting availability confirmation — not yet confirmed:</strong> Your stay is not confirmed yet and no payment has been collected. Once the authorised property partner confirms availability, we will email you, and you will have 2 hours to complete checkout securely on HAMLET.',
           rows,
           ctaLabel: 'View booking status on HAMLET',
           ctaUrl: guestUrl,
@@ -418,7 +419,7 @@ export function renderBookingNotificationEmail(input: {
           thumbnailAlt: propertyTitle,
           noticeTone: 'amber',
           noticeHtml:
-            '<strong>Action required inside HAMLET:</strong> Confirming availability commits these dates for a 48-hour guest payment window at the stated rate. Opening this link does not change booking status automatically — sign in and confirm or decline on your dashboard.',
+            '<strong>Action required inside HAMLET:</strong> Confirming availability holds these dates for 2 hours while the guest pays at the stated rate. Opening this link does not change booking status automatically — sign in and confirm or decline on your dashboard.',
           rows,
           ctaLabel: 'Review booking request',
           ctaUrl: partnerUrl,
@@ -432,7 +433,7 @@ export function renderBookingNotificationEmail(input: {
             'Sign in to your HAMLET Partner Workspace to review the property and guest request and confirm or decline availability.',
           ],
           notice:
-            'Confirming availability reserves these dates for a 48-hour guest payment window. Actions must be submitted inside your authenticated HAMLET dashboard.',
+            'Confirming availability holds these dates for 2 hours while the guest pays. Actions must be submitted inside your authenticated HAMLET dashboard.',
           rows,
           ctaLabel: 'Review booking request',
           ctaUrl: partnerUrl,
@@ -503,10 +504,10 @@ export function renderBookingNotificationEmail(input: {
         subject,
         html: renderEmailHtmlShell({
           eyebrow: 'Availability confirmed · Next step: Payment',
-          heading: 'Your dates are available — complete payment within 48 hours',
+          heading: 'Your dates are available — complete payment within 2 hours',
           introHtml: `<p style="margin:0;">Hi ${escapeHtml(guestName)}, good news — availability has been confirmed for <strong>${escapeHtml(propertyTitle)}</strong>. Your booking is now <strong>awaiting payment</strong>.</p>`,
           noticeTone: 'jade',
-          noticeHtml: `<strong>Complete payment before ${escapeHtml(deadlineFmt)}:</strong> Your booking is <strong>not confirmed yet</strong> until payment is completed via HAMLET's verified Paystack checkout and confirmed server-side. Unpaid holds expire automatically after the deadline.`,
+          noticeHtml: `<strong>Complete payment before ${escapeHtml(deadlineFmt)}:</strong> You have 2 hours from this confirmation. Your booking is <strong>not confirmed yet</strong> until payment is completed via HAMLET's verified Paystack checkout and confirmed server-side. Unpaid holds expire automatically after the deadline and the dates are released.`,
           rows,
           ctaLabel: 'Complete payment on HAMLET',
           ctaUrl: guestUrl,
@@ -519,7 +520,7 @@ export function renderBookingNotificationEmail(input: {
             `Hi ${guestName}, availability has been confirmed for ${propertyTitle}.`,
             'Your booking status is now Awaiting Payment.',
           ],
-          notice: `Complete payment via HAMLET before ${deadlineFmt}. Your booking is NOT confirmed until verified server-side payment succeeds.`,
+          notice: `Complete payment via HAMLET before ${deadlineFmt} (2 hours from this confirmation). Your booking is NOT confirmed until verified server-side payment succeeds. Unpaid holds expire automatically.`,
           rows,
           ctaLabel: 'Complete payment on HAMLET',
           ctaUrl: guestUrl,
@@ -547,7 +548,7 @@ export function renderBookingNotificationEmail(input: {
       html: renderEmailHtmlShell({
         eyebrow: 'HAMLET operations update',
         heading: `${bookingReference} accepted — awaiting guest payment`,
-        introHtml: `<p style="margin:0;">Property availability has been confirmed and the 48-hour payment window is now active.</p>`,
+        introHtml: `<p style="margin:0;">Property availability has been confirmed and the guest's 2-hour payment window is now active.</p>`,
         rows,
         ctaLabel: 'View booking in Admin Operations',
         ctaUrl: adminUrl,
@@ -556,12 +557,56 @@ export function renderBookingNotificationEmail(input: {
       text: renderPlainText({
         heading: `${bookingReference} accepted — awaiting guest payment`,
         introLines: [
-          'Property availability has been confirmed and the 48-hour payment window is active.',
+          'Property availability has been confirmed and the guest\'s 2-hour payment window is active.',
         ],
         rows,
         ctaLabel: 'View booking in Admin Operations',
         ctaUrl: adminUrl,
         footerNote: 'Internal HAMLET operations notification.',
+      }),
+    };
+  }
+
+  // ─── Payment reminder (guest only, about 30 minutes before the deadline) ─────
+  if (eventType === 'booking_payment_reminder') {
+    const deadlineFmt = formatDateTimeWat(payload.payment_deadline);
+    const subject = sanitizeHeaderSubject(
+      `Reminder: about 30 minutes left to pay for HAMLET booking ${bookingReference}`,
+    );
+    const rows = [
+      { label: 'Booking reference', value: bookingReference },
+      { label: 'Property', value: propertyLabel },
+      { label: 'Check-in / Check-out', value: datesSummary },
+      { label: 'Amount due', value: guestTotalFmt },
+      ...foreignSettlementRow,
+      { label: 'Payment deadline', value: deadlineFmt },
+      { label: 'Current status', value: 'Awaiting payment (not yet confirmed)' },
+    ];
+    return {
+      subject,
+      html: renderEmailHtmlShell({
+        eyebrow: 'Payment reminder',
+        heading: 'About 30 minutes left to secure your dates',
+        introHtml: `<p style="margin:0;">Hi ${escapeHtml(guestName)}, your dates at <strong>${escapeHtml(propertyTitle)}</strong> are still held for you, but payment has not been completed yet.</p>`,
+        noticeTone: 'amber',
+        noticeHtml: `<strong>Pay before ${escapeHtml(deadlineFmt)}:</strong> If payment is not completed by then, the booking expires and the dates are released to other guests.`,
+        rows,
+        ctaLabel: 'Complete payment on HAMLET',
+        ctaUrl: guestUrl,
+        footerNote:
+          'Pay only through your signed-in HAMLET account. Screenshots or off-platform bank transfers never confirm a HAMLET booking.',
+      }),
+      text: renderPlainText({
+        heading: `About 30 minutes left to pay for ${bookingReference}`,
+        introLines: [
+          `Hi ${guestName}, your dates at ${propertyTitle} are still held, but payment has not been completed yet.`,
+        ],
+        notice: `Pay via HAMLET before ${deadlineFmt}. After that the booking expires and the dates are released.`,
+        rows,
+        ctaLabel: 'Complete payment on HAMLET',
+        ctaUrl: guestUrl,
+        footerNote:
+          'Pay only through your signed-in HAMLET account. Off-platform transfers or screenshots never confirm a booking.',
       }),
     };
   }
@@ -659,6 +704,7 @@ export function renderBookingNotificationEmail(input: {
       | 'booking_request_created'
       | 'booking_availability_confirmed'
       | 'booking_availability_declined'
+      | 'booking_payment_reminder'
     >,
     { subject: string; eyebrow: string; heading: string; summary: string }
   > = {
@@ -680,7 +726,7 @@ export function renderBookingNotificationEmail(input: {
       subject: `Payment window expired — HAMLET ${bookingReference}`,
       eyebrow: 'Payment deadline elapsed',
       heading: `Booking ${bookingReference} expired without payment`,
-      summary: 'The 48-hour payment deadline elapsed and the held dates have been released.',
+      summary: 'The payment deadline passed without payment, so the held dates have been released. If the dates are still free, a new request can be sent.',
     },
     booking_refunded: {
       subject: `Refund recorded — HAMLET ${bookingReference}`,

@@ -95,6 +95,8 @@ export interface Property {
   address: string;
   /** Owner's listed accommodation price per night in NGN (B_night). */
   nightlyRate: number;
+  /** Guest-facing nightly price from the public view; present when the private owner rate is not loaded. */
+  guestNightlyNgn?: number;
   cleaningFee: number; // known mandatory non-accommodation charge
   mandatoryCharges: MandatoryCharge[];
   deposit: number; // refundable caution fee — never fee-bearing, never buffered

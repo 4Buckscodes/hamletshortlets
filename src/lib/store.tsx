@@ -233,7 +233,7 @@ const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.r
 
 type RemoteProperty = {
   id: string; title: string; property_type: string; area: string; public_address: string;
-  nightly_rate: number; cleaning_fee: number; mandatory_charges: Property['mandatoryCharges'];
+  nightly_rate?: number | null; guest_nightly_ngn?: number | null; cleaning_fee: number; mandatory_charges: Property['mandatoryCharges'];
   refundable_deposit: number; bedrooms: number; bathrooms: number; capacity: number;
   bed_setup: string; amenities: string[]; image_urls: string[]; house_rules: string[];
   status: Property['status']; verification: Property['verification']; trust_label: string;
@@ -640,7 +640,8 @@ function toRemoteProperty(
     type: row.property_type,
     area: row.area,
     address: row.public_address,
-    nightlyRate: row.nightly_rate,
+    nightlyRate: row.nightly_rate ?? 0,
+    guestNightlyNgn: row.guest_nightly_ngn ?? undefined,
     cleaningFee: row.cleaning_fee,
     mandatoryCharges: row.mandatory_charges ?? [],
     deposit: row.refundable_deposit,
@@ -799,7 +800,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
 
   if (!user) {
     const [{ data, error }, publicSpansRaw, fxRatesRaw] = await Promise.all([
-      supabase.from('properties').select('*').eq('status', 'approved').order('created_at', { ascending: false }),
+      supabase.from('public_properties').select('*').eq('status', 'approved').order('created_at', { ascending: false }),
       safeQuery<RemotePublicSpan>(supabase.rpc('get_public_property_calendar', { target_property_ids: null })),
       safeQuery<RemoteExchangeRate>(supabase.from('currency_exchange_rates').select('*')),
     ]);
@@ -875,6 +876,7 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
     wayfinderStepsRaw,
     wayfinderSecretsRaw,
     wayfinderEventsRaw,
+    publicStayRowsRaw,
   ] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('properties').select('*').order('created_at', { ascending: false }),
@@ -908,6 +910,8 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
       ? safeQuery<RemoteWayfinderSecretRow>(supabase.from('property_wayfinder_secrets').select('*'))
       : Promise.resolve([] as RemoteWayfinderSecretRow[]),
     safeQuery<RemoteWayfinderEventRow>(supabase.from('wayfinder_events').select('*').order('created_at', { ascending: false }).limit(250)),
+    // Guests no longer read raw property rows; approved stays come from the redacted public view.
+    safeQuery<RemoteProperty>(supabase.from('public_properties').select('*').eq('status', 'approved')),
   ]);
 
   for (const result of [
@@ -932,7 +936,13 @@ async function loadSupabaseState(user: SupabaseUser | null): Promise<DBState> {
   const profileById = new Map(profileRows.map(item => [item.id, item]));
   const adminDirectoryRows = (adminDirectoryResult.data ?? []) as unknown as RemoteAdminDirectoryRow[];
   const adminDirectoryById = new Map(adminDirectoryRows.map(item => [item.id, item]));
-  const propertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
+  // Rows the user may read in full (assigned partners, admins), plus every approved stay from the public view.
+  const ownPropertyRows = (propertyResult.data ?? []) as unknown as RemoteProperty[];
+  const ownPropertyIds = new Set(ownPropertyRows.map(row => row.id));
+  const propertyRows: RemoteProperty[] = [
+    ...ownPropertyRows,
+    ...publicStayRowsRaw.filter(row => !ownPropertyIds.has(row.id)),
+  ];
   const accesses = (accessResult.data ?? []) as unknown as Array<{
     property_id: string; user_id: string; access_role: string; scope: string;
     commission_rate: number | null; commission_note: string; status: 'active' | 'revoked';

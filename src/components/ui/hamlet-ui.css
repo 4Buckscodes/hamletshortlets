@@ -356,9 +356,18 @@ textarea.hm-input { min-height: 110px; padding: 12px 14px; resize: vertical; }
 
 
 }
-/* The area strip is a plain scrollable row: no looping motion. The duplicate loop copy and pause control are not needed. */
-.hm-ticker { overflow-x: auto; scrollbar-width: thin; }
-.hm-ticker-toggle, .hm-ticker-track > [aria-hidden="true"] { display: none; }
+/* Area strip: a slow auto-scroll that pauses on hover, focus or with the pause button. No scrollbar.
+   With reduced motion it stops and the row is swiped or scrolled by hand, still without a scrollbar. */
+.hm-ticker { overflow: hidden; scrollbar-width: none; }
+.hm-ticker::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .hm-ticker-track { animation: hm-tick 60s linear infinite; }
+  .hm-ticker:hover .hm-ticker-track, .hm-ticker:focus-within .hm-ticker-track, .hm-ticker[data-paused="true"] .hm-ticker-track { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-ticker { overflow-x: auto; }
+  .hm-ticker .hm-ticker-toggle, .hm-ticker-track > [aria-hidden="true"] { display: none; }
+}
 @keyframes hm-live { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--hm-accent) 55%, transparent); } 80%, 100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--hm-accent) 0%, transparent); } }
 @keyframes hm-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 @keyframes hm-drift { from { transform: scale(1.04); } to { transform: scale(1.12) translate(-2%, -1.5%); } }
@@ -942,7 +951,7 @@ input, textarea { caret-color: var(--hm-blue); }
 .hm-content :is(p, li).leading-relaxed { font-size: 15px !important; line-height: 1.7 !important; }
 /* Selected chips read clearly in dark mode too (lime on dark, per DESIGN). */
 html[data-hm-dark="on"][data-theme="dark"] .hm-content .hm-chip[aria-pressed="true"] { border-color: var(--hm-lime); background: var(--hm-lime); color: var(--hm-on-accent); }
-/* Partner accept sheet: the money and the 48-hour rule, before the partner commits. */
+/* Partner accept sheet: the money and the 2-hour payment rule, before the partner commits. */
 .hm-accept-summary { display: grid; gap: 6px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--hm-line); }
 .hm-accept-summary > div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
 .hm-accept-summary dt { color: var(--hm-muted); }
@@ -1020,7 +1029,6 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 /* Area strip items: plain serif names divided by hairlines. */
 .hm-ticker-spark { display: none; }
 .hm-ticker-item { padding-inline: 22px; border-right: 1px solid var(--hm-band-line); transition: color var(--hm-t-micro) var(--hm-ease-soft); }
-.hm-ticker .hm-ticker-toggle { display: none; }
 
 /* Gold is a small second voice: marks and one-line accents only, never body text on light grounds. */
 .hl-badge svg, .hp-trust svg, .hp-place-text span, .hm-ticker-spark { color: var(--hm-gold-ink); }
@@ -1042,3 +1050,28 @@ html[data-hm-dark="on"][data-theme="dark"] { --hm-blue-deep: #2440d0; }
 .hm-content-hero-photo .hm-btn-lime { background: #d4b268; color: #0c1424; }
 .hm-content-hero-photo .hm-btn-ghost { border-color: rgba(244, 243, 239, 0.6); color: #f4f3ef; }
 .hm-content-hero-shade { background: rgba(9, 21, 40, 0.62); }
+
+/* Blog: readable article column and index list */
+.hm-prose { max-width: 720px; margin-inline: 0; }
+.hm-prose > * + * { margin-top: 18px; }
+.hm-prose .hm-body, .hm-prose li { color: var(--hm-text); font-size: 18px; line-height: 1.7; max-width: none; }
+.hm-prose h2 { margin-top: 40px; font-family: var(--hm-serif); font-size: clamp(24px, 2.8vw, 30px); font-weight: 480; letter-spacing: -0.015em; line-height: 1.2; text-wrap: balance; }
+.hm-prose h2 + * { margin-top: 12px; }
+.hm-prose ul { padding-left: 22px; list-style: disc; }
+.hm-prose li + li { margin-top: 8px; }
+.hm-prose-actions { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--hm-line); }
+.hm-blog-list { max-width: 760px; margin: 0; padding: 0; list-style: none; }
+.hm-blog-list > li { padding: 28px 0; border-bottom: 1px solid var(--hm-line); }
+.hm-blog-list > li:first-child { padding-top: 0; }
+.hm-blog-list > li:last-child { border-bottom: 0; }
+.hm-blog-list h2 { margin: 10px 0 10px; font-family: var(--hm-serif); font-size: clamp(26px, 3vw, 34px); font-weight: 450; letter-spacing: -0.02em; line-height: 1.12; text-wrap: balance; }
+.hm-blog-list h2 a { color: inherit; text-decoration: none; }
+.hm-blog-list h2 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.hm-blog-list .hm-body { margin-bottom: 14px; }
+.hm-content-title.hm-blog-title { max-width: 18ch; }
+
+/* Footer social icons */
+.hm-footer-brand .hm-footer-social { display: flex; gap: 8px; }
+.hm-footer-social a { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--hm-band-line); border-radius: 999px; color: var(--hm-on-band); transition: background-color 0.15s ease; }
+.hm-footer-social a:hover { background: var(--hm-neutral-soft); }
+.hm-footer-social a:focus-visible { outline: 2px solid var(--hm-text); outline-offset: 2px; }

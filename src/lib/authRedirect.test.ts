@@ -141,7 +141,7 @@ describe('authRedirect helpers', () => {
       context: new Response(
         JSON.stringify({
           ok: false,
-          error: 'The 48-hour payment deadline has expired. Submit a fresh booking request.',
+          error: 'The 2-hour payment window for this booking has closed. Submit a fresh booking request.',
         }),
         { status: 409, headers: { 'content-type': 'application/json' } },
       ),
@@ -149,7 +149,7 @@ describe('authRedirect helpers', () => {
 
     await expect(
       extractEdgeFunctionError(httpError, 'Fallback checkout error'),
-    ).resolves.toBe('The 48-hour payment deadline has expired. Submit a fresh booking request.');
+    ).resolves.toBe('The 2-hour payment window for this booking has closed. Submit a fresh booking request.');
 
     const genericHttpError = Object.assign(
       new Error('Edge Function returned a non-2xx status code'),

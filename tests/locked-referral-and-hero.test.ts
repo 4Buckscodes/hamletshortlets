@@ -63,7 +63,7 @@ describe('locked referral capture and static hero', () => {
     // No script is needed for the entrance, and the hero photo is never hidden from the browser.
     expect(hero).not.toContain("from 'gsap'");
     expect(motion).toContain('.hp-word-in { animation: hp-rise');
-    expect(motion).toContain('.hp-hero-art::after');
+    expect(motion).toContain('.hp-hero-frame::after');
     expect(motion).toContain('hp-curtain');
     expect(css).not.toMatch(/clip-path:\s*inset\(100%/);
     expect(css).not.toContain('hp-live');

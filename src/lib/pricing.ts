@@ -738,7 +738,8 @@ export function priceStay(
 }
 
 /** Guest-facing nightly accommodation price (B_night × 1.20) for property cards & search results. */
-export function estimateAllInclusiveNightly(property: { nightlyRate: number }): number {
+export function estimateAllInclusiveNightly(property: { nightlyRate: number; guestNightlyNgn?: number }): number {
+  if (typeof property.guestNightlyNgn === 'number' && property.guestNightlyNgn > 0) return property.guestNightlyNgn;
   return guestFacingNightlyNgn(property.nightlyRate);
 }
 

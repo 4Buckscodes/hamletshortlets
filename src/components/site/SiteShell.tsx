@@ -28,6 +28,7 @@ import {
   Sparkles,
   Send,
   LayoutDashboard,
+  Instagram,
 } from 'lucide-react';
 import {
   CurrencyProvider,
@@ -48,6 +49,8 @@ import {
   type PublicStayRecord,
 } from '@/lib/next-supabase';
 import type { ExchangeRateConfig } from '@/lib/types';
+import { formatNaira } from '@/lib/pricing';
+import { stayPath } from '@/lib/stayRoutes';
 
 interface SessionSummary {
   userId: string;
@@ -122,7 +125,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('pay') || q.includes('paystack') || q.includes('confirm') || q.includes('cancel') || q.includes('hold')) {
     return {
-      text: 'No charge is taken on request. Once the host confirms, a 48-hour Paystack payment window opens in My Bookings.',
+      text: 'No charge is taken on request. Once the host confirms, you have 2 hours to pay through Paystack in My Bookings.',
       links: [
         { label: 'How HAMLET works', href: '/how-it-works' },
         { label: 'My bookings', href: '/account/bookings' },
@@ -131,7 +134,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
   }
 
   return {
-    text: 'Ask about Lagos neighbourhoods, property verification, pricing, 48-hour payment holds, or listing a property.',
+    text: 'Ask about Lagos neighbourhoods, property verification, pricing, the 2-hour payment window, or listing a property.',
     links: [
       { label: 'Explore stays', href: '/stays' },
       { label: 'Verification & safety', href: '/safety' },
@@ -374,6 +377,7 @@ export function NextCurrencySwitcher(_props?: {
 const PRIMARY_NAV = [
   { href: '/stays', label: 'Explore stays' },
   { href: '/lagos', label: 'Lagos guide' },
+  { href: '/blog', label: 'Blog' },
   { href: '/how-it-works', label: 'How it works' },
   { href: '/safety', label: 'Safety' },
   { href: '/faqs', label: 'FAQs' },
@@ -517,6 +521,7 @@ export function SiteHeader() {
   const mobileGuestNav = [
     { href: '/stays', label: 'Explore stays' },
     { href: '/lagos', label: 'Lagos guide' },
+    { href: '/blog', label: 'Blog' },
     { href: '/how-it-works', label: 'How it works' },
     { href: '/safety', label: 'Safety' },
     { href: '/faqs', label: 'FAQs' },
@@ -691,7 +696,9 @@ const FOOTER_LINK_GROUPS = [
       { href: '/how-it-works', label: 'How bookings work' },
       { href: '/safety', label: 'Verification & safety' },
       { href: '/about', label: 'About HAMLET' },
+      { href: '/blog', label: 'Blog' },
       { href: '/faqs', label: 'FAQs' },
+      { href: '/contact', label: 'Contact us' },
       { href: '/legal', label: 'Legal, privacy & NDPR' },
     ],
   },
@@ -726,6 +733,16 @@ export function SiteFooter() {
             <p>Your stay, sorted. Verified shortlets across Lagos Mainland and Lagos Island, built by Abundance Abodes.</p>
             <p>
               Contact: <a href="mailto:hello@hamlet.rest">hello@hamlet.rest</a>
+            </p>
+            <p className="hm-footer-social">
+              <a href="https://www.instagram.com/hamletrest/" target="_blank" rel="me noopener noreferrer" aria-label="HAMLET on Instagram (opens in a new tab)">
+                <Instagram size={20} aria-hidden="true" />
+              </a>
+              <a href="https://www.tiktok.com/@hamlet.rest" target="_blank" rel="me noopener noreferrer" aria-label="HAMLET on TikTok (opens in a new tab)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+                </svg>
+              </a>
             </p>
           </div>
 
@@ -776,7 +793,7 @@ export function StayNightlyPrice({
   /** Append "· fees included" when the surrounding card does not already say it. */
   withFeesNote?: boolean;
 }) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency, activeRateIsAvailable } = useCurrency();
   const domesticNightly = getValidPublicGuestNightlyNgn(guestNightlyNgn);
 
   if (domesticNightly === null) {
@@ -795,6 +812,9 @@ export function StayNightlyPrice({
       <span className="text-xs font-medium text-ink-500">
         / night{withFeesNote ? ' · fees included' : ''}
       </span>
+      {currency !== 'NGN' && activeRateIsAvailable ? (
+        <span className="hm-naira-ref">{formatNaira(domesticNightly)} / night in naira</span>
+      ) : null}
     </span>
   );
 }
@@ -827,7 +847,7 @@ export function StayListingCard({
   const amenities = (stay.amenities ?? []).filter(Boolean);
   const visibleAmenities = amenities.slice(0, 3);
   const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
-  const detailHref = `/stays/${encodeURIComponent(stay.id)}${querySuffix}`;
+  const detailHref = `${stayPath(stay)}${querySuffix}`;
 
   const facts = [
     bedroomLabel,
@@ -869,7 +889,7 @@ export function StayListingCard({
         </span>
       </div>
       <Link href={detailHref} className="hl-body">
-        <p className="hl-where">{locationText}{corridor ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
+        <p className="hl-where">{locationText}{corridor && !locationText.toLowerCase().includes(corridor.toLowerCase()) ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>
         <h3 className="hl-title">{stay.title}</h3>
         <p className="hl-facts">{facts}{visibleAmenities.length ? ` · ${visibleAmenities.join(', ')}${extraAmenitiesCount > 0 ? ` +${extraAmenitiesCount}` : ''}` : ''}</p>
         <p className="hl-when">

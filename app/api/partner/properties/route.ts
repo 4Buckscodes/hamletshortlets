@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_PROPERTY_MEDIA_POLICY } from '@/lib/pricing';
+import { TOUR_VIDEO_PROVIDER_LABEL, parseTourVideo, type TourVideo } from '@/lib/tourVideo';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +21,9 @@ type Payload = {
   bedSetup?: string;
   amenities?: string[];
   imageUrls?: string[];
+  videoUrl?: string;
+  /** Legacy field name from the first YouTube-only release. */
+  youtubeUrl?: string;
   houseRules?: string[];
   firstAvailableDate?: string;
   calendarResponsiblePerson?: string;
@@ -144,12 +148,23 @@ function parseAndValidatePayload(body: Payload) {
     };
   }
 
+  // Optional tour video. Blank means none; anything else must be a YouTube, Vimeo or Instagram link.
+  const videoInput = text(body.videoUrl ?? body.youtubeUrl, 300);
+  const tourVideo = videoInput ? parseTourVideo(videoInput) : null;
+  if (videoInput && !tourVideo) {
+    return {
+      validationError:
+        'That video link is not supported. Paste a YouTube, Vimeo or Instagram post/reel link, or leave it blank.',
+    };
+  }
+
   const firstAvailableDate = text(body.firstAvailableDate, 20);
   const calendarResponsiblePerson = text(body.calendarResponsiblePerson, 120);
 
   return {
     saveAsDraft,
     title,
+    tourVideo,
     listingData: {
       title,
       property_type: propertyType,
@@ -185,6 +200,26 @@ function parseAndValidatePayload(body: Payload) {
     },
     correctionNote: text(body.correctionNote, 500) || null,
   };
+}
+
+/**
+ * Attaches (or clears) the optional tour video after the listing itself is saved. Deliberately
+ * non-fatal: the listing is already safely stored, so a failure here is reported as a warning
+ * rather than failing the whole submission.
+ */
+async function attachTourVideo(
+  db: Extract<ReturnType<typeof getAuthenticatedDb>, { db: unknown }>['db'],
+  propertyId: string,
+  video: TourVideo | null,
+): Promise<string | null> {
+  const { error } = await db.rpc('set_partner_property_video', {
+    target_property_id: propertyId,
+    video_provider: video?.provider ?? null,
+    video_id: video?.id ?? null,
+  });
+  if (!error) return null;
+  const name = video ? `${TOUR_VIDEO_PROVIDER_LABEL[video.provider]} video` : 'video change';
+  return `The listing was saved, but the ${name} could not be applied. You can try again by editing the listing.`;
 }
 
 export async function POST(request: Request) {
@@ -247,16 +282,29 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: savedProperty } = await db
+    .from('properties')
+    .select('slug')
+    .eq('id', propertyId)
+    .maybeSingle();
+  const videoWarning = parsed.tourVideo
+    ? await attachTourVideo(db, String(propertyId), parsed.tourVideo)
+    : null;
+  const createdMessage = parsed.saveAsDraft
+    ? 'Draft listing saved to your partner workspace. You can finish and submit it anytime.'
+    : 'Listing submitted for HAMLET review. It will not appear publicly until approved.';
+
   return NextResponse.json(
     {
       property: {
         id: propertyId,
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
+        slug: savedProperty?.slug ?? null,
+        // Public once HAMLET approves the listing; until then this address shows 'unavailable'.
+        urlWhenApproved: savedProperty?.slug ? '/stays/' + savedProperty.slug : null,
       },
-      message: parsed.saveAsDraft
-        ? 'Draft listing saved to your partner workspace. You can finish and submit it anytime.'
-        : 'Listing submitted for HAMLET review. It will not appear publicly until approved.',
+      message: videoWarning ? `${createdMessage} ${videoWarning}` : createdMessage,
     },
     { status: 201 },
   );
@@ -313,6 +361,15 @@ export async function PATCH(request: Request) {
     );
   }
 
+  // An explicit videoUrl (even blank) updates the video; an absent field leaves it untouched.
+  const videoWarning =
+    (body.videoUrl ?? body.youtubeUrl) !== undefined
+      ? await attachTourVideo(db, propertyId, parsed.tourVideo)
+      : null;
+  const updatedMessage = parsed.saveAsDraft
+    ? 'Draft changes saved.'
+    : 'Listing updated and resubmitted for HAMLET review.';
+
   return NextResponse.json(
     {
       property: {
@@ -320,9 +377,7 @@ export async function PATCH(request: Request) {
         title: parsed.title,
         status: parsed.saveAsDraft ? 'draft' : 'submitted',
       },
-      message: parsed.saveAsDraft
-        ? 'Draft changes saved.'
-        : 'Listing updated and resubmitted for HAMLET review.',
+      message: videoWarning ? `${updatedMessage} ${videoWarning}` : updatedMessage,
     },
     { status: 200 },
   );

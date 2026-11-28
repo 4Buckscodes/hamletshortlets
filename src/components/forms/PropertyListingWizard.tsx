@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { HoratioListingAssistant } from './HoratioListingAssistant';
+import { StayVideo } from '@/components/site/StayVideo';
 import { ISLAND_AND_LEKKI_AREAS, MAINLAND_AREAS } from '@/lib/areas';
 import {
   APPROVED_OWNER_SERVICES_POLICY_COPY,
@@ -11,6 +12,7 @@ import {
   guestFacingNightlyNgn,
 } from '@/lib/pricing';
 import { getBrowserSupabase } from '@/lib/next-supabase';
+import { parseTourVideo } from '@/lib/tourVideo';
 import {
   deletePropertyMediaObjects,
   extractPropertyMediaObjectPath,
@@ -40,6 +42,7 @@ export interface PropertyWizardValues {
   capacity: number;
   bedSetup: string;
   imageUrls: string[];
+  tourVideoUrl: string;
   amenities: string[];
   houseRulesText: string;
   nightlyRate: number;
@@ -52,6 +55,46 @@ export interface PropertyWizardValues {
   correctionNote: string;
 }
 
+export interface PropertySubmissionResult {
+  title: string;
+  area: string;
+  savedAsDraft: boolean;
+  message: string;
+  values: PropertyWizardValues;
+}
+
+/** Owner-level details that stay the same across the apartments one partner lists in a row. */
+export function carryOverOwnerDetails(values: PropertyWizardValues): Partial<PropertyWizardValues> {
+  return {
+    submittedRole: values.submittedRole,
+    authorityBasis: values.authorityBasis,
+    calendarResponsiblePerson: values.calendarResponsiblePerson,
+  };
+}
+
+/**
+ * Starting point for "add a similar unit" (e.g. another flat in the same building).
+ * Never copies identity-bearing or media fields: title, address, photos and availability
+ * stay blank so each listing is verified, duplicate-screened and photographed on its own,
+ * and removing one listing's photos can never touch another's.
+ */
+export function similarUnitStarter(values: PropertyWizardValues): Partial<PropertyWizardValues> {
+  return {
+    ...carryOverOwnerDetails(values),
+    propertyType: values.propertyType,
+    area: values.area,
+    bedrooms: values.bedrooms,
+    bathrooms: values.bathrooms,
+    capacity: values.capacity,
+    bedSetup: values.bedSetup,
+    amenities: [...values.amenities],
+    houseRulesText: values.houseRulesText,
+    nightlyRate: values.nightlyRate,
+    cleaningFee: values.cleaningFee,
+    deposit: values.deposit,
+  };
+}
+
 const DEFAULT_VALUES: PropertyWizardValues = {
   title: '',
   propertyType: 'Apartment',
@@ -62,6 +105,7 @@ const DEFAULT_VALUES: PropertyWizardValues = {
   capacity: 2,
   bedSetup: '',
   imageUrls: [],
+  tourVideoUrl: '',
   amenities: [],
   houseRulesText: '',
   nightlyRate: 0,
@@ -167,6 +211,7 @@ export function PropertyListingWizard({
   adminReviewNote,
   currentStatus,
   onCompleted,
+  onSubmitted,
 }: {
   mode: 'create' | 'edit';
   propertyId?: string;
@@ -174,6 +219,11 @@ export function PropertyListingWizard({
   adminReviewNote?: string | null;
   currentStatus?: string;
   onCompleted?: () => void;
+  /**
+   * Create mode only. When provided, it replaces `onCompleted` and receives what was just
+   * saved, so a parent can keep the owner in a "list the next property" loop.
+   */
+  onSubmitted?: (result: PropertySubmissionResult) => void;
 }) {
   const db = useMemo(() => getBrowserSupabase(), []);
 
@@ -263,7 +313,7 @@ export function PropertyListingWizard({
         return;
       }
       const { data } = await db
-        .from('properties')
+        .from('public_properties')
         .select('id,title,area')
         .eq('area', values.area)
         .ilike('title', values.title.trim())
@@ -279,6 +329,11 @@ export function PropertyListingWizard({
     }, 450);
     return () => window.clearTimeout(timer);
   }, [db, propertyId, values.area, values.title]);
+
+  const tourVideoPreview = useMemo(
+    () => parseTourVideo(values.tourVideoUrl),
+    [values.tourVideoUrl],
+  );
 
   const samplePricing = useMemo(() => {
     const cleanFee = Math.max(0, Math.round(Number(values.cleaningFee) || 0));
@@ -309,6 +364,9 @@ export function PropertyListingWizard({
       }
     }
     if (targetStep === 2) {
+      if (values.tourVideoUrl.trim() && !parseTourVideo(values.tourVideoUrl)) {
+        return 'That video link is not supported. Paste a YouTube, Vimeo or Instagram post/reel link, or clear the box.';
+      }
       if (mediaActivity.hasActiveUploads) {
         return 'Please wait a moment — your photographs are still optimising and uploading.';
       }
@@ -401,6 +459,7 @@ export function PropertyListingWizard({
           capacity: values.capacity,
           bedSetup: values.bedSetup,
           imageUrls: values.imageUrls,
+          videoUrl: values.tourVideoUrl.trim(),
           amenities: values.amenities,
           houseRules,
           nightlyRate: Math.round(Number(values.nightlyRate)),
@@ -441,13 +500,23 @@ export function PropertyListingWizard({
       }
 
       clearDraft();
-      setMessage(
+      const savedMessage =
         payload.message ||
-          (saveAsDraft
-            ? 'Draft saved to your partner workspace.'
-            : 'Listing submitted for HAMLET review.'),
-      );
-      onCompleted?.();
+        (saveAsDraft
+          ? 'Draft saved to your partner workspace.'
+          : 'Listing submitted for HAMLET review.');
+      setMessage(savedMessage);
+      if (mode === 'create' && onSubmitted) {
+        onSubmitted({
+          title: values.title.trim(),
+          area: values.area,
+          savedAsDraft: saveAsDraft,
+          message: savedMessage,
+          values,
+        });
+      } else {
+        onCompleted?.();
+      }
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'Could not save this listing.',
@@ -671,6 +740,33 @@ export function PropertyListingWizard({
             onChangeImageUrls={handleChangeImageUrls}
             onActivityChange={setMediaActivity}
           />
+          <div className="mt-6">
+            <FormField
+              label="Video tour"
+              optional
+              hint="Have a walkthrough on YouTube, Vimeo or Instagram? Paste the link and guests can watch it on your listing. It must be public (unlisted works on YouTube and Vimeo)."
+            >
+              {fieldProps => (
+                <input
+                  {...fieldProps}
+                  type="url"
+                  inputMode="url"
+                  autoComplete="off"
+                  value={values.tourVideoUrl}
+                  onChange={e =>
+                    setValues(prev => ({ ...prev, tourVideoUrl: e.target.value }))
+                  }
+                  placeholder="https://www.youtube.com/watch?v=… or instagram.com/reel/…"
+                  className={FIELD_INPUT_CLASS}
+                />
+              )}
+            </FormField>
+            {tourVideoPreview && (
+              <div className="mt-3 max-w-md">
+                <StayVideo video={tourVideoPreview} title={values.title || 'Your property'} />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* STEP 4: AMENITIES & HOUSE RULES */}

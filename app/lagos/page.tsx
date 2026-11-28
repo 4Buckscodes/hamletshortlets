@@ -16,7 +16,7 @@ export const revalidate = 300;
 async function loadAreaCounts(): Promise<Record<string, number>> {
   const db = getPublicSupabase();
   if (!db) return {};
-  const { data } = await db.from('properties').select('area').eq('status', 'approved');
+  const { data } = await db.from('public_properties').select('area').eq('status', 'approved');
   const counts: Record<string, number> = {};
   for (const row of (data ?? []) as Array<{ area?: string | null }>) {
     const key = (row.area || '').trim();
@@ -37,9 +37,9 @@ function countLabel(count: number) {
 }
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'Shortlets in Lagos — Mainland (Yaba, Shomolu, Surulere) & Island Guide',
+  title: 'Shortlets in Lagos: Island and Mainland Guide',
   description:
-    'Explore shortlets across Lagos Mainland — Yaba, Shomolu, Surulere, Gbagada, Maryland, Ikeja GRA & environs — and Lagos Island (Victoria Island, Ikoyi, Lekki Phase 1, Ajah) on HAMLET.REST.',
+    'Shortlets across Lagos Island (Victoria Island, Ikoyi, Lekki, Ajah) and Lagos Mainland (Yaba, Surulere, Gbagada, Ikeja GRA). Verified listings on HAMLET.REST.',
   pathname: '/lagos',
 });
 
@@ -48,28 +48,28 @@ const MAINLAND_GUIDES = [
     name: 'Yaba & Environs',
     subareas: 'Sabo · Alagomeji · Akoka · Ebute Metta',
     body: 'Tech hubs, campuses, and fast Third Mainland Bridge access to Lagos Island.',
-    href: '/stays?area=Yaba',
+    href: '/lagos/yaba',
     img: '/images/prop/studio-1.jpg',
   },
   {
     name: 'Surulere & Environs',
     subareas: 'Bode Thomas · Adeniran Ogunsanya · Eric Moore',
     body: 'Tree-lined avenues, creative studios, and central Mainland–Island links.',
-    href: '/stays?area=Surulere',
+    href: '/lagos/surulere',
     img: '/images/prop/bed-1.jpg',
   },
   {
     name: 'Shomolu & Environs',
     subareas: 'Palmgrove · Onipanu · Gbagada · Ilupeju',
     body: 'Central Ikorodu Road and Gbagada expressway access across Lagos.',
-    href: '/stays?area=Shomolu',
+    href: '/lagos/shomolu',
     img: '/images/prop/kitchen-1.jpg',
   },
   {
     name: 'Ikeja & Northern Mainland',
     subareas: 'Ikeja GRA · Maryland · Ogudu · Magodo',
     body: 'Convenient to Murtala Muhammed Airport, corporate offices, and gated GRAs.',
-    href: '/stays?area=Ikeja+GRA',
+    href: '/lagos/ikeja',
     img: '/images/prop/duplex.jpg',
   },
 ] as const;
@@ -79,28 +79,28 @@ const ISLAND_GUIDES = [
     name: 'Victoria Island',
     subareas: 'Adeola Odeku · Ahmadu Bello · Saka Tinubu',
     body: 'Business districts, conferences, embassies, and city dining.',
-    href: '/stays?area=Victoria+Island',
+    href: '/lagos/victoria-island',
     img: '/images/prop/living-1.jpg',
   },
   {
     name: 'Ikoyi & Banana Island',
     subareas: 'Old Ikoyi · Awolowo Road · Banana Island',
     body: 'Quiet residential apartments and penthouses with controlled estate access.',
-    href: '/stays?area=Ikoyi',
+    href: '/lagos/ikoyi',
     img: '/images/prop/penthouse.jpg',
   },
   {
     name: 'Lekki Phase 1 & Oniru',
     subareas: 'Admiralty Way · Freedom Way · Oniru',
     body: 'Serviced apartments near dining, retail, and waterfront venues.',
-    href: '/stays?area=Lekki+Phase+1',
+    href: '/lagos/lekki',
     img: '/images/prop/pool-1.jpg',
   },
   {
     name: 'Ajah Corridor',
     subareas: 'Chevron · Orchid Road · Sangotedo',
     body: 'Spacious duplexes and apartments suited for family and extended stays.',
-    href: '/stays?area=Ajah',
+    href: '/lagos/ajah',
     img: '/images/prop/exterior-1.jpg',
   },
 ] as const;

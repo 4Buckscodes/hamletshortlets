@@ -144,7 +144,7 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
     // 1. Anonymous marketplace endpoints
     await asAnon(db, async tx => {
       const approved = await tx.query<{ id: string }>(
-        `select * from public.properties where status = 'approved' order by created_at desc`,
+        `select * from public.public_properties where status = 'approved' order by created_at desc`,
       );
       expect(approved.rows.map(r => r.id)).toEqual([propertyId]);
 
@@ -247,7 +247,7 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
     const checkIn = futureIsoDate(12);
     const checkOut = futureIsoDate(15);
 
-    // Guest A requests booking and Partner confirms availability (48h hold)
+    // Guest A requests booking and Partner confirms availability (2-hour hold)
     await asUser(db, guestAId, async tx => {
       await tx.query(
         `insert into public.bookings (
@@ -290,7 +290,7 @@ describe('Comprehensive Endpoint Audit (PostgREST Tables, RPCs, Edge Functions &
       ),
     ).rejects.toThrow(/dates conflict with an existing booking/i);
 
-    // Simulate the 48-hour payment deadline expiring BEFORE the periodic sweep has run
+    // Simulate the 2-hour payment deadline expiring BEFORE the periodic sweep has run
     await db.query(
       `update public.bookings set payment_deadline = now() - interval '5 minutes' where id = 'bkg-hold-a'`,
     );

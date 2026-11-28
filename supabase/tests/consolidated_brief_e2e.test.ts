@@ -299,7 +299,7 @@ describe('HAMLET Consolidated Brief E2E (Availability, Referrals, 20% Markup, 10
       tx.query(`select public.set_property_publication_pause($1, true, 'Brief photography refresh')`, [propertyId]),
     );
     const pausedVis = await asAnon(db, async tx => {
-      const { rows } = await tx.query(`select id from public.properties where id = $1`, [propertyId]);
+      const { rows } = await tx.query(`select id from public.public_properties where id = $1`, [propertyId]);
       return rows;
     });
     expect(pausedVis).toHaveLength(0);

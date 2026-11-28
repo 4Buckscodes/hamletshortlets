@@ -36,7 +36,7 @@ const FAQ_ITEMS: { q: string; a: string; category: Exclude<FaqCategory, 'all'> }
   },
   {
     q: '6. Is my booking confirmed when I send a request?',
-    a: 'No. The host confirms availability first, opening a 48-hour Paystack payment window. Confirmation happens after verified payment.',
+    a: 'No. The host confirms availability first, after which you have 2 hours to pay through Paystack. Confirmation happens after verified payment.',
     category: 'pricing',
   },
   {

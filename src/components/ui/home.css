@@ -10,16 +10,20 @@
 
 /* Hero: words first, one photograph. */
 .hp-hero { border-bottom: 1px solid var(--hm-line); background: var(--hm-page); }
-.hp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: center; gap: clamp(32px, 5vw, 80px); padding-block: clamp(36px, 6vw, 88px); }
+.hp-hero-grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: center; gap: clamp(32px, 6vw, 96px); padding-block: clamp(28px, 5vh, 72px); }
 .hp-hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
 .hp-hero-copy h1 { margin: 0; font-family: var(--hm-serif); font-size: clamp(46px, 6.2vw, 88px); font-weight: 400; letter-spacing: -0.03em; line-height: 0.98; text-wrap: balance; }
 .hp-lede { margin: 0; max-width: 44ch; color: var(--hm-muted); font-size: 18px; line-height: 1.6; }
 .hp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
 .hp-trust { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--hm-muted); font-size: 14px; }
 .hp-trust svg { flex: none; color: var(--hm-accent); }
-.hp-hero-art { position: relative; margin: 0; overflow: hidden; border-radius: var(--hm-r-media); background: var(--hm-sand); aspect-ratio: 8 / 7; }
-.hp-hero-frame { height: 112%; margin-top: -6%; }
+.hp-hero-art { position: relative; width: min(100%, 520px); margin: 0 0 18px auto; }
+.hp-hero-art::before { content: ""; position: absolute; inset: 16px -16px -16px 16px; border: 1px solid var(--hm-gold); border-radius: var(--hm-r-media); pointer-events: none; }
+.hp-hero-crop { position: relative; }
+.hp-hero-frame { position: relative; overflow: hidden; height: clamp(340px, 62vh, 540px); border-radius: var(--hm-r-media); background: var(--hm-sand); }
 .hp-hero-frame picture, .hp-hero-frame img { display: block; width: 100%; height: 100%; object-fit: cover; filter: var(--hm-photo-filter); }
+.hp-hero-caption { position: absolute; right: 0; bottom: -40px; color: var(--hm-muted); font-size: 13px; }
+.hp-hero-caption::before { content: ""; display: inline-block; width: 28px; height: 1px; margin-right: 10px; vertical-align: middle; background: var(--hm-gold); }
 /* Hero motion: CSS only, so it begins at first paint with no script and never blocks the hero photo.
    The photo sits under a page-coloured curtain that lifts upward; words rise out of a mask; a band of
    warm light passes once; the photo then breathes slowly. Reduced-motion visitors get none of it. */
@@ -32,22 +36,29 @@
   .hp-lede { animation: hp-fade-up 0.7s ease-out 0.7s both; }
   .hp-actions { animation: hp-fade-up 0.7s ease-out 0.8s both; }
   .hp-trust { animation: hp-fade-up 0.7s ease-out 0.9s both; }
-  .hp-hero-art::after { content: ''; position: absolute; inset: 0; background: var(--hm-page); transform-origin: top; pointer-events: none;
+  .hp-hero-frame::after { content: ''; position: absolute; inset: 0; background: var(--hm-page); transform-origin: top; pointer-events: none;
     animation: hp-curtain 1.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .hp-hero-frame img { translate: var(--hx, 0px) var(--hy, 0px); transition: translate 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Pointer depth moves the <picture>, not the <img>: GSAP's scroll parallax owns the img's inline transform properties. */
+  .hp-hero-frame picture { translate: var(--hx, 0px) var(--hy, 0px); transition: translate 1.1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .hp-hero-frame img {
     animation: hp-settle 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) both, hp-breathe 14s ease-in-out 2.2s infinite alternate; }
   .hp-hero-glow { animation: hp-sweep 2.1s ease-in-out 0.5s both; }
+  .hp-hero-art::before { animation: hp-fade-in 0.8s ease-out 1s both; }
+  .hp-hero-caption { animation: hp-fade-in 0.8s ease-out 1.1s both; }
 }
 @keyframes hp-rise { from { transform: translateY(108%); } to { transform: none; } }
 @keyframes hp-fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes hp-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes hp-curtain { from { transform: scaleY(1); } to { transform: scaleY(0); } }
-@keyframes hp-settle { from { scale: 1.18; } to { scale: 1; } }
-@keyframes hp-breathe { from { scale: 1; } to { scale: 1.045; } }
+/* Rest at 1.05 so pointer drift never exposes the frame edge. */
+@keyframes hp-settle { from { scale: 1.2; } to { scale: 1.05; } }
+@keyframes hp-breathe { from { scale: 1.05; } to { scale: 1.09; } }
 @keyframes hp-sweep { 0% { transform: translateX(-130%); opacity: 0.9; } 85% { opacity: 0.9; } 100% { transform: translateX(130%); opacity: 0; } }
 @media (max-width: 900px) {
   .hp-hero-grid { grid-template-columns: 1fr; gap: 28px; padding-block: 28px 36px; }
-  .hp-hero-art { aspect-ratio: 4 / 3; }
-  .hp-hero-frame { height: 100%; margin-top: 0; }
+  .hp-hero-art { width: 100%; margin: 0 0 8px; }
+  .hp-hero-art::before, .hp-hero-caption { display: none; }
+  .hp-hero-frame { height: auto; aspect-ratio: 4 / 3; }
   .hp-lede { font-size: 16px; }
 }
 
@@ -61,7 +72,9 @@
 .hp-field > span { color: var(--hm-muted); font-size: 13px; font-weight: 600; }
 .hp-field input, .hp-field select, .hp-field .hm-date-wrap input { width: 100%; min-width: 0; min-height: 28px; padding: 0; border: 0; background: transparent; color: var(--hm-text); font: inherit; font-size: 16px; font-weight: 500; outline: 0; appearance: none; }
 .hp-field input::placeholder { color: var(--hm-muted); opacity: 0.8; }
-.hp-search-form-inline .hp-search-submit { min-height: 100%; margin: 6px; padding-inline: 28px; }
+.hp-search-form-inline .hp-search-submit { align-self: stretch; min-height: 0; margin: 6px; padding-inline: 28px; }
+/* The search button is a form control, not a hover target: motion's 1.5% hover scale made it poke past the field edges (visible in the mobile sheet after a tap). */
+.hp-search-submit { transform: none !important; }
 .hp-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
 .hp-quick > span { margin-right: 6px; color: var(--hm-muted); font-size: 14px; }
 .hp-pill { display: none; }
@@ -116,13 +129,13 @@
 @media (max-width: 640px) { .hp-place-link { grid-template-columns: minmax(0, 1fr) 96px; gap: 16px; padding-block: 20px; } .hp-place-text small { display: none; } }
 
 /* Belief: sand ground, one heading, three plain statements divided by hairlines. */
-.hp-belief { border-top: 1px solid var(--hm-line); background: var(--hm-sand); }
+.hp-belief { padding-block: clamp(32px, 4.5vw, 56px); border-top: 1px solid var(--hm-line); background: var(--hm-surface); }
 .hp-belief-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
 .hp-belief-grid > div:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
 .hp-promises { margin: 0; border-top: 1px solid var(--hm-text); }
-.hp-promises > div { padding-block: 22px; border-bottom: 1px solid var(--hm-line); }
-.hp-promises dt { font-family: var(--hm-serif); font-size: 24px; font-weight: 450; letter-spacing: -0.01em; }
-.hp-promises dd { max-width: 54ch; margin: 8px 0 0; color: var(--hm-muted); font-size: 16px; line-height: 1.6; }
+.hp-promises > div { padding-block: 16px; border-bottom: 1px solid var(--hm-line); }
+.hp-promises dt { font-family: var(--hm-serif); font-size: 22px; font-weight: 450; letter-spacing: -0.01em; }
+.hp-promises dd { max-width: 54ch; margin: 6px 0 0; color: var(--hm-muted); font-size: 16px; line-height: 1.6; }
 @media (max-width: 900px) { .hp-belief-grid { grid-template-columns: 1fr; } }
 
 /* Stay listing card. */
@@ -150,3 +163,20 @@
 .hl-facts, .hl-when { margin: 0; color: var(--hm-muted); font-size: 14px; line-height: 1.5; }
 .hl-when { font-size: 13px; }
 .hl-price { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--hm-line); }
+
+/* Naira reference under a foreign-currency price: small, muted, on its own line. */
+.hm-naira-ref { display: block; margin-top: 2px; color: var(--hm-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* Contact page: ruled rows, one action per row. */
+.hm-contact-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--hm-text); }
+.hm-contact-list > li { display: flex; align-items: center; justify-content: space-between; gap: 24px 48px; padding-block: 28px; border-bottom: 1px solid var(--hm-line); }
+.hm-contact-list .hm-body { margin-top: 6px; max-width: 56ch; }
+.hm-contact-list .hm-link { flex: none; }
+@media (max-width: 640px) { .hm-contact-list > li { flex-direction: column; align-items: flex-start; } }
+
+/* Area page facts: a plain definition list on hairlines. */
+.hm-area-facts dl { margin: 20px 0 0; border-top: 1px solid var(--hm-text); }
+.hm-area-facts dl > div { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 16px; padding-block: 16px; border-bottom: 1px solid var(--hm-line); }
+.hm-area-facts dt { color: var(--hm-muted); font-size: 14px; font-weight: 600; }
+.hm-area-facts dd { margin: 0; max-width: 62ch; line-height: 1.6; }
+@media (max-width: 640px) { .hm-area-facts dl > div { grid-template-columns: 1fr; gap: 4px; } }

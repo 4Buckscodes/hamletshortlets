@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     }
 
     const { data: stay } = await publicDb
-      .from('properties')
+      .from('public_properties')
       .select('id,title,area,status')
       .eq('id', propertyId)
       .eq('status', 'approved')

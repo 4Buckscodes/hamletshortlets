@@ -1,5 +1,6 @@
 'use client';
 
+import { stayPath } from '@/lib/stayRoutes';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -727,15 +728,15 @@ function StayResultCard({ stay, querySuffix, index }: { stay: PublicStayRecord; 
 
   return (
     <StayCard
-      href={`/stays/${encodeURIComponent(stay.id)}${querySuffix}`}
+      href={`${stayPath(stay)}${querySuffix}`}
       imageSrc={photo}
       imageAlt={`${stay.title} in ${locationText}`}
       onImageError={() => setFailed(count => count + 1)}
       tag={[trust.verified ? 'Verified' : 'Approved', area || corridor].filter(Boolean).join(' · ')}
       title={stay.title}
       meta={`${formatAccommodationLabel(stay.property_type, stay.bedrooms)}${capacity}`}
-      price={<StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} />}
-      priceSuffix="· fees included"
+      price={<StayNightlyPrice guestNightlyNgn={Number(stay.guest_nightly_ngn ?? 0)} withFeesNote />}
+      priceSuffix=""
       revealIndex={index}
       priority={index === 0}
     />

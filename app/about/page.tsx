@@ -21,7 +21,7 @@ const HAMLET_PARENT_COMPANY = 'Abundance Abodes';
 const HAMLET_MANTRA = 'Make it easy. Make it trustworthy. Make it accountable.';
 
 export const metadata: Metadata = buildPublicPageMetadata({
-  title: 'About HAMLET — A Better Way to Book Shortlets in Lagos',
+  title: 'About HAMLET — Better Shortlet Stays in Lagos',
   description:
     'HAMLET.REST is a Nigerian shortlet marketplace and property operating platform by Abundance Abodes. Discover our Four Pillars of a Better Stay.',
   pathname: '/about',

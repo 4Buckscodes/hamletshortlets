@@ -58,10 +58,19 @@ export const PUBLIC_PROPERTY_SELECT =
   'id,title,property_type,area,public_address,nightly_rate,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at';
 
 /** Partner-only extension fields. Never add these to public listing selections. */
+/**
+ * Select list for the security-barrier `public.public_properties` view, the only listing surface
+ * anonymous visitors can read. It has the guest-facing nightly price and none of the private
+ * owner rate, calendar contact, partner or review-note columns.
+ */
+export const PUBLIC_VIEW_SELECT =
+  'id,title,property_type,area,public_address,guest_nightly_ngn,cleaning_fee,mandatory_charges,refundable_deposit,bedrooms,bathrooms,capacity,bed_setup,amenities,image_urls,house_rules,status,verification,trust_label,first_available_date,availability_confirmation_status,created_at,updated_at,slug';
+
 export const PARTNER_PROPERTY_SELECT = `${PUBLIC_PROPERTY_SELECT},calendar_responsible_person,review_note`;
 
 export interface PublicStayRecord {
   id: string;
+  slug: string;
   title: string;
   property_type: string | null;
   area: string | null;
@@ -89,9 +98,12 @@ export interface PublicStayRecord {
 /** Server-boundary projection: raw owner rates never cross into guest/client props. */
 export function toPublicStayRecord(raw: Record<string, unknown>): PublicStayRecord {
   const ownerRate = Number(raw.nightly_rate);
-  const guestNightly = Number.isFinite(ownerRate) && ownerRate > 0
-    ? guestFacingNightlyNgn(ownerRate)
-    : null;
+  const viewPrice = Number(raw.guest_nightly_ngn);
+  const guestNightly = Number.isFinite(viewPrice) && viewPrice > 0
+    ? Math.round(viewPrice)
+    : Number.isFinite(ownerRate) && ownerRate > 0
+      ? guestFacingNightlyNgn(ownerRate)
+      : null;
   // Delete sensitive columns explicitly so no unused destructured aliases enter the public projection.
   const publicFields = { ...raw };
   delete publicFields.nightly_rate;
@@ -135,7 +147,7 @@ export async function probePropertyWayfinderMeta(
 ): Promise<OptionalWayfinderLocationMeta> {
   if (!db) return { deployed: false };
   const { data, error } = await db
-    .from('properties')
+    .from('public_properties')
     .select('city,public_location_summary,public_landmarks,location_accuracy,wayfinder_status')
     .eq('id', propertyId)
     .eq('status', 'approved')
