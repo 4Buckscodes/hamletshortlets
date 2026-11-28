@@ -107,7 +107,7 @@ export function V0HomeExperience({ featuredStays }: { featuredStays: { stay: Pub
           <div className="hp-hero-copy">
             <p className="hp-note">Verified shortlets in Lagos</p>
             <h1 id="home-title">{HERO_HEADLINE.split(' ').map((word, index, all) => (<span key={`${word}-${index}`}><span className="hp-word"><span className="hp-word-in" style={{ '--i': index } as React.CSSProperties}>{word}</span></span>{index < all.length - 1 ? ' ' : null}</span>))}</h1>
-            <p className="hp-lede">Verified stays across Lagos, from Victoria Island to Yaba. Find a space that fits the way you travel.</p>
+            <p className="hp-lede">Studios and family apartments from Victoria Island to Yaba, with every detail clear before you ask.</p>
             <div className="hp-actions">
               <Button href="/stays">Find a stay</Button>
               <a href="#find-your-stay" className="hm-btn hm-btn-ghost" onClick={event => { if (window.matchMedia('(max-width: 760px)').matches) { event.preventDefault(); setSearchOpen(true); } }}>Search dates</a>
