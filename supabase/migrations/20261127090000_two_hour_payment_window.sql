@@ -160,16 +160,28 @@ begin
     ''booking_request_created'',',
       'enqueue_booking_event_notifications() event list'
     );
+    -- Anchor on code, not comments: deployed definitions can have comments stripped.
+    -- The operations insert is the only top-level insert without recipient_user_id.
     patched := pg_temp.hamlet_replace_once(
       patched,
-      '  -- 3. HAMLET internal operations notification
-  insert into public.booking_notifications (',
-      '  -- 3. HAMLET internal operations notification (not for guest payment reminders)
-  if target_event_type = ''booking_payment_reminder'' then
+      '  insert into public.booking_notifications (
+    booking_id,
+    booking_reference,
+    property_id,
+    event_type,
+    recipient_type,
+    recipient_email,',
+      '  if target_event_type = ''booking_payment_reminder'' then
     return enqueued_count;
   end if;
 
-  insert into public.booking_notifications (',
+  insert into public.booking_notifications (
+    booking_id,
+    booking_reference,
+    property_id,
+    event_type,
+    recipient_type,
+    recipient_email,',
       'enqueue_booking_event_notifications() operations block'
     );
     execute patched;
