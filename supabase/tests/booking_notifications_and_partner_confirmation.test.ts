@@ -1075,4 +1075,50 @@ describe('Booking Notifications, Partner Dashboard Confirmation & Resend Integra
       expect(`${email.subject} ${email.html} ${email.text}`).not.toMatch(/48[- ]hour/i);
     }
   });
+
+  it('renders the 30-minute extension emails for the partner and the guest', () => {
+    const payload = {
+      property_title: 'Ikoyi Waterfront Two-Bedroom',
+      property_area: 'Ikoyi',
+      guest_name: 'Ngozi Guest',
+      partner_name: 'Chidi Owner',
+      check_in: '2026-12-10',
+      check_out: '2026-12-13',
+      nights: 3,
+      guest_count: 2,
+      guest_total: 520000,
+      payment_deadline: '2026-12-01T15:00:00.000Z',
+      decision_note: 'Take your time.',
+    };
+    const render = (
+      eventType: 'booking_extension_requested' | 'booking_extension_approved' | 'booking_extension_declined',
+      recipientType: 'guest' | 'partner',
+    ) =>
+      renderBookingNotificationEmail({
+        bookingId: 'bkg-ext-001',
+        bookingReference: 'HML-2026-EXT',
+        eventType,
+        recipientType,
+        appBaseUrl: 'https://hamletshortlets.vercel.app',
+        payload,
+      });
+
+    const partner = render('booking_extension_requested', 'partner');
+    expect(partner.subject).toBe('Guest asks for 30 more minutes to pay — HAMLET booking HML-2026-EXT');
+    expect(partner.html).toContain('/partners/bookings?booking=bkg-ext-001');
+    expect(partner.text).toContain('before 1 Dec 2026, 16:00 WAT');
+
+    const guestRequested = render('booking_extension_requested', 'guest');
+    expect(guestRequested.html).toContain("asked the host for 30 more minutes");
+    expect(guestRequested.text).toContain('your deadline is still 1 Dec 2026, 16:00 WAT');
+
+    const approved = render('booking_extension_approved', 'guest');
+    expect(approved.subject).toBe('You have 30 more minutes to pay — HAMLET booking HML-2026-EXT');
+    expect(approved.text).toContain('Your new payment deadline is 1 Dec 2026, 16:00 WAT');
+    expect(approved.text).toContain('Host note: Take your time.');
+
+    const declined = render('booking_extension_declined', 'guest');
+    expect(declined.html).toContain("The host couldn&#39;t give you more time");
+    expect(declined.text).toContain('Your payment deadline is still 1 Dec 2026, 16:00 WAT');
+  });
 });

@@ -28,6 +28,7 @@ type Booking = {
   special_requests: string | null;
   status: string;
   payment_deadline: string | null;
+  payment_extension_status?: 'requested' | 'approved' | 'declined' | null;
   properties?: { title?: string; area?: string } | null;
   profiles?: { full_name?: string; phone?: string } | null;
 };
@@ -58,8 +59,20 @@ export default function PartnerBookingsPage() {
   const [decisionNote, setDecisionNote] = useState('');
   const [filter, setFilter] = useState<'needs' | 'upcoming' | 'past' | 'all' | null>(null);
   const today = new Date().toISOString().slice(0, 10);
+  // Ticks every 30 seconds so a request stops showing once its deadline passes.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  // A guest waiting on a decision about more time to pay needs the partner too.
+  const hasPendingExtension = (b: Booking) =>
+    b.status === 'awaiting_payment' &&
+    b.payment_extension_status === 'requested' &&
+    Boolean(b.payment_deadline) &&
+    new Date(b.payment_deadline as string).getTime() > nowMs;
   const groupOf = (b: Booking) =>
-    ['requested', 'checking'].includes(b.status)
+    ['requested', 'checking'].includes(b.status) || hasPendingExtension(b)
       ? 'needs'
       : ['awaiting_payment', 'confirmed'].includes(b.status) && b.check_out >= today
         ? 'upcoming'
@@ -71,7 +84,7 @@ export default function PartnerBookingsPage() {
     const list = activeFilter === 'all' ? bookings : bookings.filter(b => groupOf(b) === activeFilter);
     return activeFilter === 'needs' ? [...list].reverse() : list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookings, activeFilter]);
+  }, [bookings, activeFilter, nowMs]);
 
   const load = useCallback(async () => {
     if (!db) {
@@ -101,7 +114,7 @@ export default function PartnerBookingsPage() {
     const { data, error: queryError } = await db
       .from('bookings')
       .select(
-        'id,reference,property_id,check_in,check_out,guest_count,accommodation_subtotal,guest_total,refundable_deposit,special_requests,status,payment_deadline,properties(title,area),profiles!bookings_guest_id_fkey(full_name,phone)',
+        'id,reference,property_id,check_in,check_out,guest_count,accommodation_subtotal,guest_total,refundable_deposit,special_requests,status,payment_deadline,payment_extension_status,properties(title,area),profiles!bookings_guest_id_fkey(full_name,phone)',
       )
       .order('created_at', { ascending: false });
 
@@ -161,6 +174,40 @@ export default function PartnerBookingsPage() {
       setError(
         caught instanceof Error ? caught.message : 'Could not update booking status.',
       );
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  async function decideExtension(booking: Booking, approve: boolean) {
+    if (!db) return;
+    if (
+      !window.confirm(
+        approve
+          ? `Give the guest on ${booking.reference} 30 more minutes to pay? The dates stay held until the new deadline.`
+          : `Decline more time on ${booking.reference}? The current payment deadline stays.`,
+      )
+    )
+      return;
+    setError('');
+    setNotice('');
+    setBusyId(booking.id);
+    try {
+      const { error: rpcError } = await db.rpc('decide_payment_extension', {
+        target_booking_id: booking.id,
+        approve,
+        decision_note: null,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      void triggerBookingNotificationDispatchBestEffort(db, booking.id);
+      setNotice(
+        approve
+          ? `${booking.reference}: the guest now has 30 more minutes to pay.`
+          : `${booking.reference}: request for more time declined. The current deadline stays.`,
+      );
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not record your decision.');
     } finally {
       setBusyId('');
     }
@@ -282,6 +329,41 @@ export default function PartnerBookingsPage() {
                     </span>
                   )}
                 </div>
+
+                {hasPendingExtension(b) && (
+                  <div className="mt-3 rounded-2xl border border-brass-200 bg-paper p-3 text-xs text-ink-700">
+                    <p className="m-0">
+                      <strong>The guest is asking for 30 more minutes to pay.</strong> Current deadline:{' '}
+                      {new Date(b.payment_deadline as string).toLocaleString('en-NG', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Africa/Lagos',
+                      })}{' '}
+                      Lagos time. If you don&apos;t respond, the booking expires then.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={busyId === b.id}
+                        onClick={() => void decideExtension(b, true)}
+                        className="primary-button min-h-[44px]"
+                      >
+                        Give 30 more minutes
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busyId === b.id}
+                        onClick={() => void decideExtension(b, false)}
+                        className="secondary-button min-h-[44px]"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {b.special_requests && (
                   <p className="mt-3 mb-0 rounded-2xl bg-paper p-3 text-xs text-ink-700">
@@ -410,7 +492,7 @@ export default function PartnerBookingsPage() {
                     {Number(decisionTarget.booking.refundable_deposit) > 0 && (
                       <div><dt>Refundable caution deposit</dt><dd className="hm-money">₦{Number(decisionTarget.booking.refundable_deposit).toLocaleString('en-NG')}</dd></div>
                     )}
-                    <p>Accepting holds these dates. The guest then has 2 hours to pay inside HAMLET; the stay is confirmed once payment is verified. If they don't pay in time, the dates are released automatically.</p>
+                    <p>Accepting holds these dates. The guest then has 2 hours to pay inside HAMLET; the stay is confirmed once payment is verified. If they don't pay in time, the dates are released automatically. The guest can ask you once for 30 more minutes; you approve or decline it here.</p>
                   </dl>
                 )}
                 <p className="m-0 mt-1">

@@ -39,6 +39,7 @@ type Booking = {
   refundable_deposit: number;
   status: string;
   payment_deadline?: string | null;
+  payment_extension_status?: 'requested' | 'approved' | 'declined' | null;
   payment_reference?: string | null;
   quote_currency?: string | null;
   quoted_guest_total?: number | null;
@@ -170,7 +171,7 @@ export default function GuestBookingsPage() {
     const { data, error: queryError } = await db
       .from('bookings')
       .select(
-        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at',
+        'id,reference,property_id,check_in,check_out,guest_count,guest_total,refundable_deposit,status,payment_deadline,payment_extension_status,payment_reference,quote_currency,quoted_guest_total,quote_expires_at,created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -222,6 +223,32 @@ export default function GuestBookingsPage() {
           ? caught.message
           : 'Could not cancel this booking request.',
       );
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  async function requestMoreTime(booking: Booking) {
+    if (
+      !db ||
+      !window.confirm(
+        `Ask the host for 30 more minutes to pay for ${booking.reference}? You can ask only once. Until they answer, your current deadline still applies.`,
+      )
+    )
+      return;
+    setError('');
+    setNotice('');
+    setBusyId(booking.id);
+    try {
+      const { error: rpcError } = await db.rpc('request_payment_extension', {
+        target_booking_id: booking.id,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      void triggerBookingNotificationDispatchBestEffort(db, booking.id);
+      setNotice(`We've asked the host for 30 more minutes on ${booking.reference}. We'll email you when they answer.`);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not ask for more time.');
     } finally {
       setBusyId('');
     }
@@ -493,6 +520,15 @@ export default function GuestBookingsPage() {
                       {deadlineLabel(b.payment_deadline, nowMs)}
                     </span>
                   )}
+                  {b.status === 'awaiting_payment' && b.payment_extension_status && (
+                    <span className="hm-notice" style={{ flexBasis: '100%', margin: '4px 0 0' }}>
+                      {b.payment_extension_status === 'requested'
+                        ? "You've asked the host for 30 more minutes. Until they answer, the deadline above applies."
+                        : b.payment_extension_status === 'approved'
+                          ? 'The host gave you 30 more minutes. The deadline above includes them.'
+                          : "The host couldn't give you more time. The deadline above still applies."}
+                    </span>
+                  )}
                   <span>Ref. <span className="font-mono">{b.reference}</span></span>
                   {b.payment_reference && (
                     <span>
@@ -514,6 +550,19 @@ export default function GuestBookingsPage() {
                       {busyId === b.id ? 'Preparing Paystack…' : 'Pay securely via Paystack'}
                     </button>
                   )}
+
+                  {b.status === 'awaiting_payment' &&
+                    !b.payment_extension_status &&
+                    !paymentWindowClosed(b.payment_deadline, nowMs) && (
+                      <button
+                        type="button"
+                        disabled={busyId === b.id}
+                        onClick={() => void requestMoreTime(b)}
+                        className="hm-btn hm-btn-ghost min-h-[46px]"
+                      >
+                        Ask for 30 more minutes
+                      </button>
+                    )}
 
                   {b.status === 'confirmed' && (
                     <button
