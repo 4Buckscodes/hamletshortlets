@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { toShareJpeg } from '@/lib/ogImage';
 import { getPublicSupabase } from '@/lib/supabase-public';
 import {
   renderHamletDefaultOgBuffer,
@@ -16,11 +17,11 @@ export async function GET(_request: Request, context: Context) {
     const db = getPublicSupabase();
 
     if (!db || !id?.trim()) {
-      const fallback = await renderHamletDefaultOgBuffer();
+      const fallback = await toShareJpeg(await renderHamletDefaultOgBuffer());
       return new NextResponse(new Uint8Array(fallback), {
         status: 200,
         headers: {
-          'Content-Type': 'image/png',
+          'Content-Type': 'image/jpeg',
           'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
         },
       });
@@ -36,21 +37,21 @@ export async function GET(_request: Request, context: Context) {
       .maybeSingle();
 
     if (!data) {
-      const fallback = await renderHamletDefaultOgBuffer();
+      const fallback = await toShareJpeg(await renderHamletDefaultOgBuffer());
       return new NextResponse(new Uint8Array(fallback), {
         status: 200,
         headers: {
-          'Content-Type': 'image/png',
+          'Content-Type': 'image/jpeg',
           'Cache-Control': 'public, max-age=120',
         },
       });
     }
 
-    const png = await renderPropertyOgBuffer(data as PropertyOgInput);
+    const png = await toShareJpeg(await renderPropertyOgBuffer(data as PropertyOgInput));
     return new NextResponse(new Uint8Array(png), {
       status: 200,
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/jpeg',
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       },
     });

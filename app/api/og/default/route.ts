@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
 import { renderHamletDefaultOgBuffer } from '@/lib/share-artwork';
+import { toShareJpeg } from '@/lib/ogImage';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const png = await renderHamletDefaultOgBuffer();
-    return new NextResponse(new Uint8Array(png), {
+    const jpeg = await toShareJpeg(await renderHamletDefaultOgBuffer());
+    return new NextResponse(new Uint8Array(jpeg), {
       status: 200,
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/jpeg',
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
       },
     });
