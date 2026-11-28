@@ -79,8 +79,8 @@ function useHeroDepth(root: React.RefObject<HTMLElement | null>) {
   }, [root]);
 }
 
-export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayRecord[] }) {
-  const featured = approvedStays.slice(0, 6);
+export function V0HomeExperience({ featuredStays }: { featuredStays: { stay: PublicStayRecord; photoCount: number }[] }) {
+  const featured = featuredStays;
   const today = lagosIsoDateOffset(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -142,7 +142,7 @@ export function V0HomeExperience({ approvedStays }: { approvedStays: PublicStayR
       <section className="hp-section" aria-labelledby="live-title">
         <div className="hp-shell">
           <div className="hp-head"><div><p className="hp-note">{featured.length ? 'Real places, live listings' : 'Verified stays'}</p><h2 className="hp-h2" id="live-title">Find somewhere that feels right.</h2></div><Link className="hm-link" href="/stays">View all stays</Link></div>
-          {featured.length ? <div className="hp-stays">{featured.map(stay => <StayListingCard key={stay.id} stay={stay}/>)}</div> : <div className="hp-empty" data-hamlet-reveal><p className="hp-empty-title">New verified stays are on their way.</p><p className="hm-body">Every listing passes HAMLET&apos;s four checks before it appears here. Meanwhile, browse by area and we will show what is live.</p><div className="hm-chip-row">{['Victoria Island','Lekki Phase 1','Ikoyi','Yaba','Ikeja GRA'].map(name => <Chip key={name} href={`/stays?area=${encodeURIComponent(name)}`}>{name}</Chip>)}</div></div>}
+          {featured.length ? <div className="hp-stays">{featured.map(({ stay, photoCount }) => <StayListingCard key={stay.id} stay={stay} photoCount={photoCount}/>)}</div> : <div className="hp-empty" data-hamlet-reveal><p className="hp-empty-title">New verified stays are on their way.</p><p className="hm-body">Every listing passes HAMLET&apos;s four checks before it appears here. Meanwhile, browse by area and we will show what is live.</p><div className="hm-chip-row">{['Victoria Island','Lekki Phase 1','Ikoyi','Yaba','Ikeja GRA'].map(name => <Chip key={name} href={`/stays?area=${encodeURIComponent(name)}`}>{name}</Chip>)}</div></div>}
         </div>
       </section>
 

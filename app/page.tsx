@@ -50,13 +50,20 @@ export default async function HomePage() {
 
   const pageSchema = buildHomepageSchema({ approvedStays });
 
+  // The homepage shows six stays as cover photos only; the full gallery lives on each stay's page.
+  // Send each card its cover (plus two fallbacks in case one fails to load) and the gallery size.
+  const featuredStays = approvedStays.slice(0, 6).map(stay => {
+    const photos = (stay.image_urls ?? []).map(url => url.trim()).filter(Boolean);
+    return { stay: { ...stay, image_urls: photos.slice(0, 3) }, photoCount: photos.length };
+  });
+
   return (
     <div className="hm-page" style={{ display: 'flex', flexDirection: 'column' }}>
       <SiteHeader />
       <JsonLd id="hamlet-homepage-jsonld" data={pageSchema} />
 
       <main style={{ flex: 1 }}>
-        <V0HomeExperience approvedStays={approvedStays} />
+        <V0HomeExperience featuredStays={featuredStays} />
       </main>
 
       <SiteFooter />

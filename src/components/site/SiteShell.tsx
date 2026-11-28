@@ -13,7 +13,6 @@ import {
   useRef,
   useState,
   type FormEvent,
-  type MouseEvent,
   type ReactNode,
 } from 'react';
 import {
@@ -25,8 +24,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
+  Images,
   Sparkles,
   Send,
   LayoutDashboard,
@@ -824,23 +822,22 @@ export function StayNightlyPrice({
 export function StayListingCard({
   stay,
   querySuffix = '',
+  photoCount,
 }: {
   stay: PublicStayRecord;
   querySuffix?: string;
+  /** Size of the stay's full gallery, when `stay.image_urls` only holds the cover. */
+  photoCount?: number;
 }) {
   const validImages = useMemo(
     () => (stay.image_urls ?? []).map(url => url.trim()).filter(Boolean),
     [stay.image_urls],
   );
   const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
-  const [photoIndex, setPhotoIndex] = useState(0);
 
-  const usableImages = useMemo(
-    () => validImages.filter(url => !failedUrls[url]),
-    [validImages, failedUrls],
-  );
-  const safeIdx = usableImages.length > 0 ? photoIndex % usableImages.length : 0;
-  const activePhoto = usableImages[safeIdx] || '';
+  // The card shows the cover photo only. If it fails to load, fall back to the next photo.
+  const coverPhoto = validImages.find(url => !failedUrls[url]) || '';
+  const totalPhotos = Math.max(photoCount ?? 0, validImages.length);
 
   const trust = getStayTrustStatus(stay);
   const locationText = (stay.area || '').trim() || 'Location pending';
@@ -852,13 +849,6 @@ export function StayListingCard({
   const extraAmenitiesCount = Math.max(0, amenities.length - visibleAmenities.length);
   const detailHref = `${stayPath(stay)}${querySuffix}`;
 
-  function stepPhoto(event: MouseEvent<HTMLButtonElement>, delta: number) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (usableImages.length <= 1) return;
-    setPhotoIndex(prev => (prev + delta + usableImages.length) % usableImages.length);
-  }
-
   const facts = [
     bedroomLabel,
     typeof stay.bathrooms === 'number' && stay.bathrooms > 0 ? `${stay.bathrooms} ${stay.bathrooms === 1 ? 'bath' : 'baths'}` : null,
@@ -868,32 +858,35 @@ export function StayListingCard({
   return (
     <article className="hl-card" data-hamlet-reveal>
       <div className="hl-photo">
-        <Link href={detailHref} aria-label={`View ${stay.title} in ${locationText}`} className="hl-photo-link">
-          {activePhoto ? (
+        <Link
+          href={detailHref}
+          aria-label={totalPhotos > 1 ? `View all ${totalPhotos} photos of ${stay.title} in ${locationText}` : `View ${stay.title} in ${locationText}`}
+          className="hl-photo-link"
+        >
+          {coverPhoto ? (
             <HoverImage>
               <img
-                src={activePhoto}
-                alt={`${stay.title} in ${locationText} — photo ${safeIdx + 1} of ${usableImages.length}`}
+                src={coverPhoto}
+                alt={`${stay.title} in ${locationText}`}
                 loading="lazy"
                 decoding="async"
-                onError={() => setFailedUrls(prev => ({ ...prev, [activePhoto]: true }))}
+                className="hl-cover"
+                onError={() => setFailedUrls(prev => ({ ...prev, [coverPhoto]: true }))}
               />
             </HoverImage>
           ) : (
             <span className="hl-photo-empty">Photo coming soon</span>
           )}
+          {coverPhoto && totalPhotos > 1 ? (
+            <span className="hl-view-all" aria-hidden="true">
+              <Images size={14} aria-hidden="true" /> View all {totalPhotos} photos
+            </span>
+          ) : null}
         </Link>
         <span className="hl-badge">
           {trust.verified ? <BadgeCheck size={14} aria-hidden="true" /> : <CheckCircle2 size={14} aria-hidden="true" />}
           {trust.badge}
         </span>
-        {usableImages.length > 1 && (
-          <>
-            <button type="button" onClick={e => stepPhoto(e, -1)} aria-label={`Previous photo of ${stay.title}`} className="hl-step hl-step-prev"><ChevronLeft size={18} aria-hidden="true" /></button>
-            <button type="button" onClick={e => stepPhoto(e, 1)} aria-label={`Next photo of ${stay.title}`} className="hl-step hl-step-next"><ChevronRight size={18} aria-hidden="true" /></button>
-            <span className="hl-count">{safeIdx + 1} of {usableImages.length}</span>
-          </>
-        )}
       </div>
       <Link href={detailHref} className="hl-body">
         <p className="hl-where">{locationText}{corridor && !locationText.toLowerCase().includes(corridor.toLowerCase()) ? `, ${corridor}` : ''}<span> · {accommodationLabel}</span></p>

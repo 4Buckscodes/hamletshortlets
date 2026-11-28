@@ -146,12 +146,15 @@
 .hl-photo-empty { display: grid; width: 100%; height: 100%; place-items: center; color: var(--hm-muted); font-size: 14px; }
 .hl-badge { position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 4px; background: var(--hm-surface); color: var(--hm-text); font-size: 13px; font-weight: 600; pointer-events: none; }
 .hl-badge svg { color: var(--hm-accent); }
-.hl-step { position: absolute; top: 50%; display: grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: 50%; background: var(--hm-surface); color: var(--hm-text); cursor: pointer; opacity: 0; transform: translateY(-50%); transition: opacity var(--hm-t-micro) var(--hm-ease-soft), background-color var(--hm-t-micro); }
-.hl-step-prev { left: 10px; } .hl-step-next { right: 10px; }
-.hl-card:hover .hl-step, .hl-step:focus-visible { opacity: 1; }
-.hl-step:hover { background: var(--hm-sand); }
-@media (hover: none) { .hl-step { opacity: 1; width: 40px; height: 40px; } }
-.hl-count { position: absolute; right: 12px; bottom: 12px; padding: 3px 9px; border-radius: 4px; background: var(--hm-surface); color: var(--hm-text); font-size: 12px; font-weight: 600; pointer-events: none; font-variant-numeric: tabular-nums; }
+.hl-view-all { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 4px; background: var(--hm-surface); color: var(--hm-text); font-size: 13px; font-weight: 600; pointer-events: none; transition: transform var(--hm-t-micro) var(--hm-ease-soft); }
+.hl-card:hover .hl-view-all, .hl-photo-link:focus-visible .hl-view-all { transform: translateY(-2px); }
+/* A slow drift-and-zoom on the cover photo, staggered per card so the grid never moves in step. */
+@media (prefers-reduced-motion: no-preference) {
+  .hl-cover { transform-origin: 50% 60%; animation: hl-drift 18s ease-in-out infinite alternate; will-change: transform; }
+  .hp-stays > .hl-card:nth-child(2n) .hl-cover { animation-delay: -6s; transform-origin: 40% 40%; }
+  .hp-stays > .hl-card:nth-child(3n) .hl-cover { animation-delay: -12s; transform-origin: 60% 45%; }
+  @keyframes hl-drift { from { transform: scale(1) translate3d(0, 0, 0); } to { transform: scale(1.07) translate3d(-1.5%, -1%, 0); } }
+}
 .hl-body { display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none; }
 .hl-where { margin: 0; color: var(--hm-label); font-size: 14px; font-weight: 600; }
 .hl-where span { color: var(--hm-muted); font-weight: 500; }
