@@ -31,7 +31,7 @@ const STEPS = [
   },
   {
     title: 'The partner confirms',
-    body: 'The partner checks the dates and accepts. From that moment you have 2 hours to pay, and we email you a reminder 30 minutes before the deadline.',
+    body: 'The partner checks the dates and accepts. From that moment you have 2 hours to pay, and we email you a reminder 30 minutes before the deadline. If you need a little longer, you can ask the host once for 30 more minutes.',
     status: 'Accepted: pay within 2 hours',
   },
   {

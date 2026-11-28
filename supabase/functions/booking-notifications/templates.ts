@@ -3,6 +3,9 @@ export type BookingNotificationEventType =
   | 'booking_availability_confirmed'
   | 'booking_availability_declined'
   | 'booking_payment_reminder'
+  | 'booking_extension_requested'
+  | 'booking_extension_approved'
+  | 'booking_extension_declined'
   | 'booking_payment_confirmed'
   | 'booking_cancelled'
   | 'booking_expired'
@@ -611,6 +614,118 @@ export function renderBookingNotificationEmail(input: {
     };
   }
 
+  // ─── One-time 30-minute payment extension ──────────────────────────────────
+  if (eventType === 'booking_extension_requested' && recipientType === 'partner') {
+    const deadlineFmt = formatDateTimeWat(payload.payment_deadline);
+    const subject = sanitizeHeaderSubject(
+      `Guest asks for 30 more minutes to pay — HAMLET booking ${bookingReference}`,
+    );
+    const rows = [
+      { label: 'Booking reference', value: bookingReference },
+      { label: 'Property', value: propertyLabel },
+      { label: 'Guest', value: guestName },
+      { label: 'Dates', value: datesSummary },
+      { label: 'Current payment deadline', value: deadlineFmt },
+    ];
+    const notice = `Approve or decline in your HAMLET Partner Workspace before ${deadlineFmt}. Approving moves the deadline 30 minutes later. If you do nothing, the booking expires at the current deadline.`;
+    return {
+      subject,
+      html: renderEmailHtmlShell({
+        eyebrow: 'Partner action required',
+        heading: 'A guest is asking for 30 more minutes to pay',
+        introHtml: `<p style="margin:0;">Hello ${escapeHtml(partnerName)}, ${escapeHtml(guestName)} has asked for a one-time 30-minute extension to complete payment for <strong>${escapeHtml(propertyTitle)}</strong>.</p>`,
+        noticeTone: 'amber',
+        noticeHtml: `<strong>Respond before ${escapeHtml(deadlineFmt)}:</strong> Approving moves the payment deadline 30 minutes later. If you do nothing, the booking expires at the current deadline and the dates are released.`,
+        rows,
+        ctaLabel: 'Approve or decline',
+        ctaUrl: partnerUrl,
+        footerNote:
+          'You are receiving this notification as an active authorised partner for this property on HAMLET.',
+      }),
+      text: renderPlainText({
+        heading: 'A guest is asking for 30 more minutes to pay',
+        introLines: [
+          `Hello ${partnerName}, ${guestName} has asked for a one-time 30-minute extension to pay for ${propertyTitle}.`,
+        ],
+        notice,
+        rows,
+        ctaLabel: 'Approve or decline',
+        ctaUrl: partnerUrl,
+        footerNote:
+          'You are receiving this notification as an active authorised partner for this property on HAMLET.',
+      }),
+    };
+  }
+
+  if (
+    eventType === 'booking_extension_requested' ||
+    eventType === 'booking_extension_approved' ||
+    eventType === 'booking_extension_declined'
+  ) {
+    const deadlineFmt = formatDateTimeWat(payload.payment_deadline);
+    const copy =
+      eventType === 'booking_extension_requested'
+        ? {
+            subject: `We've asked the host for 30 more minutes — HAMLET booking ${bookingReference}`,
+            eyebrow: 'Extension requested',
+            heading: "We've asked the host for 30 more minutes",
+            intro: `Hi ${guestName}, we've asked the host of ${propertyTitle} to give you 30 more minutes to pay.`,
+            notice: `Until they answer, your deadline is still ${deadlineFmt}. We'll email you as soon as they respond. You can still pay before then.`,
+            tone: 'amber' as const,
+          }
+        : eventType === 'booking_extension_approved'
+          ? {
+              subject: `You have 30 more minutes to pay — HAMLET booking ${bookingReference}`,
+              eyebrow: 'Extension approved',
+              heading: 'You have 30 more minutes to pay',
+              intro: `Hi ${guestName}, the host of ${propertyTitle} approved your request for more time.`,
+              notice: `Your new payment deadline is ${deadlineFmt}. If payment isn't completed by then, the booking expires and the dates are released.`,
+              tone: 'jade' as const,
+            }
+          : {
+              subject: `Your payment deadline is unchanged — HAMLET booking ${bookingReference}`,
+              eyebrow: 'Extension declined',
+              heading: "The host couldn't give you more time",
+              intro: `Hi ${guestName}, the host of ${propertyTitle} wasn't able to extend your payment window.`,
+              notice: `Your payment deadline is still ${deadlineFmt}. If payment isn't completed by then, the booking expires and the dates are released.`,
+              tone: 'amber' as const,
+            };
+    const rows = [
+      { label: 'Booking reference', value: bookingReference },
+      { label: 'Property', value: propertyLabel },
+      { label: 'Check-in / Check-out', value: datesSummary },
+      { label: 'Amount due', value: guestTotalFmt },
+      ...foreignSettlementRow,
+      { label: 'Payment deadline', value: deadlineFmt },
+      ...(decisionNote ? [{ label: 'Host note', value: decisionNote }] : []),
+    ];
+    return {
+      subject: sanitizeHeaderSubject(copy.subject),
+      html: renderEmailHtmlShell({
+        eyebrow: copy.eyebrow,
+        heading: copy.heading,
+        introHtml: `<p style="margin:0;">${escapeHtml(copy.intro)}</p>`,
+        noticeTone: copy.tone,
+        noticeHtml: escapeHtml(copy.notice),
+        rows,
+        ctaLabel: 'Complete payment on HAMLET',
+        ctaUrl: guestUrl,
+        footerNote:
+          'Pay only through your signed-in HAMLET account. Screenshots or off-platform bank transfers never confirm a HAMLET booking.',
+      }),
+      text: renderPlainText({
+        heading: copy.heading,
+        introLines: [copy.intro],
+        notice: copy.notice,
+        rows,
+        ctaLabel: 'Complete payment on HAMLET',
+        ctaUrl: guestUrl,
+        footerNote:
+          'Pay only through your signed-in HAMLET account. Off-platform transfers or screenshots never confirm a booking.',
+      }),
+    };
+  }
+
   // ─── Event C: Partner Marks Property Unavailable (declined) ──────────────────
   if (eventType === 'booking_availability_declined') {
     if (recipientType === 'guest') {
@@ -705,6 +820,9 @@ export function renderBookingNotificationEmail(input: {
       | 'booking_availability_confirmed'
       | 'booking_availability_declined'
       | 'booking_payment_reminder'
+      | 'booking_extension_requested'
+      | 'booking_extension_approved'
+      | 'booking_extension_declined'
     >,
     { subject: string; eyebrow: string; heading: string; summary: string }
   > = {
