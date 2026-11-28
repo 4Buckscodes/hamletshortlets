@@ -187,9 +187,9 @@ export async function loadActiveExchangeRates(
       return buildDefaultExchangeRates();
     }
     return data
-      .filter(row => row.currency === 'USD' || row.currency === 'GBP')
+      .filter(row => row.currency === 'USD' || row.currency === 'GBP' || row.currency === 'EUR')
       .map(row => ({
-        currency: row.currency as 'USD' | 'GBP',
+        currency: row.currency as 'USD' | 'GBP' | 'EUR',
         currencyPair: `NGN/${row.currency}`,
         ngnPerUnit: Number(row.ngn_per_unit),
         bufferRate: Number(row.buffer_rate ?? 0.1),

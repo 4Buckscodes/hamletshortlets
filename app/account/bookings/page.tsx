@@ -461,7 +461,7 @@ export default function GuestBookingsPage() {
                     Stay total:{' '}
                     <strong className="font-mono text-ink-900">
                       {b.quote_currency &&
-                      (b.quote_currency === 'USD' || b.quote_currency === 'GBP') &&
+                      (b.quote_currency === 'USD' || b.quote_currency === 'GBP' || b.quote_currency === 'EUR') &&
                       Number.isFinite(Number(b.quoted_guest_total))
                         ? formatCurrencyAmount(
                             Number(b.quoted_guest_total),

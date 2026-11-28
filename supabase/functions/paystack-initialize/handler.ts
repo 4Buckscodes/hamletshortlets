@@ -299,7 +299,7 @@ export async function handlePaystackInitialize(
 
   const quoteCurrency = (booking.quote_currency ?? 'NGN').toUpperCase();
   if (
-    (quoteCurrency === 'USD' || quoteCurrency === 'GBP') &&
+    (quoteCurrency === 'USD' || quoteCurrency === 'GBP' || quoteCurrency === 'EUR') &&
     booking.quote_expires_at &&
     new Date(booking.quote_expires_at).getTime() <= currentNow.getTime()
   ) {

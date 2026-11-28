@@ -1,15 +1,27 @@
-export type DisplayCurrency = 'NGN' | 'USD' | 'GBP';
+export type DisplayCurrency = 'NGN' | 'USD' | 'GBP' | 'EUR';
 
-export const CURRENCY_ORDER: readonly DisplayCurrency[] = ['NGN', 'USD', 'GBP'];
+export const CURRENCY_ORDER: readonly DisplayCurrency[] = ['NGN', 'USD', 'GBP', 'EUR'];
 
 export const CURRENCY_SYMBOLS: Record<DisplayCurrency, string> = {
   NGN: '₦',
   USD: '$',
   GBP: '£',
+  EUR: '€',
 };
 
 const NGN_COUNTRY_CODES = new Set(['NG']);
 const GBP_COUNTRY_CODES = new Set(['GB', 'UK', 'IM', 'JE', 'GG']);
+/** Euro-area countries (the euro is the currency of each). */
+const EUR_COUNTRY_CODES = new Set([
+  'AT', 'BE', 'HR', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE',
+  'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES',
+]);
+const EUR_TIME_ZONES = new Set([
+  'Europe/Paris', 'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome', 'Europe/Amsterdam',
+  'Europe/Brussels', 'Europe/Vienna', 'Europe/Dublin', 'Europe/Lisbon', 'Europe/Athens',
+  'Europe/Helsinki', 'Europe/Luxembourg', 'Europe/Malta', 'Europe/Riga', 'Europe/Tallinn',
+  'Europe/Vilnius', 'Europe/Bratislava', 'Europe/Ljubljana', 'Europe/Zagreb', 'Asia/Nicosia',
+]);
 const USD_COUNTRY_CODES = new Set([
   'US',
   'CA',
@@ -30,6 +42,7 @@ function mapCountryToCurrency(rawCountry: string | null | undefined): DisplayCur
   if (!code) return null;
   if (NGN_COUNTRY_CODES.has(code)) return 'NGN';
   if (GBP_COUNTRY_CODES.has(code)) return 'GBP';
+  if (EUR_COUNTRY_CODES.has(code)) return 'EUR';
   if (USD_COUNTRY_CODES.has(code)) return 'USD';
   return null;
 }
@@ -55,7 +68,7 @@ function extractRegionFromLocale(locale: string): string | null {
  * 0. A device set to Lagos time (`Africa/Lagos`) is in Nigeria, whatever its IP address says
  *    (VPNs, some mobile carriers and roaming routes show a UK or US address) -> NGN
  * 1. Explicit geo country code (`NG` -> NGN, `GB` -> GBP, `US`/`CA`/... -> USD)
- * 2. IANA timezone (`Europe/London` -> GBP, `America/*` -> USD)
+ * 2. IANA timezone (`Europe/London` -> GBP, euro-area zones -> EUR, `America/*` -> USD)
  * 3. Browser/OS locale region subtags (`en-NG`, `en-GB`, `en-US`, etc.)
  * 4. Safe HAMLET Lagos default (`NGN`)
  */
@@ -80,6 +93,7 @@ export function detectUserCurrency(signals: {
     ) {
       return 'GBP';
     }
+    if (EUR_TIME_ZONES.has(tz)) return 'EUR';
     if (tz.startsWith('America/')) {
       return 'USD';
     }

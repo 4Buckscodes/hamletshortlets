@@ -168,7 +168,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       { type: 'h2', text: 'Paying from abroad' },
       {
         type: 'p',
-        text: 'If you are booking from outside Nigeria, prices can be shown in USD or GBP with a single 10% exchange buffer. You are charged in naira, and your own bank may add a card fee on top.',
+        text: 'If you are booking from outside Nigeria, prices can be shown in USD, GBP or EUR with a single 10% exchange buffer. You are charged in naira, and your own bank may add a card fee on top.',
       },
       { type: 'h2', text: 'When you actually pay' },
       {

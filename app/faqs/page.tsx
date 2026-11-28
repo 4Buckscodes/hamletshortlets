@@ -32,7 +32,7 @@ const FAQ_ITEMS: readonly FaqEntry[] = [
   },
   {
     q: '4. Are there hidden fees?',
-    a: 'No. Stay rates include our 20% guest service fee upfront, show cleaning charges clearly, and itemise caution deposits separately. USD/GBP quotes include a single 10% FX buffer and settle in NGN.',
+    a: 'No. Stay rates include our 20% guest service fee upfront, show cleaning charges clearly, and itemise caution deposits separately. USD, GBP and EUR quotes include a single 10% FX buffer and settle in NGN.',
     category: 'pricing',
   },
   {

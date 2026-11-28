@@ -107,7 +107,7 @@ function buildHoratioReply(rawQuery: string, currency: DisplayCurrency): Omit<Ho
 
   if (q.includes('price') || q.includes('fee') || q.includes('usd') || q.includes('gbp') || q.includes('dollar') || q.includes('pound') || q.includes('caution') || q.includes('deposit') || q.includes('₦') || q.includes('currency')) {
     return {
-      text: `Prices display in ${currency}. NGN stay rates include our 20% guest service fee upfront. USD and GBP quotes include a single 10% FX buffer and settle in NGN via Paystack. Caution deposits are itemised separately without markup.`,
+      text: `Prices display in ${currency}. NGN stay rates include our 20% guest service fee upfront. USD, GBP and EUR quotes include a single 10% FX buffer and settle in NGN via Paystack. Caution deposits are itemised separately without markup.`,
       links: [
         { label: 'Explore stays', href: '/stays' },
         { label: 'Pricing & legal terms', href: '/legal' },

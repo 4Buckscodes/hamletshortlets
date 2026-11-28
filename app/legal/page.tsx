@@ -71,7 +71,7 @@ export default function LegalPage() {
                 <strong>Domestic stay pricing:</strong> Displayed NGN stay prices include the owner’s agreed rate plus HAMLET’s 20% guest service fee upfront and any stated cleaning charge.
               </li>
               <li>
-                <strong>USD &amp; GBP quotes:</strong> International quotes convert at HAMLET’s active reference rate plus a single 10% FX buffer (30-minute quote validity) and settle in NGN via Paystack.
+                <strong>USD, GBP &amp; EUR quotes:</strong> International quotes convert at HAMLET’s active reference rate plus a single 10% FX buffer (30-minute quote validity) and settle in NGN via Paystack.
               </li>
               <li>
                 <strong>Refundable caution deposits:</strong> Itemised separately with no service fee or FX buffer, and released after post-checkout inspection.
